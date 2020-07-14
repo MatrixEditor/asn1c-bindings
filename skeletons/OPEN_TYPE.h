@@ -19,8 +19,10 @@ extern "C" {
 #define OPEN_TYPE_encode_der CHOICE_encode_der
 #define OPEN_TYPE_decode_xer NULL
 #define OPEN_TYPE_encode_xer CHOICE_encode_xer
+#if !defined(ASN_DISABLE_OER_SUPPORT) && 0
 #define OPEN_TYPE_decode_oer NULL
 #define OPEN_TYPE_encode_oer CHOICE_encode_oer
+#endif /* not ASN_DISABLE_OER_SUPPORT */
 #define OPEN_TYPE_decode_uper NULL
 #define OPEN_TYPE_decode_aper NULL
 
