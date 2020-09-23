@@ -30,7 +30,10 @@ verify() {
 
     cleanup
 
-    asncmd="${top_builddir}/asn1c/asn1c -Wdebug-compiler -flink-skeletons -S ${top_srcdir}/skeletons $flags test.asn"
+    rm -rf "test-${type}"
+    mkdir "test-${type}"
+    cd "test-${type}"
+    asncmd="../${top_builddir}/asn1c/asn1c -Wdebug-compiler -flink-skeletons -S ../${top_srcdir}/skeletons $flags test.asn"
 
     {
     echo "$asncmd"
@@ -40,11 +43,13 @@ verify() {
     echo "Module DEFINITIONS::=BEGIN T::=$type END" > test.asn
     $asncmd
     CFLAGS=-O0 ${MAKE:-make} -f converter-example.mk | tail -10
+    cd ..
 }
 
 verify_type_with_variants() {
     local type="$1"
-    for flags in "-no-gen-PER" "-no-gen-OER" "-no-gen-PER -no-gen-OER" ""; do
+    for flags in "-no-gen-UPER" "-no-gen-APER" "-no-gen-OER" "-no-gen-XER" "-no-gen-BER" "-no-gen-print" "-no-gen-random-fill" "-no-gen-UPER -no-gen-APER -no-gen-OER -no-gen-XER -no-gen-BER -no-gen-print -no-gen-random-fill" ""; do
+#    for flags in "-no-gen-UPER" "-no-gen-APER" "-no-gen-OER" "-no-gen-UPER -no-gen-APER -no-gen-OER" ""; do
         for native in "" "-fwide-types"; do
             verify "$type" "$flags $native"
         done

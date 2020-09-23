@@ -2,7 +2,7 @@ AC_INIT([asn1c],[0.9.29],[vlm@lionet.info])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign tar-pax])
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Checks for programs.
@@ -263,6 +263,7 @@ AC_SUBST(ASAN_ENV_FLAGS)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(sys/param.h)
+AC_CHECK_HEADERS(netinet/in.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
@@ -284,6 +285,7 @@ AC_CHECK_FUNCS(strtoimax strtoll)
 AC_CHECK_FUNCS(mergesort)
 AC_CHECK_FUNCS(mkstemps)
 AC_CHECK_FUNCS(timegm)
+AC_CHECK_FUNCS(random)
 AC_CHECK_DECLS(strcasecmp)
 AC_CHECK_DECLS(vasprintf)
 AC_TRY_LINK_FUNC([symlink],[AC_DEFINE([HAVE_SYMLINK], 1, [Define to 1 if you have the symlink function.])])
