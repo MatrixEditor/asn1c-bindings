@@ -971,6 +971,7 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 	asn1p_expr_t *expr = arg->expr;
 	asn1p_expr_t *v;
 	int saved_target = arg->target->target;
+	int ext_num = 1;
 
 	DEPENDENCIES;
 
@@ -990,7 +991,15 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 				skipComma = 1;
 				continue;
 			}
-            OUT("%s", c_presence_name(arg, v));
+
+			if((v->expr_type == ASN_CONSTR_SEQUENCE) &&
+				(v->marker.flags & EM_OPTIONAL) &&
+				(v->Identifier == NULL)) {
+				char ext_name[20];
+				sprintf(ext_name, "ext%d", ext_num++);
+				v->Identifier = strdup(ext_name);
+			}
+			OUT("%s", c_presence_name(arg, v));
 		}
 		OUT("\n");
 	);
@@ -1476,7 +1485,7 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
                || (expr->expr_type == ASN_BASIC_INTEGER)) {
                 OUT("extern const asn_INTEGER_specifics_t "
                     "asn_SPC_%s_specs_%d;\n",
-                    c_name(arg).base_name, expr->_type_unique_index);
+                    MKID(expr), expr->_type_unique_index);
             } else {
                 asn1p_expr_t *terminal = WITH_MODULE_NAMESPACE(
                     expr->module, expr_ns,
@@ -2400,7 +2409,7 @@ emit_default_string_value(arg_t *arg, asn1p_value_t *v) {
 		uint8_t *e = v->value.string.size + b;
 		OUT("{ ");
 		for(;b < e; b++)
-			OUT("0x%02x, ", *b);
+			OUT("0x%02X, ", *b);
 		OUT("0 };\n");
 	}
 }
@@ -2413,7 +2422,7 @@ emit_default_bitstring_value(arg_t *arg, asn1p_value_t *v) {
 
 	uint8_t *b = v->value.binary_vector.bits;
 	for (int i = 0; i < (v->value.binary_vector.size_in_bits + 7)/8; i++, b++) {
-		OUT("0x%02x", *b);
+		OUT("0x%02X", *b);
 		if(i < (v->value.binary_vector.size_in_bits + 7)/8 - 1)
 			OUT(", ");
 	}

@@ -2,9 +2,9 @@
  * Generic converter template for a selected ASN.1 type.
  * Copyright (c) 2005-2017 Lev Walkin <vlm@lionet.info>.
  * All rights reserved.
- * 
+ *
  * To compile with your own ASN.1 type, redefine the PDU as shown:
- * 
+ *
  * cc -DPDU=MyCustomType -o myDecoder.o -c converter-example.c
  */
 #ifdef    HAVE_CONFIG_H
@@ -123,14 +123,14 @@ ats_simple_name(enum asn_transfer_syntax syntax) {
     case ATS_BASIC_XER:
     case ATS_CANONICAL_XER:
         return "XER";
-    case ATS_BASIC_JER:
+    case ATS_JER:
       return "JER";
     case ATS_UNALIGNED_BASIC_PER:
     case ATS_UNALIGNED_CANONICAL_PER:
         return "PER";
     case ATS_ALIGNED_BASIC_PER:
     case ATS_ALIGNED_CANONICAL_PER:
-        return "APER";        
+        return "APER";
     default:
         return "<?>";
     }
@@ -172,7 +172,7 @@ static syntax_selector output_encodings[] = {
      "Output as Aligned PER (Packed Encoding Rules)"},
     {"xer", ATS_BASIC_XER, CODEC_OFFSET(xer_encoder),
      "Output as XER (XML Encoding Rules)"},
-    {"jer", ATS_BASIC_JER, CODEC_OFFSET(jer_encoder),
+    {"jer", ATS_JER, CODEC_OFFSET(jer_encoder),
      "Output as JER (JSON Encoding Rules)"},
     {"text", ATS_NONSTANDARD_PLAINTEXT, CODEC_OFFSET(print_struct),
      "Output as plain semi-structured text"},
@@ -431,7 +431,8 @@ main(int ac, char *av[]) {
     if(isatty(1)) {
         const int is_text_output = osyntax == ATS_NONSTANDARD_PLAINTEXT
                                    || osyntax == ATS_BASIC_XER
-                                   || osyntax == ATS_CANONICAL_XER;
+                                   || osyntax == ATS_CANONICAL_XER
+                                   || osyntax == ATS_JER;
         if(is_text_output) {
             binary_out = stdout;
         } else {
@@ -608,7 +609,7 @@ buffer_shift_left(size_t offset, int bits) {
     uint8_t *ptr = DynamicBuffer.data + DynamicBuffer.offset + offset;
     uint8_t *end = DynamicBuffer.data + DynamicBuffer.offset
             + DynamicBuffer.length - 1;
-    
+
     if(!bits) return;
 
     DEBUG("Shifting left %d bits off %ld (o=%ld, u=%ld, l=%ld)",
@@ -782,7 +783,7 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
     asn_codec_ctx_t *opt_codec_ctx = 0;
     void *structure = 0;
     asn_dec_rval_t rval;
-    size_t old_offset;    
+    size_t old_offset;
     size_t new_offset;
     int tolerate_eof;
     size_t rd;
