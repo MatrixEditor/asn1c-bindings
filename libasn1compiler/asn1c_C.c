@@ -973,7 +973,6 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 	asn1p_expr_t *expr = arg->expr;
 	asn1p_expr_t *v;
 	int saved_target = arg->target->target;
-	int ext_num = 1;
 
 	DEPENDENCIES;
 
@@ -994,13 +993,6 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 				continue;
 			}
 
-			if((v->expr_type == ASN_CONSTR_SEQUENCE) &&
-				(v->marker.flags & EM_OPTIONAL) &&
-				(v->Identifier == NULL)) {
-				char ext_name[20];
-				sprintf(ext_name, "ext%d", ext_num++);
-				v->Identifier = strdup(ext_name);
-			}
 			OUT("%s", c_presence_name(arg, v));
 		}
 		OUT("\n");
