@@ -158,7 +158,7 @@ BIT_STRING_encode_uper(const asn_TYPE_descriptor_t *td,
     }
     ct_extensible = csiz->flags & APC_EXTENSIBLE;
 
-#if !defined(UPER_REMOVE_TRAILING_BITS)
+#if defined(UPER_REMOVE_TRAILING_BITS)
     /* Figure out the size without the trailing bits */
     st = BIT_STRING__compactify(st, &compact_bstr);
     /* 
