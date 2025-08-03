@@ -31,7 +31,8 @@
 #include "asn1_common.h"
 
 #undef COPYRIGHT
-#define COPYRIGHT "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n"
+#define COPYRIGHT \
+    "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n"
 
 #include <asn1parser.h>   /* Parse the ASN.1 file and build a tree */
 #include <asn1fix.h>      /* Fix the ASN.1 tree */
@@ -56,7 +57,9 @@ main(int ac, char **av) {
     enum asn1p_flags asn1_parser_flags = A1P_NOFLAGS;
     enum asn1f_flags asn1_fixer_flags = A1F_NOFLAGS;
     enum asn1c_flags asn1_compiler_flags =
-        A1C_NO_C99 | A1C_GEN_BER | A1C_GEN_XER | A1C_GEN_OER | A1C_GEN_UPER | A1C_GEN_APER | A1C_GEN_PRINT | A1C_GEN_RFILL | A1C_GEN_EXAMPLE | A1C_GEN_JER;
+        A1C_NO_C99 | A1C_GEN_BER | A1C_GEN_XER | A1C_GEN_OER | A1C_GEN_UPER
+        | A1C_GEN_APER | A1C_GEN_PRINT | A1C_GEN_RFILL | A1C_GEN_EXAMPLE
+        | A1C_GEN_JER | A1C_GEN_PYTHON;
     enum asn1print_flags asn1_printer_flags = APF_NOFLAGS;
     int print_arg__print_out = 0;   /* Don't compile, just print parsed */
     int print_arg__fix_n_print = 0; /* Fix and print */
@@ -65,11 +68,11 @@ main(int ac, char **av) {
     char *destdir = NULL;           /* Destination for generated files */
     char **debug_type_names = 0;    /* Debug stuff */
     size_t debug_type_names_count = 0;
-    asn1p_t *asn = 0;               /* An ASN.1 parsed tree */
-    int ret;                        /* Return value from misc functions */
-    int ch;                         /* Command line character */
-    int i;                          /* Index in some loops */
-    int exit_code = 0;              /* Exit code */
+    asn1p_t *asn = 0;  /* An ASN.1 parsed tree */
+    int ret;           /* Return value from misc functions */
+    int ch;            /* Command line character */
+    int i;             /* Index in some loops */
+    int exit_code = 0; /* Exit code */
 
     /*
      * Process command-line options.
@@ -174,6 +177,8 @@ main(int ac, char **av) {
                 asn1_compiler_flags |= A1C_GEN_EXAMPLE;
             } else if(strcmp(optarg, "en-autotools") == 0) {
                 asn1_compiler_flags |= A1C_GEN_AUTOTOOLS_EXAMPLE;
+            } else if(strcmp(optarg, "en-python") == 0) {
+                asn1_compiler_flags |= A1C_GEN_PYTHON;
             } else {
                 fprintf(stderr, "-g%s: Invalid argument\n", optarg);
                 exit(EX_USAGE);
@@ -202,6 +207,8 @@ main(int ac, char **av) {
                 asn1_compiler_flags &= ~A1C_GEN_EXAMPLE;
             } else if(strcmp(optarg, "o-gen-autotools") == 0) {
                 asn1_compiler_flags &= ~A1C_GEN_AUTOTOOLS_EXAMPLE;
+            } else if(strcmp(optarg, "o-gen-python") == 0) {
+                asn1_compiler_flags &= ~A1C_GEN_PYTHON;
             } else {
                 fprintf(stderr, "-n%s: Invalid argument\n", optarg);
                 exit(EX_USAGE);
@@ -450,7 +457,7 @@ main(int ac, char **av) {
 cleanup:
     asn1p_delete(asn);
     asn1p_lex_destroy();
-    if (exit_code) exit(exit_code);
+    if(exit_code) exit(exit_code);
 
     return 0;
 }
@@ -604,6 +611,7 @@ usage(const char *av0) {
 "  -no-gen-print         Do not generate the print code\n"
 "  -no-gen-random-fill   Do not generate the random fill code\n"
 "  -no-gen-example       Do not generate the ASN.1 format converter example\n"
+"  -no-gen-python        Do not generate the Python bindings\n"
 "  -gen-autotools        Generate example top-level configure.ac and Makefile.am\n"
 "  -pdu={all|auto|Type}  Generate PDU table (discover PDUs automatically)\n"
 "\n"

@@ -29,10 +29,11 @@ safe_fwrite(const void *ptr, size_t size, size_t nitems, FILE *stream) {
     return ret;
 }
 
-#define HINCLUDE(s)                                   \
+#define HINCLUDE(s) HINCLUDE_INTERNAL(fp_h, s)
+#define HINCLUDE_INTERNAL(fp, s)                      \
     ((arg->flags & A1C_INCLUDES_QUOTED)               \
-         ? safe_fprintf(fp_h, "#include \"%s\"\n", s) \
-         : safe_fprintf(fp_h, "#include <%s>\n", s))
+         ? safe_fprintf((fp), "#include \"%s\"\n", s) \
+         : safe_fprintf((fp), "#include <%s>\n", s))
 
 enum include_type_result {
     TI_NOT_INCLUDED,
@@ -552,13 +553,15 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
     asn1p_expr_t *expr = arg->expr;
     compiler_streams_t *cs = expr->data;
     out_chunk_t *ot;
-    FILE *fp_c, *fp_h;
-    char *tmpname_c, *tmpname_h;
+    FILE *fp_c = NULL, *fp_h = NULL, *fp_py_h = NULL, *fp_py_c = NULL;
+    char *tmpname_c = NULL, *tmpname_h = NULL, *tmpname_py_h = NULL,
+         *tmpname_py_c = NULL;
     char name_buf[FILENAME_MAX];
     const char *header_id;
-    const char *c_retained = "";
-    const char *h_retained = "";
-    char *filename;
+    const char *c_retained = "", *h_retained = "", *py_c_retained = "",
+               *py_h_retained = "";
+    char *filename = NULL;
+    int result = 0, include_py = 1;
 
     if(cs == NULL) {
         safe_fprintf(stderr, "Cannot compile %s at line %d\n", expr->Identifier,
@@ -568,20 +571,41 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
 
     filename = strdup(asn1c_make_identifier(
         AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, expr, (char *)0));
+    if(!(arg->flags & A1C_GEN_PYTHON) || strcmp(filename, "EXTERNAL") == 0) {
+        include_py = 0;
+    }
+
     fp_c = asn1c_open_file(destdir, filename, ".c", &tmpname_c);
     if(fp_c == NULL) {
-        return -1;
+        goto error;
     }
     fp_h = asn1c_open_file(destdir, filename, ".h", &tmpname_h);
     if(fp_h == NULL) {
-        unlink(tmpname_c);
-        free(tmpname_c);
-        fclose(fp_c);
-        return -1;
+        ASN_CLOSE(fp_c);
+        goto error;
+    }
+    if(include_py) {
+        fp_py_c = asn1c_open_file(destdir, filename, "_Py.c", &tmpname_py_c);
+        if(fp_py_c == NULL) {
+            ASN_CLOSE(fp_c);
+            ASN_CLOSE(fp_h);
+            goto error;
+        }
+        fp_py_h = asn1c_open_file(destdir, filename, "._Py.h", &tmpname_py_h);
+        if(fp_py_h == NULL) {
+            ASN_CLOSE(fp_c);
+            ASN_CLOSE(fp_h);
+            ASN_CLOSE(fp_py_c);
+            goto error;
+        }
     }
 
     generate_preamble(arg, fp_c, optc, argv);
     generate_preamble(arg, fp_h, optc, argv);
+    if(include_py) {
+        generate_preamble(arg, fp_py_c, optc, argv);
+        generate_preamble(arg, fp_py_h, optc, argv);
+    }
 
     header_id = asn1c_make_identifier(AMI_USE_PREFIX, expr, NULL);
     safe_fprintf(fp_h,
@@ -589,9 +613,22 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
                  "#define\t_%s_H_\n"
                  "\n",
                  header_id, header_id);
-
     safe_fprintf(fp_h, "\n");
     HINCLUDE("asn_application.h");
+
+    if(include_py) {
+        safe_fprintf(fp_py_h,
+                     "#ifndef\t_%s_PY_H_\n"
+                     "#define\t_%s_PY_H_\n"
+                     "\n",
+                     header_id, header_id);
+
+        safe_fprintf(fp_py_h, "\n");
+        // common includes for each file
+        HINCLUDE_INTERNAL(fp_py_h, "py_application.h");
+        HINCLUDE_INTERNAL(fp_py_h, "py_convert.h");
+        safe_fprintf(fp_py_h, "#include \"%s.h\"\n", filename);
+    }
 
 #define SAVE_STREAM(fp, idx, msg, actdep)                                   \
     do {                                                                    \
@@ -613,6 +650,14 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
     SAVE_STREAM(fp_h, OT_FUNC_DECLS, "Implementation", 0);
     safe_fprintf(fp_h, "\n#ifdef __cplusplus\n}\n#endif\n");
 
+    if(include_py) {
+        safe_fprintf(fp_py_h, "\n#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
+        SAVE_STREAM(fp_py_h, OT_PY_TYPE_DECLS, filename, 0);
+        SAVE_STREAM(fp_py_h, OT_PY_TYPE_CONVERT, "Type Converters", 0);
+        safe_fprintf(fp_py_h, "\n#ifdef __cplusplus\n}\n#endif\n");
+        safe_fprintf(fp_py_h, "\n#endif\t/* _%s_PY_H_ */\n", header_id);
+    }
+
     if(!(arg->flags & A1C_NO_INCLUDE_DEPS))
         SAVE_STREAM(fp_h, OT_POST_INCLUDE, "Referred external types", 1);
 
@@ -633,10 +678,16 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
     TQ_FOR(ot, &(cs->destination[OT_STAT_DEFS].chunks), next)
         safe_fwrite(ot->buf, ot->len, 1, fp_c);
 
-    assert(OT_MAX == 13); /* Protection from reckless changes */
+    if(include_py) {
+        safe_fprintf(fp_py_c, "#include \"%s_Py.h\"\n\n", filename);
+    }
 
-    fclose(fp_c);
-    fclose(fp_h);
+    assert(OT_MAX == 15); /* Protection from reckless changes */
+
+    ASN_CLOSE(fp_c);
+    ASN_XCLOSE(fp_py_c);
+    ASN_CLOSE(fp_h);
+    ASN_XCLOSE(fp_py_h);
 
     int ret = snprintf(name_buf, sizeof(name_buf), "%s%s.c", destdir, filename);
     assert(ret > 0 && ret < (ssize_t)sizeof(name_buf));
@@ -646,12 +697,10 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
         unlink(tmpname_c);
     } else {
         if(rename(tmpname_c, name_buf)) {
-            unlink(tmpname_c);
             perror(tmpname_c);
-            free(tmpname_c);
-            free(tmpname_h);
-            return -1;
+            goto error;
         }
+        ASN_CLEAR(tmpname_c);
     }
 
     sprintf(name_buf, "%s%s.h", destdir, filename);
@@ -660,21 +709,72 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
         unlink(tmpname_h);
     } else {
         if(rename(tmpname_h, name_buf)) {
-            unlink(tmpname_h);
             perror(tmpname_h);
-            free(tmpname_c);
-            free(tmpname_h);
-            return -1;
+            goto error;
+        }
+        ASN_CLEAR(tmpname_h);
+    }
+
+    if(include_py) {
+        sprintf(name_buf, "%s%s_Py.c", destdir, filename);
+        if(identical_files(name_buf, tmpname_py_c)) {
+            py_c_retained = " (contents unchanged)";
+            unlink(tmpname_py_c);
+        } else {
+            if(rename(tmpname_py_c, name_buf)) {
+                perror(tmpname_py_c);
+                goto error;
+            }
+            ASN_CLEAR(tmpname_py_c);
+        }
+
+        sprintf(name_buf, "%s%s_Py.h", destdir, filename);
+        if(identical_files(name_buf, tmpname_py_h)) {
+            py_h_retained = " (contents unchanged)";
+            unlink(tmpname_py_h);
+        } else {
+            if(rename(tmpname_py_h, name_buf)) {
+                perror(tmpname_py_h);
+                goto error;
+            }
+            ASN_CLEAR(tmpname_py_h);
         }
     }
 
-    free(tmpname_c);
-    free(tmpname_h);
 
     safe_fprintf(stderr, "Compiled %s%s.c%s\n", destdir, filename, c_retained);
     safe_fprintf(stderr, "Compiled %s%s.h%s\n", destdir, filename, h_retained);
-    free(filename);
-    return 0;
+    if(include_py) {
+        safe_fprintf(stderr, "Compiled %s%s_Py.h%s\n", destdir, filename,
+                     py_h_retained);
+        safe_fprintf(stderr, "Compiled %s%s_Py.c%s\n", destdir, filename,
+                     py_c_retained);
+    }
+    goto finalize;
+
+error:
+    result = -1;
+
+finalize:
+    if(tmpname_c) {
+        unlink(tmpname_c);
+        ASN_FREE(tmpname_c);
+    }
+    if(tmpname_h) {
+        unlink(tmpname_h);
+        ASN_FREE(tmpname_h);
+    }
+    if(tmpname_py_c) {
+        unlink(tmpname_py_c);
+        ASN_FREE(tmpname_py_c);
+    }
+    if(tmpname_py_h) {
+        unlink(tmpname_py_h);
+        ASN_FREE(tmpname_py_h);
+    }
+
+    ASN_XFREE(filename);
+    return result;
 }
 
 static int
