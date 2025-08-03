@@ -7,6 +7,7 @@ from example_mod._example_mod import (
     Signed8,
     ExampleBoolean,
     ExampleBitString,
+    ExampleOctetString,
 )
 
 
@@ -117,4 +118,29 @@ def test_basic_bit_string():
     raw_data = b"\x03\x04\x00\x01\x02\x03"
     parsed = ExampleBitString.decode(raw_data)
     assert parsed.value == bit_data
+    assert parsed.encode() == raw_data
+
+
+def test_basic_octet_string():  # bytes
+    # Generated class: ExampleOctetString
+    # type: bytes
+    # constraints: 1 <= size <= 32
+
+    # This type just stores raw data of bytes object
+    obj = ExampleOctetString()
+    obj.value = b"\x01\x02\x03"
+    assert obj.is_valid()
+    assert obj.value.hex() == "010203"
+
+    # size constaint
+    obj.value = b""
+    assert not obj.is_valid()
+
+    obj.value = b"0" * 33
+    assert not obj.is_valid()
+
+    # encoding/decoding scheme is the same as above
+    raw_data = b"\x04\x03\x01\x02\x03"
+    parsed = ExampleOctetString.decode(raw_data)
+    assert parsed.value == b"\x01\x02\x03"
     assert parsed.encode() == raw_data
