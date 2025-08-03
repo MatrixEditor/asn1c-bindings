@@ -60,6 +60,11 @@ typedef struct arg_s {
     asn1p_expr_t *expr;
 
     int embed;
+
+    /*python code generation*/
+    const char *pymodule_qualname;
+    const char *pymodule_name;
+    struct compiler_streams *pytarget;
 } arg_t;
 
 /*
@@ -95,17 +100,17 @@ typedef struct arg_s {
         }                \
     } while(0)
 
-#define ASN_XCLOSE(p) \
-    do {              \
-        if((p)) {     \
+#define ASN_XCLOSE(p)  \
+    do {               \
+        if((p)) {      \
             fclose(p); \
-            p = NULL; \
-        }             \
+            p = NULL;  \
+        }              \
     } while(0)
 
 #define ASN_CLOSE(p) \
     do {             \
-        fclose(p);    \
+        fclose(p);   \
         p = NULL;    \
     } while(0)
 

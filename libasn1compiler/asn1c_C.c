@@ -9,6 +9,7 @@
 #include "asn1c_misc.h"
 #include "asn1c_ioc.h"
 #include "asn1c_naming.h"
+#include "asn1c_py_out.h"
 #include <asn1print.h>
 #include <asn1fix_crange.h> /* constraint groker from libasn1fix */
 #include <asn1fix_export.h> /* other exportables from libasn1fix */
@@ -1290,15 +1291,17 @@ asn1c_lang_C_type_REFERENCE(arg_t *arg) {
 
 int
 asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
-    asn1p_expr_t *expr = arg->expr;
+    asn1p_expr_t *expr = arg->expr, *v = NULL;
     int tags_count;
     int all_tags_count;
+    int el_count = expr_elements_count(arg, expr);
     enum tvm_compat tv_mode;
     enum etd_spec etd_spec;
-    const char *p;
+    const char *p, *type_id, *tmp_member_name;
     int saved_target = arg->target->target;
 
     if(arg->embed) {
+        printf("embed: %d (count: %d)\n", expr->expr_type, el_count);
         enum tnfmt tnfmt = TNF_CTYPE;
 
         /*
@@ -1329,6 +1332,8 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
             else if((expr->marker.flags & EM_OPTIONAL) == EM_OPTIONAL)
                 OUT("\t/* OPTIONAL */");
             OUT("\n");
+
+            switch(expr->expr_type) {}
         }
 
     } else {
@@ -1339,6 +1344,259 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
         OUT("typedef %s\t", asn1c_type_name(arg, arg->expr, TNF_CTYPE));
         OUT("%s%s_t%s", (expr->marker.flags & EM_INDIRECT) ? "*" : " ",
             MKID(expr), expr->_anonymous_type ? "" : ";\n");
+
+        /* This is a simple type alias: */
+        type_id = MKID(expr);
+        REDIR(OT_PY_TYPE_DECLS);
+        OUT("PyCompat_DEF_STRUCT(%s);\n", type_id);
+        OUT("PyCompat_DEF_TYPE(%s);\n", type_id);
+        if(expr->expr_type == ASN_BASIC_ENUMERATED || el_count) {
+            /* Simple enumerations will be created lazily */
+            OUT("typedef PyObject PyAsnEnum%sObject;\n", type_id);
+            OUT("extern PyObject *PyAsnEnum%s_Type;\n", type_id);
+        }
+        /* some type converters are built-in*/
+        REDIR(OT_PY_TYPE_CONVERT);
+        switch(expr->expr_type) {
+        case ASN_BASIC_INTEGER: {
+            // if this integer has named parts, convert it to an enum
+            if(el_count) {
+                goto basic_enumeration;
+            }
+
+            // conversion is made easy
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            if(asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
+                OUT("return PyCompatLong_FromSize_t(*pSrc);\n");
+            } else {
+                OUT("return PyCompatLong_FromSsize_t(*pSrc);\n");
+            }
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("PyLongCompat_Check(pObj, -1);\n");
+            if(asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
+                OUT("*pDst = (%s)PyCompatLong_AsSize_t(pObj);\n", type_id);
+            } else {
+                OUT("*pDst = (%s_t)PyCompatLong_AsSsize_t(pObj);\n", type_id);
+            }
+            OUT("return 0;\n");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+        case ASN_BASIC_BOOLEAN: {
+            // conversion is made easy
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatBool_FromLong(*pSrc);\n");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("PyBool_Check(pObj);\n");
+            OUT("*pDst = (%s_t)PyCompatBool_AsLong(pObj);\n", type_id);
+            OUT("return 0;\n");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+        case ASN_BASIC_REAL: {
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatFloat_FromDouble((double)*pSrc);\n");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("PyFloat_Check(pObj);\n");
+            OUT("*pDst = (%s_t)PyCompatFloat_AsDouble(pObj);\n", type_id);
+            OUT("return 0;\n");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+        case ASN_BASIC_NULL: {
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatNull_FromLong(*pSrc);\n");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("*pDst = (%s_t)PyCompatNull_AsLong(pObj);\n", type_id);
+            OUT("return 0;\n");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+        case ASN_BASIC_BIT_STRING: {
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("return PyCompatBitArray_ToStringAndSize(pObj, &pDst->buf, "
+                "&pDst->size);\n");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatBitArray_FromStringAndSize(pSrc->buf, "
+                "pSrc->size);");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+
+        /*Bytes types*/
+        case ASN_BASIC_OBJECT_IDENTIFIER: /* for now, use bytes*/
+        case ASN_BASIC_RELATIVE_OID:
+        case ASN_BASIC_OCTET_STRING: {
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("return PyCompatBytes_ToStringAndSize(pObj, &pDst->buf, "
+                "&pDst->size);");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatBytes_FromStringAndSize(pSrc->buf, "
+                "pSrc->size);");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+
+        /*string types*/
+        case ASN_STRING_IA5String:
+        case ASN_STRING_PrintableString:
+        case ASN_STRING_VisibleString:
+        case ASN_STRING_ISO646String:
+        case ASN_STRING_NumericString:
+        case ASN_STRING_UniversalString:
+        case ASN_STRING_BMPString:
+        case ASN_STRING_UTF8String:
+        case ASN_STRING_GeneralString:
+        case ASN_STRING_GraphicString:
+        case ASN_STRING_TeletexString:
+        case ASN_STRING_T61String:
+        case ASN_STRING_VideotexString:
+        case ASN_BASIC_UTCTime:
+        case ASN_BASIC_GeneralizedTime:
+        case ASN_STRING_ObjectDescriptor: {
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("pDst->buf = (uint8_t *)PyCompatUnicode_AsUTF8AndSize(pObj, "
+                "&pDst->size);\n");
+            OUT("return pDst->buf ? 0 : -1;\n");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatUnicode_FromStringAndSize(pSrc->buf, "
+                "pSrc->size);\n");
+            PY_GEN_END_FUNC();
+
+            /*implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+
+        case ASN_BASIC_ENUMERATED: {
+        basic_enumeration:
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            if(asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
+                OUT("*pDst = (%s_t)PyCompatEnum_AsSize_t(pObj);\n", type_id);
+            } else {
+                OUT("*pDst = (%s_t)PyCompatEnum_AsSsize_t(pObj);\n", type_id);
+            }
+            OUT("return 0;\n");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            if(asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
+                OUT("return PyCompatEnum_FromSize_t(PyAsnEnum%s_Type,*pSrc);\n",
+                    type_id);
+            } else {
+                OUT("return PyCompatEnum_FromSsize_t(PyAsnEnum%s_Type, "
+                    "*pSrc);\n",
+                    type_id);
+            }
+            PY_GEN_END_FUNC();
+
+            /*implementation for base type*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+            REDIR(OT_PY_IMPL_CODE);
+            OUT("PyObject *PyAsnEnum%s_Type = NULL;\n", type_id);
+
+            /*implementation for enum type*/
+            REDIR(OT_PY_IMPL_CODE_MOD_SETUP);
+            INDENT(+1);
+            PY_GEN_MOD_SETUP_SINGLE(type_id);  // single type here
+
+            /* clear out the referenced enum type*/
+            REDIR(OT_PY_IMPL_CODE_MOD_CLEAR);
+            OUT("Py_CLEAR(PyAsnEnum%s_Type);\n", type_id);
+            INDENT(-1);
+
+            /*module init*/
+            REDIR(OT_PY_IMPL_CODE_MOD_INIT);
+            INDENT(+1);
+            OUT("PY_IMPL_NEW_ENUM(%s, PyAsnEnum%s_Type, -1, \n", type_id,
+                type_id);
+            INDENT(+1);
+            TQ_FOR(v, &(expr->members), next) {
+                switch(v->expr_type) {
+                case A1TC_UNIVERVAL:
+                    tmp_member_name = c_member_name(arg, v);
+                    OUT("PY_IMPL_ENUM_VALUE(%s, %s, %s);\n", tmp_member_name,
+                        tmp_member_name, asn1p_itoa(v->value->value.v_integer));
+                    break;
+                case A1TC_EXTENSIBLE:
+                    OUT("/*\n");
+                    OUT(" * Enumeration is extensible\n");
+                    OUT(" */\n");
+                    break;
+                default:
+                    return -1;
+                }
+            };
+            INDENT(-1);
+            OUT(");\n");
+
+            type_id = MKID(expr);
+            OUT("PY_IMPL_ASSIGN_ENUM(%s);\n", type_id);
+            PY_GEN_MOD_ADD_OBJECT(type_id);
+            INDENT(-1);
+
+            break;
+        }
+
+        default: {
+            PY_GEN_ASNTYPE_FROMPY(type_id);
+            PY_GEN_ASNTYPE_TOPY(type_id);
+            break;
+        }
+        }
     }
 
     if((expr->expr_type == ASN_BASIC_ENUMERATED)

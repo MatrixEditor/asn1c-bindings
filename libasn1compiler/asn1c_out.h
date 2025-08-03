@@ -11,37 +11,73 @@ typedef struct out_chunk {
     TQ_ENTRY(struct out_chunk) next;
 } out_chunk_t;
 
+typedef struct compiler_stream_destination_s {
+    TQ_HEAD(out_chunk_t) chunks;
+    int indent_level;
+    int indented;
+} compiler_stream_destination_t;
+
 typedef struct compiler_streams {
     enum {
-        OT_IGNORE,          /* Ignore this output */
-        OT_INCLUDES,        /* #include files */
-        OT_DEPS,            /* Dependencies (other than #includes) */
-        OT_FWD_DECLS,       /* Forward declarations */
-        OT_FWD_DEFS,        /* Forward definitions */
-        OT_TYPE_DECLS,      /* Type declarations */
-        OT_FUNC_DECLS,      /* Function declarations */
-        OT_POST_INCLUDE,    /* #include after type definition */
-        OT_IOC_TABLES,      /* Information Object Class tables */
-        OT_CTABLES,         /* Constraint tables */
-        OT_CODE,            /* Some code */
-        OT_CTDEFS,          /* Constraint definitions */
-        OT_STAT_DEFS,       /* Static definitions */
-        OT_PY_TYPE_DECLS,   /* Python type declarations */
-        OT_PY_TYPE_CONVERT, /* Python type conversion */
+        OT_IGNORE,                  /* Ignore this output */
+        OT_INCLUDES,                /* #include files */
+        OT_DEPS,                    /* Dependencies (other than #includes) */
+        OT_FWD_DECLS,               /* Forward declarations */
+        OT_FWD_DEFS,                /* Forward definitions */
+        OT_TYPE_DECLS,              /* Type declarations */
+        OT_FUNC_DECLS,              /* Function declarations */
+        OT_POST_INCLUDE,            /* #include after type definition */
+        OT_IOC_TABLES,              /* Information Object Class tables */
+        OT_CTABLES,                 /* Constraint tables */
+        OT_CODE,                    /* Some code */
+        OT_CTDEFS,                  /* Constraint definitions */
+        OT_STAT_DEFS,               /* Static definitions */
+        OT_PY_TYPE_DECLS,           /* Python type declarations */
+        OT_PY_TYPE_CONVERT,         /* Python type conversion */
+        OT_PY_IMPL_CODE,            /* code */
+        OT_PY_IMPL_METHODS,         /* method-def */
+        OT_PY_IMPL_ATTRS,           /* attr-def (getset) */
+        OT_PY_IMPL_CLASS,           /* type def */
+        OT_PY_IMPL_CODE_MOD_SETUP,  /* setup types function */
+        OT_PY_IMPL_CODE_MOD_CLEAR,  /* clear function */
+        OT_PY_IMPL_CODE_MOD_INIT,   /* init function */
+        OT_PY_IMPL_MOD_SETUP_TYPES, /* Python Module: setupTypes() */
+        OT_PY_IMPL_MOD_CLEAR,       /* Python Module: clear() */
+        OT_PY_IMPL_MOD_INIT,        /* Python Module: init() */
+        OT_PY_IMPL_MOD_INCLUDES,    /* Python Module: includes */
         OT_MAX
     } target;
 
-    struct compiler_stream_destination_s {
-        TQ_HEAD(out_chunk_t) chunks;
-        int indent_level;
-        int indented;
-    } destination[OT_MAX];
+    compiler_stream_destination_t destination[OT_MAX];
 } compiler_streams_t;
 
 static char *_compiler_stream2str[] __attribute__((unused)) = {
-    "IGNORE",     "INCLUDES",   "DEPS",         "FWD-DECLS",  "FWD-DEFS",
-    "TYPE-DECLS", "FUNC-DECLS", "POST-INCLUDE", "IOC-TABLES", "CTABLES",
-    "CODE",       "CTDEFS",     "STAT-DEFS",
+    "IGNORE",
+    "INCLUDES",
+    "DEPS",
+    "FWD-DECLS",
+    "FWD-DEFS",
+    "TYPE-DECLS",
+    "FUNC-DECLS",
+    "POST-INCLUDE",
+    "IOC-TABLES",
+    "CTABLES",
+    "CODE",
+    "CTDEFS",
+    "STAT-DEFS",
+    "PY-DECLS",
+    "PY-CONVERT",
+    "PY-IMPL-CODE",
+    "PY-IMPL-METHODS",
+    "PY-IMPL-ATTRS",
+    "PY-IMPL-CLASS",
+    "PY-IMPL-CODE-MOD-SETUP",
+    "PY-IMPL-CODE-MOD-CLEAR",
+    "PY-IMPL-CODE-MOD-INIT",
+    "PY-IMPL-MOD-SETUP-TYPES",
+    "PY-IMPL-MOD-CLEAR",
+    "PY-IMPL-MOD-INIT",
+    "PY-IMPL-MOD-INCLUDES",
 };
 
 int asn1c_compiled_output(arg_t *arg, const char *file, int lineno,

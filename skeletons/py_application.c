@@ -1,15 +1,19 @@
 #include "py_application.h"
 
 /*global state storing extra Python objects*/
-PyCompatTable_t *PyCompat_Table = NULL;
+PyCompatTable_t *PyCompatTable = NULL;
 
 void
 PyCompat_Clear(void) {
-    Py_CLEAR(PyCompat_Table->PyBytesIO_Type);
-    Py_CLEAR(PyCompat_Table->str__getvalue);
-    Py_CLEAR(PyCompat_Table->str__write);
-    PyMem_FREE(PyCompat_Table);
-    PyCompat_Table = NULL;
+    Py_CLEAR(PyCompatTable->PyBytesIO_Type);
+    Py_CLEAR(PyCompatTable->PyBitArray_Type);
+    Py_CLEAR(PyCompatTable->PyEnum_Type);
+    Py_CLEAR(PyCompatTable->PyEnumMeta_Type);
+    Py_CLEAR(PyCompatTable->str__getvalue);
+    Py_CLEAR(PyCompatTable->str__write);
+    Py_CLEAR(PyCompatTable->str__prepare);
+    PyMem_FREE(PyCompatTable);
+    PyCompatTable = NULL;
 }
 
 int
@@ -23,31 +27,38 @@ PyCompat_Init(void) {
     }
 
     PyObject *nTmpModule = NULL;
-    PyCompat_Table = PyMem_New(PyCompatTable_t, 1);
-    if(PyCompat_Table == NULL) {
+    PyCompatTable = PyMem_New(PyCompatTable_t, 1);
+    if(PyCompatTable == NULL) {
         return -1;
     }
 
-    _CACHED_STRING(PyCompat_Table, str__getvalue, "getvalue", error);
-    _CACHED_STRING(PyCompat_Table, str__write, "write", error);
+    _CACHED_STRING(PyCompatTable, str__getvalue, "getvalue", error);
+    _CACHED_STRING(PyCompatTable, str__write, "write", error);
+    _CACHED_STRING(PyCompatTable, str__prepare, "__prepare__", error);
 
     nTmpModule = PyImport_ImportModule("io");
     if(!nTmpModule) {
         goto error;
     }
-    _IMPORT_ATTR(PyCompat_Table->PyBytesIO_Type, "BytesIO",
-                 PyCompat_Table->PyBytesIO_Type);
+    _IMPORT_ATTR(nTmpModule, "BytesIO", PyCompatTable->PyBytesIO_Type);
     Py_CLEAR(nTmpModule);
 
     nTmpModule = PyImport_ImportModule("bitarray");
     if(!nTmpModule) {
         goto error;
     }
-    _IMPORT_ATTR(PyCompat_Table->PyBitArray_Type, "bitarray",
-                 PyCompat_Table->PyBitArray_Type);
+    _IMPORT_ATTR(nTmpModule, "bitarray", PyCompatTable->PyBitArray_Type);
     Py_CLEAR(nTmpModule);
 
-    return PyCompat_Table->PyBytesIO_Type ? 0 : -1;
+    nTmpModule = PyImport_ImportModule("enum");
+    if(!nTmpModule) {
+        goto error;
+    }
+    _IMPORT_ATTR(nTmpModule, "Enum", PyCompatTable->PyEnum_Type);
+    _IMPORT_ATTR(nTmpModule, "EnumType", PyCompatTable->PyEnumMeta_Type);
+    Py_CLEAR(nTmpModule);
+
+    return PyCompatTable->PyBytesIO_Type ? 0 : -1;
 
 error:
     return -1;

@@ -61,12 +61,13 @@ main(int ac, char **av) {
         | A1C_GEN_APER | A1C_GEN_PRINT | A1C_GEN_RFILL | A1C_GEN_EXAMPLE
         | A1C_GEN_JER | A1C_GEN_PYTHON;
     enum asn1print_flags asn1_printer_flags = APF_NOFLAGS;
-    int print_arg__print_out = 0;   /* Don't compile, just print parsed */
-    int print_arg__fix_n_print = 0; /* Fix and print */
-    int warnings_as_errors = 0;     /* Treat warnings as errors */
-    char *skeletons_dir = NULL;     /* Directory with supplementary stuff */
-    char *destdir = NULL;           /* Destination for generated files */
-    char **debug_type_names = 0;    /* Debug stuff */
+    int print_arg__print_out = 0;      /* Don't compile, just print parsed */
+    int print_arg__fix_n_print = 0;    /* Fix and print */
+    int warnings_as_errors = 0;        /* Treat warnings as errors */
+    char *skeletons_dir = NULL;        /* Directory with supplementary stuff */
+    char *destdir = NULL;              /* Destination for generated files */
+    char **debug_type_names = 0;       /* Debug stuff */
+    char *python_module_name = "_asn1types"; /* Python module name */
     size_t debug_type_names_count = 0;
     asn1p_t *asn = 0;  /* An ASN.1 parsed tree */
     int ret;           /* Return value from misc functions */
@@ -77,7 +78,8 @@ main(int ac, char **av) {
     /*
      * Process command-line options.
      */
-    while((ch = getopt(ac, av, "D:d:EFf:g:hn:LPp:RS:vW:X")) != -1) switch(ch) {
+    while((ch = getopt(ac, av, "D:M:d:EFf:g:hn:LPp:RS:vW:X")) != -1)
+        switch(ch) {
         case 'D':
             if(optarg && *optarg) {
                 size_t optarg_len = strlen(optarg);
@@ -91,6 +93,19 @@ main(int ac, char **av) {
             } else {
                 free(destdir);
                 destdir = NULL;
+            }
+            break;
+        case 'M':
+            if(optarg && *optarg) {
+                size_t optarg_len = strlen(optarg);
+                python_module_name = calloc(1, optarg_len + 1);
+                assert(python_module_name);
+                strcpy(python_module_name, optarg);
+                printf("Python module name: %s\n", python_module_name);
+            }
+            else {
+                free(python_module_name);
+                python_module_name = NULL;
             }
             break;
         case 'd':
@@ -450,7 +465,8 @@ main(int ac, char **av) {
      * of another language.
      */
     if(asn1_compile(asn, skeletons_dir, destdir ? destdir : "",
-                    asn1_compiler_flags, ac + optind, optind, av - optind)) {
+                    asn1_compiler_flags, ac + optind, optind, av - optind,
+                    python_module_name)) {
         exit_code = EX_SOFTWARE;
     }
 

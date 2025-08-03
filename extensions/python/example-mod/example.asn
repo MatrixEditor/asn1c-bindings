@@ -1,0 +1,13 @@
+ExampleModule DEFINITIONS ::= BEGIN
+
+-- basic types
+
+Signed8 ::= INTEGER (-127..127)
+
+NamedSigned8 ::= INTEGER {
+    first(-1),
+    second(0),
+    third(1)
+}
+
+END

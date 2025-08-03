@@ -139,7 +139,8 @@ enum asn1c_flags {
  * Compile the ASN.1 specification.
  */
 int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
-                 enum asn1c_flags, int argc, int optc, char **argv);
+                 enum asn1c_flags, int argc, int optc, char **argv,
+                 const char *pymodule);
 
 void asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags,
                              char **asn_type_names);
@@ -150,5 +151,6 @@ void asn1c_prefix_set(const char *prefix);
 const char *asn1c_prefix_get(void);
 
 int asn1c_attach_streams(asn1p_expr_t *expr);
+
 
 #endif /* ASN1_COMPILER_H */
