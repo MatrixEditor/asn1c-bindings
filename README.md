@@ -5,6 +5,9 @@ the C++ compatible C source code. That code can be used to serialize
 the native C structures into compact and unambiguous BER/OER/PER/XER/JER-based
 data files, and deserialize the files back.
 
+> [!NOTE]
+> Experimental Python bindings can be generated with `-gen-python`.
+
 Various ASN.1 based formats are widely used in the industry,
 such as to encode the X.509 certificates employed in the HTTPS handshake,
 to exchange control data between mobile phones and cellular networks,
@@ -125,6 +128,6 @@ after each stage of operation:
     <parser> => <fixer> => <compiler> => save-compiled      [default]
 
 
--- 
+--
 Lev Walkin
 vlm@lionet.info
