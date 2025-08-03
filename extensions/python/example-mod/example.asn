@@ -10,4 +10,8 @@ NamedSigned8 ::= INTEGER {
     third(1)
 }
 
+ExampleBoolean ::= BOOLEAN
+
+ExampleBitString ::= BIT STRING
+
 END

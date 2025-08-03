@@ -1,11 +1,18 @@
 import pytest
 
-from example_mod._example_mod import NamedSigned8, Signed8
+from bitarray import bitarray
+
+from example_mod._example_mod import (
+    NamedSigned8,
+    Signed8,
+    ExampleBoolean,
+    ExampleBitString,
+)
 
 
 def test_named_integer():
     # Generated class: NamedSigned8
-    # type: signed integer (8 bits)
+    # type: int (8 bits) represented by an enum
     # enum: first = -1, second = 0, third = 1
     # enum type: NamedSigned8.VALUES
 
@@ -41,7 +48,7 @@ def test_named_integer():
 
 def test_basic_integer__size_contraint():
     # Generated class: Signed8
-    # type: signed integer (8 bits)
+    # type: int (8 bits)
     # constraints: -127 <= value <= 127
 
     # instantiation same as above, however, the value
@@ -72,6 +79,42 @@ def test_basic_integer__size_contraint():
         _ = Signed8(1000).encode()
 
     # as well as invalid raw data
-    raw_data = b'\x02\x02\x03\xe8'
+    raw_data = b"\x02\x02\x03\xe8"
     with pytest.raises(ValueError):
         _ = Signed8.decode(raw_data)
+
+
+def test_basic_boolean():
+    # Generated class: ExampleBoolean
+    # type: bool
+    # constraints: value = True | False
+    obj = ExampleBoolean()
+    obj.value = True
+    assert obj.is_valid()
+
+    # Value will be casted to boolean first
+    obj.value = 1000
+    assert obj.value is True
+
+
+def test_basic_bit_string():
+    # Generated class: ExampleBitString
+    # type: bitarray.bitarray
+
+    # This type relies on the external library 'bitarray' for efficiency
+    # and portability. You can assign any value that can be converted into
+    # a bytes object. The object will return a new bitarray object
+    # each time you access it.
+    bit_data = bitarray(b"\x01\x02\x03")
+    obj = ExampleBitString()
+    obj.value = bit_data
+    assert obj.is_valid()
+
+    # conversion must return the same value
+    assert obj.value == bit_data
+
+    # encoding/decoding scheme is the same as above
+    raw_data = b"\x03\x04\x00\x01\x02\x03"
+    parsed = ExampleBitString.decode(raw_data)
+    assert parsed.value == bit_data
+    assert parsed.encode() == raw_data

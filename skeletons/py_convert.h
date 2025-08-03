@@ -47,12 +47,16 @@
 static inline int
 _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str, Py_ssize_t *size) {
     *size = PyBytes_Size(pObj);
-    *str = (char *)PyMem_Malloc(*size);
+    *str = (char *)PyMem_RawMalloc(*size);
     if(*str == NULL) {
         return -1;
     }
-
-    memcpy(*str, PyBytes_AsString(pObj), *size);
+    char *p = (char *)PyBytes_AsString(pObj);
+    if(p == NULL) {
+        PyMem_Free(*str);
+        return -1;
+    }
+    memcpy(*str, p, *size);
     return 0;
 }
 

@@ -12,7 +12,7 @@ PyCompat_Clear(void) {
     Py_CLEAR(PyCompatTable->str__getvalue);
     Py_CLEAR(PyCompatTable->str__write);
     Py_CLEAR(PyCompatTable->str__prepare);
-    PyMem_FREE(PyCompatTable);
+    PyMem_RawFree(PyCompatTable);
     PyCompatTable = NULL;
 }
 
@@ -27,7 +27,7 @@ PyCompat_Init(void) {
     }
 
     PyObject *nTmpModule = NULL;
-    PyCompatTable = PyMem_New(PyCompatTable_t, 1);
+    PyCompatTable = PyMem_RawMalloc(sizeof(PyCompatTable_t));
     if(PyCompatTable == NULL) {
         return -1;
     }
