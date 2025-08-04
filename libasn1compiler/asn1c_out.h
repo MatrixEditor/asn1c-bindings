@@ -33,7 +33,9 @@ typedef struct compiler_streams {
         OT_CTDEFS,                  /* Constraint definitions */
         OT_STAT_DEFS,               /* Static definitions */
         OT_PY_TYPE_DECLS,           /* Python type declarations */
+        OT_PY_TYPE_INCLUDES,        /* Python type includes */
         OT_PY_TYPE_CONVERT,         /* Python type conversion */
+        OT_PY_IMPL_INCLUDES,        /* Python type: includes */
         OT_PY_IMPL_CODE,            /* code */
         OT_PY_IMPL_METHODS,         /* method-def */
         OT_PY_IMPL_ATTRS,           /* attr-def (getset) */
@@ -67,6 +69,8 @@ static char *_compiler_stream2str[] __attribute__((unused)) = {
     "STAT-DEFS",
     "PY-DECLS",
     "PY-CONVERT",
+    "PY-INCLUDES",
+    "PY-IMPL-INCLUDES",
     "PY-IMPL-CODE",
     "PY-IMPL-METHODS",
     "PY-IMPL-ATTRS",

@@ -32,6 +32,8 @@
 
 #define PY_GEN_TYPE_REPR(name) OUT("PY_IMPL_GENERIC_REPR(%s);\n", name)
 
+#define PY_GEN_TYPE_STR(name) OUT("PY_IMPL_GENERIC_STR(%s);\n", name)
+
 #define PY_GEN_TYPE_INIT(name) OUT("PY_IMPL_GENERIC_INIT(%s);\n", name)
 
 #define PY_GEN_TYPE_CHECK_CONSTRAINTS(name) \
@@ -96,30 +98,32 @@
     INDENT(-1);            \
     OUT("};\n")
 
-#define PY_GEN_BASIC_CLASS(modName, typeName) \
-    REDIR(OT_PY_IMPL_CODE);                   \
-    PY_GEN_TYPE_NEW(typeName);                \
-    PY_GEN_TYPE_INIT(typeName);               \
-    PY_GEN_TYPE_DEALLOC(typeName);            \
-    PY_GEN_TYPE_REPR(typeName);               \
-    PY_GEN_TYPE_CHECK_CONSTRAINTS(typeName);  \
-    PY_GEN_TYPE_IS_VALID(typeName);           \
-    PY_GEN_TYPE_ENCODE(typeName);             \
-    PY_GEN_TYPE_DECODE(typeName);             \
-    PY_GEN_TYPE_DEFAULT_MEMBER(typeName);     \
-    /*methods*/                               \
-    REDIR(OT_PY_IMPL_METHODS);                \
-    PY_GEN_TYPE_METHODS_BEGIN(typeName);      \
-    PY_GEN_TYPE_DEFAULT_METHODS(typeName);    \
-    PY_GEN_TYPE_METHODS_END();                \
-    /*attributes*/                            \
-    REDIR(OT_PY_IMPL_ATTRS);                  \
-    PY_GEN_TYPE_ATTRS_BEGIN(typeName);        \
-    PY_GEN_TYPE_ATTR(typeName, value);        \
-    PY_GEN_TYPE_ATTRS_END();                  \
-    /*type def*/                              \
-    REDIR(OT_PY_IMPL_CLASS);                  \
-    PY_GEN_CLASS_BEGIN((modName), typeName);  \
+#define PY_GEN_BASIC_CLASS(modName, typeName)             \
+    REDIR(OT_PY_IMPL_CODE);                               \
+    PY_GEN_TYPE_NEW(typeName);                            \
+    PY_GEN_TYPE_INIT(typeName);                           \
+    PY_GEN_TYPE_DEALLOC(typeName);                        \
+    PY_GEN_TYPE_REPR(typeName);                           \
+    PY_GEN_TYPE_STR(typeName);                            \
+    PY_GEN_TYPE_CHECK_CONSTRAINTS(typeName);              \
+    PY_GEN_TYPE_IS_VALID(typeName);                       \
+    PY_GEN_TYPE_ENCODE(typeName);                         \
+    PY_GEN_TYPE_DECODE(typeName);                         \
+    PY_GEN_TYPE_DEFAULT_MEMBER(typeName);                 \
+    /*methods*/                                           \
+    REDIR(OT_PY_IMPL_METHODS);                            \
+    PY_GEN_TYPE_METHODS_BEGIN(typeName);                  \
+    PY_GEN_TYPE_DEFAULT_METHODS(typeName);                \
+    PY_GEN_TYPE_METHODS_END();                            \
+    /*attributes*/                                        \
+    REDIR(OT_PY_IMPL_ATTRS);                              \
+    PY_GEN_TYPE_ATTRS_BEGIN(typeName);                    \
+    PY_GEN_TYPE_ATTR(typeName, value);                    \
+    PY_GEN_TYPE_ATTRS_END();                              \
+    /*type def*/                                          \
+    REDIR(OT_PY_IMPL_CLASS);                              \
+    PY_GEN_CLASS_BEGIN((modName), typeName);              \
+    OUT(".tp_str = (reprfunc)PyAsn%s__str,\n", typeName); \
     PY_GEN_CLASS_END();
 
 #define PY_GEN_MOD_SETUP_SINGLE(typeName) \

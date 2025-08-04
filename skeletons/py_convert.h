@@ -11,8 +11,8 @@
         return ret;                                                  \
     }
 
-#define PyCompatLong_FromSsize_t(val) PyLong_FromSsize_t((val))
-#define PyCompatLong_FromSize_t(val) PyLong_FromSize_t((val))
+#define PyCompatLong_FromSsize_t(val) PyLong_FromSsize_t((Py_ssize_t)(val))
+#define PyCompatLong_FromSize_t(val) PyLong_FromSize_t((size_t)(val))
 #define PyCompatLong_AsSsize_t(obj) PyLong_AsSsize_t(obj)
 #define PyCompatLong_AsSize_t(obj) PyLong_AsSize_t(obj)
 
@@ -25,6 +25,9 @@
 
 #define PyCompatBool_FromLong(val) ((val) ? Py_True : Py_False)
 #define PyCompatBool_AsLong(obj) (PyObject_IsTrue(obj))
+
+#define PyCompatNull_AsLong(obj) (0)
+#define PyCompatNull_FromLong(val) Py_None
 
 
 #define PyFloatCompat_Check(obj, ret)                                         \
@@ -187,6 +190,8 @@ PyCompatEnum_AsSize_t(PyObject *pObj) {
             goto error;                                           \
         }                                                         \
     } while(0)
+
+
 
 
 #endif

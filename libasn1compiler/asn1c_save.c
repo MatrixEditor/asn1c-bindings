@@ -751,6 +751,9 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
     } while(0)
 
     SAVE_STREAM(fp_h, OT_INCLUDES, "Including external dependencies", 1);
+    if(include_py) {
+        SAVE_STREAM(fp_py_h, OT_PY_TYPE_INCLUDES, "Including dependencies", 1);
+    }
 
     safe_fprintf(fp_h, "\n#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
     SAVE_STREAM(fp_h, OT_DEPS, "Dependencies", 0);
@@ -780,6 +783,7 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
 
     HINCLUDE("asn_internal.h");
     safe_fprintf(fp_c, "#include \"%s.h\"\n\n", filename);
+    SAVE_STREAM(fp_py_h, OT_PY_IMPL_MOD_INCLUDES, "Including dependencies", 1);
     if(arg->flags & A1C_NO_INCLUDE_DEPS)
         SAVE_STREAM(fp_c, OT_POST_INCLUDE, "", 1);
     TQ_FOR(ot, &(cs->destination[OT_IOC_TABLES].chunks), next)

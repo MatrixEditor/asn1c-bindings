@@ -1,4 +1,4 @@
-AC_INIT([asn1c],[0.9.29],[vlm@lionet.info])
+AC_INIT([asn1c],m4_esyscmd([echo -n `git describe --tags --long --always --dirty --broken`]),[vlm@lionet.info])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([config.h])
@@ -20,11 +20,11 @@ m4_ifdef([AM_PROG_AR],
 
 AC_PROG_CXX
 CXXFLAGS="-std=c++11"
-dnl - needed for tests, some fail when _FILE_OFFSET_BITS is not 
+dnl - needed for tests, some fail when _FILE_OFFSET_BITS is not
 dnl   explicitly set
 dnl - for example, the case of crossdev environment
 dnl   when runing 32bit binaries on a 64bit host;
-dnl   readdir() and other related functions used in some 
+dnl   readdir() and other related functions used in some
 dnl   test cases will return a null pointer and fail
 AC_SYS_LARGEFILE
 

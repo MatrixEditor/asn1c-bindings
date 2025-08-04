@@ -10,6 +10,7 @@ typedef struct {
     PyObject* str__write;
     PyObject* str__getvalue;
     PyObject* str__prepare;
+    PyObject* str__oid_sep;
 
     PyObject* PyBytesIO_Type;
     PyObject* PyBitArray_Type;
@@ -66,8 +67,7 @@ PyCompat_Encode_DER(const asn_TYPE_descriptor_t* pTypeDescriptor,
         goto end;
     }
 
-    rval =
-        der_encode(pTypeDescriptor, pValue, &PyCompat_WriteToStream, nStream);
+    rval = der_encode(pTypeDescriptor, pValue, PyCompat_WriteToStream, nStream);
     if(rval.encoded < 0) {
         goto end;
     }
@@ -114,6 +114,21 @@ end:
     static PyObject* PyAsn##name##__repr(PyAsn##name##Object* self) { \
         return PyUnicode_FromString(("<" #name ">"));                 \
     }
+
+#define PY_IMPL_GENERIC_STR(name)                                        \
+    static PyObject* PyAsn##name##__str(PyAsn##name##Object* self) {     \
+        PyObject *nValue = NULL, *nResult = NULL;                        \
+        if(!self->s_valid) {                                             \
+            return PyUnicode_FromString(("<" #name ">"));                \
+        }                                                                \
+        if((nValue = PyAsn##name##_ToPython(&self->ob_value)) == NULL) { \
+            return NULL;                                                 \
+        }                                                                \
+        nResult = PyObject_Str(nValue);                                  \
+        Py_DECREF(nValue);                                               \
+        return nResult;                                                  \
+    }
+
 
 #define PY_IMPL_GENERIC_CHECK_CONSTRAINTS(name)                         \
     static PyObject* PyAsn##name##__check_constraints(                  \

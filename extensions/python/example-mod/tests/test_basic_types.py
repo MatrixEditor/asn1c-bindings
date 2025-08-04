@@ -8,6 +8,8 @@ from example_mod._example_mod import (
     ExampleBoolean,
     ExampleBitString,
     ExampleOctetString,
+    ExampleNull,
+    ExampleObjectIdentifier,
 )
 
 
@@ -57,6 +59,11 @@ def test_basic_integer__size_contraint():
     obj = Signed8()
     obj.value = 127
     assert obj.is_valid()
+
+    # repr() and str() behave different
+    assert repr(obj) == "<Signed8>"
+    assert str(obj) == "127"
+    assert str(Signed8()) == "<Signed8>"
 
     # check constrains will be called under the hood when
     # is_valid is called. It is NOT called when applying a
@@ -144,3 +151,33 @@ def test_basic_octet_string():  # bytes
     parsed = ExampleOctetString.decode(raw_data)
     assert parsed.value == b"\x01\x02\x03"
     assert parsed.encode() == raw_data
+
+
+def test_basic_null():
+    # Generated class: ExampleNull
+    # type: None
+    obj = ExampleNull()
+    obj.value = None
+    assert obj.is_valid()
+
+    # encoding and decoding nothing special here. This object
+    # is just a wrapper for None
+    raw_data = b"\x05\x00"
+    parsed = ExampleNull.decode(raw_data)
+    assert parsed.is_valid()
+    assert parsed.encode() == raw_data
+
+
+def test_basic_object_identifier():
+    # Generated class: ExampleObjectIdentifier
+    # type: str
+    obj = ExampleObjectIdentifier()
+    obj.value = "1.2.3"
+    assert obj.value == "1.2.3"
+
+    # encoding and decoding same as for the previous types.
+    raw_data = b"\x06\x02\x01\x02"
+    parsed = ExampleObjectIdentifier.decode(raw_data)
+    assert parsed.is_valid()
+    assert parsed.encode() == raw_data
+    assert parsed.value == "0.1.2"

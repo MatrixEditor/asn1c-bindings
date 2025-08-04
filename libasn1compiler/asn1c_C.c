@@ -1463,8 +1463,31 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
             break;
         }
 
+        case ASN_BASIC_OBJECT_IDENTIFIER: { /* for now, use special converter*/
+            // must include new converter
+            REDIR(OT_PY_TYPE_INCLUDES);
+            OUT("#include \"py_convert_OBJECT_IDENTIFIER.h\"\n");
+
+            REDIR(OT_PY_TYPE_CONVERT);
+            PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
+            OUT("return PyCompatOID_FromUnicode(pObj, pDst);");
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
+            OUT("return PyCompatOID_AsUTF8String(pSrc);");
+            PY_GEN_END_FUNC();
+
+            /*default generic implementation*/
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, type_id);
+
+            /*module init*/
+            PY_GEN_MOD_BASIC(type_id);
+            break;
+        }
+
         /*Bytes types*/
-        case ASN_BASIC_OBJECT_IDENTIFIER: /* for now, use bytes*/
+        case ASN_BASIC_UTCTime:
+        case ASN_BASIC_GeneralizedTime:
         case ASN_BASIC_RELATIVE_OID:
         case ASN_BASIC_OCTET_STRING: {
             PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
@@ -1499,8 +1522,6 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
         case ASN_STRING_TeletexString:
         case ASN_STRING_T61String:
         case ASN_STRING_VideotexString:
-        case ASN_BASIC_UTCTime:
-        case ASN_BASIC_GeneralizedTime:
         case ASN_STRING_ObjectDescriptor: {
             PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
             OUT("pDst->buf = (uint8_t *)PyCompatUnicode_AsUTF8AndSize(pObj, "
@@ -1592,6 +1613,7 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
         }
 
         default: {
+            printf("Unknown type %d\n", expr->expr_type);
             PY_GEN_ASNTYPE_FROMPY(type_id);
             PY_GEN_ASNTYPE_TOPY(type_id);
             break;

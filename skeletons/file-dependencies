@@ -21,7 +21,7 @@ NativeEnumerated.h NativeEnumerated.c NativeInteger.h ENUMERATED.h
 NativeInteger.h NativeInteger.c INTEGER.h
 NativeReal.h NativeReal.c REAL.h
 NumericString.h NumericString.c OCTET_STRING.h
-OBJECT_IDENTIFIER.h OBJECT_IDENTIFIER.c INTEGER.h asn_codecs_prim.h
+OBJECT_IDENTIFIER.h OBJECT_IDENTIFIER.c INTEGER.h asn_codecs_prim.h py_convert_OBJECT_IDENTIFIER.h
 ObjectDescriptor.h ObjectDescriptor.c GraphicString.h
 PrintableString.h PrintableString.c OCTET_STRING.h
 REAL.h REAL.c INTEGER.h OCTET_STRING.h
@@ -57,6 +57,7 @@ constr_TYPE.h constr_TYPE.c	# Description of a type
 constraints.h constraints.c	# Subtype constraints support
 py_application.h py_application.c
 py_convert.h
+
 
 CONVERTER:			# THIS IS A SPECIAL SECTION
 converter-example.c		# A default name for the example transcoder

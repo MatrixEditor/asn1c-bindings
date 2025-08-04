@@ -12,6 +12,7 @@ PyCompat_Clear(void) {
     Py_CLEAR(PyCompatTable->str__getvalue);
     Py_CLEAR(PyCompatTable->str__write);
     Py_CLEAR(PyCompatTable->str__prepare);
+    Py_CLEAR(PyCompatTable->str__oid_sep);
     PyMem_RawFree(PyCompatTable);
     PyCompatTable = NULL;
 }
@@ -35,6 +36,7 @@ PyCompat_Init(void) {
     _CACHED_STRING(PyCompatTable, str__getvalue, "getvalue", error);
     _CACHED_STRING(PyCompatTable, str__write, "write", error);
     _CACHED_STRING(PyCompatTable, str__prepare, "__prepare__", error);
+    _CACHED_STRING(PyCompatTable, str__oid_sep, ".", error);
 
     nTmpModule = PyImport_ImportModule("io");
     if(!nTmpModule) {

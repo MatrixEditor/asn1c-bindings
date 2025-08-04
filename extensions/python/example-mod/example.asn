@@ -13,5 +13,7 @@ NamedSigned8 ::= INTEGER {
 ExampleBoolean ::= BOOLEAN
 ExampleBitString ::= BIT STRING
 ExampleOctetString ::= OCTET STRING (SIZE(1..32))
+ExampleNull ::= NULL
+ExampleObjectIdentifier ::= OBJECT IDENTIFIER
 
 END
