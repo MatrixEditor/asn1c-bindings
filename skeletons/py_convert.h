@@ -29,7 +29,6 @@
 #define PyCompatNull_AsLong(obj) (0)
 #define PyCompatNull_FromLong(val) Py_None
 
-
 #define PyFloatCompat_Check(obj, ret)                                         \
     if(!PyFloat_Check(obj)) {                                                 \
         PyErr_Format(PyExc_ValueError, "Expected a float but got %R instead", \
@@ -41,14 +40,30 @@
 #define PyCompatFloat_AsDouble(obj) PyFloat_AsDouble(obj)
 
 
+#define PyCompatUnicode_Check(obj, ret)                                    \
+    if(!PyUnicode_Check(obj)) {                                            \
+        PyErr_Format(PyExc_ValueError,                                     \
+                     "%s, %d: Expected a string but got %R instead.", obj, \
+                     __FILE_NAME__, __LINE__);                             \
+        return ret;                                                        \
+    }
+
 #define PyCompatBytes_ToStringAndSize(obj, str, size) \
     _PyCompatBytes_ToStringAndSize(obj, (char **)(str), (Py_ssize_t *)(size))
 
 #define PyCompatBytes_FromStringAndSize(str, size) \
     PyBytes_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
+#define PyCompatBytes_Check(obj, ret)                                         \
+    if(!PyBytes_Check(obj)) {                                                 \
+        PyErr_Format(PyExc_ValueError, "Expected a bytes but got %R instead", \
+                     obj);                                                    \
+        return ret;                                                           \
+    }
+
 static inline int
 _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str, Py_ssize_t *size) {
+    PyCompatBytes_Check(pObj, -1);
     *size = PyBytes_Size(pObj);
     *str = (char *)PyMem_RawMalloc(*size);
     if(*str == NULL) {
@@ -190,8 +205,6 @@ PyCompatEnum_AsSize_t(PyObject *pObj) {
             goto error;                                           \
         }                                                         \
     } while(0)
-
-
 
 
 #endif

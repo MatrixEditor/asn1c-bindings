@@ -25,7 +25,7 @@ OBJECT_IDENTIFIER.h OBJECT_IDENTIFIER.c INTEGER.h asn_codecs_prim.h py_convert_O
 ObjectDescriptor.h ObjectDescriptor.c GraphicString.h
 PrintableString.h PrintableString.c OCTET_STRING.h
 REAL.h REAL.c INTEGER.h OCTET_STRING.h
-RELATIVE-OID.h RELATIVE-OID.c OBJECT_IDENTIFIER.h OCTET_STRING.h
+RELATIVE-OID.h RELATIVE-OID.c OBJECT_IDENTIFIER.h OCTET_STRING.h py_convert_RELATIVE_OID.h
 T61String.h T61String.c OCTET_STRING.h
 TeletexString.h TeletexString.c	 OCTET_STRING.h
 UTCTime.h UTCTime.c GeneralizedTime.h OCTET_STRING.h

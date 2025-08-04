@@ -1,55 +1,25 @@
-#ifndef _PyConvert_OBJECT_IDENTIFIER_H_
-#define _PyConvert_OBJECT_IDENTIFIER_H_
+#ifndef _PyConvert_RELATIVE_OID_H_
+#define _PyConvert_RELATIVE_OID_H_
 
-#include "py_convert.h"
+#include "py_convert_OBJECT_IDENTIFIER.h"
 
-#include "OBJECT_IDENTIFIER.h"
-
-static PyObject *
-PyCompatOID_ArcsAsUTF8String(const asn_oid_arc_t *arcs, size_t arc_count) {
-    PyObject *nResult = NULL, *nValues = NULL, *nTmpValue = NULL;
-
-    if((nResult = PyList_New(0)) == NULL) {
-        goto end;
-    }
-
-    for(size_t i = 0; i < arc_count; i++) {
-        if((nTmpValue = PyLong_FromSize_t(arcs[i])) == NULL) {
-            goto end;
-        }
-        Py_SETREF(nTmpValue, PyObject_Str(nTmpValue));
-        if(!nTmpValue) {
-            goto end;
-        }
-        if(PyList_Append(nResult, nTmpValue) < 0) {
-            goto end;
-        }
-        Py_CLEAR(nTmpValue);
-    }
-
-    nResult = PyUnicode_Join(PyCompatTable->str__oid_sep, nResult);
-
-end:
-    Py_XDECREF(nValues);
-    Py_XDECREF(nTmpValue);
-    return nResult;
-}
+#include "RELATIVE-OID.h"
 
 static PyObject *
-PyCompatOID_AsUTF8String(const OBJECT_IDENTIFIER_t *oid) {
+PyCompatRelativeOID_AsUTF8String(const RELATIVE_OID_t *oid) {
     PyObject *nResult = NULL;
     asn_oid_arc_t fixed_arcs[10];
     asn_oid_arc_t *arcs = fixed_arcs;
     size_t arc_slots = sizeof(fixed_arcs) / sizeof(fixed_arcs[0]);
     ssize_t arc_count = 0;
 
-    arc_count = OBJECT_IDENTIFIER_get_arcs(oid, arcs, arc_slots);
+    arc_count = RELATIVE_OID_get_arcs(oid, arcs, arc_slots);
     if(arc_count > arc_slots) {
         arc_slots = arc_count;
         arcs =
             (asn_oid_arc_t *)PyMem_RawMalloc(sizeof(asn_oid_arc_t) * arc_slots);
         if(!arcs) goto end;
-        arc_count = OBJECT_IDENTIFIER_get_arcs(oid, arcs, arc_slots);
+        arc_count = RELATIVE_OID_get_arcs(oid, arcs, arc_slots);
         if(arc_count < 0) goto error;
         assert(arc_count == arc_slots);
     } else if(arc_count < 0)
@@ -85,7 +55,7 @@ error:
 }
 
 static int
-PyCompatOID_FromUnicode(PyObject *unicode, OBJECT_IDENTIFIER_t *oid) {
+PyCompatRelativeOID_FromUnicode(PyObject *unicode, RELATIVE_OID_t *oid) {
     asn_oid_arc_t fixed_arcs[10];
     asn_oid_arc_t *arcs = fixed_arcs;
     ssize_t arc_slots = sizeof(fixed_arcs) / sizeof(fixed_arcs[0]);
@@ -115,7 +85,7 @@ PyCompatOID_FromUnicode(PyObject *unicode, OBJECT_IDENTIFIER_t *oid) {
     }
 
     ASN_STRUCT_RESET(asn_DEF_OBJECT_IDENTIFIER, oid);
-    result = OBJECT_IDENTIFIER_set_arcs(oid, arcs, arc_count);
+    result = RELATIVE_OID_set_arcs(oid, arcs, arc_count);
     if(result < 0) goto error;
 end:
     if(arcs != fixed_arcs && arcs) PyMem_RawFree(arcs);

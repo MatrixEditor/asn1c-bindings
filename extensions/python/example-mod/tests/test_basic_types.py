@@ -10,6 +10,7 @@ from example_mod._example_mod import (
     ExampleOctetString,
     ExampleNull,
     ExampleObjectIdentifier,
+    ExampleRelativeOid,
 )
 
 
@@ -181,3 +182,23 @@ def test_basic_object_identifier():
     assert parsed.is_valid()
     assert parsed.encode() == raw_data
     assert parsed.value == "0.1.2"
+
+
+def test_basic_relative_oid():
+    # Generated class: ExampleRelativeOid
+    # type: str
+    obj = ExampleRelativeOid()
+    obj.value = "1.2.3"
+    assert obj.value == "1.2.3"
+
+    # encoding and decoding same as for the previous types.
+    raw_data = b"\r\x03\x01\x02\x03"
+    parsed = ExampleRelativeOid.decode(raw_data)
+    assert parsed.is_valid()
+    assert parsed.encode() == raw_data
+    assert parsed.value == "1.2.3"
+
+    with pytest.raises(ValueError):
+        # intentionally raises an error upon invalid value type
+        # needed for conversion
+        obj.value = None
