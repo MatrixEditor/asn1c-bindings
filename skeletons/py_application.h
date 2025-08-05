@@ -78,36 +78,108 @@ end:
     return nResult;
 }
 
-
-#define PyCompat_DEF_STRUCT(name)        \
-    typedef struct _##name##_Py {        \
-        PyObject_HEAD name##_t ob_value; \
-        int s_valid;                     \
+/*
+ * Struct definition for basic types.
+ *
+ * Each class will store a reference to the actual value (native
+ * representation), an internal state and a reference to the parent
+ * object (if any). The flag is used to determine whether the object
+ * is in a valid state (e.g. contains valid data). The parent object
+ * MAY be NULL and should point to the parent object IF this instance
+ * currently stores a reference to a child object.
+ *      - ob_value - native representation of the value
+ *      - s_valid - internal state
+ *      - ob_parent - parent (optional)
+ */
+#define PyCompat_DEF_STRUCT(name)         \
+    typedef struct _##name##_Py {         \
+        PyObject_HEAD name##_t* ob_value; \
+        int s_valid;                      \
+        PyObject* ob_parent;              \
     } PyAsn##name##Object;
+
+#define PyCompat_DEF_INNER_CHOICE(outerTypeName, name) \
+    typedef struct _##outerTypeName##_##name##_Py {    \
+        PyObject_HEAD struct name* ob_value;           \
+        int s_valid;                                   \
+        PyObject* ob_parent;                           \
+    } PyAsn##outerTypeName##_##name##CHOICEObject;     \
+    typedef struct name outerTypeName##_##name##CHOICE_t;
+
 
 #define PyCompat_DEF_TYPE(name) extern PyTypeObject PyAsn##name##_Type;
 
+#define PyCompat_DEF_INNER_CHOICE_TYPE(outerTypeName, name) \
+    extern PyTypeObject PyAsn##outerTypeName##_##name##CHOICE_Type;
+
 #define PyCompat_QuickCheck(typeDef, self) \
-    (asn_check_constraints(&typeDef, &self->ob_value, NULL, NULL))
+    (asn_check_constraints(&typeDef, self->ob_value, NULL, NULL))
 
 /* Type implementation macros */
+#define PY_IMPL_MALLOC(qtypeName) (qtypeName*)PyMem_RawMalloc(sizeof(qtypeName))
+#define PY_IMPL_MALLOC_CHECK(target, qtypeName, ret) \
+    do {                                             \
+        target = PY_IMPL_MALLOC(qtypeName);          \
+        if(!(target)) {                              \
+            PyErr_NoMemory();                        \
+            return ret;                              \
+        }                                            \
+    } while(0)
+
+#define PY_IMPL_FREE(value) PyMem_RawFree((void*)(value))
+
+#define PY_IMPL_XFREE(value)               \
+    do {                                   \
+        if(value) {                        \
+            PyMem_RawFree((void*)(value)); \
+        }                                  \
+    } while(0)
+
+#define PY_IMPL_XCLEAR(value)    \
+    do {                         \
+        if((value)) {            \
+            PY_IMPL_FREE(value); \
+            value = NULL;        \
+        }                        \
+    } while(0)
+
+
 #define PY_IMPL_GENERIC_NEW(name)                                           \
     static PyObject* PyAsn##name##__new(PyTypeObject* type, PyObject* args, \
                                         PyObject* kwds) {                   \
         PyAsn##name##Object* self =                                         \
             (PyAsn##name##Object*)type->tp_alloc(type, 0);                  \
         if(self) {                                                          \
-            ASN_STRUCT_RESET(asn_DEF_##name, &self->ob_value);              \
+            self->ob_value = NULL;                                          \
             self->s_valid = 0;                                              \
+            self->ob_parent = NULL;                                         \
+            self->ob_value = (name##_t*)PyMem_RawMalloc(sizeof(name##_t));  \
+            if(!self->ob_value) {                                           \
+                Py_CLEAR(self);                                             \
+            } else {                                                        \
+                memset(self->ob_value, 0, sizeof(name##_t));                \
+            }                                                               \
         }                                                                   \
         return (PyObject*)self;                                             \
     }
 
-#define PY_IMPL_GENERIC_DEALLOC(name)                               \
-    static void PyAsn##name##__dealloc(PyAsn##name##Object* self) { \
-        ASN_STRUCT_RESET(asn_DEF_##name, &self->ob_value);          \
-        self->s_valid = 0;                                          \
-        Py_TYPE(self)->tp_free((PyObject*)self);                    \
+#define PY_IMPL_GENERIC_DEALLOC(name)                                   \
+    static void PyAsn##name##__dealloc(PyAsn##name##Object* self) {     \
+        if(self->ob_parent) {                                           \
+            if(Py_REFCNT(self->ob_parent) < 1) {                        \
+                PyErr_SetString(PyExc_MemoryError,                      \
+                                "UAF: parent object already deleted!"); \
+                return;                                                 \
+            }                                                           \
+            Py_DECREF(self->ob_parent);                                 \
+            self->ob_value = NULL;                                      \
+        } else {                                                        \
+            ASN_STRUCT_RESET(asn_DEF_##name, self->ob_value);           \
+            PyMem_RawFree(self->ob_value);                              \
+            self->ob_value = NULL;                                      \
+            self->ob_parent = NULL;                                     \
+        }                                                               \
+        Py_TYPE(self)->tp_free((PyObject*)self);                        \
     }
 
 #define PY_IMPL_GENERIC_REPR(name)                                    \
@@ -115,35 +187,35 @@ end:
         return PyUnicode_FromString(("<" #name ">"));                 \
     }
 
-#define PY_IMPL_GENERIC_STR(name)                                        \
-    static PyObject* PyAsn##name##__str(PyAsn##name##Object* self) {     \
-        PyObject *nValue = NULL, *nResult = NULL;                        \
-        if(!self->s_valid) {                                             \
-            return PyUnicode_FromString(("<" #name ">"));                \
-        }                                                                \
-        if((nValue = PyAsn##name##_ToPython(&self->ob_value)) == NULL) { \
-            return NULL;                                                 \
-        }                                                                \
-        nResult = PyObject_Str(nValue);                                  \
-        Py_DECREF(nValue);                                               \
-        return nResult;                                                  \
+#define PY_IMPL_GENERIC_STR(name)                                             \
+    static PyObject* PyAsn##name##__str(PyAsn##name##Object* self) {          \
+        PyObject *nValue = NULL, *nResult = NULL;                             \
+        if(!self->s_valid) {                                                  \
+            return PyUnicode_FromString(("<" #name ">"));                     \
+        }                                                                     \
+        if((nValue = PyAsn##name##_ToPython(self->ob_value, NULL)) == NULL) { \
+            return NULL;                                                      \
+        }                                                                     \
+        nResult = PyObject_Str(nValue);                                       \
+        Py_DECREF(nValue);                                                    \
+        return nResult;                                                       \
     }
 
 
-#define PY_IMPL_GENERIC_CHECK_CONSTRAINTS(name)                         \
-    static PyObject* PyAsn##name##__check_constraints(                  \
-        PyAsn##name##Object* self, PyObject* Py_UNUSED(ignored)) {      \
-        PyObject* nResult =                                             \
-            PyCompat_CheckConstaints(&asn_DEF_##name, &self->ob_value); \
-        if(!nResult) {                                                  \
-            return NULL;                                                \
-        }                                                               \
-        if(Py_IsNone(nResult)) {                                        \
-            return Py_None;                                             \
-        }                                                               \
-        PyErr_SetObject(PyExc_ValueError, nResult);                     \
-        Py_DECREF(nResult);                                             \
-        return NULL;                                                    \
+#define PY_IMPL_GENERIC_CHECK_CONSTRAINTS(name)                    \
+    static PyObject* PyAsn##name##__check_constraints(             \
+        PyAsn##name##Object* self, PyObject* Py_UNUSED(ignored)) { \
+        PyObject* nResult = PyCompat_CheckConstaints(              \
+            &asn_DEF_##name, (const void*)self->ob_value);         \
+        if(!nResult) {                                             \
+            return NULL;                                           \
+        }                                                          \
+        if(Py_IsNone(nResult)) {                                   \
+            return Py_None;                                        \
+        }                                                          \
+        PyErr_SetObject(PyExc_ValueError, nResult);                \
+        Py_DECREF(nResult);                                        \
+        return NULL;                                               \
     }
 
 #define PY_IMPL_GENERIC_IS_VALID(name)                                    \
@@ -168,7 +240,7 @@ end:
         if(!PyAsn##name##__check_constraints(self, NULL)) {                \
             return NULL;                                                   \
         }                                                                  \
-        return PyCompat_Encode_DER(&asn_DEF_##name, &self->ob_value);      \
+        return PyCompat_Encode_DER(&asn_DEF_##name, self->ob_value);       \
     }
 
 #define PY_IMPL_GENERIC_DECODE(name)                                        \
@@ -176,7 +248,6 @@ end:
                                            PyObject* args) {                \
         Py_buffer view;                                                     \
         PyAsn##name##Object* self = NULL;                                   \
-        name##_t* value = NULL;                                             \
         asn_dec_rval_t rval;                                                \
         if(PyArg_ParseTuple(args, "y*", &view) < 0) return NULL;            \
         self = (PyAsn##name##Object*)PyObject_CallNoArgs(                   \
@@ -184,8 +255,7 @@ end:
         if(self == NULL) {                                                  \
             return NULL;                                                    \
         }                                                                   \
-        value = &self->ob_value;                                            \
-        rval = ber_decode(NULL, &asn_DEF_##name, (void**)&value,            \
+        rval = ber_decode(NULL, &asn_DEF_##name, (void**)&self->ob_value,   \
                           (const void*)view.buf, view.len);                 \
         self->s_valid = rval.code == RC_OK;                                 \
         if(rval.code != RC_OK) {                                            \
@@ -207,11 +277,11 @@ end:
         if(!self->s_valid) {                                          \
             return Py_None;                                           \
         }                                                             \
-        return PyAsn##memberType##_ToPython(&self->attr);             \
+        return PyAsn##memberType##_ToPython((attr), (PyObject*)self); \
     }                                                                 \
     static int PyAsn##typeName##__set_##memberName(                   \
         PyAsn##typeName##Object* self, PyObject* value) {             \
-        int res = PyAsn##memberType##_FromPython(value, &self->attr); \
+        int res = PyAsn##memberType##_FromPython(value, (attr));      \
         self->s_valid = res == 0;                                     \
         return res;                                                   \
     }
@@ -231,7 +301,7 @@ end:
         if(!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &value)) \
             return -1;                                                     \
         if(value) {                                                        \
-            if(PyAsn##typeName##_FromPython(value, &self->ob_value) < 0)   \
+            if(PyAsn##typeName##_FromPython(value, self->ob_value) < 0)    \
                 return -1;                                                 \
             self->s_valid = 1;                                             \
         }                                                                  \
@@ -304,6 +374,111 @@ end:
                             "VALUES", PyAsnEnum##typeName##_Type)      \
        < 0) {                                                          \
         return -1;                                                     \
+    }
+
+#define PY_IMPL_CHOICE_ATTR_FROMPY(typeName, attrName, ...)       \
+    static inline int PyAsn##typeName##__##attrName##_FromPython( \
+        PyObject* value, typeName##_t* dst) {                     \
+        if(!value || Py_IsNone(value)) {                          \
+            dst->present = ExampleChoice_PR_NOTHING;              \
+            return 0;                                             \
+        }                                                         \
+        if((__VA_ARGS__) < 0) return -1;                          \
+        dst->present = ExampleChoice_PR_##attrName;               \
+        return 0;                                                 \
+    }
+
+#define PY_IMPL_CHOICE_SETATTR(typeName, attrName)                             \
+    static int PyAsn##typeName##__set_##attrName(                              \
+        PyAsn##typeName##Object* self, PyObject* value,                        \
+        void* Py_UNUSED(arg)) {                                                \
+        int result =                                                           \
+            PyAsn##typeName##__##attrName##_FromPython(value, self->ob_value); \
+        self->s_valid = result != -1;                                          \
+        if(result < 0) {                                                       \
+            return -1;                                                         \
+        }                                                                      \
+        self->ob_value->present = typeName##_PR_##attrName;                    \
+        return 0;                                                              \
+    }
+
+#define PY_IMPL_CHOICE_ATTR_TOPY(typeName, attrName, topyfunc)        \
+    static inline PyObject* PyAsn##typeName##__##attrName##_ToPython( \
+        const typeName##_t* src, PyObject* parent) {                  \
+        return (topyfunc);                                            \
+    }
+
+
+#define PY_IMPL_CHOICE_GETATTR(typeName, attrName)                        \
+    static PyObject* PyAsn##typeName##__get_##attrName(                   \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(arg)) {            \
+        if(self->ob_value->present != ExampleChoice_PR_##attrName)        \
+            return Py_None;                                               \
+        return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
+                                                        (PyObject*)self); \
+    }
+
+#define PY_IMPL_GENERIC_FIELDNAMES(typeName)                                   \
+    static const char** PyAsn##typeName##__field_names(void) {                 \
+        static const char** _##typeName##__names = NULL;                       \
+        if(!_##typeName##__names) {                                            \
+            _##typeName##__names = PyMem_RawCalloc(                            \
+                asn_DEF_##typeName.elements_count + 1, sizeof(char*));         \
+            for(int i = 0; i < asn_DEF_##typeName.elements_count; i++) {       \
+                _##typeName##__names[i] = asn_DEF_##typeName.elements[i].name; \
+            }                                                                  \
+            _##typeName##__names[asn_DEF_##typeName.elements_count] = NULL;    \
+        }                                                                      \
+        return _##typeName##__names;                                           \
+    }
+
+#define PY_IMPL_INIT_KWONLY(typeName, args, kwargs)                       \
+    if((args) && (PyTuple_Size(args) > 0)) {                              \
+        PyErr_SetString(PyExc_TypeError,                                  \
+                        (#typeName ": unexpected positional arguments")); \
+        return -1;                                                      \
+    }                                                                     \
+    if(!kwargs || !PyDict_Size(kwargs)) {                                 \
+        return 0;                                                         \
+    }
+
+#define PY_IMPL_CHOICE_INIT_ATTR(typeName, attrName, srcObj, tmpValue)   \
+    PyCompat_GenericGetAttr((srcObj), attrName, (tmpValue));            \
+    if((tmpValue)) {                                                     \
+        if(PyAsn##typeName##__##attrName##_FromPython((tmpValue), (dst)) \
+           < 0) {                                                        \
+            Py_DECREF((tmpValue));                                       \
+            return -1;                                                 \
+        }                                                                \
+    } else                                                               \
+        PyErr_Clear();
+
+
+#define PY_IMPL_CHOICE_INIT(typeName)                                         \
+    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,         \
+                                       PyObject* args, PyObject* kwargs) {    \
+        PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                          \
+        if(PyAsn##typeName##_FromPython(kwargs, self->ob_value))              \
+            self->s_valid = self->ob_value->present != typeName##_PR_NOTHING; \
+        return 0;                                                             \
+    }
+
+#define PY_IMPL_CHOICE_TOPY(typeName)                                        \
+    static PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,           \
+                                                PyObject* parent) {          \
+        PyAsn##typeName##Object* self = PyCompatCHOICE_New(typeName);        \
+        if(!parent) {                                                        \
+            if(asn_copy(&asn_DEF_##typeName, (void**)&self->ob_value, src)   \
+               < 0) {                                                        \
+                Py_DECREF(self);                                             \
+                return NULL;                                                 \
+            }                                                                \
+        } else {                                                             \
+            self->ob_value = src;                                            \
+            self->ob_parent = Py_NewRef(parent);                             \
+        }                                                                    \
+        self->s_valid = self->ob_value->present != ExampleChoice_PR_NOTHING; \
+        return (PyObject*)self;                                              \
     }
 
 

@@ -1,4 +1,4 @@
-ExampleModule DEFINITIONS ::= BEGIN
+ExampleModule DEFINITIONS AUTOMATIC TAGS  ::= BEGIN
 
 -- basic types
 
@@ -16,5 +16,12 @@ ExampleOctetString ::= OCTET STRING (SIZE(1..32))
 ExampleNull ::= NULL
 ExampleObjectIdentifier ::= OBJECT IDENTIFIER
 ExampleRelativeOid ::= RELATIVE-OID
+ExampleReal ::= REAL
+
+ExampleChoice ::= CHOICE {
+    foo         OCTET STRING,
+    bar         INTEGER,
+    baz         NamedSigned8
+}
 
 END

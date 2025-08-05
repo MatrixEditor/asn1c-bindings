@@ -19,12 +19,23 @@
 #define PY_GEN_ASNTYPE_FROMPY(name) \
     OUT("int PyAsn%s_FromPython(PyObject *pObj, %s_t *pDst);\n", name, name)
 
-#define PY_GEN_ASNTYPE_TOPY_INLINE(name)                                       \
-    OUT("static inline PyObject *PyAsn%s_ToPython(%s_t *pSrc)\n", name, name); \
+#define PY_GEN_ASNTYPE_FROMPY_IMPL(name)                                     \
+    OUT("int PyAsn%s_FromPython(PyObject *value, %s_t *dst)\n", name, name); \
     PY_GEN_BEGIN_FUNC()
 
-#define PY_GEN_ASNTYPE_TOPY(name) \
-    OUT("PyObject *PyAsn%s_ToPython(%s_t *pSrc);\n", name, name)
+#define PY_GEN_ASNTYPE_TOPY_INLINE(name)                                       \
+    OUT("static inline PyObject *PyAsn%s_ToPython(const %s_t *pSrc, PyObject " \
+        "*parent)\n",                                                          \
+        name, name);                                                           \
+    PY_GEN_BEGIN_FUNC()
+
+#define PY_GEN_ASNTYPE_TOPY(name)                                            \
+    OUT("PyObject *PyAsn%s_ToPython(const %s_t *pSrc, PyObject *parent);\n", \
+        name, name)
+
+#define PY_GEN_DEF_TYPE(name)                \
+    OUT("PyCompat_DEF_STRUCT(%s);\n", name); \
+    OUT("PyCompat_DEF_TYPE(%s);\n", name)
 
 #define PY_GEN_TYPE_NEW(name) OUT("PY_IMPL_GENERIC_NEW(%s);\n", name)
 
@@ -46,7 +57,7 @@
 #define PY_GEN_TYPE_DECODE(name) OUT("PY_IMPL_GENERIC_DECODE(%s);\n", name)
 
 #define PY_GEN_TYPE_DEFAULT_MEMBER(name) \
-    OUT("PY_IMPL_MEMBER_GETSET(%s, value, %s, ob_value);\n", name, name)
+    OUT("PY_IMPL_MEMBER_GETSET(%s, value, %s, self->ob_value);\n", name, name)
 
 #define PY_GEN_TYPE_DEFAULT_METHODS(name)                                    \
     OUT("PY_IMPL_METHODDEF_ITEM(%s, is_valid, METH_NOARGS),\n", name);       \
@@ -77,6 +88,9 @@
 
 #define PY_GEN_TYPE_ATTR(typeName, attrName) \
     OUT(("PY_IMPL_GETSET_ITEM(%s, " #attrName "),\n"), typeName)
+
+#define PY_GEN_TYPE_ATTRSTR(typeName, attrName) \
+    OUT(("PY_IMPL_GETSET_ITEM(%s, %s),\n"), typeName, attrName)
 
 #define PY_GEN_CLASS_BEGIN(modName, typeName)                       \
     OUT("PyTypeObject PyAsn%s_Type = {\n", typeName);               \
@@ -134,28 +148,65 @@
 
 #define PY_GEN_MOD_INIT_SINGLE(typeName) PY_GEN_MOD_ADD_OBJECT(typeName);
 
-#define PY_GEN_MOD_BASIC(typeName)     \
-    INDENT(+1);                        \
-    REDIR(OT_PY_IMPL_CODE_MOD_SETUP);  \
-    PY_GEN_MOD_SETUP_SINGLE(typeName); \
-    REDIR(OT_PY_IMPL_CODE_MOD_INIT);   \
-    PY_GEN_MOD_INIT_SINGLE(typeName);  \
-    INDENT(-1)
+#define PY_GEN_MOD_BASIC(typeName)               \
+    REDIR(OT_PY_IMPL_CODE_MOD_SETUP);            \
+    INDENTED(PY_GEN_MOD_SETUP_SINGLE(typeName)); \
+    REDIR(OT_PY_IMPL_CODE_MOD_INIT);             \
+    INDENTED(PY_GEN_MOD_INIT_SINGLE(typeName))
 
-#define PY_GEN_MODULE_ADD_TYPE(typeName)                               \
-    REDIR(OT_PY_IMPL_MOD_SETUP_TYPES);                                 \
-    INDENT(+1);                                                        \
-    OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n", typeName);  \
-    INDENT(-1);                                                        \
-    REDIR(OT_PY_IMPL_MOD_CLEAR);                                       \
-    INDENT(+1);                                                        \
-    OUT("PyAsn%s_ModClear(m);\n", typeName);                           \
-    INDENT(-1);                                                        \
-    REDIR(OT_PY_IMPL_MOD_INIT);                                        \
-    INDENT(+1);                                                        \
-    OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n", typeName); \
-    INDENT(-1);                                                        \
-    REDIR(OT_PY_IMPL_MOD_INCLUDES);                                    \
+#define PY_GEN_MODULE_ADD_TYPE(typeName)                                    \
+    REDIR(OT_PY_IMPL_MOD_SETUP_TYPES);                                      \
+    INDENTED(                                                               \
+        OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n", typeName));  \
+    REDIR(OT_PY_IMPL_MOD_CLEAR);                                            \
+    INDENTED(OUT("PyAsn%s_ModClear(m);\n", typeName));                      \
+    REDIR(OT_PY_IMPL_MOD_INIT);                                             \
+    INDENTED(                                                               \
+        OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n", typeName)); \
+    REDIR(OT_PY_IMPL_MOD_INCLUDES);                                         \
     OUT("#include \"%s_Py.h\"\n", typeName)
+
+#define PY_GEN_CHOICE_GETSET(typeName, attrName)                      \
+    OUT("PY_IMPL_CHOICE_GETATTR(%s, %s);\n", (typeName), (attrName)); \
+    OUT("PY_IMPL_CHOICE_SETATTR(%s, %s);\n", (typeName), (attrName))
+
+#define PY_GEN_CHOICE_TYPEREF_GETSET(typeName, targetTypeName, attrName) \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, "                            \
+        "PyAsn%s_FromPython(value, &dst->choice.%s));\n",                \
+        (typeName), (attrName), (targetTypeName), (attrName));           \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                              \
+        "PyAsn%s_ToPython((%s_t *)&src->choice.%s, NULL));\n",           \
+        (typeName), (attrName), (targetTypeName), (targetTypeName),      \
+        (attrName));                                                     \
+    PY_GEN_CHOICE_GETSET(typeName, attrName)
+
+#define PY_GEN_CHOICE_INTEGER_GETSET(typeName, attrName)   \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, "              \
+        "PyCompatLong_AsLong(value, &dst->choice.%s));\n", \
+        (typeName), (attrName), (attrName));               \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                \
+        "PyCompatLong_FromSize_t(src->choice.%s));\n",     \
+        (typeName), (attrName), (attrName));               \
+    PY_GEN_CHOICE_GETSET(typeName, attrName)
+
+#define PY_GEN_CHOICE_BOOLEAN_GETSET(typeName, attrName)       \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, "                  \
+        "PyCompatBool_FromObject(value, &dst->choice.%s));\n", \
+        (typeName), (attrName), (attrName));                   \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                    \
+        "PyCompatBool_FromLong(src->choice.%s));\n",           \
+        (typeName), (attrName), (attrName));                   \
+    PY_GEN_CHOICE_GETSET(typeName, attrName)
+
+#define PY_GEN_CHOICE_BYTES_GETSET(typeName, attrName)               \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, "                        \
+        "PyCompatBytes_ToStringAndSize(value, &dst->choice.%s.buf, " \
+        "&dst->choice.%s.size));\n",                                 \
+        (typeName), (attrName), (attrName), (attrName));             \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                          \
+        "PyCompatBytes_FromStringAndSize(src->choice.%s.buf, "       \
+        "src->choice.%s.size));\n",                                  \
+        (typeName), (attrName), (attrName), (attrName));             \
+    PY_GEN_CHOICE_GETSET(typeName, attrName)
 
 #endif

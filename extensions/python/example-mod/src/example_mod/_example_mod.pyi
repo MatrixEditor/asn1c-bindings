@@ -88,3 +88,11 @@ class NamedSigned8(_Asn1ABC):
     def value(self, value: NamedSigned8.VALUES | int) -> None: ...
     @staticmethod
     def decode(data: bytes) -> NamedSigned8: ...
+
+class ExampleChoice(_Asn1ABC):
+    foo: bytes | None
+    bar: int | None
+    baz: NamedSigned8 | None
+
+    @staticmethod
+    def decode(data: bytes) -> ExampleChoice: ...

@@ -4,8 +4,15 @@
 #include <Python.h>
 #include "py_application.h"
 
-#define PyLongCompat_Check(obj, ret)                                 \
-    if(!PyLong_Check(obj)) {                                         \
+#define PyCompat_ArgCheck(obj, ret) \
+    if(!obj) {                      \
+        PyErr_BadArgument();        \
+        return ret;                 \
+    }
+
+#define PyCompatLong_Check(obj, ret)                                 \
+    PyCompat_ArgCheck(obj, ret);                                     \
+    if(!PyLong_Check(obj) || Py_IsNone(obj)) {                       \
         PyErr_Format(PyExc_ValueError,                               \
                      "Expected an integer but got %R instead", obj); \
         return ret;                                                  \
@@ -16,8 +23,16 @@
 #define PyCompatLong_AsSsize_t(obj) PyLong_AsSsize_t(obj)
 #define PyCompatLong_AsSize_t(obj) PyLong_AsSize_t(obj)
 
-#define PyBoolCompat_Check(obj, ret)                                \
-    if(!PyBool_Check(obj)) {                                        \
+static inline int
+PyCompatLong_AsLong(PyObject *pObj, long *val) {
+    PyCompatLong_Check(pObj, -1);
+    *val = PyLong_AsLong(pObj);
+    return 0;
+}
+
+#define PyCompatBool_Check(obj, ret)                                \
+    PyCompat_ArgCheck(obj, ret);                                    \
+    if(!PyBool_Check(obj) || Py_IsNone(obj)) {                      \
         PyErr_Format(PyExc_ValueError,                              \
                      "Expected a boolean but got %R instead", obj); \
         return ret;                                                 \
@@ -26,11 +41,18 @@
 #define PyCompatBool_FromLong(val) ((val) ? Py_True : Py_False)
 #define PyCompatBool_AsLong(obj) (PyObject_IsTrue(obj))
 
+static inline int
+PyCompatBool_FromObject(PyObject *pObj, long *val) {
+    *val = PyObject_IsTrue(pObj);
+    return *val == -1 ? -1 : 0;
+}
+
 #define PyCompatNull_AsLong(obj) (0)
 #define PyCompatNull_FromLong(val) Py_None
 
-#define PyFloatCompat_Check(obj, ret)                                         \
-    if(!PyFloat_Check(obj)) {                                                 \
+#define PyCompatFloat_Check(obj, ret)                                         \
+    PyCompat_ArgCheck(obj, ret);                                              \
+    if(!PyFloat_Check(obj) || Py_IsNone(obj)) {                               \
         PyErr_Format(PyExc_ValueError, "Expected a float but got %R instead", \
                      obj);                                                    \
         return ret;                                                           \
@@ -40,12 +62,12 @@
 #define PyCompatFloat_AsDouble(obj) PyFloat_AsDouble(obj)
 
 
-#define PyCompatUnicode_Check(obj, ret)                                    \
-    if(!PyUnicode_Check(obj)) {                                            \
-        PyErr_Format(PyExc_ValueError,                                     \
-                     "%s, %d: Expected a string but got %R instead.", obj, \
-                     __FILE_NAME__, __LINE__);                             \
-        return ret;                                                        \
+#define PyCompatUnicode_Check(obj, ret)                             \
+    PyCompat_ArgCheck(obj, ret);                                    \
+    if(!PyUnicode_Check(obj) || Py_IsNone(obj)) {                   \
+        PyErr_Format(PyExc_ValueError,                              \
+                     "Expected a string but got %R instead.", obj); \
+        return ret;                                                 \
     }
 
 #define PyCompatBytes_ToStringAndSize(obj, str, size) \
@@ -55,7 +77,8 @@
     PyBytes_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
 #define PyCompatBytes_Check(obj, ret)                                         \
-    if(!PyBytes_Check(obj)) {                                                 \
+    PyCompat_ArgCheck(obj, ret);                                              \
+    if(!PyBytes_Check(obj) || Py_IsNone(obj)) {                               \
         PyErr_Format(PyExc_ValueError, "Expected a bytes but got %R instead", \
                      obj);                                                    \
         return ret;                                                           \
@@ -123,6 +146,12 @@ end:
 #define PyCompatUnicode_FromStringAndSize(str, size) \
     PyUnicode_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
+static inline int
+PyCompatUnicode_AsUTF8(PyObject *pObj, char **str, Py_ssize_t *size) {
+    PyCompatUnicode_Check(pObj, -1);
+    *str = (char *)PyUnicode_AsUTF8AndSize(pObj, size);
+    return *str == NULL ? -1 : 0;
+}
 
 static inline PyObject *
 PyCompatEnum_FromSsize_t(PyObject *pEnumType, Py_ssize_t value) {
@@ -206,5 +235,17 @@ PyCompatEnum_AsSize_t(PyObject *pObj) {
         }                                                         \
     } while(0)
 
+
+#define PyCompat_GenericGetAttr(obj, attrName, value)                  \
+    do {                                                               \
+        if((value = PyObject_GetAttrString(obj, #attrName)) == NULL) { \
+            PyErr_Clear();                                             \
+            value = PyMapping_GetItemString(obj, #attrName);           \
+        }                                                              \
+    } while(0)
+
+#define PyCompatCHOICE_New(typeName)                 \
+    (PyAsn##typeName##Object *)(PyObject_CallNoArgs( \
+        (PyObject *)&PyAsn##typeName##_Type))
 
 #endif
