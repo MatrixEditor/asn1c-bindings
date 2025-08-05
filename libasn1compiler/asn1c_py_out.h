@@ -23,15 +23,15 @@
     OUT("int PyAsn%s_FromPython(PyObject *value, %s_t *dst)\n", name, name); \
     PY_GEN_BEGIN_FUNC()
 
-#define PY_GEN_ASNTYPE_TOPY_INLINE(name)                                       \
-    OUT("static inline PyObject *PyAsn%s_ToPython(const %s_t *pSrc, PyObject " \
-        "*parent)\n",                                                          \
-        name, name);                                                           \
+#define PY_GEN_ASNTYPE_TOPY_INLINE(name)                                 \
+    OUT("static inline PyObject *PyAsn%s_ToPython(%s_t *pSrc, PyObject " \
+        "*parent)\n",                                                    \
+        name, name);                                                     \
     PY_GEN_BEGIN_FUNC()
 
 #define PY_GEN_ASNTYPE_TOPY(name)                                            \
-    OUT("PyObject *PyAsn%s_ToPython(const %s_t *pSrc, PyObject *parent);\n", \
-        name, name)
+    OUT("PyObject *PyAsn%s_ToPython(%s_t *pSrc, PyObject *parent);\n", name, \
+        name)
 
 #define PY_GEN_DEF_TYPE(name)                \
     OUT("PyCompat_DEF_STRUCT(%s);\n", name); \

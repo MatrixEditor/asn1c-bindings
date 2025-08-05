@@ -1030,6 +1030,7 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 
         REDIR(OT_PY_TYPE_CONVERT);
         PY_GEN_ASNTYPE_FROMPY(type_name);
+        PY_GEN_ASNTYPE_TOPY(type_name);
 
         REDIR(OT_PY_IMPL_CODE);
         /* default methods */
