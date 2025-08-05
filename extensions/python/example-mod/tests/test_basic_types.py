@@ -11,6 +11,7 @@ from example_mod._example_mod import (
     ExampleNull,
     ExampleObjectIdentifier,
     ExampleRelativeOid,
+    ExampleReal,
 )
 
 
@@ -197,6 +198,24 @@ def test_basic_relative_oid():
     assert parsed.is_valid()
     assert parsed.encode() == raw_data
     assert parsed.value == "1.2.3"
+
+    with pytest.raises(ValueError):
+        # intentionally raises an error upon invalid value type
+        # needed for conversion
+        obj.value = None
+
+
+def test_basic_real():
+    # Generated class: ExampleReal
+    # type: float
+    obj = ExampleReal()
+    obj.value = 3.14
+    assert obj.value == 3.14
+
+    raw_data = b"\t\t\x80\xcd\t\xd7\n=p\xa3\xd7"
+    parsed = ExampleReal.decode(raw_data)
+    assert parsed.is_valid()
+    assert parsed.value == 1.23
 
     with pytest.raises(ValueError):
         # intentionally raises an error upon invalid value type

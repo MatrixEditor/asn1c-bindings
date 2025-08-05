@@ -392,6 +392,8 @@ end:
     static int PyAsn##typeName##__set_##attrName(                              \
         PyAsn##typeName##Object* self, PyObject* value,                        \
         void* Py_UNUSED(arg)) {                                                \
+        ASN_STRUCT_RESET(asn_DEF_##typeName, self->ob_value);                  \
+        self->ob_value->present = typeName##_PR_NOTHING;                       \
         int result =                                                           \
             PyAsn##typeName##__##attrName##_FromPython(value, self->ob_value); \
         self->s_valid = result != -1;                                          \
@@ -436,31 +438,32 @@ end:
     if((args) && (PyTuple_Size(args) > 0)) {                              \
         PyErr_SetString(PyExc_TypeError,                                  \
                         (#typeName ": unexpected positional arguments")); \
-        return -1;                                                      \
+        return -1;                                                        \
     }                                                                     \
     if(!kwargs || !PyDict_Size(kwargs)) {                                 \
         return 0;                                                         \
     }
 
 #define PY_IMPL_CHOICE_INIT_ATTR(typeName, attrName, srcObj, tmpValue)   \
-    PyCompat_GenericGetAttr((srcObj), attrName, (tmpValue));            \
+    PyCompat_GenericGetAttr((srcObj), attrName, (tmpValue));             \
     if((tmpValue)) {                                                     \
         if(PyAsn##typeName##__##attrName##_FromPython((tmpValue), (dst)) \
            < 0) {                                                        \
             Py_DECREF((tmpValue));                                       \
-            return -1;                                                 \
+            return -1;                                                   \
         }                                                                \
     } else                                                               \
         PyErr_Clear();
 
 
-#define PY_IMPL_CHOICE_INIT(typeName)                                         \
-    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,         \
-                                       PyObject* args, PyObject* kwargs) {    \
-        PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                          \
-        if(PyAsn##typeName##_FromPython(kwargs, self->ob_value))              \
-            self->s_valid = self->ob_value->present != typeName##_PR_NOTHING; \
-        return 0;                                                             \
+#define PY_IMPL_CHOICE_INIT(typeName)                                      \
+    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,      \
+                                       PyObject* args, PyObject* kwargs) { \
+        PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                       \
+        if(PyAsn##typeName##_FromPython(kwargs, self->ob_value) < 0)       \
+            return -1;                                                     \
+        self->s_valid = self->ob_value->present != typeName##_PR_NOTHING;  \
+        return 0;                                                          \
     }
 
 #define PY_IMPL_CHOICE_TOPY(typeName)                                        \
