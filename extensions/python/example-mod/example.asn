@@ -10,6 +10,12 @@ NamedSigned8 ::= INTEGER {
     third(1)
 }
 
+ExampleNamedBitString ::= BIT STRING {
+    zero(0),
+    one(1),
+    two(2)
+}
+
 ExampleBoolean ::= BOOLEAN
 ExampleBitString ::= BIT STRING
 ExampleOctetString ::= OCTET STRING (SIZE(1..32))
@@ -21,7 +27,29 @@ ExampleReal ::= REAL
 ExampleChoice ::= CHOICE {
     foo         OCTET STRING,
     bar         INTEGER,
-    baz         NamedSigned8
+    baz         NamedSigned8,
+    cReal       REAL,
+    cBitString  BIT STRING,
+    cBoolean    BOOLEAN,
+    cNull       NULL,
+    cOid        OBJECT IDENTIFIER,
+    cRelOid     RELATIVE-OID,
+    cEnum       ENUMERATED {
+        ceA(1),
+        ceB(2),
+        ceC(3)
+    },
+    cNamedInt  INTEGER {
+        cniA(1),
+        cniB(2),
+        cniC(3)
+    },
+    cNamedBitString  BIT STRING {
+        cnbsA(1),
+        cnbsB(2),
+        cnbsC(3),
+        cnbsOutOfBounds(1000)
+    }
 }
 
 END

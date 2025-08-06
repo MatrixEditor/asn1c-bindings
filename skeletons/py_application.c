@@ -7,12 +7,16 @@ void
 PyCompat_Clear(void) {
     Py_CLEAR(PyCompatTable->PyBytesIO_Type);
     Py_CLEAR(PyCompatTable->PyBitArray_Type);
-    Py_CLEAR(PyCompatTable->PyEnum_Type);
+    Py_CLEAR(PyCompatTable->PyIntEnum_Type);
     Py_CLEAR(PyCompatTable->PyEnumMeta_Type);
+    Py_CLEAR(PyCompatTable->PyIntFlag_Type);
     Py_CLEAR(PyCompatTable->str__getvalue);
     Py_CLEAR(PyCompatTable->str__write);
     Py_CLEAR(PyCompatTable->str__prepare);
     Py_CLEAR(PyCompatTable->str__oid_sep);
+    Py_CLEAR(PyCompatTable->str__endian);
+    Py_CLEAR(PyCompatTable->str__little);
+    Py_CLEAR(PyCompatTable->str__to_bytes);
     PyMem_RawFree(PyCompatTable);
     PyCompatTable = NULL;
 }
@@ -37,6 +41,9 @@ PyCompat_Init(void) {
     _CACHED_STRING(PyCompatTable, str__write, "write", error);
     _CACHED_STRING(PyCompatTable, str__prepare, "__prepare__", error);
     _CACHED_STRING(PyCompatTable, str__oid_sep, ".", error);
+    _CACHED_STRING(PyCompatTable, str__endian, "endian", error);
+    _CACHED_STRING(PyCompatTable, str__little, "little", error);
+    _CACHED_STRING(PyCompatTable, str__to_bytes, "tobytes", error);
 
     nTmpModule = PyImport_ImportModule("io");
     if(!nTmpModule) {
@@ -52,13 +59,23 @@ PyCompat_Init(void) {
     _IMPORT_ATTR(nTmpModule, "bitarray", PyCompatTable->PyBitArray_Type);
     Py_CLEAR(nTmpModule);
 
+    nTmpModule = PyImport_ImportModule("bitarray.util");
+    if(!nTmpModule) {
+        goto error;
+    }
+    _IMPORT_ATTR(nTmpModule, "ba2int", PyCompatTable->PyBitArray_AsLong);
+    _IMPORT_ATTR(nTmpModule, "int2ba", PyCompatTable->PyBitArray_FromLong);
+    Py_CLEAR(nTmpModule);
+
     nTmpModule = PyImport_ImportModule("enum");
     if(!nTmpModule) {
         goto error;
     }
-    _IMPORT_ATTR(nTmpModule, "Enum", PyCompatTable->PyEnum_Type);
+    _IMPORT_ATTR(nTmpModule, "IntEnum", PyCompatTable->PyIntEnum_Type);
+    _IMPORT_ATTR(nTmpModule, "IntFlag", PyCompatTable->PyIntFlag_Type);
     _IMPORT_ATTR(nTmpModule, "EnumType", PyCompatTable->PyEnumMeta_Type);
     Py_CLEAR(nTmpModule);
+
 
     return PyCompatTable->PyBytesIO_Type ? 0 : -1;
 

@@ -24,10 +24,23 @@
 #define PyCompatLong_AsSize_t(obj) PyLong_AsSize_t(obj)
 
 static inline int
-PyCompatLong_AsLong(PyObject *pObj, long *val) {
+PyCompatLong_FromObject(PyObject *pObj, void *val, int is_signed) {
     PyCompatLong_Check(pObj, -1);
-    *val = PyLong_AsLong(pObj);
+    if(is_signed) {
+        *((long *)val) = PyLong_AsLong(pObj);
+    } else {
+        *((unsigned long *)val) = PyLong_AsUnsignedLong(pObj);
+    }
     return 0;
+}
+
+static inline PyObject *
+PyCompatLong_AsObject(void *val, int is_signed) {
+    if(is_signed) {
+        return PyLong_FromLong((*(long *)val));
+    } else {
+        return PyLong_FromUnsignedLong((*(unsigned long *)val));
+    }
 }
 
 #define PyCompatBool_Check(obj, ret)                                \
@@ -42,13 +55,19 @@ PyCompatLong_AsLong(PyObject *pObj, long *val) {
 #define PyCompatBool_AsLong(obj) (PyObject_IsTrue(obj))
 
 static inline int
-PyCompatBool_FromObject(PyObject *pObj, long *val) {
+PyCompatBool_FromObject(PyObject *pObj, unsigned *val) {
     *val = PyObject_IsTrue(pObj);
     return *val == -1 ? -1 : 0;
 }
 
 #define PyCompatNull_AsLong(obj) (0)
 #define PyCompatNull_FromLong(val) Py_None
+
+static inline int
+PyCompatNull_FromObject(PyObject *pObj, int *val) {
+    *val = 0;
+    return 0;
+}
 
 #define PyCompatFloat_Check(obj, ret)                                         \
     PyCompat_ArgCheck(obj, ret);                                              \
@@ -58,8 +77,28 @@ PyCompatBool_FromObject(PyObject *pObj, long *val) {
         return ret;                                                           \
     }
 
-#define PyCompatFloat_FromDouble(val) PyFloat_FromDouble((val))
+#define PyCompatFloat_FromDouble(val) PyFloat_FromDouble((double)(val))
 #define PyCompatFloat_AsDouble(obj) PyFloat_AsDouble(obj)
+
+static inline int
+PyCompatFloat_FromObject(PyObject *pObj, void *val, int is_float) {
+    PyCompatFloat_Check(pObj, -1);
+    if(is_float) {
+        *((float *)val) = (float)PyFloat_AS_DOUBLE(pObj);
+    } else {
+        *((double *)val) = PyFloat_AS_DOUBLE(pObj);
+    }
+    return 0;
+}
+
+static inline PyObject *
+PyCompatFloat_AsObject(void *val, int is_float) {
+    if(is_float) {
+        return PyFloat_FromDouble((double)(*(float *)val));
+    } else {
+        return PyFloat_FromDouble((double)(*(double *)val));
+    }
+}
 
 
 #define PyCompatUnicode_Check(obj, ret)                             \
@@ -88,6 +127,9 @@ static inline int
 _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str, Py_ssize_t *size) {
     PyCompatBytes_Check(pObj, -1);
     *size = PyBytes_Size(pObj);
+    if(*str) {
+        PyMem_Free(*str);
+    }
     *str = (char *)PyMem_RawMalloc(*size);
     if(*str == NULL) {
         return -1;
@@ -101,6 +143,29 @@ _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str, Py_ssize_t *size) {
     return 0;
 }
 
+static inline PyObject *
+PyCompatBitArray_New(PyObject *pBytesObj) {
+    PyObject *nArgs = NULL, *nKwargs = NULL, *nResult = NULL;
+
+    if((nArgs = PyTuple_New(pBytesObj ? 1 : 0)) && (nKwargs = PyDict_New())) {
+        /* PyTuple_SetItem:
+         * This function “steals” a reference to o and discards a reference to
+         * an item already in the tuple at the affected position.
+         */
+        if(!pBytesObj || PyTuple_SetItem(nArgs, 0, Py_NewRef(pBytesObj)) == 0) {
+            if(PyDict_SetItem(nKwargs, PyCompatTable->str__endian,
+                              PyCompatTable->str__little)
+               == 0) {
+                nResult = PyObject_Call(
+                    (PyObject *)PyCompatTable->PyBitArray_Type, nArgs, nKwargs);
+            }
+        }
+    }
+    Py_XDECREF(nArgs);
+    Py_XDECREF(nKwargs);
+    return nResult;
+}
+
 #define PyCompatBitArray_FromStringAndSize(str, size) \
     _PyCompatBitArray_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
@@ -111,7 +176,7 @@ _PyCompatBitArray_FromStringAndSize(const char *str, Py_ssize_t size) {
         goto end;
     }
 
-    nResult = PyObject_CallOneArg(PyCompatTable->PyBitArray_Type, nTmpBytes);
+    nResult = PyCompatBitArray_New(nTmpBytes);
 end:
     Py_XDECREF(nTmpBytes);
     return nResult;
@@ -125,10 +190,15 @@ _PyCompatBitArray_ToStringAndSize(PyObject *pObj, char **str,
                                   Py_ssize_t *size) {
     PyObject *nTmpBytes = NULL;
     int result = 0;
-    if((nTmpBytes = PyBytes_FromObject(pObj)) == NULL) {
-        goto error;
+    if(!PyBytes_CheckExact(pObj)) {
+        if((nTmpBytes =
+                PyObject_CallMethodNoArgs(pObj, PyCompatTable->str__to_bytes))
+           == NULL) {
+            goto error;
+        }
+    } else {
+        nTmpBytes = Py_NewRef(pObj);
     }
-
     result = PyCompatBytes_ToStringAndSize(nTmpBytes, str, size);
     goto end;
 
@@ -138,6 +208,51 @@ error:
 end:
     Py_XDECREF(nTmpBytes);
     return result;
+}
+
+static int
+PyCompatBitArray_FromObject(PyObject *pObj, char **str, Py_ssize_t *size) {
+    PyObject *nValue = NULL, *nBitArray = NULL, *nArgs = NULL, *nKwargs = NULL;
+    int result = -1;
+
+    if(PyObject_IsInstance(pObj, PyCompatTable->PyBitArray_Type)) {
+        result = _PyCompatBitArray_ToStringAndSize(nBitArray, str, size);
+    } else {
+        // the object MUST be an integer
+        if((nValue = PyObject_CallOneArg((PyObject *)(&PyLong_Type), pObj))
+           == NULL) {
+            return -1;
+        }
+
+        if((nArgs = Py_BuildValue("(O)", nValue))
+           && (nKwargs = Py_BuildValue("{OO}", PyCompatTable->str__endian,
+                                       PyCompatTable->str__little))) {
+            nBitArray = PyObject_Call(PyCompatTable->PyBitArray_FromLong, nArgs,
+                                      nKwargs);
+            if(nBitArray) {
+                result =
+                    _PyCompatBitArray_ToStringAndSize(nBitArray, str, size);
+            }
+        }
+    }
+
+    Py_XDECREF(nArgs);
+    Py_XDECREF(nKwargs);
+    Py_XDECREF(nValue);
+    Py_XDECREF(nBitArray);
+    return result;
+}
+
+static PyObject *
+PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
+    PyObject *nResult = NULL, *nBitArray = NULL;
+
+    if((nBitArray = _PyCompatBitArray_FromStringAndSize(str, size)) != NULL) {
+        nResult =
+            PyObject_CallOneArg(PyCompatTable->PyBitArray_AsLong, nBitArray);
+    }
+    Py_XDECREF(nBitArray);
+    return nResult;
 }
 
 #define PyCompatUnicode_AsUTF8AndSize(obj, size) \
@@ -208,6 +323,39 @@ PyCompatEnum_AsSize_t(PyObject *pObj) {
     }
     return -1;
 }
+
+static inline int
+PyCompatEnum_FromObject(PyObject *pObj, void *dst, int is_signed) {
+    if(is_signed) {
+        *(Py_ssize_t *)dst = PyCompatEnum_AsSsize_t(pObj);
+    } else {
+        *(size_t *)dst = PyCompatEnum_AsSize_t(pObj);
+    }
+    return 0;
+}
+
+static inline PyObject *
+PyCompatEnum_AsObject(PyObject *pEnumType, void *src, int is_signed) {
+    if(is_signed) {
+        return PyCompatEnum_FromSsize_t(pEnumType, *(Py_ssize_t *)src);
+    } else {
+        return PyCompatEnum_FromSize_t(pEnumType, *(size_t *)src);
+    }
+}
+
+static inline PyObject *
+PyCompatFlag_AsObject(PyObject *pEnumType, const char *str, Py_ssize_t size) {
+    PyObject *nValue = NULL, *nResult = NULL;
+    if((nValue = PyCompatBitArray_AsLong(str, size)) != NULL) {
+        nResult = PyObject_CallOneArg(pEnumType, nValue);
+    }
+    Py_XDECREF(nValue);
+    return nResult;
+}
+
+#define PyCompatFlag_FromObject(value, str, size) \
+    PyCompatBitArray_FromObject((value), (char **)(str), (Py_ssize_t *)(size))
+
 
 #define PyCompat_SeqItem_Get(obj, attrName, ...)                           \
     do {                                                                   \

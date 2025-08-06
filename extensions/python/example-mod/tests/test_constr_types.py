@@ -50,3 +50,14 @@ def test_constr_choice_parse():
     parsed = ExampleChoice.decode(raw_data)
     with pytest.raises(ValueError):
         _ = parsed.baz
+
+
+def test_constr_choice_inner_enum():
+    # Inner enum types will generate a new enum class for each member. The newly
+    # created class will be stored as a class attribute named using the
+    # following schema:
+    #
+    #   class_name := <member_name> '_VALUES'
+    obj = ExampleChoice()
+    obj.cEnum = ExampleChoice.cEnum_VALUES.cEnum_ceA
+    assert obj.cEnum == ExampleChoice.cEnum_VALUES.cEnum_ceA

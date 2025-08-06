@@ -11,11 +11,18 @@ typedef struct {
     PyObject* str__getvalue;
     PyObject* str__prepare;
     PyObject* str__oid_sep;
+    PyObject* str__endian;
+    PyObject* str__little;
+    PyObject* str__to_bytes;
 
     PyObject* PyBytesIO_Type;
     PyObject* PyBitArray_Type;
-    PyObject* PyEnum_Type;
+    PyObject* PyIntEnum_Type;
     PyObject* PyEnumMeta_Type;
+    PyObject* PyIntFlag_Type;
+
+    PyObject* PyBitArray_AsLong;
+    PyObject* PyBitArray_FromLong;
 } PyCompatTable_t;
 
 extern PyCompatTable_t* PyCompatTable;
@@ -317,61 +324,69 @@ end:
     }
 
 
-#define PY_IMPL_NEW_ENUM(typeName, target, ret, ...)                          \
-    do {                                                                      \
-        PyObject *nName = NULL, *nBases = NULL, *nNamespace = NULL,           \
-                 *nTmpName = NULL, *nTmpValue = NULL;                         \
-        if((nName = PyUnicode_FromString((#typeName ".VALUES"))) == NULL) {   \
-            return (ret);                                                     \
-        }                                                                     \
-        nBases = Py_BuildValue("(O)", (PyObject*)PyCompatTable->PyEnum_Type); \
-        if(nBases == NULL) {                                                  \
-            goto end;                                                         \
-        }                                                                     \
-        nNamespace = PyObject_CallMethodObjArgs(                              \
-            PyCompatTable->PyEnumMeta_Type, PyCompatTable->str__prepare,      \
-            nName, nBases, NULL);                                             \
-        if(nNamespace == NULL) {                                              \
-            goto end;                                                         \
-        }                                                                     \
-        __VA_ARGS__;                                                          \
-        target = PyObject_CallFunctionObjArgs(                                \
-            PyCompatTable->PyEnumMeta_Type, nName, nBases, nNamespace, NULL); \
-    end:                                                                      \
-        Py_XDECREF(nName);                                                    \
-        Py_XDECREF(nBases);                                                   \
-        Py_XDECREF(nNamespace);                                               \
-        Py_XDECREF(nTmpName);                                                 \
-        Py_XDECREF(nTmpValue);                                                \
-        if(!target) {                                                         \
-            return (ret);                                                     \
-        }                                                                     \
+#define PY_IMPL_NEW_ENUM(typeName, target, ret, ...) \
+    PY_IMPL_NEW_ENUM_TYPE(PyIntEnum_Type, typeName, target, ret, __VA_ARGS__)
+
+#define PY_IMPL_NEW_ENUM_TYPE(enumType, typeName, target, ret, ...)          \
+    do {                                                                     \
+        PyObject *nName = NULL, *nBases = NULL, *nNamespace = NULL,          \
+                 *nTmpName = NULL, *nTmpValue = NULL;                        \
+        int result = 0;                                                      \
+        if((nName = PyUnicode_FromString((#typeName))) == NULL) {            \
+            return (ret);                                                    \
+        }                                                                    \
+        nBases = Py_BuildValue("(O)", (PyObject*)PyCompatTable->enumType);   \
+        if(nBases) {                                                         \
+            nNamespace = PyObject_CallMethodObjArgs(                         \
+                PyCompatTable->PyEnumMeta_Type, PyCompatTable->str__prepare, \
+                nName, nBases, NULL);                                        \
+            if(nNamespace) {                                                 \
+                __VA_ARGS__;                                                 \
+                if(result >= 0) {                                            \
+                    target = PyObject_CallFunctionObjArgs(                   \
+                        PyCompatTable->PyEnumMeta_Type, nName, nBases,       \
+                        nNamespace, NULL);                                   \
+                }                                                            \
+            }                                                                \
+        }                                                                    \
+        Py_XDECREF(nName);                                                   \
+        Py_XDECREF(nBases);                                                  \
+        Py_XDECREF(nNamespace);                                              \
+        Py_XDECREF(nTmpName);                                                \
+        Py_XDECREF(nTmpValue);                                               \
+        if(!target) {                                                        \
+            return (ret);                                                    \
+        }                                                                    \
     } while(0)
 
-#define PY_IMPL_ENUM_VALUE(name, value, isSigned)                             \
-    do {                                                                      \
-        if((nTmpName = PyUnicode_FromString(#value)) == NULL) {               \
-            goto end;                                                         \
-        }                                                                     \
-        if((isSigned)) {                                                      \
-            if((nTmpValue = PyLong_FromSsize_t((Py_ssize_t)value)) == NULL) { \
-                goto end;                                                     \
-            }                                                                 \
-        } else {                                                              \
-            if((nTmpValue = PyLong_FromSize_t((size_t)value)) == NULL) {      \
-                goto end;                                                     \
-            }                                                                 \
-        }                                                                     \
-        if(PyObject_SetItem(nNamespace, nTmpName, nTmpValue) < 0) {           \
-            goto end;                                                         \
-        }                                                                     \
-        Py_CLEAR(nTmpName);                                                   \
-        Py_CLEAR(nTmpValue);                                                  \
+#define PY_IMPL_ENUM_VALUE(name, value, isSigned)                              \
+    do {                                                                       \
+        if(result >= 0) {                                                      \
+            result = -1;                                                       \
+            if((nTmpName = PyUnicode_FromString(#value)) != NULL) {            \
+                if((isSigned)) {                                               \
+                    nTmpValue = PyLong_FromSsize_t((Py_ssize_t)value);         \
+                } else {                                                       \
+                    nTmpValue = PyLong_FromSize_t((size_t)value);              \
+                }                                                              \
+                if(nTmpValue) {                                                \
+                    if((nTmpName = PyUnicode_FromString(#value)) != NULL) {    \
+                        result =                                               \
+                            PyObject_SetItem(nNamespace, nTmpName, nTmpValue); \
+                    }                                                          \
+                }                                                              \
+            }                                                                  \
+        }                                                                      \
+        Py_CLEAR(nTmpName);                                                    \
+        Py_CLEAR(nTmpValue);                                                   \
     } while(0)
 
-#define PY_IMPL_ASSIGN_ENUM(typeName)                                  \
+#define PY_IMPL_ASSIGN_ENUM(typeName) \
+    PY_IMPL_ASSIGN_ENUM_DIRECT(typeName, typeName, VALUES)
+
+#define PY_IMPL_ASSIGN_ENUM_DIRECT(typeName, enumTypeName, attrName)   \
     if(PyDict_SetItemString((PyObject*)PyAsn##typeName##_Type.tp_dict, \
-                            "VALUES", PyAsnEnum##typeName##_Type)      \
+                            #attrName, PyAsnEnum##enumTypeName##_Type) \
        < 0) {                                                          \
         return -1;                                                     \
     }
@@ -467,8 +482,8 @@ end:
     }
 
 #define PY_IMPL_CHOICE_TOPY(typeName)                                        \
-    static PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,           \
-                                                PyObject* parent) {          \
+    PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,                  \
+                                         PyObject* parent) {                 \
         PyAsn##typeName##Object* self = PyCompatCHOICE_New(typeName);        \
         if(!parent) {                                                        \
             if(asn_copy(&asn_DEF_##typeName, (void**)&self->ob_value, src)   \
@@ -477,7 +492,7 @@ end:
                 return NULL;                                                 \
             }                                                                \
         } else {                                                             \
-            self->ob_value = src;                                            \
+            self->ob_value = (typeName##_t*)src;                             \
             self->ob_parent = Py_NewRef(parent);                             \
         }                                                                    \
         self->s_valid = self->ob_value->present != ExampleChoice_PR_NOTHING; \
