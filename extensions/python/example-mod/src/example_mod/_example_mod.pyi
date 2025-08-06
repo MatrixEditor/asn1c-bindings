@@ -1,6 +1,8 @@
 import enum
 from typing import Generic, override, TypeVar
 
+import bitarray
+
 _PY_T = TypeVar("_PY_T")
 
 # GENERATION NOT IMPLEMENTED
@@ -68,6 +70,33 @@ class _BasicAsn1EnumType(_Asn1ABC):
     # decode will return an instance of this class
     @staticmethod
     def decode(data: bytes) -> _BasicAsn1EnumType: ...
+
+# A special case for named BIT STRING definitions will store a custom
+# enum type ("VALUES") as well, but the internal value uses a bitarray.
+# The internal value-to-bitarray conversion uses LITTLE ENDIAN aligned
+# bitarrays.
+class _BasicAsn1FlagType(_Asn1ABC):
+    # The class uses the builtin enum.IntFlag to allow multiple values
+    # to be set.
+    class VALUES(enum.IntFlag): ...
+
+    # Each basic type stores its value in a property called `value`
+    @property
+    def value(self) -> _BasicAsn1FlagType.VALUES: ...
+
+    # Allowed value types:
+    #   int - enum value (a instance of VALUES can be used as well as it inherits from int)
+    #   bytes - directly initialized the underlying BIT STRING
+    #   bitarray - will be converted to bytes and then copied
+    @value.setter
+    def value(
+        self,
+        value: _BasicAsn1FlagType.VALUES | int | bytes | bitarray.bitarray,
+    ) -> None: ...
+
+    # decode will return an instance of this class
+    @staticmethod
+    def decode(data: bytes) -> _BasicAsn1FlagType: ...
 
 # -- PROPOSED --
 # asn1c should optionally generaty a stub file for each type based in the

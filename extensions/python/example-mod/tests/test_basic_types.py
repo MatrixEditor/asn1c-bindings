@@ -12,6 +12,7 @@ from example_mod._example_mod import (
     ExampleObjectIdentifier,
     ExampleRelativeOid,
     ExampleReal,
+    ExampleNamedBitString,
 )
 
 
@@ -115,7 +116,7 @@ def test_basic_bit_string():
     # and portability. You can assign any value that can be converted into
     # a bytes object. The object will return a new bitarray object
     # each time you access it.
-    bit_data = bitarray(b"\x01\x02\x03")
+    bit_data = bitarray(b"\x01\x02\x03", endian="little")
     obj = ExampleBitString()
     obj.value = bit_data
     assert obj.is_valid()
@@ -127,6 +128,23 @@ def test_basic_bit_string():
     raw_data = b"\x03\x04\x00\x01\x02\x03"
     parsed = ExampleBitString.decode(raw_data)
     assert parsed.value == bit_data
+    assert parsed.encode() == raw_data
+
+
+def test_basic_named_bit_string():
+    # Generated class: NamedBitString
+    # type: bitarray.bitarray (internal), NamedBitString.VALUES (Python)
+    obj = ExampleNamedBitString()
+    # accepted types include int, NamedBitString.VALUES and any type that
+    # can be converted to bytes.
+    obj.value = 1
+    assert obj.is_valid()
+    # conversion must return the same value
+    assert obj.value == 1
+
+    raw_data = b"\x03\x02\x00\x01"
+    parsed = ExampleNamedBitString.decode(raw_data)
+    assert parsed.value == obj.value
     assert parsed.encode() == raw_data
 
 
