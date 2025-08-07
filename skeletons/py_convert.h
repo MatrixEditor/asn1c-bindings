@@ -392,8 +392,10 @@ PyCompatFlag_AsObject(PyObject *pEnumType, const char *str, Py_ssize_t size) {
         }                                                              \
     } while(0)
 
-#define PyCompatCHOICE_New(typeName)                 \
+#define PyCompatAsnType_New(typeName)                \
     (PyAsn##typeName##Object *)(PyObject_CallNoArgs( \
         (PyObject *)&PyAsn##typeName##_Type))
+
+#define PyCompatCHOICE_New(typeName) PyCompatAsnType_New(typeName)
 
 #endif

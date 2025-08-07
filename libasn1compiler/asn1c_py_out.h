@@ -280,4 +280,69 @@
         (typeName), (attrName), (enumName), (attrName), (isSigned));         \
     PY_GEN_CHOICE_GETSET(typeName, attrName)
 
+/* SEQUENCE */
+#define PY_GEN_SEQ_GETSET(typeName, attrName, optional)                        \
+    OUT("PY_IMPL_SEQ_GETATTR(%s, %s, %d);\n", parent_type_id, tmp_member_name, \
+        optional);                                                             \
+    OUT("PY_IMPL_SEQ_%sSETATTR(%s, %s);\n", (optional) ? "OPT_" : "",          \
+        parent_type_id, tmp_member_name);
+
+#define PY_GEN_SEQ_TYPEREF_GETSET(typeName, targetTypeName, attrName,      \
+                                  optional, indirect)                      \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
+        "PyAsn%s_FromPython(value, (%s_t *)target));\n",                   \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
+        (targetTypeName), (targetTypeName));                               \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
+        "PyAsn%s_ToPython((%s_t *)target, parent));\n",                    \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
+        (targetTypeName), (targetTypeName));                               \
+    PY_GEN_SEQ_GETSET(typeName, attrName, optional)
+
+#define PY_GEN_SEQ_BOOLEAN_GETSET(typeName, attrName, optional, indirect)   \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
+        "PyCompatBool_FromObject(value, (unsigned int *)target));\n",       \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                  \
+        "PyCompatBool_FromLong(*(BOOLEAN_t *)target));\n",                  \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+    PY_GEN_SEQ_GETSET(typeName, attrName, optional)
+
+
+#define PY_GEN_SEQ_INTEGER_GETSET(typeName, attrName, optional, indirect,  \
+                                  isSigned)                                \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
+        "PyCompatLong_FromObject(value, target, %d));\n",                  \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
+        (isSigned));                                                       \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
+        "PyCompatLong_AsObject(target, %d));\n",                           \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
+        (isSigned));                                                       \
+    PY_GEN_SEQ_GETSET(typeName, attrName, optional)
+
+#define PY_GEN_SEQ_BYTES_GETSET(typeName, attrName, optional, indirect)     \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
+        "PyCompatBytes_ToStringAndSize(value, &((ASN__PRIMITIVE_TYPE_t "    \
+        "*)target)->buf, &((ASN__PRIMITIVE_TYPE_t *)target)->size));\n",    \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                  \
+        "PyCompatBytes_FromStringAndSize(((ASN__PRIMITIVE_TYPE_t "          \
+        "*)target)->buf, ((ASN__PRIMITIVE_TYPE_t *)target)->size);\n",      \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+    PY_GEN_SEQ_GETSET(typeName, attrName, optional)
+
+
+#define PY_GEN_SEQ_REAL_GETSET(typeName, attrName, optional, indirect,     \
+                               is_float32)                                 \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
+        "PyCompatFloat_FromObject(value, target, %d));\n",                 \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
+        (is_float32));                                                     \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
+        "PyCompatFloat_AsObject(target, %d));\n",                          \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
+        (is_float32));                                                     \
+    PY_GEN_SEQ_GETSET(typeName, attrName, optional)
+
 #endif

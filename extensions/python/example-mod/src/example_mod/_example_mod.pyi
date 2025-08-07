@@ -5,15 +5,19 @@ import bitarray
 
 _PY_T = TypeVar("_PY_T")
 
-# GENERATION NOT IMPLEMENTED
+# GENERATION OF STUBTS NOT IMPLEMENTED !!!
+
+# ---
+# The following types are just abstractions to describe the generated
+# Python types. They are not used!
+# ---
+
 # Each type alias, enumerated or constructed type WILL generate its
 # own class. Each class will implement the methods described in this
 # base class (TYPING ONLY!).
 # Conversions for default basic types (unless enumerated) will be
 # performed inline (no default implementation necessary).
 class _Asn1ABC:
-    # Initialization of the target value is OPTIONAL
-    def __init__(self, value: _PY_T = ...) -> None: ...
     # All generic types implement default repr() and str() behaviour. While
     # repr just prints out the class name, str() will print out the value
     # if present/set.
@@ -46,6 +50,9 @@ class _BasicAsn1Type(Generic[_PY_T], _Asn1ABC):
     #   OCTET_STRING <-> bytes
     #   OID          <-> str
     #   UTF8_STRING  <-> str (all other string types)
+
+    # Initialization of the target value is OPTIONAL
+    def __init__(self, value: _PY_T = ...) -> None: ...
     @property
     def value(self) -> _PY_T: ...
     # It may be set with different python values - look out for the
@@ -57,7 +64,7 @@ class _BasicAsn1Type(Generic[_PY_T], _Asn1ABC):
 # an additional enumeration that stores all defined named values.
 class _BasicAsn1EnumType(_Asn1ABC):
     # The class will ALWAYS be named "VALUES".
-    class VALUES(enum.Enum): ...
+    class VALUES(enum.IntEnum): ...
 
     # Each basic type stores its value in a property called `value`
     @property
@@ -97,6 +104,25 @@ class _BasicAsn1FlagType(_Asn1ABC):
     # decode will return an instance of this class
     @staticmethod
     def decode(data: bytes) -> _BasicAsn1FlagType: ...
+
+# -- CHOICE
+# Each union type /CHOICE class implements a special behaviour as only
+# one value can be present at a time. To keep track of the currently stored
+# representation, an enumeration is generated ("PRESENT"). Each member will
+# be associated to a specific value of the enumeration.
+class _BasicAsn1ChoiceType(_Asn1ABC):
+    # all possible states
+    class PRESENT(enum.IntEnum):
+        # By default, the invalid state is marked by a value of 0
+        PR_NOTHING = 0
+        # naming scheme is as follows:
+        #   - <name> := PR_<member_name>
+
+    # -- members... --
+    # Mambers can be set using keyword arguments only!
+    def __init__(self, /, **members) -> None: ...
+    @staticmethod
+    def decode(data: bytes) -> _BasicAsn1ChoiceType: ...
 
 # -- PROPOSED --
 # asn1c should optionally generaty a stub file for each type based in the

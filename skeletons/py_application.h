@@ -105,6 +105,11 @@ end:
         PyObject* ob_parent;              \
     } PyAsn##name##Object;
 
+
+#define PyCompat_DEF_ENUM(name)               \
+    typedef PyObject PyAsnEnum##name##Object; \
+    extern PyObject* PyAsnEnum##name##Object_Type;
+
 #define PyCompat_DEF_INNER_CHOICE(outerTypeName, name) \
     typedef struct _##outerTypeName##_##name##_Py {    \
         PyObject_HEAD struct name* ob_value;           \
@@ -359,26 +364,24 @@ end:
         }                                                                    \
     } while(0)
 
-#define PY_IMPL_ENUM_VALUE(name, value, isSigned)                              \
-    do {                                                                       \
-        if(result >= 0) {                                                      \
-            result = -1;                                                       \
-            if((nTmpName = PyUnicode_FromString(#value)) != NULL) {            \
-                if((isSigned)) {                                               \
-                    nTmpValue = PyLong_FromSsize_t((Py_ssize_t)value);         \
-                } else {                                                       \
-                    nTmpValue = PyLong_FromSize_t((size_t)value);              \
-                }                                                              \
-                if(nTmpValue) {                                                \
-                    if((nTmpName = PyUnicode_FromString(#value)) != NULL) {    \
-                        result =                                               \
-                            PyObject_SetItem(nNamespace, nTmpName, nTmpValue); \
-                    }                                                          \
-                }                                                              \
-            }                                                                  \
-        }                                                                      \
-        Py_CLEAR(nTmpName);                                                    \
-        Py_CLEAR(nTmpValue);                                                   \
+#define PY_IMPL_ENUM_VALUE(name, value, isSigned)                          \
+    do {                                                                   \
+        if(result >= 0) {                                                  \
+            result = -1;                                                   \
+            if((nTmpName = PyUnicode_FromString(#name)) != NULL) {         \
+                if((isSigned)) {                                           \
+                    nTmpValue = PyLong_FromSsize_t((Py_ssize_t)value);     \
+                } else {                                                   \
+                    nTmpValue = PyLong_FromSize_t((size_t)value);          \
+                }                                                          \
+                if(nTmpValue) {                                            \
+                    result =                                               \
+                        PyObject_SetItem(nNamespace, nTmpName, nTmpValue); \
+                }                                                          \
+            }                                                              \
+        }                                                                  \
+        Py_CLEAR(nTmpName);                                                \
+        Py_CLEAR(nTmpValue);                                               \
     } while(0)
 
 #define PY_IMPL_ASSIGN_ENUM(typeName) \
@@ -499,5 +502,147 @@ end:
         return (PyObject*)self;                                              \
     }
 
+#define PY_IMPL_CHOICE_PRESENT_ATTR(typeName)                             \
+    static PyObject* PyAsn##typeName##__get_present(                      \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(arg)) {            \
+        return PyCompatEnum_AsObject(PyAsnEnum##typeName##_PRESENT_Type,  \
+                                     (void*)&self->ob_value->present, 0); \
+    }
+
+#define PY_IMPL_SEQ_ATTR_FREE(typeName, attrName, ...)      \
+    static inline int PyAsn##typeName##__##attrName##_Free( \
+        typeName##_t* dst) {                                \
+        if(dst->attrName) {                                 \
+            __VA_ARGS__;                                    \
+        }                                                   \
+        return 0;                                           \
+    }
+
+#define PY_IMPL_SEQ_ATTR_GENERIC_FREE(typeName, attrName) \
+    PY_IMPL_SEQ_ATTR_FREE(typeName, attrName, PyMem_RawFree(dst->attrName))
+
+
+#define PY_IMPL_SEQ_ATTR_GENERIC_NEW(typeName, attrName, attrType)      \
+    static inline attrType* PyAsn##typeName##__##attrName##_New(void) { \
+        return (attrType*)PyMem_RawMalloc(sizeof(attrType));            \
+    }
+
+#define PY_IMPL_SEQ_ATTR_INDIRECT_FROMPY(typeName, attrName, ...) \
+    static inline int PyAsn##typeName##__##attrName##_FromPython( \
+        PyObject* value, typeName##_t* dst) {                     \
+        void* target = NULL;                                      \
+        if(PyAsn##typeName##__##attrName##_Free(dst) < 0) {       \
+            return -1;                                            \
+        }                                                         \
+        dst->attrName = PyAsn##typeName##__##attrName##_New();    \
+        if(!dst->attrName) {                                      \
+            return -1;                                            \
+        }                                                         \
+        target = dst->attrName;                                   \
+        return __VA_ARGS__;                                       \
+    }
+
+#define PY_IMPL_SEQ_ATTR_FROMPY(typeName, attrName, ...)          \
+    static inline int PyAsn##typeName##__##attrName##_FromPython( \
+        PyObject* value, typeName##_t* dst) {                     \
+        void* target = (void*)&dst->attrName;                     \
+        return __VA_ARGS__;                                       \
+    }
+
+#define PY_IMPL_SEQ_ATTR_INDIRECT_TOPY(typeName, attrName, ...)       \
+    static inline PyObject* PyAsn##typeName##__##attrName##_ToPython( \
+        typeName##_t* src, PyObject* parent) {                        \
+        void* target = (void*)src->attrName;                          \
+        return __VA_ARGS__;                                           \
+    }
+
+#define PY_IMPL_SEQ_ATTR_TOPY(typeName, attrName, ...)                \
+    static inline PyObject* PyAsn##typeName##__##attrName##_ToPython( \
+        typeName##_t* src, PyObject* parent) {                        \
+        void* target = (void*)&src->attrName;                         \
+        return __VA_ARGS__;                                           \
+    }
+
+
+#define PY_IMPL_SEQ_GETATTR(typeName, attrName, isOptional)               \
+    static PyObject* PyAsn##typeName##__get_##attrName(                   \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {        \
+        if((isOptional) && !self->ob_value->attrName) {                   \
+            Py_RETURN_NONE;                                               \
+        }                                                                 \
+        return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
+                                                        (PyObject*)self); \
+    }
+
+#define PY_IMPL_SEQ_SETATTR(typeName, attrName)                            \
+    static int PyAsn##typeName##__set_##attrName(                          \
+        PyAsn##typeName##Object* self, PyObject* value,                    \
+        void* Py_UNUSED(closure)) {                                        \
+        return PyAsn##typeName##__##attrName##_FromPython(value,           \
+                                                          self->ob_value); \
+    }
+
+#define PY_IMPL_SEQ_OPT_SETATTR(typeName, attrName)                            \
+    static int PyAsn##typeName##__set_##attrName(                              \
+        PyAsn##typeName##Object* self, PyObject* value,                        \
+        void* Py_UNUSED(closure)) {                                            \
+        if(Py_IsNone(value)) {                                                 \
+            self->ob_value->attrName = NULL;                                   \
+            return 0;                                                          \
+        } else {                                                               \
+            return PyAsn##typeName##__##attrName##_FromPython(value,           \
+                                                              self->ob_value); \
+        }                                                                      \
+    }
+
+
+#define PY_IMPL_SEQ_TOPY(typeName)                                         \
+    PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,                \
+                                         PyObject* parent) {               \
+        PyAsn##typeName##Object* self = PyCompatAsnType_New(typeName);     \
+        if(!parent) {                                                      \
+            if(asn_copy(&asn_DEF_##typeName, (void**)&self->ob_value, src) \
+               < 0) {                                                      \
+                Py_DECREF(self);                                           \
+                return NULL;                                               \
+            }                                                              \
+        } else {                                                           \
+            self->ob_value = (typeName##_t*)src;                           \
+            self->ob_parent = Py_NewRef(parent);                           \
+        }                                                                  \
+        self->s_valid = 1;                                                 \
+        return (PyObject*)self;                                            \
+    }
+
+#define PY_IMPL_SEQ_INIT_ATTR(typeName, attrName)                           \
+    if(result == 0) {                                                       \
+        PyCompat_GenericGetAttr(pObj, attrName, tmp);                       \
+        if(tmp) {                                                           \
+            if(PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
+                result = -1;                                                \
+            }                                                               \
+        } else                                                              \
+            PyErr_Clear();                                                  \
+    }
+
+#define PY_IMPL_SEQ_FROMPY(typeName, ...)                                  \
+    int PyAsn##typeName##_FromPython(PyObject* pObj, typeName##_t* pDst) { \
+        PyObject* tmp = NULL;                                              \
+        int result = 0;                                                    \
+        __VA_ARGS__;                                                       \
+        Py_XDECREF(tmp);                                                   \
+        return result;                                                     \
+    }
+
+#define PY_IMPL_SEQ_INIT(typeName)                                         \
+    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,      \
+                                       PyObject* args, PyObject* kwargs) { \
+        PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                       \
+        if(PyAsn##typeName##_FromPython(kwargs, self->ob_value) < 0) {     \
+            return -1;                                                     \
+        }                                                                  \
+        self->s_valid = 1;                                                 \
+        return 0;                                                          \
+    }
 
 #endif

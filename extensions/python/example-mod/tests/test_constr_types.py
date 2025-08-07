@@ -1,12 +1,14 @@
 import pytest
 
-from example_mod._example_mod import ExampleChoice
+from example_mod._example_mod import ExampleChoice, ExampleSequence
 
 
 # -- CHOICE
 # Each generated CHOICE class will behave like a C-union. If one sets the value
 # of one of the fields, the other fields will be set to None (seemingly).
-# If a field is NOT set, it WILL NOT thrown an exception and simply return None.
+# - If a field is NOT set, it WILL NOT thrown an exception and simply return None.
+# - The current "state"/"present" value type is registered via a custom enumeration
+#   named "PRESENT" and exposed via the attribute "present".
 def test_constr_choice_init():
     # Initialization can be done using keyword arguments:
     obj = ExampleChoice(foo=b"...")
@@ -61,3 +63,31 @@ def test_constr_choice_inner_enum():
     obj = ExampleChoice()
     obj.cEnum = ExampleChoice.cEnum_VALUES.cEnum_ceA
     assert obj.cEnum == ExampleChoice.cEnum_VALUES.cEnum_ceA
+
+
+# -- SEQUENCE / SET
+# Each generated SEQUENCE class will behave like a C-struct.
+#
+# VERY IMPORTANT NOTE: Because the internal binding sets all values to zero in
+# the newly allocated value, the object may be able to encode directly.
+def test_constr_seq_init():
+    # Generated type: ExampleSequence
+    obj = ExampleSequence()
+    # Internal state points to valid, but not all constraints are met
+    assert not obj.is_valid()
+    # By default, all values are set to None if optional and return a
+    # default value if not optional.
+    assert obj.sInt == 0
+
+    # optional values return None if not set
+    assert obj.sBoolOpt is None
+    obj.sBoolOpt = False
+    assert obj.sBoolOpt is False
+
+    # Raw-Data: created with sInt=200 and sBoolOpt=True
+    raw_data = b"0\r\x80\x02\x00\xc8\x81\x01\x00\x82\x01\xff\x83\x01\x00"
+    parsed = ExampleSequence.decode(raw_data)
+    assert parsed.is_valid()
+    assert parsed.sInt == 200
+    assert parsed.sBoolOpt is True
+    assert parsed.encode() == raw_data
