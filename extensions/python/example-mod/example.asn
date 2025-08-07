@@ -53,10 +53,34 @@ ExampleChoice ::= CHOICE {
 }
 
 ExampleSequence ::= SEQUENCE {
-    sInt        INTEGER,
-    snInt       NamedSigned8,
-    sBoolOpt    BOOLEAN OPTIONAL,
-    sBool       BOOLEAN
+    sInt            INTEGER,
+    sIntOpt         INTEGER OPTIONAL,
+    sanInt          INTEGER {
+        inamedA(1),
+        inamedB(2),
+        inamedC(3)
+    },
+    snInt           NamedSigned8,
+    snIntOpt        NamedSigned8 OPTIONAL,
+    sBoolOpt        BOOLEAN OPTIONAL,
+    sBool           BOOLEAN,
+    sBitStr         BIT STRING,
+    snBitStr        BIT STRING {
+        namedA(0),
+        namedB(1),
+        namedC(2)
+    },
+    sBitStrOpt      BIT STRING OPTIONAL,
+    sOctetStr       OCTET STRING,
+    sOctetStrOpt    OCTET STRING OPTIONAL,
+    sNull           NULL,
+    sNullOpt        NULL OPTIONAL,
+    sOid            OBJECT IDENTIFIER,
+    sOidOpt         OBJECT IDENTIFIER OPTIONAL,
+    sRelOid         RELATIVE-OID,
+    sRelOidOpt      RELATIVE-OID OPTIONAL,
+    sReal           REAL,
+    sRealOpt        REAL OPTIONAL
 }
 
 END

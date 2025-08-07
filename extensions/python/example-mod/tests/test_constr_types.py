@@ -1,4 +1,5 @@
 import pytest
+from bitarray import bitarray
 
 from example_mod._example_mod import ExampleChoice, ExampleSequence
 
@@ -84,10 +85,19 @@ def test_constr_seq_init():
     obj.sBoolOpt = False
     assert obj.sBoolOpt is False
 
-    # Raw-Data: created with sInt=200 and sBoolOpt=True
-    raw_data = b"0\r\x80\x02\x00\xc8\x81\x01\x00\x82\x01\xff\x83\x01\x00"
+
+def test_constr_seq_parse():
+    obj = ExampleSequence()
+    obj.sBitStr = b"2"
+    obj.snBitStr = 2
+    obj.sOid = "1.2.3.4"
+    obj.sRelOid = "1.2.3.4.5"
+    raw_data = obj.encode()
+
     parsed = ExampleSequence.decode(raw_data)
     assert parsed.is_valid()
-    assert parsed.sInt == 200
-    assert parsed.sBoolOpt is True
+    assert parsed.sBitStr == bitarray("01001100")
     assert parsed.encode() == raw_data
+
+
+test_constr_seq_init()

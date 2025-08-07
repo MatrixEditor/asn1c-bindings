@@ -13,6 +13,12 @@ PyCompatRelativeOID_AsUTF8String(const RELATIVE_OID_t *oid) {
     size_t arc_slots = sizeof(fixed_arcs) / sizeof(fixed_arcs[0]);
     ssize_t arc_count = 0;
 
+    if(!oid->buf || !oid->size) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid arguments: empty RELATIVE-OID");
+        return NULL;
+    }
+
     arc_count = RELATIVE_OID_get_arcs(oid, arcs, arc_slots);
     if(arc_count > arc_slots) {
         arc_slots = arc_count;

@@ -108,7 +108,7 @@ end:
 
 #define PyCompat_DEF_ENUM(name)               \
     typedef PyObject PyAsnEnum##name##Object; \
-    extern PyObject* PyAsnEnum##name##Object_Type;
+    extern PyObject* PyAsnEnum##name##_Type;
 
 #define PyCompat_DEF_INNER_CHOICE(outerTypeName, name) \
     typedef struct _##outerTypeName##_##name##_Py {    \
@@ -522,9 +522,13 @@ end:
     PY_IMPL_SEQ_ATTR_FREE(typeName, attrName, PyMem_RawFree(dst->attrName))
 
 
-#define PY_IMPL_SEQ_ATTR_GENERIC_NEW(typeName, attrName, attrType)      \
-    static inline attrType* PyAsn##typeName##__##attrName##_New(void) { \
-        return (attrType*)PyMem_RawMalloc(sizeof(attrType));            \
+#define PY_IMPL_SEQ_ATTR_GENERIC_NEW(typeName, attrName, attrType)          \
+    static inline attrType* PyAsn##typeName##__##attrName##_New(void) {     \
+        static const size_t _##typeName##__##attrName##_size =              \
+            sizeof(attrType);                                               \
+        void* newValue = PyMem_RawMalloc(_##typeName##__##attrName##_size); \
+        memset(newValue, 0, _##typeName##__##attrName##_size);              \
+        return (attrType*)newValue;                                         \
     }
 
 #define PY_IMPL_SEQ_ATTR_INDIRECT_FROMPY(typeName, attrName, ...) \
@@ -553,6 +557,9 @@ end:
     static inline PyObject* PyAsn##typeName##__##attrName##_ToPython( \
         typeName##_t* src, PyObject* parent) {                        \
         void* target = (void*)src->attrName;                          \
+        if(!target) {                                                 \
+            Py_RETURN_NONE;                                           \
+        };                                                            \
         return __VA_ARGS__;                                           \
     }
 
@@ -564,12 +571,19 @@ end:
     }
 
 
-#define PY_IMPL_SEQ_GETATTR(typeName, attrName, isOptional)               \
+#define PY_IMPL_SEQ_OPT_GETATTR(typeName, attrName)                       \
     static PyObject* PyAsn##typeName##__get_##attrName(                   \
         PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {        \
-        if((isOptional) && !self->ob_value->attrName) {                   \
+        if(!(self->ob_value->attrName)) {                                 \
             Py_RETURN_NONE;                                               \
         }                                                                 \
+        return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
+                                                        (PyObject*)self); \
+    }
+
+#define PY_IMPL_SEQ_GETATTR(typeName, attrName)                           \
+    static PyObject* PyAsn##typeName##__get_##attrName(                   \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {        \
         return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
                                                         (PyObject*)self); \
     }
@@ -637,11 +651,11 @@ end:
 #define PY_IMPL_SEQ_INIT(typeName)                                         \
     static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,      \
                                        PyObject* args, PyObject* kwargs) { \
+        self->s_valid = 1;                                                 \
         PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                       \
         if(PyAsn##typeName##_FromPython(kwargs, self->ob_value) < 0) {     \
             return -1;                                                     \
         }                                                                  \
-        self->s_valid = 1;                                                 \
         return 0;                                                          \
     }
 

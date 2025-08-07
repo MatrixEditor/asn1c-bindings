@@ -798,9 +798,11 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
         safe_fwrite(ot->buf, ot->len, 1, fp_c);
 
     if(include_py) {
-        safe_fprintf(fp_py_c, "#include \"%s_Py.h\"\n\n", filename);
+        safe_fprintf(fp_py_c, "#include \"%s_Py.h\"\n", filename);
+        TQ_FOR(ot, &(cs->destination[OT_PY_IMPL_INCLUDES].chunks), next)
+            safe_fwrite(ot->buf, ot->len, 1, fp_py_c);
 
-        safe_fprintf(fp_py_c, "/* class implementation */\n");
+        safe_fprintf(fp_py_c, "\n/* class implementation */\n");
         TQ_FOR(ot, &(cs->destination[OT_PY_IMPL_CODE].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_py_c);
 

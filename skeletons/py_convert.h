@@ -261,8 +261,11 @@ PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
 #define PyCompatUnicode_FromStringAndSize(str, size) \
     PyUnicode_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
+#define PyCompatUnicode_AsUTF8(obj, str, size) \
+    PyUnicode_AsUTF8((PyObject *)(obj), (char **)(str), (Py_ssize_t *)(size))
+
 static inline int
-PyCompatUnicode_AsUTF8(PyObject *pObj, char **str, Py_ssize_t *size) {
+_PyCompatUnicode_AsUTF8(PyObject *pObj, char **str, Py_ssize_t *size) {
     PyCompatUnicode_Check(pObj, -1);
     *str = (char *)PyUnicode_AsUTF8AndSize(pObj, size);
     return *str == NULL ? -1 : 0;
@@ -343,8 +346,12 @@ PyCompatEnum_AsObject(PyObject *pEnumType, void *src, int is_signed) {
     }
 }
 
+#define PyCompatFlag_AsObject(pEnumType, str, size)                      \
+    _PyCompatFlag_AsObject((PyObject *)(pEnumType), (const char *)(str), \
+                           (Py_ssize_t)(size))
+
 static inline PyObject *
-PyCompatFlag_AsObject(PyObject *pEnumType, const char *str, Py_ssize_t size) {
+_PyCompatFlag_AsObject(PyObject *pEnumType, const char *str, Py_ssize_t size) {
     PyObject *nValue = NULL, *nResult = NULL;
     if((nValue = PyCompatBitArray_AsLong(str, size)) != NULL) {
         nResult = PyObject_CallOneArg(pEnumType, nValue);

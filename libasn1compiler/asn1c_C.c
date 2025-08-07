@@ -1868,6 +1868,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             case ASN_CONSTR_SET:
             case ASN_CONSTR_SEQUENCE:
                 // will get their own implementation
+                PY_GEN_SEQ_NULL_GETSET(parent_type_id, tmp_member_name,
+                                       optional, indirect);
                 break;
             default:
                 break;
@@ -1883,6 +1885,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             case ASN_CONSTR_SET:
             case ASN_CONSTR_SEQUENCE:
                 // will get their own implementation
+                PY_GEN_SEQ_OID_GETSET(parent_type_id, tmp_member_name, optional,
+                                      indirect);
                 break;
             default:
                 break;
@@ -1893,13 +1897,15 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             break;
 
         case ASN_BASIC_BIT_STRING:
+            if(el_count) goto embed_enumeration;
             switch(parent_expr_type) {
             case ASN_CONSTR_CHOICE:
                 PY_GEN_CHOICE_BITSTRING_GETSET(parent_type_id, tmp_member_name);
                 break;
             case ASN_CONSTR_SET:
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
+                PY_GEN_SEQ_BITSTR_GETSET(parent_type_id, tmp_member_name,
+                                         optional, indirect);
                 break;
             default:
                 break;
@@ -1914,7 +1920,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 break;
             case ASN_CONSTR_SET:
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
+                PY_GEN_SEQ_RELATIVE_OID_GETSET(parent_type_id, tmp_member_name,
+                                               optional, indirect);
                 break;
             default:
                 break;
@@ -1945,7 +1952,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 break;
             case ASN_CONSTR_SET:
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
+                PY_GEN_SEQ_STRING_GETSET(parent_type_id, tmp_member_name,
+                                         optional, indirect);
                 break;
             default:
                 break;
@@ -1970,6 +1978,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             size_t enum_member_name_len =
                 strlen(parent_type_id) + strlen(tmp_member_name) + 2;
             int is_signed = TYPE_IS_SIGNED(arg, expr);
+            int is_bitstr = arg->expr->expr_type == ASN_BASIC_BIT_STRING;
 
             // size is len(parent_type_id) + len(tmp_member_name) + len('_') +1
             constr_enum_name = (char *)malloc(enum_member_name_len);
@@ -1977,19 +1986,38 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                      parent_type_id, tmp_member_name);
 
             REDIR(OT_PY_TYPE_DECLS);
-            OUT("typedef PyObject PyAsnEnum%sObject;\n", constr_enum_name);
-            OUT("extern PyObject *PyAsnEnum%s_Type;\n", constr_enum_name);
+            OUT("PyCompat_DEF_ENUM(%s);\n", constr_enum_name);
 
             /* the type object MUST be initialized with NULL */
             REDIR(OT_PY_IMPL_CODE);
             OUT("PyObject *PyAsnEnum%s_Type = NULL;\n", constr_enum_name);
 
             // std enum conversion
-            if(parent_expr_type == ASN_CONSTR_CHOICE) {
-                PY_GEN_CHOICE_ENUM_GETSET(parent_type_id, tmp_member_name,
-                                          constr_enum_name, is_signed);
-            } else {
-                // will get their own implementation
+            switch(parent_expr_type) {
+            case ASN_CONSTR_CHOICE:
+                if(is_bitstr) {
+                    PY_GEN_CHOICE_NAMED_BITSTRING_GETSET(
+                        parent_type_id, tmp_member_name, constr_enum_name);
+                    break;
+                } else {
+                    PY_GEN_CHOICE_ENUM_GETSET(parent_type_id, tmp_member_name,
+                                              constr_enum_name, is_signed);
+                }
+                break;
+            case ASN_CONSTR_SET:
+            case ASN_CONSTR_SEQUENCE:
+                if(is_bitstr) {
+                    PY_GEN_SEQ_NAMED_BITSTR_GETSET(
+                        parent_type_id, tmp_member_name, constr_enum_name,
+                        optional, indirect);
+                } else {
+                    PY_GEN_SEQ_ENUM_GETSET(parent_type_id, tmp_member_name,
+                                           constr_enum_name, is_signed,
+                                           optional, indirect);
+                }
+                break;
+            default:
+                break;
             }
 
             /* module init */
@@ -2006,7 +2034,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 case A1TC_UNIVERVAL:
                     tmp_name = c_member_name(arg, v);
                     OUT("PY_IMPL_ENUM_VALUE(%s, %s, %s);\n", tmp_name, tmp_name,
-                        asn1p_itoa(v->value->value.v_integer));
+                        asn1p_itoa(is_bitstr ? (1 << v->value->value.v_integer)
+                                             : v->value->value.v_integer));
                     break;
                 case A1TC_EXTENSIBLE:
                     OUT("/*\n");
