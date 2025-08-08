@@ -94,13 +94,20 @@
 #define PY_GEN_TYPE_ATTRSTR(typeName, attrName) \
     OUT(("PY_IMPL_GETSET_ITEM(%s, %s),\n"), typeName, attrName)
 
-#define PY_GEN_CLASS_BEGIN(modName, typeName)                       \
+#define PY_GEN_CLASS_BEGIN(modName, typeName)                 \
+    PY_GEN_CLASS_BEGIN_INTERNAL(modName, typeName, typeName); \
+    PY_GEN_CLASS_DOC("ASN.1 %s type", typeName)
+
+#define PY_GEN_CLASS_DOC(docfmt, ...) \
+    OUT(".tp_doc = \"" docfmt "\",\n", __VA_ARGS__);
+
+
+#define PY_GEN_CLASS_BEGIN_INTERNAL(modName, typeName, pyTypeName)  \
     OUT("PyTypeObject PyAsn%s_Type = {\n", typeName);               \
     INDENT(+1);                                                     \
     OUT("PyVarObject_HEAD_INIT(NULL, 0)\n");                        \
-    OUT(".tp_name = \"%s.%s\",\n", (modName), typeName);            \
+    OUT(".tp_name = \"%s.%s\",\n", (modName), pyTypeName);          \
     OUT(".tp_basicsize = sizeof(PyAsn%sObject),\n", typeName);      \
-    OUT(".tp_doc = \"ASN.1 %s type\",\n", typeName);                \
     OUT(".tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,\n"); \
     OUT(".tp_new = (newfunc)PyAsn%s__new,\n", typeName);            \
     OUT(".tp_repr = (reprfunc)PyAsn%s__repr,\n", typeName);         \
@@ -417,15 +424,15 @@
         (enumTypeName), (isSigned));                                       \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_BITSTR_GETSET(typeName, attrName, optional, indirect)    \
-    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
-        "PyCompatBitArray_ToStringAndSize(value, &((BIT_STRING_t "          \
-        "*)target)->buf, &((BIT_STRING_t *)target)->size));\n",             \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
-    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                  \
-        "PyCompatBitArray_FromStringAndSize(((BIT_STRING_t *)target)->buf, "   \
-        "((BIT_STRING_t *)target)->size));\n",                              \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+#define PY_GEN_SEQ_BITSTR_GETSET(typeName, attrName, optional, indirect)     \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
+        "PyCompatBitArray_ToStringAndSize(value, &((BIT_STRING_t "           \
+        "*)target)->buf, &((BIT_STRING_t *)target)->size));\n",              \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                   \
+        "PyCompatBitArray_FromStringAndSize(((BIT_STRING_t *)target)->buf, " \
+        "((BIT_STRING_t *)target)->size));\n",                               \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
 #define PY_GEN_SEQ_NAMED_BITSTR_GETSET(typeName, attrName, enumTypeName,    \

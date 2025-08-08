@@ -49,6 +49,9 @@ ExampleChoice ::= CHOICE {
         cnbsB(2),
         cnbsC(3),
         cnbsOutOfBounds(1000)
+    },
+    cSeq        SEQUENCE {
+        ciInt       INTEGER
     }
 }
 
@@ -80,7 +83,13 @@ ExampleSequence ::= SEQUENCE {
     sRelOid         RELATIVE-OID,
     sRelOidOpt      RELATIVE-OID OPTIONAL,
     sReal           REAL,
-    sRealOpt        REAL OPTIONAL
+    sRealOpt        REAL OPTIONAL,
+    sSeq            SEQUENCE {
+        siInt           INTEGER,
+        siSeq           SEQUENCE {
+            siiInt          INTEGER
+        }
+    }
 }
 
 END

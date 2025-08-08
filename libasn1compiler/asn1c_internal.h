@@ -61,9 +61,11 @@ typedef struct arg_s {
 
     int embed;
 
+
     /*python code generation*/
-    const char *pymodule_qualname;
-    const char *pymodule_name;
+    size_t anonymous_inner;        /* anonymous inner type counter*/
+    const char *pymodule_qualname; /* python module qualname*/
+    const char *pymodule_name;     /* python module name*/
     struct compiler_streams *pytarget;
 } arg_t;
 

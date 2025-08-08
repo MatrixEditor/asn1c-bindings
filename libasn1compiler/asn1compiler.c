@@ -66,6 +66,7 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
             arg->target = cs;
             arg->pymodule_qualname = pymodule;
             arg->pymodule_name = pymodule_name;
+            arg->anonymous_inner = 0;
             ret = asn1c_compile_expr(arg, NULL);
             if(ret) {
                 FATAL("Cannot compile \"%s\" (%x:%x) at line %d",
