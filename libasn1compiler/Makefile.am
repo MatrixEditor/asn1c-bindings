@@ -17,6 +17,7 @@ libasn1compiler_la_SOURCES =                \
     asn1c_naming.c asn1c_naming.h           \
     asn1c_save.c asn1c_save.h               \
     asn1c_C.c asn1c_C.h                     \
+    asn1c_Py.c asn1c_Py.h                   \
     asn1c_constraint.c asn1c_constraint.h   \
     asn1c_compat.c asn1c_compat.h           \
     asn1c_ioc.c asn1c_ioc.h                 \
