@@ -194,6 +194,9 @@ _PyCompatBitArray_ToStringAndSize(PyObject *pObj, char **str,
         if((nTmpBytes =
                 PyObject_CallMethodNoArgs(pObj, PyCompatTable->str__to_bytes))
            == NULL) {
+            PyErr_Clear();
+            PyErr_SetString(PyExc_ValueError,
+                            "Expected a bytes or bitarray object!");
             goto error;
         }
     } else {
@@ -256,7 +259,15 @@ PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
 }
 
 #define PyCompatUnicode_AsUTF8AndSize(obj, size) \
-    PyUnicode_AsUTF8AndSize(obj, (Py_ssize_t *)(size))
+    _PyCompatUnicode_AsUTF8AndSize(obj, (Py_ssize_t *)(size))
+
+static inline char *
+_PyCompatUnicode_AsUTF8AndSize(PyObject *pObj, Py_ssize_t *size) {
+    const char *str = NULL;
+
+    str = PyUnicode_AsUTF8AndSize(pObj, size);
+    return str ? strdup(str) : NULL;
+}
 
 #define PyCompatUnicode_FromStringAndSize(str, size) \
     PyUnicode_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
@@ -267,7 +278,11 @@ PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
 static inline int
 _PyCompatUnicode_AsUTF8(PyObject *pObj, char **str, Py_ssize_t *size) {
     PyCompatUnicode_Check(pObj, -1);
-    *str = (char *)PyUnicode_AsUTF8AndSize(pObj, size);
+    if(*str) {
+        PyMem_Free(*str);
+    }
+
+    *str = _PyCompatUnicode_AsUTF8AndSize(pObj, size);
     return *str == NULL ? -1 : 0;
 }
 
@@ -308,6 +323,8 @@ PyCompatEnum_AsSsize_t(PyObject *pObj) {
         Py_XDECREF(nValue);
         return result;
     }
+    PyErr_Clear();
+    PyErr_SetString(PyExc_ValueError, "Invalid enum value");
     return -1;
 }
 
@@ -324,6 +341,8 @@ PyCompatEnum_AsSize_t(PyObject *pObj) {
         Py_XDECREF(nValue);
         return result;
     }
+    PyErr_Clear();
+    PyErr_SetString(PyExc_ValueError, "Invalid enum value");
     return -1;
 }
 
@@ -334,7 +353,7 @@ PyCompatEnum_FromObject(PyObject *pObj, void *dst, int is_signed) {
     } else {
         *(size_t *)dst = PyCompatEnum_AsSize_t(pObj);
     }
-    return 0;
+    return PyErr_Occurred() != NULL ? -1 : 0;
 }
 
 static inline PyObject *

@@ -23,6 +23,7 @@ ExampleNull ::= NULL
 ExampleObjectIdentifier ::= OBJECT IDENTIFIER
 ExampleRelativeOid ::= RELATIVE-OID
 ExampleReal ::= REAL
+ExampleUTF8String ::= UTF8String
 
 ExampleChoice ::= CHOICE {
     foo         OCTET STRING,

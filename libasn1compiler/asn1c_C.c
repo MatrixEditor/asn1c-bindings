@@ -487,6 +487,45 @@ py_type_name(arg_t *arg, asn1p_expr_t *expr, int flags) {
 }
 
 static char *
+get_py_class_name(arg_t *arg, asn1p_expr_t *expr) {
+    asn1p_expr_t *parent = expr->parent_expr;
+    char *constr_type_name = NULL, *tmp_name = NULL, *tmp_parent_name = NULL;
+    size_t tmp_len = 0, cur_len = 0;
+    int has_parent = 0;
+
+    constr_type_name = strdup(MKID(expr));
+    cur_len = strlen(constr_type_name);
+
+    while(parent && arg->embed) {
+        has_parent = parent->parent_expr ? 1 : 0;
+        tmp_parent_name = strdup(MKID(parent));
+        tmp_name = constr_type_name;
+        tmp_len = strlen(tmp_parent_name) + cur_len + 1 + (has_parent ? 5 : 0);
+        constr_type_name = malloc(tmp_len + 1);
+
+
+        snprintf(constr_type_name, tmp_len + 1, "%s%s.%s", tmp_parent_name,
+                 has_parent ? "_TYPE" : "", tmp_name);
+        ASN_XFREE(tmp_name);
+        ASN_XFREE(tmp_parent_name);
+        parent = parent->parent_expr;
+        cur_len = tmp_len;
+        constr_type_name[tmp_len] = '\0';
+    }
+
+    if(arg->embed) {
+        tmp_len = cur_len + 5;
+        tmp_name = constr_type_name;
+        constr_type_name = malloc(tmp_len + 1);
+        snprintf(constr_type_name, tmp_len + 1, "%s_TYPE", tmp_name);
+        ASN_FREE(tmp_name);
+        constr_type_name[tmp_len] = '\0';
+    }
+
+    return constr_type_name;
+}
+
+static char *
 py_parent_type_name(arg_t *arg, asn1p_expr_t *expr) {
     char *tmp_name = NULL;
     asn1p_expr_t *parent = expr->parent_expr;
@@ -603,7 +642,7 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
 
     type_name = py_type_name(arg, expr, PYTNF_CONSTR);
     constr_struct_name = strdup(MKID(arg->expr));
-    py_class_name = py_type_name(arg, expr, PYTNF_CLASS | PYTNF_CONSTR);
+    py_class_name = get_py_class_name(arg, expr);
     parent_type_name = py_parent_type_name(arg, expr);
     inner_parent_name = NULL;
     constr_path = NULL;
@@ -693,23 +732,24 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
             constr_struct_name, (indirect ? "" : "&"),
             (parent_is_choice ? "src->choice." : "src->"), constr_struct_name,
             type_name);
-        OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %s%s%s, %s);\n",
-            deep_embed ? inner_parent_name : parent_type_name,
-            constr_struct_name, (indirect ? "" : "&"),
-            (parent_is_choice ? "self->ob_value->choice." : "self->ob_value->"),
-            constr_struct_name, type_name);
-        if(indirect) {
-            /* provide a way to free the structure */
-            OUT("PY_IMPL_SEQ_INNER_OPT_SETATTR(%s, %s, %s%s, %s %s);\n",
+
+        if(parent_is_choice) {
+            OUT("PY_IMPL_SEQ_CHOICE_SETATTR(%s, %s, %s, *%s);\n",
+                deep_embed ? inner_parent_name : parent_type_name, type_name,
+                constr_struct_name, constr_path);
+            OUT("PY_IMPL_CHOICE_GETATTR(%s, %s);\n",
                 deep_embed ? inner_parent_name : parent_type_name,
-                constr_struct_name, (parent_is_choice ? "choice." : ""),
-                constr_struct_name, type_name, constr_path);
+                constr_struct_name);
         } else {
-            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s%s, %s);\n",
+            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
                 optional ? "_OPT" : "",
                 deep_embed ? inner_parent_name : parent_type_name,
-                constr_struct_name, (parent_is_choice ? "choice." : ""),
-                constr_struct_name, type_name);
+                constr_struct_name, constr_struct_name, type_name);
+            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
+                "%s);\n",
+                deep_embed ? inner_parent_name : parent_type_name,
+                constr_struct_name, (indirect ? "" : "&"), constr_struct_name,
+                type_name);
         }
     }
 
@@ -734,7 +774,7 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
                                 py_class_name);
     if(arg->embed) {
         PY_GEN_CLASS_DOC("ASN.1 anonymous type %s part of %s",
-                         strchr(py_class_name, '.') + 1, parent_type_name);
+                         strrchr(py_class_name, '.') + 1, constr_struct_name);
     } else {
         PY_GEN_CLASS_DOC("ASN.1 %s type", py_class_name);
     }
@@ -744,14 +784,15 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     REDIR(OT_PY_IMPL_CODE_MOD_SETUP);
     INDENTED(PY_GEN_MOD_SETUP_SINGLE(type_name));
     REDIR(OT_PY_IMPL_CODE_MOD_INIT);
-    if(arg->embed) {
-        INDENTED(OUT("PY_IMPL_MOD_ASSIGN_OBJECT(%s, %s, &PyAsn%s_Type);\n",
-                     parent_type_name, type_name, type_name));
-        /* this could be used to set the new type into another anonymous SEQ */
-        // NDENTED(OUT("PY_IMPL_MOD_ASSIGN_OBJECT(%s, %s, &PyAsn%s_Type);\n",
-        //              inner_parent_name, type_name, type_name));
-    } else {
+    if(arg->embed == 1) {
+        INDENTED(OUT("PY_IMPL_MOD_ASSIGN_OBJECT(%s, %s_TYPE, &PyAsn%s_Type);\n",
+                     parent_type_name, constr_struct_name, type_name));
+    } else if(arg->embed == 0) {
         INDENTED(PY_GEN_MOD_INIT_SINGLE(type_name));
+    } else {
+        /* this could be used to set the new type into another anonymous SEQ */
+        INDENTED(OUT("PY_IMPL_MOD_ASSIGN_OBJECT(%s, %s_TYPE, &PyAsn%s_Type);\n",
+                     inner_parent_name, constr_struct_name, type_name));
     }
 
     ASN_XFREE(type_name);
@@ -1989,6 +2030,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
     int el_count = expr_elements_count(arg, expr);
     int optional = expr->marker.flags & EM_OPTIONAL;
     int indirect = expr->marker.flags & EM_INDIRECT;
+    int is_signed = asn1c_type_fits_long(arg, expr) != FL_FITS_UNSIGN;
     if(expr->parent_expr) {
         parent_type_id = py_type_name(arg, expr->parent_expr, PYTNF_NONE);
     }
@@ -2598,12 +2640,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
         case ASN_BASIC_ENUMERATED: {
         basic_enumeration:
             PY_GEN_ASNTYPE_FROMPY_INLINE(type_id);
-            if(asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
-                OUT("*pDst = (%s_t)PyCompatEnum_AsSize_t(pObj);\n", type_id);
-            } else {
-                OUT("*pDst = (%s_t)PyCompatEnum_AsSsize_t(pObj);\n", type_id);
-            }
-            OUT("return 0;\n");
+            OUT("return PyCompatEnum_FromObject(pObj, (void *)pDst, %d);\n",
+                is_signed);
             PY_GEN_END_FUNC();
 
             PY_GEN_ASNTYPE_TOPY_INLINE(type_id);
