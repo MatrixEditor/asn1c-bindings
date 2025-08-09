@@ -14,7 +14,7 @@ def test_real_accepts_valid_float():
 
 def test_real_decodes_correctly():
     raw_data = b"\t\t\x80\xcd\t\xd7\n=p\xa3\xd7"
-    parsed = ExampleReal.decode(raw_data)
+    parsed = ExampleReal.ber_decode(raw_data)
     assert parsed.is_valid()
     assert math.isclose(parsed.value, 1.23, rel_tol=1e-9)
 
@@ -22,8 +22,8 @@ def test_real_decodes_correctly():
 def test_real_encodes_correctly():
     obj = ExampleReal()
     obj.value = 1.23
-    encoded = obj.encode()
-    decoded = ExampleReal.decode(encoded)
+    encoded = obj.ber_encode()
+    decoded = ExampleReal.ber_decode(encoded)
     assert decoded.value == 1.23
 
 
@@ -39,7 +39,7 @@ def test_real_rejects_invalid_type():
 def test_real_decoding_fails_with_wrong_tag():
     raw_data = b"\x02\x01\x01"  # INTEGER encoding
     with pytest.raises(ValueError):
-        ExampleReal.decode(raw_data)
+        ExampleReal.ber_decode(raw_data)
 
 
 def test_real_supports_special_float_values():

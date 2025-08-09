@@ -3,6 +3,21 @@
 /*global state storing extra Python objects*/
 PyCompatTable_t *PyCompatTable = NULL;
 
+int
+PyCompat_GetFlagsFromArgs(PyObject *kwargs, PyAsnFlags_t *flags) {
+    static char *kwlist[] = {"minified", "aligned", "canonical", NULL};
+
+    flags->aligned = 0;
+    flags->canonical = 0;
+    flags->minified = 0;
+    if(kwargs == NULL) {
+        return 0;
+    }
+    return PyArg_ParseTupleAndKeywords(NULL, kwargs, "|$ppp", kwlist,
+                                       &flags->minified, &flags->aligned,
+                                       &flags->canonical);
+}
+
 void
 PyCompat_Clear(void) {
     Py_CLEAR(PyCompatTable->PyBytesIO_Type);

@@ -15,7 +15,7 @@ def test_OCTET_STRING_accepts_valid_bytes_and_is_valid():
 
 def test_OCTET_STRING_decodes_correctly():
     raw_data = b"\x04\x03\x01\x02\x03"
-    parsed = ExampleOctetString.decode(raw_data)
+    parsed = ExampleOctetString.ber_decode(raw_data)
     assert parsed.value == b"\x01\x02\x03"
 
 
@@ -26,7 +26,7 @@ def test_OCTET_STRING_encodes_correctly():
     """
     obj = ExampleOctetString()
     obj.value = b"\x01\x02\x03"
-    assert obj.encode() == b"\x04\x03\x01\x02\x03"
+    assert obj.ber_encode() == b"\x04\x03\x01\x02\x03"
 
 
 def test_OCTET_STRING_rejects_empty_bytes():
@@ -47,7 +47,7 @@ def test_OCTET_STRING_encoding_fails_if_invalid_size():
     obj = ExampleOctetString()
     obj.value = b"0" * 33  # invalid length
     with pytest.raises(ValueError):
-        obj.encode()
+        obj.ber_encode()
 
 
 def test_OCTET_STRING_rejects_non_bytes_type():
@@ -64,11 +64,11 @@ def test_OCTET_STRING_rejects_non_bytes_type():
 def test_OCTET_STRING_decoding_fails_with_truncated_data():
     raw_data = b"\x04\x03\x01\x02"  # missing last byte
     with pytest.raises(ValueError):
-        ExampleOctetString.decode(raw_data)
+        ExampleOctetString.ber_decode(raw_data)
 
 
 def test_OCTET_STRING_decoding_fails_with_wrong_tag():
     # Tag 0x02 = INTEGER, not OCTET STRING
     raw_data = b"\x02\x03\x01\x02\x03"
     with pytest.raises(ValueError):
-        ExampleOctetString.decode(raw_data)
+        ExampleOctetString.ber_decode(raw_data)

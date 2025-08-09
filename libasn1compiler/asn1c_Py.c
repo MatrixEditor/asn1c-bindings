@@ -125,6 +125,7 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
         PY_GEN_TYPE_DECODE(type_name);
         OUT("PY_IMPL_SEQ_GENERIC_TOPY(%s);\n", type_name);
     }
+    PY_GEN_TYPE_PARSERS(type_name);
 
     /* next methods are shared */
     PY_GEN_TYPE_NEW(type_name);
@@ -254,6 +255,7 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
         PY_GEN_TYPE_DECODE(type_name);
         PY_GEN_TYPE_REPR(type_name);
         PY_GEN_TYPE_IS_VALID(type_name);
+        PY_GEN_TYPE_PARSERS(type_name);
 
         OUT("PyObject *PyAsnEnum%s_PRESENT_Type = NULL;\n", type_name);
         OUT("PY_IMPL_CHOICE_PRESENT_ATTR(%s);\n", type_name);

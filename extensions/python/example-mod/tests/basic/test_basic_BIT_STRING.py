@@ -46,7 +46,7 @@ def test_BIT_STRING_returns_equivalent_bitarray():
 def test_BIT_STRING_decodes_correctly():
     bit_data = bitarray(b"\x01\x02\x03", endian="little")
     raw_data = b"\x03\x04\x00\x01\x02\x03"
-    parsed = ExampleBitString.decode(raw_data)
+    parsed = ExampleBitString.ber_decode(raw_data)
     assert parsed.value == bit_data
 
 
@@ -55,4 +55,4 @@ def test_BIT_STRING_encodes_correctly():
     raw_data = b"\x03\x04\x00\x01\x02\x03"
     obj = ExampleBitString()
     obj.value = bit_data
-    assert obj.encode() == raw_data
+    assert obj.ber_encode() == raw_data

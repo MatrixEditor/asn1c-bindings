@@ -70,6 +70,8 @@ enum asn_transfer_syntax {
     ATS_JER_MINIFIED,
 };
 
+typedef enum asn_transfer_syntax e_asn_transfer_syntax_t;
+
 /*
  * A generic encoder for any supported transfer syntax.
  * RETURN VALUES:

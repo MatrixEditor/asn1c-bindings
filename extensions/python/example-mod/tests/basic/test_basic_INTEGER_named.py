@@ -12,6 +12,7 @@ def test_named_INTEGER_rejects_invalid_integer():
     # exception to be raised. Only trying to convert the value back to
     # the Python representation will cause an exception.
     obj = NamedSigned8()
+    x = NamedSigned8.ber_decode(b"\x02\x01\x63")
     obj.value = 99
     assert obj.is_valid()
     with pytest.raises(ValueError):
@@ -54,8 +55,8 @@ def test_named_INTEGER_round_trip_encoding_decoding():
     #   an equivalent object (value-wise).
     obj = NamedSigned8()
     obj.value = NamedSigned8.VALUES.NamedSigned8_third
-    encoded = obj.encode()
-    decoded = NamedSigned8.decode(encoded)
+    encoded = obj.ber_encode()
+    decoded = NamedSigned8.ber_decode(encoded)
     assert decoded.value == obj.value
 
 
@@ -72,7 +73,7 @@ def test_named_INTEGER_encoding_of_each_enum_member(
 ):
     obj = NamedSigned8()
     obj.value = enum_val
-    assert obj.encode() == expected
+    assert obj.ber_encode() == expected
 
 
 def test_named_INTEGER_repr_shows_class_name():

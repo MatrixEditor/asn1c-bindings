@@ -27,8 +27,16 @@ typedef struct {
 
 extern PyCompatTable_t* PyCompatTable;
 
+typedef struct {
+    int minified;
+    int aligned;
+    int canonical;
+} PyAsnFlags_t;
+
 int PyCompat_Init(void);
 void PyCompat_Clear(void);
+
+int PyCompat_GetFlagsFromArgs(PyObject* kwargs, PyAsnFlags_t* flags);
 
 static inline PyObject*
 PyCompat_CheckConstaints(const asn_TYPE_descriptor_t* pTypeDescriptor,
@@ -66,15 +74,16 @@ success:
 }
 
 static PyObject*
-PyCompat_Encode_DER(const asn_TYPE_descriptor_t* pTypeDescriptor,
-                    const void* pValue) {
+PyCompat_Encode(enum asn_transfer_syntax ats,
+                const asn_TYPE_descriptor_t* pTypeDescriptor,
+                const void* pValue) {
     PyObject *nStream = NULL, *nResult = NULL;
     asn_enc_rval_t rval;
     if((nStream = PyObject_CallNoArgs(PyCompatTable->PyBytesIO_Type)) == NULL) {
         goto end;
     }
-
-    rval = der_encode(pTypeDescriptor, pValue, PyCompat_WriteToStream, nStream);
+    rval = asn_encode(NULL, ats, pTypeDescriptor, pValue,
+                      PyCompat_WriteToStream, nStream);
     if(rval.encoded < 0) {
         PyErr_Format(PyExc_ValueError, "Failed to encode %s",
                      rval.failed_type->name);
@@ -246,11 +255,12 @@ end:
     }
 
 
+/* Encode */
 #define PY_IMPL_GENERIC_ENCODE(name) PY_IMPL_ENCODE(name, &asn_DEF_##name)
 
 #define PY_IMPL_ENCODE(name, type_DEF)                                     \
     static PyObject* PyAsn##name##__encode(PyAsn##name##Object* self,      \
-                                           PyObject* Py_UNUSED(ignored)) { \
+                                           enum asn_transfer_syntax ats) { \
         if(!self->s_valid) {                                               \
             PyErr_SetString(PyExc_ValueError,                              \
                             "ASN.1 object does not contain valid data");   \
@@ -259,14 +269,72 @@ end:
         if(!PyAsn##name##__check_constraints(self, NULL)) {                \
             return NULL;                                                   \
         }                                                                  \
-        return PyCompat_Encode_DER((type_DEF), self->ob_value);            \
+        return PyCompat_Encode((ats), (type_DEF), self->ob_value);         \
     }
 
+#define PY_IMPL_ENCODE_XER(typeName)                                       \
+    static PyObject* PyAsn##typeName##__xer_encode(                        \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) { \
+        PyAsnFlags_t flags;                                                \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {                \
+            return NULL;                                                   \
+        }                                                                  \
+        return PyAsn##typeName##__encode(                                  \
+            self, flags.canonical ? ATS_CANONICAL_XER : ATS_BASIC_XER);    \
+    }
+
+#define PY_IMPL_ENCODE_JER(typeName)                                       \
+    static PyObject* PyAsn##typeName##__jer_encode(                        \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) { \
+        PyAsnFlags_t flags;                                                \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {                \
+            return NULL;                                                   \
+        }                                                                  \
+        return PyAsn##typeName##__encode(                                  \
+            self, flags.minified ? ATS_JER_MINIFIED : ATS_JER);            \
+    }
+
+#define PY_IMPL_ENCODE_PER(typeName)                                       \
+    static PyObject* PyAsn##typeName##__per_encode(                        \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) { \
+        PyAsnFlags_t flags;                                                \
+        e_asn_transfer_syntax_t syntax = ATS_UNALIGNED_BASIC_PER;          \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {                \
+            return NULL;                                                   \
+        }                                                                  \
+        if(flags.aligned) {                                                \
+            syntax = flags.canonical ? ATS_ALIGNED_CANONICAL_PER           \
+                                     : ATS_ALIGNED_BASIC_PER;              \
+        } else {                                                           \
+            syntax = flags.canonical ? ATS_UNALIGNED_CANONICAL_PER         \
+                                     : ATS_UNALIGNED_BASIC_PER;            \
+        }                                                                  \
+        return PyAsn##typeName##__encode(self, syntax);                    \
+    }
+
+#define PY_IMPL_ENCODE_OER(typeName)                                       \
+    static PyObject* PyAsn##typeName##__oer_encode(                        \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) { \
+        PyAsnFlags_t flags;                                                \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {                \
+            return NULL;                                                   \
+        }                                                                  \
+        return PyAsn##typeName##__encode(                                  \
+            self, flags.canonical ? ATS_CANONICAL_OER : ATS_BASIC_OER);    \
+    }
+
+#define PY_IMPL_ENCODE_SPECIFIC(typeName, atsName, atsValue) \
+    static PyObject* PyAsn##typeName##__##atsName##_encode(  \
+        PyAsn##typeName##Object* self) {                     \
+        return PyAsn##typeName##__encode(self, atsValue);    \
+    }
+
+/* Decode */
 #define PY_IMPL_GENERIC_DECODE(name) PY_IMPL_DECODE(name, &asn_DEF_##name)
 
 #define PY_IMPL_DECODE(name, type_DEF)                                     \
-    static PyObject* PyAsn##name##__decode(PyTypeObject* Py_UNUSED(type),  \
-                                           PyObject* args) {               \
+    static PyObject* PyAsn##name##__decode(PyObject* args,                 \
+                                           enum asn_transfer_syntax ats) { \
         Py_buffer view;                                                    \
         PyAsn##name##Object* self = NULL;                                  \
         asn_dec_rval_t rval;                                               \
@@ -276,7 +344,7 @@ end:
         if(self == NULL) {                                                 \
             return NULL;                                                   \
         }                                                                  \
-        rval = ber_decode(NULL, (type_DEF), (void**)&self->ob_value,       \
+        rval = asn_decode(NULL, ats, (type_DEF), (void**)&self->ob_value,  \
                           (const void*)view.buf, view.len);                \
         self->s_valid = rval.code == RC_OK;                                \
         switch(rval.code) {                                                \
@@ -302,6 +370,72 @@ end:
         return (PyObject*)self;                                            \
     }
 
+#define PY_IMPL_DECODE_PER(typeName)                                   \
+    static PyObject* PyAsn##typeName##__per_decode(                    \
+        PyObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs) { \
+        PyAsnFlags_t flags;                                            \
+        e_asn_transfer_syntax_t syntax = ATS_UNALIGNED_BASIC_PER;      \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {            \
+            return NULL;                                               \
+        }                                                              \
+        if(flags.aligned) {                                            \
+            syntax = flags.canonical ? ATS_ALIGNED_CANONICAL_PER       \
+                                     : ATS_ALIGNED_BASIC_PER;          \
+        } else {                                                       \
+            syntax = flags.canonical ? ATS_UNALIGNED_CANONICAL_PER     \
+                                     : ATS_UNALIGNED_BASIC_PER;        \
+        }                                                              \
+        return PyAsn##typeName##__decode(args, syntax);                \
+    }
+
+#define PY_IMPL_DECODE_OER(typeName)                                    \
+    static PyObject* PyAsn##typeName##__oer_decode(                     \
+        PyObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs) {  \
+        PyAsnFlags_t flags;                                             \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {             \
+            return NULL;                                                \
+        }                                                               \
+        return PyAsn##typeName##__decode(                               \
+            args, flags.canonical ? ATS_CANONICAL_OER : ATS_BASIC_OER); \
+    }
+
+#define PY_IMPL_DECODE_XER(typeName)                                    \
+    static PyObject* PyAsn##typeName##__xer_decode(                     \
+        PyObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs) {  \
+        PyAsnFlags_t flags;                                             \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {             \
+            return NULL;                                                \
+        }                                                               \
+        return PyAsn##typeName##__decode(                               \
+            args, flags.canonical ? ATS_CANONICAL_XER : ATS_BASIC_XER); \
+    }
+
+#define PY_IMPL_DECODE_JER(typeName)                                   \
+    static PyObject* PyAsn##typeName##__jer_decode(                    \
+        PyObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs) { \
+        PyAsnFlags_t flags;                                            \
+        if(PyCompat_GetFlagsFromArgs(kwargs, &flags) < 0) {            \
+            return NULL;                                               \
+        }                                                              \
+        return PyAsn##typeName##__decode(                              \
+            args, flags.minified ? ATS_JER_MINIFIED : ATS_JER);        \
+    }
+
+
+#define PY_IMPL_DECODE_SPECIFIC(typeName, atsName, atsValue) \
+    static PyObject* PyAsn##typeName##__##atsName##_decode(    \
+        PyObject* Py_UNUSED(type), PyObject* args) {         \
+        return PyAsn##typeName##__decode(args, atsValue);    \
+    }
+
+#define PY_IMPL_DECODE_BER(typeName) \
+    PY_IMPL_DECODE_SPECIFIC(typeName, ber, ATS_BER)
+
+#define PY_IMPL_DECODE_DER(typeName) \
+    PY_IMPL_DECODE_SPECIFIC(typeName, der, ATS_BER)
+
+#define PY_IMPL_DECODE_CER(typeName) \
+    PY_IMPL_DECODE_SPECIFIC(typeName, cer, ATS_CER)
 
 #define PY_IMPL_MEMBER_GETSET(typeName, memberName, memberType, attr) \
     static PyObject* PyAsn##typeName##__get_##memberName(             \
@@ -418,11 +552,11 @@ end:
     static inline int PyAsn##typeName##__##attrName##_FromPython( \
         PyObject* value, typeName##_t* dst) {                     \
         if(!value || Py_IsNone(value)) {                          \
-            dst->present = typeName##_PR_NOTHING;              \
+            dst->present = typeName##_PR_NOTHING;                 \
             return 0;                                             \
         }                                                         \
         if((__VA_ARGS__) < 0) return -1;                          \
-        dst->present = typeName##_PR_##attrName;               \
+        dst->present = typeName##_PR_##attrName;                  \
         return 0;                                                 \
     }
 
@@ -452,7 +586,7 @@ end:
 #define PY_IMPL_CHOICE_GETATTR(typeName, attrName)                        \
     static PyObject* PyAsn##typeName##__get_##attrName(                   \
         PyAsn##typeName##Object* self, void* Py_UNUSED(arg)) {            \
-        if(self->ob_value->present != typeName##_PR_##attrName)        \
+        if(self->ob_value->present != typeName##_PR_##attrName)           \
             return Py_None;                                               \
         return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
                                                         (PyObject*)self); \
@@ -504,22 +638,22 @@ end:
         return 0;                                                          \
     }
 
-#define PY_IMPL_CHOICE_TOPY(typeName)                                        \
-    PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,                  \
-                                         PyObject* parent) {                 \
-        PyAsn##typeName##Object* self = PyCompatCHOICE_New(typeName);        \
-        if(!parent) {                                                        \
-            if(asn_copy(&asn_DEF_##typeName, (void**)&self->ob_value, src)   \
-               < 0) {                                                        \
-                Py_DECREF(self);                                             \
-                return NULL;                                                 \
-            }                                                                \
-        } else {                                                             \
-            self->ob_value = (typeName##_t*)src;                             \
-            self->ob_parent = Py_NewRef(parent);                             \
-        }                                                                    \
-        self->s_valid = self->ob_value->present != typeName##_PR_NOTHING; \
-        return (PyObject*)self;                                              \
+#define PY_IMPL_CHOICE_TOPY(typeName)                                      \
+    PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,                \
+                                         PyObject* parent) {               \
+        PyAsn##typeName##Object* self = PyCompatCHOICE_New(typeName);      \
+        if(!parent) {                                                      \
+            if(asn_copy(&asn_DEF_##typeName, (void**)&self->ob_value, src) \
+               < 0) {                                                      \
+                Py_DECREF(self);                                           \
+                return NULL;                                               \
+            }                                                              \
+        } else {                                                           \
+            self->ob_value = (typeName##_t*)src;                           \
+            self->ob_parent = Py_NewRef(parent);                           \
+        }                                                                  \
+        self->s_valid = self->ob_value->present != typeName##_PR_NOTHING;  \
+        return (PyObject*)self;                                            \
     }
 
 #define PY_IMPL_CHOICE_PRESENT_ATTR(typeName)                             \

@@ -1,9 +1,18 @@
 import enum
-from typing import Generic, override, TypeVar
+from typing import Any, Generic, override, TypeVar
 
 import bitarray
 
 _PY_T = TypeVar("_PY_T")
+_ASN_T = TypeVar("_ASN_T", bound="_Asn1ABC")
+
+# determined by compiler arguments
+_ASN_BER = True
+_ASN_XER = True
+_ASN_JER = True
+_ASN_TXT = True
+_ASN_PER = True
+_ASN_OER = True
 
 # GENERATION OF STUBTS NOT IMPLEMENTED !!!
 
@@ -26,11 +35,70 @@ class _Asn1ABC:
     @override
     def __str__(self) -> str: ...
 
-    # Encoding and decoding is as simple as calling two methods. The
-    # internal binding will do the rest and take care of the encoding.
-    def encode(self) -> bytes: ...
-    # @staticmethod
-    # def decode(data: bytes) -> ClsType: ...
+    # Encoding and decoding is as simple as calling the two desired methods. The
+    # generated methods will depend on the compiler arguments. Below is a full
+    # list of all supported encoders/decoders. Note that the decode methods will
+    # be implemented as STATIC methods. Type checkers require the use of the
+    # classmethod to infer the right type.
+    if _ASN_BER:
+        # Basic Encoding Rules (BER)
+        def ber_encode(self) -> bytes: ...
+        @classmethod
+        def ber_decode(cls: type[_ASN_T], data: bytes) -> _ASN_T: ...
+
+        # Canonical Encoding Rules (CER)
+        def cer_encode(self) -> bytes: ...
+        @classmethod
+        def cer_decode(cls: type[_ASN_T], data: bytes) -> _ASN_T: ...
+
+        # Distinguished Encoding Rules (DER)
+        def der_encode(self) -> bytes: ...
+        @classmethod
+        def der_decode(cls: type[_ASN_T], data: bytes) -> _ASN_T: ...
+
+    if _ASN_XER:
+        # XML Encoding Rules (XER)
+        def xer_encode(self, /, *, canonical: bool = ...) -> bytes: ...
+        @classmethod
+        def xer_decode(
+            cls: type[_ASN_T], data: bytes, /, *, canonical: bool = ...
+        ) -> _ASN_T: ...
+
+    if _ASN_JER:
+        # JSON Encoding Rules (JER)
+        def jer_encode(self, /, *, minified: bool = ...) -> bytes: ...
+        @classmethod
+        def jer_decode(
+            cls: type[_ASN_T], data: bytes, /, *, minified: bool = ...
+        ) -> _ASN_T: ...
+
+    if _ASN_OER:
+        # Octet Encoding Rules (OER)
+        def oer_encode(self, /, *, canonical: bool = ...) -> bytes: ...
+        @classmethod
+        def oer_decode(
+            cls: type[_ASN_T], data: bytes, /, *, canonical: bool = ...
+        ) -> _ASN_T: ...
+
+    if _ASN_PER:
+        # Packed Encoding Rules (PER)
+        def per_encode(
+            self, /, *, canonical: bool = ..., aligned: bool = ...
+        ) -> bytes: ...
+        @classmethod
+        def per_decode(
+            cls: type[_ASN_T],
+            data: bytes,
+            /,
+            *,
+            canonical: bool = ...,
+            aligned: bool = ...,
+        ) -> _ASN_T: ...
+
+    if _ASN_TXT:
+        # Special method with a nonstandard textual output of this object
+        def to_text(self) -> bytes: ...
+
     # To verify the internal value WITHOUT raising an exception, use
     # the following method
     def is_valid(self) -> bool: ...
@@ -74,10 +142,6 @@ class _BasicAsn1EnumType(_Asn1ABC):
     @value.setter
     def value(self, value: _BasicAsn1EnumType.VALUES | int) -> None: ...
 
-    # decode will return an instance of this class
-    @staticmethod
-    def decode(data: bytes) -> _BasicAsn1EnumType: ...
-
 # A special case for named BIT STRING definitions will store a custom
 # enum type ("VALUES") as well, but the internal value uses a bitarray.
 # The internal value-to-bitarray conversion uses LITTLE ENDIAN aligned
@@ -101,10 +165,6 @@ class _BasicAsn1FlagType(_Asn1ABC):
         value: _BasicAsn1FlagType.VALUES | int | bytes | bitarray.bitarray,
     ) -> None: ...
 
-    # decode will return an instance of this class
-    @staticmethod
-    def decode(data: bytes) -> _BasicAsn1FlagType: ...
-
 # -- CHOICE
 # Each union type /CHOICE class implements a special behaviour as only
 # one value can be present at a time. To keep track of the currently stored
@@ -117,19 +177,17 @@ class _BasicAsn1ChoiceType(_Asn1ABC):
         PR_NOTHING = 0
         # naming scheme is as follows:
         #   - <name> := PR_<member_name>
+        ...
 
     # -- members... --
     # Mambers can be set using keyword arguments only!
-    def __init__(self, /, **members) -> None: ...
-    @staticmethod
-    def decode(data: bytes) -> _BasicAsn1ChoiceType: ...
+    def __init__(self, /, **members: Any) -> None: ...
 
 # -- PROPOSED --
 # asn1c should optionally generaty a stub file for each type based in the
 # skeleton code above. For instance:
 class Signed8(_BasicAsn1Type[int]):
-    @staticmethod
-    def decode(data: bytes) -> Signed8: ...
+    pass
 
 class NamedSigned8(_Asn1ABC):
     class VALUES(enum.Enum):
@@ -141,13 +199,11 @@ class NamedSigned8(_Asn1ABC):
     def value(self) -> NamedSigned8.VALUES: ...
     @value.setter
     def value(self, value: NamedSigned8.VALUES | int) -> None: ...
-    @staticmethod
-    def decode(data: bytes) -> NamedSigned8: ...
 
 class ExampleChoice(_Asn1ABC):
     foo: bytes | None
     bar: int | None
     baz: NamedSigned8 | None
 
-    @staticmethod
-    def decode(data: bytes) -> ExampleChoice: ...
+class ExampleNull(_BasicAsn1Type[None]):
+    pass

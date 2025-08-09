@@ -61,13 +61,47 @@
 #define PY_GEN_TYPE_DEFAULT_MEMBER(name) \
     OUT("PY_IMPL_MEMBER_GETSET(%s, value, %s, self->ob_value);\n", name, name)
 
-#define PY_GEN_TYPE_DEFAULT_METHODS(name)                                    \
-    OUT("PY_IMPL_METHODDEF_ITEM(%s, is_valid, METH_NOARGS),\n", name);       \
-    OUT("PY_IMPL_METHODDEF_ITEM(%s, check_constraints, METH_NOARGS),\n",     \
-        name);                                                               \
-    OUT("PY_IMPL_METHODDEF_ITEM(%s, encode, METH_NOARGS),\n", name);         \
-    OUT("PY_IMPL_METHODDEF_ITEM(%s, decode, METH_VARARGS | METH_STATIC),\n", \
-        name);
+#define PY_GEN_TYPE_METHODS_PARSER_KW(typeName, funcName)          \
+    OUT("PY_IMPL_METHODDEF_ITEM(%s, " #funcName                    \
+        "_encode, METH_VARARGS | METH_KEYWORDS),\n",               \
+        typeName);                                                 \
+    OUT("PY_IMPL_METHODDEF_ITEM(%s, " #funcName                    \
+        "_decode, METH_VARARGS | METH_KEYWORDS | METH_STATIC),\n", \
+        typeName);
+
+#define PY_GEN_TYPE_METHODS_PARSER_NOARGS(typeName, funcName)               \
+    OUT("PY_IMPL_METHODDEF_ITEM(%s, " #funcName "_encode, METH_NOARGS),\n", \
+        typeName);                                                          \
+    OUT("PY_IMPL_METHODDEF_ITEM(%s, " #funcName                             \
+        "_decode, METH_VARARGS | METH_STATIC),\n",                          \
+        typeName);
+
+#define PY_GEN_TYPE_DEFAULT_METHODS(type_id)                              \
+    OUT("PY_IMPL_METHODDEF_ITEM(%s, is_valid, METH_NOARGS),\n", type_id); \
+    OUT("PY_IMPL_METHODDEF_ITEM(%s, check_constraints, METH_NOARGS),\n",  \
+        type_id);                                                         \
+    if(arg->flags & A1C_GEN_BER) {                                        \
+        PY_GEN_TYPE_METHODS_PARSER_NOARGS(type_id, ber);                  \
+        PY_GEN_TYPE_METHODS_PARSER_NOARGS(type_id, der);                  \
+        PY_GEN_TYPE_METHODS_PARSER_NOARGS(type_id, cer);                  \
+    }                                                                     \
+    if(arg->flags & A1C_GEN_XER) {                                        \
+        PY_GEN_TYPE_METHODS_PARSER_KW(type_id, xer);                      \
+    }                                                                     \
+    if(arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {                      \
+        PY_GEN_TYPE_METHODS_PARSER_KW(type_id, per);                      \
+    }                                                                     \
+    if(arg->flags & (A1C_GEN_PRINT)) {                                    \
+        OUT("{\"to_text\", (PyCFunction)PyAsn%s__plain_encode, "          \
+            "(METH_NOARGS), NULL},\n",                                    \
+            type_id);                                                     \
+    }                                                                     \
+    if(arg->flags & (A1C_GEN_OER)) {                                      \
+        PY_GEN_TYPE_METHODS_PARSER_KW(type_id, oer);                      \
+    }                                                                     \
+    if(arg->flags & (A1C_GEN_JER)) {                                      \
+        PY_GEN_TYPE_METHODS_PARSER_KW(type_id, jer);                      \
+    }
 
 #define PY_GEN_TYPE_METHODS_END()                  \
     OUT("{NULL, NULL, 0, NULL} /* sentinel */\n"); \
@@ -93,6 +127,41 @@
 
 #define PY_GEN_TYPE_ATTRSTR(typeName, attrName) \
     OUT(("PY_IMPL_GETSET_ITEM(%s, %s),\n"), typeName, attrName)
+
+#define PY_GEN_TYPE_PARSERS(typeName)                                  \
+    if(arg->flags & A1C_GEN_BER) {                                     \
+        /*        E        D  */                                       \
+        /* BER:  ber <--> ber */                                       \
+        OUT("PY_IMPL_DECODE_BER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_SPECIFIC(%s, ber, ATS_BER);\n", typeName); \
+        /* DER:  der <--> ber */                                       \
+        OUT("PY_IMPL_DECODE_DER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_SPECIFIC(%s, der, ATS_DER);\n", typeName); \
+        /* CER:  ber <--> cer */                                       \
+        OUT("PY_IMPL_DECODE_CER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_SPECIFIC(%s, cer, ATS_BER);\n", typeName); \
+    }                                                                  \
+    if(arg->flags & A1C_GEN_XER) {                                     \
+        OUT("PY_IMPL_DECODE_XER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_XER(%s);\n", typeName);                    \
+    }                                                                  \
+    if(arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {                   \
+        OUT("PY_IMPL_DECODE_PER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_PER(%s);\n", typeName);                    \
+    }                                                                  \
+    if(arg->flags & (A1C_GEN_PRINT)) {                                 \
+        OUT("PY_IMPL_ENCODE_SPECIFIC(%s, plain, "                      \
+            "ATS_NONSTANDARD_PLAINTEXT);\n",                           \
+            typeName);                                                 \
+    }                                                                  \
+    if(arg->flags & (A1C_GEN_OER)) {                                   \
+        OUT("PY_IMPL_DECODE_OER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_OER(%s);\n", typeName);                    \
+    }                                                                  \
+    if(arg->flags & (A1C_GEN_JER)) {                                   \
+        OUT("PY_IMPL_DECODE_JER(%s);\n", typeName);                    \
+        OUT("PY_IMPL_ENCODE_JER(%s);\n", typeName);                    \
+    }
 
 #define PY_GEN_CLASS_BEGIN(modName, typeName)                 \
     PY_GEN_CLASS_BEGIN_INTERNAL(modName, typeName, typeName); \
@@ -132,6 +201,7 @@
     PY_GEN_TYPE_IS_VALID(typeName);                       \
     PY_GEN_TYPE_ENCODE(typeName);                         \
     PY_GEN_TYPE_DECODE(typeName);                         \
+    PY_GEN_TYPE_PARSERS(typeName);                        \
     PY_GEN_TYPE_DEFAULT_MEMBER(typeName);                 \
     /*methods*/                                           \
     REDIR(OT_PY_IMPL_METHODS);                            \

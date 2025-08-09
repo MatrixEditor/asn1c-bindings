@@ -30,12 +30,12 @@ def test_constr_seq_parse():
     obj.snBitStr = 2
     obj.sOid = "1.2.3.4"
     obj.sRelOid = "1.2.3.4.5"
-    raw_data = obj.encode()
+    raw_data = obj.ber_encode()
 
-    parsed = ExampleSequence.decode(raw_data)
+    parsed = ExampleSequence.ber_decode(raw_data)
     assert parsed.is_valid()
     assert parsed.sBitStr == bitarray("01001100")
-    assert parsed.encode() == raw_data
+    assert parsed.ber_encode() == raw_data
 
 
 test_constr_seq_init()

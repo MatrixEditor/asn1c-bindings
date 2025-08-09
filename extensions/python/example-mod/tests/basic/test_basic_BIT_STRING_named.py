@@ -27,14 +27,14 @@ def test_named_BIT_STRING_returns_same_integer_value():
 
 def test_named_BIT_STRING_decodes_correctly_from_der():
     raw_data = b"\x03\x02\x00\x01"
-    parsed = ExampleNamedBitString.decode(raw_data)
+    parsed = ExampleNamedBitString.ber_decode(raw_data)
     assert parsed.value == 1
 
 
 def test_named_BIT_STRING_encodes_correctly_to_der():
     obj = ExampleNamedBitString()
     obj.value = 1
-    assert obj.encode() == b"\x03\x02\x00\x01"
+    assert obj.ber_encode() == b"\x03\x02\x00\x01"
 
 
 def test_named_BIT_STRING_invalid_integer_value():
@@ -57,18 +57,18 @@ def test_named_BIT_STRING_rejects_unsupported_type():
 def test_named_BIT_STRING_encoding_fails_without_valid_value():
     obj = ExampleNamedBitString()
     with pytest.raises(ValueError):
-        obj.encode()
+        obj.ber_encode()
 
 
 def test_named_BIT_STRING_decoding_fails_with_malformed_data():
     # Missing a byte for the bitstring content
     raw_data = b"\x03\x02\x00"
     with pytest.raises(ValueError):
-        ExampleNamedBitString.decode(raw_data)
+        ExampleNamedBitString.ber_decode(raw_data)
 
 
 def test_named_BIT_STRING_decoding_fails_with_wrong_tag():
     # Tag 0x04 is OCTET STRING, not BIT STRING
     raw_data = b"\x04\x02\x00\x01"
     with pytest.raises(ValueError):
-        ExampleNamedBitString.decode(raw_data)
+        ExampleNamedBitString.ber_decode(raw_data)

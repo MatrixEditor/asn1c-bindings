@@ -34,23 +34,23 @@ def test_constr_choice_parse():
     # Encoding and decoding behave the same way, because the implementation
     # is type-agnostic and uses the asn1c runtime under the hood.
     obj = ExampleChoice(foo=b"...")
-    raw_data = obj.encode()
+    raw_data = obj.ber_encode()
     assert raw_data == b"\x80\x03..."
 
     # Decoding will return a new object in a valid state
-    parsed = ExampleChoice.decode(raw_data)
+    parsed = ExampleChoice.ber_decode(raw_data)
     assert parsed.is_valid()
     assert parsed.foo == b"..."
 
     # NOTE: Because enumerated types do not enforce any constraints,
     # the decoded value is not guaranteed to be valid for enumerations.
     obj.baz = 4  # invalid value
-    raw_data = obj.encode()
+    raw_data = obj.ber_encode()
     assert raw_data == b"\x82\x01\x04"
 
     # The invalid value will raise an exception when we try to convert
     # it back to the Python representation.
-    parsed = ExampleChoice.decode(raw_data)
+    parsed = ExampleChoice.ber_decode(raw_data)
     with pytest.raises(ValueError):
         _ = parsed.baz
 
@@ -92,12 +92,12 @@ def test_constr_seq_parse():
     obj.snBitStr = 2
     obj.sOid = "1.2.3.4"
     obj.sRelOid = "1.2.3.4.5"
-    raw_data = obj.encode()
+    raw_data = obj.ber_encode()
 
-    parsed = ExampleSequence.decode(raw_data)
+    parsed = ExampleSequence.ber_decode(raw_data)
     assert parsed.is_valid()
     assert parsed.sBitStr == bitarray("01001100")
-    assert parsed.encode() == raw_data
+    assert parsed.ber_encode() == raw_data
 
 
 test_constr_seq_init()

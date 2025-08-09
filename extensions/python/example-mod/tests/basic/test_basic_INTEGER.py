@@ -57,23 +57,23 @@ def test_INTEGER_repr_and_str_behavior():
 # --- Encoding Tests ---
 def test_INTEGER_encodes_correctly():
     obj = Signed8(10)
-    assert obj.encode() == b"\x02\x01\n"
+    assert obj.ber_encode() == b"\x02\x01\n"
 
 
 def test_INTEGER_raises_on_encoding_invalid_value():
     # Encoding a value outside the allowed range (-127..127) raises ValueError.
     with pytest.raises(ValueError):
-        Signed8(1000).encode()
+        Signed8(1000).ber_encode()
 
 
 # --- Decoding Tests ---
 def test_INTEGER_decodes_correctly():
     raw_data = b"\x02\x01\n"
-    parsed = Signed8.decode(raw_data)
+    parsed = Signed8.ber_decode(raw_data)
     assert parsed.value == 10
 
 
 def test_INTEGER_raises_on_decoding_invalid_data():
     raw_data = b"\x02\x02\x03\xe8"  # encoded value 1000 (out of range)
     with pytest.raises(ValueError):
-        Signed8.decode(raw_data)
+        Signed8.ber_decode(raw_data)
