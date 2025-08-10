@@ -22,6 +22,7 @@
 #define TYPE_IS_FLOAT(expr) (asn1c_expr_is_float32(expr))
 #define TYPE_IS_SEQ_LIKE(expr_type) \
     ((expr_type) == ASN_CONSTR_SEQUENCE || (expr_type) == ASN_CONSTR_SET)
+#define TYPE_IS_SET(expr) (expr) && (expr->expr_type == ASN_CONSTR_SET)
 
 #define ASN1C_MAX_INT_WIDTH 20
 
@@ -54,14 +55,25 @@ static int expr_elements_count(arg_t *arg, asn1p_expr_t *expr);
 /* global functions */
 int
 asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
-    asn1p_expr_t *expr = arg->expr;
-    asn1p_expr_t *v = NULL;
+    asn1p_expr_t *expr;
+    asn1p_expr_t *v;
 
-    char *type_name, *constr_struct_name, *py_class_name, *parent_type_name,
-        *inner_parent_name, *constr_path, *inner_parent_struct_name;
+    char *type_name;
+    char *constr_struct_name;
+    char *py_class_name;
+    char *parent_type_name;
+    char *inner_parent_name;
+    char *constr_path;
+    char *inner_parent_struct_name;
 
-    int saved_target = 0, indirect = 0, optional = 0, parent_is_choice = 0;
+    int saved_target;
+    int indirect;
+    int optional;
+    int parent_is_choice;
+    int parent_is_set;
 
+    expr = arg->expr;
+    v = NULL;
     type_name = py_type_name(arg, expr, PYTNF_CONSTR);
     constr_struct_name = strdup(MKID(arg->expr));
     py_class_name = get_py_class_name(arg, expr);
@@ -72,11 +84,11 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     saved_target = arg->target->target;
     optional = expr->marker.flags & EM_OPTIONAL;
     indirect = (optional) || (expr->marker.flags & EM_INDIRECT);
-    parent_is_choice =
-        expr->parent_expr && expr->parent_expr->expr_type == ASN_CONSTR_CHOICE;
+    parent_is_choice = TYPE_IS_UNION(expr->parent_expr);
+    parent_is_set = TYPE_IS_SET(expr->parent_expr);
+
 
     PY_GEN_DEFAULT_INCLUDE();
-
     /* type def */
     REDIR(OT_PY_TYPE_DECLS);
     if(arg->embed) {
@@ -168,15 +180,30 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
                 deep_embed ? inner_parent_struct_name : parent_type_name,
                 constr_struct_name);
         } else {
-            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_struct_name, constr_struct_name, type_name);
-            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_struct_name, (indirect ? "" : "&"), constr_struct_name,
-                type_name);
+            if(parent_is_set) {
+                OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
+                    optional ? "_OPT" : "",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    deep_embed ? inner_parent_struct_name : parent_type_name,
+                    constr_struct_name, constr_struct_name, type_name);
+                OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
+                    "%sself->ob_value->%s, "
+                    "%s);\n",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    deep_embed ? inner_parent_struct_name : parent_type_name,
+                    constr_struct_name, (indirect ? "" : "&"),
+                    constr_struct_name, type_name);
+            } else {
+                OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
+                    optional ? "_OPT" : "",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    constr_struct_name, constr_struct_name, type_name);
+                OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
+                    "%s);\n",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    constr_struct_name, (indirect ? "" : "&"),
+                    constr_struct_name, type_name);
+            }
         }
     }
 
@@ -251,6 +278,7 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     int deep_embed;
     int indirect;
     int optional;
+    int parent_is_set;
     size_t presence_value = 0;
 
     type_name = py_type_name(arg, expr, PYTNF_CONSTR);
@@ -265,6 +293,7 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     deep_embed = arg->embed > 1;
     optional = expr->marker.flags & EM_OPTIONAL;
     indirect = (optional) || (expr->marker.flags & EM_INDIRECT);
+    parent_is_set = TYPE_IS_SET(expr->parent_expr);
 
     PY_GEN_DEFAULT_INCLUDE();
     REDIR(OT_PY_TYPE_DECLS);
@@ -357,15 +386,30 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
                 deep_embed ? inner_parent_struct_name : parent_type_name,
                 constr_struct_name);
         } else {
-            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_struct_name, constr_struct_name, type_name);
-            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_struct_name, (indirect ? "" : "&"), constr_struct_name,
-                type_name);
+            if(parent_is_set) {
+                OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
+                    optional ? "_OPT" : "",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    deep_embed ? inner_parent_struct_name : parent_type_name,
+                    constr_struct_name, constr_struct_name, type_name);
+                OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
+                    "%sself->ob_value->%s, "
+                    "%s);\n",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    deep_embed ? inner_parent_struct_name : parent_type_name,
+                    constr_struct_name, (indirect ? "" : "&"),
+                    constr_struct_name, type_name);
+            } else {
+                OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
+                    optional ? "_OPT" : "",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    constr_struct_name, constr_struct_name, type_name);
+                OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
+                    "%s);\n",
+                    deep_embed ? inner_parent_name : parent_type_name,
+                    constr_struct_name, (indirect ? "" : "&"),
+                    constr_struct_name, type_name);
+            }
         }
     } else {
         OUT("PY_IMPL_CHOICE_INIT(%s);\n", type_name);
@@ -526,8 +570,11 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                              constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_TYPEREF_GETSET(parent_type_name, parent_struct_name,
+                                          ref_type_name, el_member_name,
+                                          optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
                 PY_GEN_SEQ_TYPEREF_GETSET(parent_type_name, ref_type_name,
                                           el_member_name, optional, indirect);
                 break;
@@ -554,8 +601,11 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                              is_signed, constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_INTEGER_GETSET(parent_type_name, parent_struct_name,
+                                          el_member_name, optional, indirect,
+                                          is_signed);
+                break;
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
                 PY_GEN_SEQ_INTEGER_GETSET(parent_type_name, el_member_name,
                                           optional, indirect, is_signed);
                 break;
@@ -572,8 +622,10 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                              constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_BOOLEAN_GETSET(parent_type_name, parent_struct_name,
+                                          el_member_name, optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
                 PY_GEN_SEQ_BOOLEAN_GETSET(parent_type_name, el_member_name,
                                           optional, indirect);
                 break;
@@ -591,6 +643,13 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                            el_member_name, constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                REDIR(OT_PY_IMPL_INCLUDES);
+                OUT("#include <asn_codecs_prim.h>\n");
+
+                REDIR(OT_PY_IMPL_CODE);
+                PY_GEN_SET_BYTES_GETSET(parent_type_name, parent_struct_name,
+                                        el_member_name, optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
                 // will get their own implementation
                 REDIR(OT_PY_IMPL_INCLUDES);
@@ -614,8 +673,11 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                           constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_REAL_GETSET(parent_type_name, parent_struct_name,
+                                       el_member_name, optional, indirect,
+                                       is_float32);
+                break;
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
                 PY_GEN_SEQ_REAL_GETSET(parent_type_name, el_member_name,
                                        optional, indirect, is_float32);
                 break;
@@ -632,8 +694,10 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                           el_member_name, constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_NULL_GETSET(parent_type_name, parent_struct_name,
+                                       el_member_name, optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
                 PY_GEN_SEQ_NULL_GETSET(parent_type_name, el_member_name,
                                        optional, indirect);
                 break;
@@ -650,8 +714,10 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                          el_member_name, constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_OID_GETSET(parent_type_name, parent_struct_name,
+                                      el_member_name, optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
-                // will get their own implementation
                 PY_GEN_SEQ_OID_GETSET(parent_type_name, el_member_name,
                                       optional, indirect);
                 break;
@@ -672,6 +738,9 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                     constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_BITSTR_GETSET(parent_type_name, parent_struct_name,
+                                         el_member_name, optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
                 PY_GEN_SEQ_BITSTR_GETSET(parent_type_name, el_member_name,
                                          optional, indirect);
@@ -689,6 +758,10 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                     constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_RELATIVE_OID_GETSET(
+                    parent_type_name, parent_struct_name, el_member_name,
+                    optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
                 PY_GEN_SEQ_RELATIVE_OID_GETSET(parent_type_name, el_member_name,
                                                optional, indirect);
@@ -723,6 +796,9 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                                             constr_parent_path);
                 break;
             case ASN_CONSTR_SET:
+                PY_GEN_SET_STRING_GETSET(parent_type_name, parent_struct_name,
+                                         el_member_name, optional, indirect);
+                break;
             case ASN_CONSTR_SEQUENCE:
                 PY_GEN_SEQ_STRING_GETSET(parent_type_name, el_member_name,
                                          optional, indirect);
@@ -775,6 +851,15 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 }
                 break;
             case ASN_CONSTR_SET:
+                if(is_bitstr) {
+                    PY_GEN_SET_NAMED_BITSTR_GETSET(
+                        parent_type_name, parent_struct_name, el_member_name,
+                        constr_enum_name, optional, indirect);
+                } else {
+                    PY_GEN_SET_ENUM_GETSET(parent_type_name, parent_struct_name,
+                                           el_member_name, constr_enum_name,
+                                           is_signed, optional, indirect);
+                }
             case ASN_CONSTR_SEQUENCE:
                 if(is_bitstr) {
                     PY_GEN_SEQ_NAMED_BITSTR_GETSET(

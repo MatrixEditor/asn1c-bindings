@@ -103,4 +103,11 @@ ExampleSequence ::= SEQUENCE {
     }
 }
 
+ExampleSet ::= SET {
+    sInt        INTEGER,
+    setSeq        SEQUENCE {
+        siBool      BOOLEAN
+    }
+}
+
 END

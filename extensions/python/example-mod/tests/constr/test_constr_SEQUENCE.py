@@ -4,7 +4,7 @@ from bitarray import bitarray
 from example_mod._example_mod import ExampleChoice, ExampleSequence
 
 
-# -- SEQUENCE / SET
+# -- SEQUENCE
 # Each generated SEQUENCE class will behave like a C-struct.
 #
 # VERY IMPORTANT NOTE: Because the internal binding sets all values to zero in
@@ -30,6 +30,7 @@ def test_constr_seq_parse():
     obj.snBitStr = 2
     obj.sOid = "1.2.3.4"
     obj.sRelOid = "1.2.3.4.5"
+    obj.sChoice.sicInt = 1
     raw_data = obj.ber_encode()
 
     parsed = ExampleSequence.ber_decode(raw_data)

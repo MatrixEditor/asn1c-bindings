@@ -85,8 +85,27 @@ PyCompat_Encode(enum asn_transfer_syntax ats,
     rval = asn_encode(NULL, ats, pTypeDescriptor, pValue,
                       PyCompat_WriteToStream, nStream);
     if(rval.encoded < 0) {
-        PyErr_Format(PyExc_ValueError, "Failed to encode %s",
-                     rval.failed_type->name);
+        switch(errno) {
+        case EINVAL: {
+            PyErr_SetString(PyExc_TypeError,
+                            "Invalid parameters to the function");
+            break;
+        }
+        case ENOENT: {
+            PyErr_SetString(PyExc_NotImplementedError,
+                            "Transfer syntax is not defined (for this type)");
+            break;
+        }
+        case EBADF: {
+            PyErr_SetString(
+                PyExc_TypeError,
+                "Structure has invalid form or content constraint failed");
+        }
+        /* fall through - exception already set*/
+        case EIO:
+        default:
+            break;
+        }
         goto end;
     }
 
@@ -436,8 +455,9 @@ end:
 #define PY_IMPL_DECODE_DER(typeName) \
     PY_IMPL_DECODE_SPECIFIC(typeName, der, ATS_BER)
 
+// REVISIT: CER is the same as BER here
 #define PY_IMPL_DECODE_CER(typeName) \
-    PY_IMPL_DECODE_SPECIFIC(typeName, cer, ATS_CER)
+    PY_IMPL_DECODE_SPECIFIC(typeName, cer, ATS_BER)
 
 #define PY_IMPL_MEMBER_GETSET(typeName, memberName, memberType, attr) \
     static PyObject* PyAsn##typeName##__get_##memberName(             \
@@ -911,21 +931,120 @@ end:
     }
 
 
-#define PY_IMPL_SEQ_CHOICE_SETATTR(parentTypeName, typeName, attrName, \
-                                   type_DEF)                           \
-    static int PyAsn##parentTypeName##__set_##attrName(                \
-        PyAsn##parentTypeName##Object* self, PyObject* value,          \
-        void* Py_UNUSED(arg)) {                                        \
-        ASN_STRUCT_RESET((type_DEF), self->ob_value);                  \
-        self->ob_value->present = parentTypeName##_PR_NOTHING;         \
-        int result = PyAsn##parentTypeName##__##attrName##_FromPython( \
-            value, self->ob_value);                                    \
-        self->s_valid = result != -1;                                  \
-        if(result < 0) {                                               \
-            return -1;                                                 \
-        }                                                              \
-        self->ob_value->present = parentTypeName##_PR_##attrName;      \
-        return 0;                                                      \
+/* SET */
+#define PY_IMPL_SET_INNER_SETATTR(typeName, enumTypeName, attrName, attr,    \
+                                  innerTypeName)                             \
+    static int PyAsn##typeName##__set_##attrName(                            \
+        PyAsn##typeName##Object* self, PyObject* value,                      \
+        void* Py_UNUSED(closure)) {                                          \
+        int result = 0;                                                      \
+        result =                                                             \
+            PyAsn##innerTypeName##_FromPython(value, &self->ob_value->attr); \
+        if(result == 0) {                                                    \
+            ASN_SET_MKPRESENT(&self->ob_value->_presence_map,                \
+                              enumTypeName##_PR_##attrName);                 \
+        }                                                                    \
+        return result;                                                       \
     }
+
+#define PY_IMPL_SET_INNER_OPT_SETATTR(typeName, enumTypeName, attrName, attr,  \
+                                      innerTypeName, type_DEF)                 \
+    static int PyAsn##typeName##__set_##attrName(                              \
+        PyAsn##typeName##Object* self, PyObject* value,                        \
+        void* Py_UNUSED(closure)) {                                            \
+        if(value == Py_None) {                                                 \
+            if(self->ob_value->attrName != NULL) {                             \
+                ASN_STRUCT_RESET((type_DEF), self->ob_value->attr);            \
+                PyMem_RawFree(self->ob_value->attr);                           \
+            }                                                                  \
+            self->ob_value->attrName = NULL;                                   \
+            ASN_SET_RMPRESENT(&self->ob_value->_presence_map,                  \
+                              enumTypeName##_PR_##attrName);                   \
+            return 0;                                                          \
+        }                                                                      \
+        return PyAsn##innerTypeName##_FromPython(value, self->ob_value->attr); \
+    }
+
+
+#define PY_IMPL_SET_INNER_GETATTR(typeName, enumTypeName, attrName, attr, \
+                                  innerTypeName)                          \
+    static PyObject* PyAsn##typeName##__get_##attrName(                   \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {        \
+        if(!(ASN_SET_ISPRESENT(self->ob_value,                            \
+                               enumTypeName##_PR_##attrName))) {          \
+            Py_RETURN_NONE;                                               \
+        }                                                                 \
+        return PyAsn##innerTypeName##_ToPython((attr), (PyObject*)self);  \
+    }
+
+#define PY_IMPL_SET_INNER_OPT_GETATTR(typeName, enumTypeName, attrName,  \
+                                      innerTypeName)                     \
+    static PyObject* PyAsn##typeName##__get_##attrName(                  \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {       \
+        if(self->ob_value->attrName == NULL                              \
+           || !(ASN_SET_ISPRESENT(self->ob_value,                        \
+                                  enumTypeName##_PR_##attrName))) {      \
+            Py_RETURN_NONE;                                              \
+        }                                                                \
+        return PyAsn##innerTypeName##_ToPython(self->ob_value->attrName, \
+                                               (PyObject*)self);         \
+    }
+
+#define PY_IMPL_SET_OPT_GETATTR(typeName, enumTypeName, attrName)         \
+    static PyObject* PyAsn##typeName##__get_##attrName(                   \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {        \
+        if(!(self->ob_value->attrName)                                    \
+           || !(ASN_SET_ISPRESENT(self->ob_value,                         \
+                                  enumTypeName##_PR_##attrName))) {       \
+            Py_RETURN_NONE;                                               \
+        }                                                                 \
+        return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
+                                                        (PyObject*)self); \
+    }
+
+#define PY_IMPL_SET_GETATTR(typeName, enumTypeName, attrName)             \
+    static PyObject* PyAsn##typeName##__get_##attrName(                   \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {        \
+        if(!(ASN_SET_ISPRESENT(self->ob_value,                            \
+                               enumTypeName##_PR_##attrName))) {          \
+            Py_RETURN_NONE;                                               \
+        }                                                                 \
+        return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
+                                                        (PyObject*)self); \
+    }
+
+#define PY_IMPL_SET_SETATTR(typeName, enumTypeName, attrName)                  \
+    static int PyAsn##typeName##__set_##attrName(                              \
+        PyAsn##typeName##Object* self, PyObject* value,                        \
+        void* Py_UNUSED(closure)) {                                            \
+        int result = 0;                                                        \
+        result =                                                               \
+            PyAsn##typeName##__##attrName##_FromPython(value, self->ob_value); \
+        if(result == 0) {                                                      \
+            ASN_SET_MKPRESENT(&self->ob_value->_presence_map,                  \
+                              enumTypeName##_PR_##attrName);                   \
+        }                                                                      \
+        return result;                                                         \
+    }
+
+#define PY_IMPL_SET_OPT_SETATTR(typeName, enumTypeName, attrName)            \
+    static int PyAsn##typeName##__set_##attrName(                            \
+        PyAsn##typeName##Object* self, PyObject* value,                      \
+        void* Py_UNUSED(closure)) {                                          \
+        if(value == NULL || Py_IsNone(value)) {                              \
+            self->ob_value->attrName = NULL;                                 \
+            ASN_SET_RMPRESENT(&self->ob_value->_presence_map,                \
+                              enumTypeName##_PR_##attrName);                 \
+            return 0;                                                        \
+        }                                                                    \
+        if(PyAsn##typeName##__##attrName##_FromPython(value, self->ob_value) \
+           < 0) {                                                            \
+            return -1;                                                       \
+        }                                                                    \
+        ASN_SET_MKPRESENT(&self->ob_value->_presence_map,                    \
+                          enumTypeName##_PR_##attrName);                     \
+        return 0;                                                            \
+    }
+
 
 #endif

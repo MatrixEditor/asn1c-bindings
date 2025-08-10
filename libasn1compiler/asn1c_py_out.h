@@ -405,30 +405,37 @@
     OUT("PY_IMPL_SEQ_%sSETATTR(%s, %s);\n", (optional) ? "OPT_" : "", \
         typeName, attrName);
 
-#define PY_GEN_SEQ_TYPEREF_GETSET(typeName, targetTypeName, attrName,      \
-                                  optional, indirect)                      \
-    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
-        "PyAsn%s_FromPython(value, (%s_t *)target));\n",                   \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
-        (targetTypeName), (targetTypeName));                               \
-    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
-        "PyAsn%s_ToPython((%s_t *)target, parent));\n",                    \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
-        (targetTypeName), (targetTypeName));                               \
+#define PY_GEN_SEQ_TYPEREF_CONV(typeName, targetTypeName, attrName, optional, \
+                                indirect)                                     \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                  \
+        "PyAsn%s_FromPython(value, (%s_t *)target));\n",                      \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName),    \
+        (targetTypeName), (targetTypeName));                                  \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                    \
+        "PyAsn%s_ToPython((%s_t *)target, parent));\n",                       \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName),    \
+        (targetTypeName), (targetTypeName));
+
+#define PY_GEN_SEQ_TYPEREF_GETSET(typeName, targetTypeName, attrName,     \
+                                  optional, indirect)                     \
+    PY_GEN_SEQ_TYPEREF_CONV(typeName, targetTypeName, attrName, optional, \
+                            indirect);                                    \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_BOOLEAN_GETSET(typeName, attrName, optional, indirect)   \
+#define PY_GEN_SEQ_BOOLEAN_CONV(typeName, attrName, optional, indirect)     \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
         "PyCompatBool_FromObject(value, (unsigned int *)target));\n",       \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                  \
         "PyCompatBool_FromLong(*(BOOLEAN_t *)target));\n",                  \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
+
+#define PY_GEN_SEQ_BOOLEAN_GETSET(typeName, attrName, optional, indirect) \
+    PY_GEN_SEQ_BOOLEAN_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-
-#define PY_GEN_SEQ_INTEGER_GETSET(typeName, attrName, optional, indirect,  \
-                                  isSigned)                                \
+#define PY_GEN_SEQ_INTEGER_CONV(typeName, attrName, optional, indirect,    \
+                                isSigned)                                  \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
         "PyCompatLong_FromObject(value, target, %d));\n",                  \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
@@ -436,10 +443,14 @@
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
         "PyCompatLong_AsObject(target, %d));\n",                           \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
-        (isSigned));                                                       \
+        (isSigned));
+
+#define PY_GEN_SEQ_INTEGER_GETSET(typeName, attrName, optional, indirect,      \
+                                  isSigned)                                    \
+    PY_GEN_SEQ_INTEGER_CONV(typeName, attrName, optional, indirect, isSigned); \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_BYTES_GETSET(typeName, attrName, optional, indirect)     \
+#define PY_GEN_SEQ_BYTES_CONV(typeName, attrName, optional, indirect)       \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
         "PyCompatBytes_ToStringAndSize(value, &((ASN__PRIMITIVE_TYPE_t "    \
         "*)target)->buf, &((ASN__PRIMITIVE_TYPE_t *)target)->size));\n",    \
@@ -447,12 +458,15 @@
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                  \
         "PyCompatBytes_FromStringAndSize(((ASN__PRIMITIVE_TYPE_t "          \
         "*)target)->buf, ((ASN__PRIMITIVE_TYPE_t *)target)->size));\n",     \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
+
+#define PY_GEN_SEQ_BYTES_GETSET(typeName, attrName, optional, indirect) \
+    PY_GEN_SEQ_BYTES_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
 
-#define PY_GEN_SEQ_REAL_GETSET(typeName, attrName, optional, indirect,     \
-                               is_float32)                                 \
+#define PY_GEN_SEQ_REAL_CONV(typeName, attrName, optional, indirect,       \
+                             is_float32)                                   \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
         "PyCompatFloat_FromObject(value, target, %d));\n",                 \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
@@ -460,40 +474,53 @@
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
         "PyCompatFloat_AsObject(target, %d));\n",                          \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
-        (is_float32));                                                     \
+        (is_float32));
+
+#define PY_GEN_SEQ_REAL_GETSET(typeName, attrName, optional, indirect,        \
+                               is_float32)                                    \
+    PY_GEN_SEQ_REAL_CONV(typeName, attrName, optional, indirect, is_float32); \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
 
-#define PY_GEN_SEQ_NULL_GETSET(typeName, attrName, optional, indirect)      \
+#define PY_GEN_SEQ_NULL_CONV(typeName, attrName, optional, indirect)        \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
         "PyCompatNull_FromObject(value, (int *)target));\n",                \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, Py_None);\n",                      \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
+
+#define PY_GEN_SEQ_NULL_GETSET(typeName, attrName, optional, indirect) \
+    PY_GEN_SEQ_NULL_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
 
-#define PY_GEN_SEQ_OID_GETSET(typeName, attrName, optional, indirect)        \
+#define PY_GEN_SEQ_OID_CONV(typeName, attrName, optional, indirect)          \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
         "PyCompatOID_FromUnicode(value, (OBJECT_IDENTIFIER_t *)target));\n", \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                   \
         "PyCompatOID_AsUTF8String((OBJECT_IDENTIFIER_t *)target));\n",       \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
+
+#define PY_GEN_SEQ_OID_GETSET(typeName, attrName, optional, indirect) \
+    PY_GEN_SEQ_OID_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
+
+#define PY_GEN_SEQ_RELATIVE_OID_CONV(typeName, attrName, optional, indirect) \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
+        "PyCompatRelativeOID_FromUnicode(value, (RELATIVE_OID_t "            \
+        "*)target));\n",                                                     \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                   \
+        "PyCompatRelativeOID_AsUTF8String((RELATIVE_OID_t *)target));\n",    \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
 
 #define PY_GEN_SEQ_RELATIVE_OID_GETSET(typeName, attrName, optional, indirect) \
-    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                   \
-        "PyCompatRelativeOID_FromUnicode(value, (RELATIVE_OID_t "              \
-        "*)target));\n",                                                       \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));    \
-    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                     \
-        "PyCompatRelativeOID_AsUTF8String((RELATIVE_OID_t *)target));\n",      \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));    \
+    PY_GEN_SEQ_RELATIVE_OID_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_STRING_GETSET(typeName, attrName, optional, indirect)      \
+#define PY_GEN_SEQ_STRING_CONV(typeName, attrName, optional, indirect)        \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                  \
         "PyCompatUnicode_AsUTF8(value, &((OCTET_STRING_t *)(target))->buf, "  \
         "&((OCTET_STRING_t *)(target))->size);\n",                            \
@@ -501,12 +528,15 @@
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                    \
         "PyCompatUnicode_FromStringAndSize(((OCTET_STRING_t *)target)->buf, " \
         "((OCTET_STRING_t *)target)->size);\n",                               \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));   \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
+
+#define PY_GEN_SEQ_STRING_GETSET(typeName, attrName, optional, indirect) \
+    PY_GEN_SEQ_STRING_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
 
-#define PY_GEN_SEQ_ENUM_GETSET(typeName, attrName, enumTypeName, isSigned, \
-                               optional, indirect)                         \
+#define PY_GEN_SEQ_ENUM_CONV(typeName, attrName, enumTypeName, isSigned,   \
+                             optional, indirect)                           \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
         "PyCompatEnum_FromObject(value, target, %d));\n",                  \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
@@ -514,10 +544,15 @@
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                 \
         "PyCompatEnum_AsObject(PyAsnEnum%s_Type, target, %d));\n",         \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName), \
-        (enumTypeName), (isSigned));                                       \
+        (enumTypeName), (isSigned));
+
+#define PY_GEN_SEQ_ENUM_GETSET(typeName, attrName, enumTypeName, isSigned,     \
+                               optional, indirect)                             \
+    PY_GEN_SEQ_ENUM_CONV(typeName, attrName, enumTypeName, isSigned, optional, \
+                         indirect);                                            \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_BITSTR_GETSET(typeName, attrName, optional, indirect)     \
+#define PY_GEN_SEQ_BITSTR_CONV(typeName, attrName, optional, indirect)       \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
         "PyCompatBitArray_ToStringAndSize(value, &((BIT_STRING_t "           \
         "*)target)->buf, &((BIT_STRING_t *)target)->size));\n",              \
@@ -525,11 +560,14 @@
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                   \
         "PyCompatBitArray_FromStringAndSize(((BIT_STRING_t *)target)->buf, " \
         "((BIT_STRING_t *)target)->size));\n",                               \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
+
+#define PY_GEN_SEQ_BITSTR_GETSET(typeName, attrName, optional, indirect) \
+    PY_GEN_SEQ_BITSTR_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_NAMED_BITSTR_GETSET(typeName, attrName, enumTypeName,    \
-                                       optional, indirect)                  \
+#define PY_GEN_SEQ_NAMED_BITSTR_CONV(typeName, attrName, enumTypeName,      \
+                                     optional, indirect)                    \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
         "PyCompatFlag_FromObject(value, &((BIT_STRING_t "                   \
         "*)target)->buf, &((BIT_STRING_t *)target)->size));\n",             \
@@ -539,7 +577,82 @@
         "*)target)->buf, "                                                  \
         "((BIT_STRING_t *)target)->size));\n",                              \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName),  \
-        (enumTypeName));                                                    \
+        (enumTypeName));
+
+#define PY_GEN_SEQ_NAMED_BITSTR_GETSET(typeName, attrName, enumTypeName,     \
+                                       optional, indirect)                   \
+    PY_GEN_SEQ_NAMED_BITSTR_CONV(typeName, attrName, enumTypeName, optional, \
+                                 indirect);                                  \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
+
+/* SET */
+#define PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)     \
+    OUT("PY_IMPL_SET_%sGETATTR(%s, %s, %s);\n", (optional) ? "OPT_" : "", \
+        typeName, enumTypeName, attrName);                                \
+    OUT("PY_IMPL_SET_%sSETATTR(%s, %s, %s);\n", (optional) ? "OPT_" : "", \
+        typeName, enumTypeName, attrName);
+
+#define PY_GEN_SET_NAMED_BITSTR_GETSET(typeName, typeEnumTypeName, attrName, \
+                                       enumTypeName, optional, indirect)     \
+    PY_GEN_SEQ_NAMED_BITSTR_CONV(typeName, attrName, enumTypeName, optional, \
+                                 indirect);                                  \
+    PY_GEN_SET_GETSET(typeName, typeEnumTypeName, attrName, optional)
+
+#define PY_GEN_SET_BITSTR_GETSET(typeName, enumTypeName, attrName, optional, \
+                                 indirect)                                   \
+    PY_GEN_SEQ_BITSTR_CONV(typeName, attrName, optional, indirect);          \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_ENUM_GETSET(typeName, typeEnumTypeName, attrName,           \
+                               enumTypeName, isSigned, optional, indirect)     \
+    PY_GEN_SEQ_ENUM_CONV(typeName, attrName, enumTypeName, isSigned, optional, \
+                         indirect);                                            \
+    PY_GEN_SET_GETSET(typeName, typeEnumTypeName, attrName, optional)
+
+#define PY_GEN_SET_STRING_GETSET(typeName, enumTypeName, attrName, optional, \
+                                 indirect)                                   \
+    PY_GEN_SEQ_STRING_CONV(typeName, attrName, optional, indirect);          \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_RELATIVE_OID_GETSET(typeName, enumTypeName, attrName,  \
+                                       optional, indirect)                \
+    PY_GEN_SEQ_RELATIVE_OID_CONV(typeName, attrName, optional, indirect); \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_OID_GETSET(typeName, enumTypeName, attrName, optional, \
+                              indirect)                                   \
+    PY_GEN_SEQ_OID_CONV(typeName, attrName, optional, indirect);          \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_NULL_GETSET(typeName, enumTypeName, attrName, optional, \
+                               indirect)                                   \
+    PY_GEN_SEQ_NULL_CONV(typeName, attrName, optional, indirect);          \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_REAL_GETSET(typeName, enumTypeName, attrName, optional,    \
+                               indirect, is_float32)                          \
+    PY_GEN_SEQ_REAL_CONV(typeName, attrName, optional, indirect, is_float32); \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_BYTES_GETSET(typeName, enumTypeName, attrName, optional, \
+                                indirect)                                   \
+    PY_GEN_SEQ_BYTES_CONV(typeName, attrName, optional, indirect);          \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_INTEGER_GETSET(typeName, enumTypeName, attrName, optional,  \
+                                  indirect, isSigned)                          \
+    PY_GEN_SEQ_INTEGER_CONV(typeName, attrName, optional, indirect, isSigned); \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_BOOLEAN_GETSET(typeName, enumTypeName, attrName, optional, \
+                                  indirect)                                   \
+    PY_GEN_SEQ_BOOLEAN_CONV(typeName, attrName, optional, indirect);          \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+#define PY_GEN_SET_TYPEREF_GETSET(typeName, enumTypeName, targetTypeName, \
+                                  attrName, optional, indirect)           \
+    PY_GEN_SEQ_TYPEREF_CONV(typeName, targetTypeName, attrName, optional, \
+                            indirect);                                    \
+    PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
 
 #endif

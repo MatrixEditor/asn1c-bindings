@@ -665,6 +665,10 @@ asn1c_lang_C_type_SET(arg_t *arg) {
         if(!expr->_anonymous_type) OUT(";\n");
     }
 
+    if(asn1c_lang_Py_type_SEQUENCE(arg) < 0) {
+        return -1;
+    }
+
     return asn1c_lang_C_type_SET_def(arg);
 }
 
