@@ -56,6 +56,7 @@ static char *py_parent_type_name(arg_t *arg, asn1p_expr_t *expr);
 static size_t asn1c_get_member_index(arg_t *arg, asn1p_expr_t *expr,
                                      const char *name);
 static int expr_elements_count(arg_t *arg, asn1p_expr_t *expr);
+static int asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn);
 
 /* global functions */
 int
@@ -70,13 +71,9 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     char *parent_type_name;
     char *inner_parent_name;
     char *constr_path;
-    char *inner_parent_struct_name;
     char *constr_member_name;
-    char *inner_parent_path;
 
     int saved_target;
-    int indirect;
-    int optional;
 
     expr = arg->expr;
     v = NULL;
@@ -87,12 +84,8 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     py_class_name = get_py_class_name(arg, expr);
     parent_type_name = py_parent_type_name(arg, expr);
     inner_parent_name = NULL;
-    inner_parent_path = NULL;
     constr_path = NULL;
-    inner_parent_struct_name = NULL;
     saved_target = arg->target->target;
-    optional = expr->marker.flags & EM_OPTIONAL;
-    indirect = (optional) || (expr->marker.flags & EM_INDIRECT);
 
 
     PY_GEN_DEFAULT_INCLUDE();
@@ -109,12 +102,8 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
         assert(constr_path);
 
         if(arg->embed > 1) {
-            struct c_names inner_ns = c_expr_name(arg, expr->parent_expr);
             inner_parent_name =
                 py_type_name(arg, expr->parent_expr, PYTNF_CONSTR);
-            inner_parent_struct_name = strdup(inner_ns.base_name);
-            inner_parent_path = py_get_anonymous_type_def(
-                arg, expr->parent_expr, inner_ns.as_member);
         }
     } else {
         PY_GEN_DEF_TYPE(type_name);
@@ -167,100 +156,8 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     OUT(");\n");
     OUT("PY_IMPL_SEQ_INIT(%s);\n", type_name);
     if(arg->embed) {
-        /* make sure the parent class can use this anonymous inner type */
-        int deep_embed = arg->embed > 1;
-        switch(expr->parent_expr->expr_type) {
-        case ASN_CONSTR_SEQUENCE: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), constr_member_name,
-                type_name);
-            break;
-        }
-        case ASN_CONSTR_CHOICE: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->choice.",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->choice.",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, *%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name, constr_path);
-            OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name);
-            break;
-        }
-        case ASN_CONSTR_SET: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name, constr_member_name, type_name);
-            OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
-                "%sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), constr_member_name,
-                type_name);
-            break;
-        }
-        case ASN_CONSTR_SEQUENCE_OF:
-        case ASN_CONSTR_SET_OF: {
-            OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s_t, PyAsn%s_ToPython(src, "
-                "parent));\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name,
-                type_name);
-            OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s_t, "
-                "PyAsn%s_FromPython(value, target));\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name,
-                type_name);
-            OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name);
-            if(inner_parent_path != NULL) {
-                OUT("PY_IMPL_SEQ_OF_GENERIC_SETITEM(%s, %s_t, "
-                    "*PY_IMPL_SEQ_OF_COMPONENT_TYPE(%s));\n",
-                    deep_embed ? inner_parent_name : parent_type_name,
-                    type_name, inner_parent_path);
-            } else {
-                OUT("PY_IMPL_SEQ_OF_SETITEM(%s, %s_t);\n",
-                    deep_embed ? inner_parent_name : parent_type_name,
-                    type_name);
-            }
-            OUT("PY_IMPL_SEQ_OF_ADD(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name);
-
-            break;
-        }
-        default:
-            break;
+        if(asn1c_lang_Py_type_CONSTR(arg, &ns) < 0) {
+            return -1;
         }
     }
 
@@ -307,12 +204,18 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
                      inner_parent_name, constr_member_name, type_name));
     }
 
+    if(!arg->embed) {
+        PY_GEN_TYPE_MOD_INIT(type_name);
+        if(strcmp(type_name, "EXTERNAL") != 0) {
+            PY_GEN_MODULE_ADD_TYPE(type_name);
+        }
+    }
+
     ASN_XFREE(type_name);
     ASN_XFREE(constr_struct_name);
     ASN_XFREE(py_class_name);
     ASN_XFREE(parent_type_name);
     ASN_XFREE(inner_parent_name);
-    ASN_XFREE(inner_parent_struct_name);
     ASN_XFREE(constr_member_name);
     REDIR(saved_target);
     return 0;
@@ -330,14 +233,9 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     char *parent_type_name;
     char *inner_parent_name;
     char *constr_path;
-    char *inner_parent_struct_name;
-    char *inner_parent_path;
     char *constr_member_name;
 
     int saved_target;
-    int deep_embed;
-    int indirect;
-    int optional;
     size_t presence_value = 0;
 
     ns = c_name(arg);
@@ -347,13 +245,9 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     py_class_name = get_py_class_name(arg, expr);
     parent_type_name = py_parent_type_name(arg, expr);
     inner_parent_name = NULL;
-    inner_parent_struct_name = NULL;
-    inner_parent_path = NULL;
     constr_path = NULL;
     saved_target = arg->target->target;
-    deep_embed = arg->embed > 1;
-    optional = expr->marker.flags & EM_OPTIONAL;
-    indirect = (optional) || (expr->marker.flags & EM_INDIRECT);
+
 
     PY_GEN_DEFAULT_INCLUDE();
     REDIR(OT_PY_TYPE_DECLS);
@@ -365,12 +259,8 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
         assert(constr_path);
 
         if(arg->embed > 1) {
-            struct c_names inner_ns = c_expr_name(arg, expr->parent_expr);
             inner_parent_name =
                 py_type_name(arg, expr->parent_expr, PYTNF_CONSTR);
-            inner_parent_struct_name = strdup(inner_ns.base_name);
-            inner_parent_path = py_get_anonymous_type_def(
-                arg, expr->parent_expr, inner_ns.as_member);
         }
     } else {
         PY_GEN_DEF_TYPE(type_name);
@@ -428,99 +318,10 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
         OUT("PY_IMPL_CHOICE_INIT_GENERIC(%s, %s);\n", type_name,
             constr_struct_name);
 
-        switch(expr->parent_expr->expr_type) {
-        case ASN_CONSTR_SEQUENCE: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), constr_member_name,
-                type_name);
-            break;
-        }
-        case ASN_CONSTR_CHOICE: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->choice.",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->choice.",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, *%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name, constr_path);
-            OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name);
-            break;
-        }
-        case ASN_CONSTR_SET: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), "src->",
-                constr_member_name, type_name);
-            OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name, constr_member_name, type_name);
-            OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
-                "%sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                constr_member_name, (indirect ? "" : "&"), constr_member_name,
-                type_name);
-            break;
-        }
-        case ASN_CONSTR_SEQUENCE_OF:
-        case ASN_CONSTR_SET_OF: {
-            OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s_t, PyAsn%s_ToPython(src, "
-                "parent));\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name,
-                type_name);
-            OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s_t, "
-                "PyAsn%s_FromPython(value, target));\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name,
-                type_name);
-            OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name);
-            if(inner_parent_path != NULL) {
-                OUT("PY_IMPL_SEQ_OF_GENERIC_SETITEM(%s, %s_t, "
-                    "*PY_IMPL_SEQ_OF_COMPONENT_TYPE(%s));\n",
-                    deep_embed ? inner_parent_name : parent_type_name,
-                    type_name, inner_parent_path);
-            } else {
-                OUT("PY_IMPL_SEQ_OF_SETITEM(%s, %s_t);\n",
-                    deep_embed ? inner_parent_name : parent_type_name,
-                    type_name);
+        if(arg->embed) {
+            if(asn1c_lang_Py_type_CONSTR(arg, &ns) < 0) {
+                return -1;
             }
-
-            OUT("PY_IMPL_SEQ_OF_ADD(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name, type_name);
-
-            break;
-        }
-        default:
-            break;
         }
     } else {
         OUT("PY_IMPL_CHOICE_INIT(%s);\n", type_name);
@@ -594,6 +395,10 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     }
 
     PY_GEN_MOD_BASIC(type_name);
+    if(!arg->embed) {
+        PY_GEN_TYPE_MOD_INIT(type_name);
+        PY_GEN_MODULE_ADD_TYPE(type_name);
+    }
 
     ASN_XFREE(type_name);
     ASN_XFREE(constr_struct_name);
@@ -601,7 +406,6 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     ASN_XFREE(parent_type_name);
     ASN_XFREE(inner_parent_name);
     ASN_XFREE(constr_member_name);
-    ASN_XFREE(inner_parent_path);
     REDIR(saved_target);
     return 0;
 }
@@ -1420,6 +1224,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             break;
         }
         }
+        PY_GEN_TYPE_MOD_INIT(name);
+        PY_GEN_MODULE_ADD_TYPE(name);
     }
 
     REDIR(saved_target);
@@ -1447,8 +1253,6 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     char *inner_parent_struct_name;
 
     int saved_target;
-    int indirect;
-    int optional;
     enum asn1p_expr_marker_e flags;
 
     expr = arg->expr;
@@ -1462,8 +1266,6 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     list_constr_path = NULL;
     inner_parent_name = NULL;
     inner_parent_struct_name = NULL;
-    optional = expr->marker.flags & EM_OPTIONAL;
-    indirect = (optional) || (expr->marker.flags & EM_INDIRECT);
 
     if(expr->parent_expr != NULL) {
         arg->embed--;
@@ -1535,88 +1337,8 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
 
     if(arg->embed) {
         /* embed into constructed types */
-        int deep_embed = arg->embed > 1;
-        switch(expr->parent_expr->expr_type) {
-        case ASN_CONSTR_SEQUENCE: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), "src->", ns.as_member, list_type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), "src->", ns.as_member, list_type_name);
-            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                ns.as_member, list_type_name);
-            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), ns.as_member, list_type_name);
-            break;
-        }
-        case ASN_CONSTR_CHOICE: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), "src->choice.", ns.as_member,
-                list_type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), "src->choice.", ns.as_member,
-                list_type_name);
-            OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, *%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                ns.as_member, list_constr_path);
-            OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                ns.as_member);
-            break;
-        }
-        case ASN_CONSTR_SET: {
-            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), "src->", ns.as_member, list_type_name);
-            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
-                deep_embed ? inner_parent_name : parent_type_name, ns.as_member,
-                (indirect ? "" : "&"), "src->", ns.as_member, list_type_name);
-            OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
-                optional ? "_OPT" : "",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                ns.as_member, ns.as_member, list_type_name);
-            OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
-                "%sself->ob_value->%s, "
-                "%s);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                deep_embed ? inner_parent_struct_name : parent_type_name,
-                ns.as_member, (indirect ? "" : "&"), ns.as_member,
-                list_type_name);
-            break;
-        }
-        case ASN_CONSTR_SEQUENCE_OF:
-        case ASN_CONSTR_SET_OF: {
-            OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s_t, PyAsn%s_ToPython(src, "
-                "parent));\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                list_type_name, list_type_name);
-            OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s_t, "
-                "PyAsn%s_FromPython(value, target));\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                list_type_name, list_type_name);
-            OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                list_type_name);
-            OUT("PY_IMPL_SEQ_OF_SETITEM(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                list_type_name);
-            OUT("PY_IMPL_SEQ_OF_ADD(%s, %s_t);\n",
-                deep_embed ? inner_parent_name : parent_type_name,
-                list_type_name);
-            break;
-        }
-        default:
-            break;
+        if(asn1c_lang_Py_type_CONSTR(arg, &ns) < 0) {
+            return -1;
         }
     }
 
@@ -1677,6 +1399,10 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
 
     REDIR(OT_PY_IMPL_CODE_MOD_SETUP);
     INDENTED(PY_GEN_MOD_SETUP_SINGLE(list_type_name));
+    if(!arg->embed) {
+        PY_GEN_TYPE_MOD_INIT(list_type_name);
+        PY_GEN_MODULE_ADD_TYPE(list_type_name);
+    }
 
     REDIR(saved_target);
     ASN_XFREE(list_type_name);
@@ -1897,6 +1623,160 @@ expr_elements_count(arg_t *arg, asn1p_expr_t *expr) {
     }
 
     return elements;
+}
+
+static int
+asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn) {
+    struct c_names cn;
+    asn1p_expr_t *expr;
+
+    char *constr_type_name;
+    char *constr_struct_name;
+    char *constr_member_name;
+    char *constr_path;
+    char *parent_type_name;
+    char *inner_parent_type_name;
+    char *inner_parent_struct_name;
+    char *inner_parent_path;
+
+    int saved_target;
+    int deep_embed;
+    int indirect;
+    int optional;
+
+    expr = arg->expr;
+    cn = (pre_cn != NULL) ? *pre_cn : c_name(arg);
+    constr_type_name = py_type_name(arg, expr, PYTNF_CONSTR);
+    constr_struct_name = strdup(cn.base_name);
+    constr_member_name = strdup(cn.as_member);
+    constr_path = NULL;
+    parent_type_name = py_parent_type_name(arg, expr);
+    inner_parent_type_name = NULL;
+    inner_parent_struct_name = NULL;
+    inner_parent_path = NULL;
+    saved_target = arg->target->target;
+    deep_embed = arg->embed > 1;
+    indirect = 0;
+    optional = 0;
+
+    REDIR(OT_PY_IMPL_CODE);
+    if(arg->embed) {
+        constr_path = py_get_anonymous_type_def(arg, expr, constr_member_name);
+        if(deep_embed) {
+            struct c_names inner_cn = c_expr_name(arg, expr->parent_expr);
+            inner_parent_type_name =
+                py_type_name(arg, expr->parent_expr, PYTNF_CONSTR);
+            inner_parent_struct_name = strdup(inner_cn.base_name);
+            inner_parent_path = py_get_anonymous_type_def(
+                arg, expr->parent_expr, inner_cn.as_member);
+        }
+
+        switch(expr->parent_expr->expr_type) {
+        case ASN_CONSTR_SEQUENCE: {
+            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), "src->",
+                constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), "src->",
+                constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_INNER%s_SETATTR(%s, %s, %s, %s);\n",
+                optional ? "_OPT" : "",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_INNER_GETATTR(%s, %s, %sself->ob_value->%s, "
+                "%s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), constr_member_name,
+                constr_type_name);
+            break;
+        }
+        case ASN_CONSTR_CHOICE: {
+            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), "src->choice.",
+                constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), "src->choice.",
+                constr_member_name, constr_type_name);
+            OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, *%s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                deep_embed ? inner_parent_struct_name : parent_type_name,
+                constr_member_name, constr_path);
+            OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                deep_embed ? inner_parent_struct_name : parent_type_name,
+                constr_member_name);
+            break;
+        }
+        case ASN_CONSTR_SET: {
+            OUT("PY_IMPL_SEQ_ANON_ATTR_FROMPY(%s, %s, %s%s%s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), "src->",
+                constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_ANON_ATTR_TOPY(%s, %s, %s%s%s, %s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), "src->",
+                constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
+                optional ? "_OPT" : "",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                deep_embed ? inner_parent_struct_name : parent_type_name,
+                constr_member_name, constr_member_name, constr_type_name);
+            OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
+                "%sself->ob_value->%s, "
+                "%s);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                deep_embed ? inner_parent_struct_name : parent_type_name,
+                constr_member_name, (indirect ? "" : "&"), constr_member_name,
+                constr_type_name);
+            break;
+        }
+        case ASN_CONSTR_SEQUENCE_OF:
+        case ASN_CONSTR_SET_OF: {
+            OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s_t, PyAsn%s_ToPython(src, "
+                "parent));\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_type_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s_t, "
+                "PyAsn%s_FromPython(value, target));\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_type_name, constr_type_name);
+            OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s_t);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_type_name);
+            if(inner_parent_path != NULL) {
+                OUT("PY_IMPL_SEQ_OF_GENERIC_SETITEM(%s, %s_t, "
+                    "*PY_IMPL_SEQ_OF_COMPONENT_TYPE(%s));\n",
+                    deep_embed ? inner_parent_type_name : parent_type_name,
+                    constr_type_name, inner_parent_path);
+            } else {
+                OUT("PY_IMPL_SEQ_OF_SETITEM(%s, %s_t);\n",
+                    deep_embed ? inner_parent_type_name : parent_type_name,
+                    constr_type_name);
+            }
+            OUT("PY_IMPL_SEQ_OF_ADD(%s, %s_t);\n",
+                deep_embed ? inner_parent_type_name : parent_type_name,
+                constr_type_name);
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    REDIR(saved_target);
+
+    ASN_FREE(constr_type_name);
+    ASN_FREE(constr_struct_name);
+    ASN_FREE(constr_member_name);
+    ASN_XFREE(constr_path);
+    ASN_FREE(parent_type_name);
+    ASN_XFREE(inner_parent_type_name);
+    ASN_XFREE(inner_parent_struct_name);
+    ASN_XFREE(inner_parent_path);
+    return 0;
 }
 
 #endif /* ASN1_COMPILER_LANDUAGE_PY_H */

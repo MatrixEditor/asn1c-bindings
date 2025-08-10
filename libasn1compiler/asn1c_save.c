@@ -5,7 +5,6 @@
 #include "asn1c_misc.h"
 #include "asn1c_save.h"
 #include "asn1c_out.h"
-#include "asn1c_py_out.h"
 
 #ifndef HAVE_SYMLINK
 #define symlink(a, b) (errno = ENOSYS, -1)
@@ -469,19 +468,6 @@ asn1c_save_compiled_output(arg_t *arg, const char *datadir, const char *destdir,
                        .type_cb
                    && (arg->expr->meta_type != AMT_VALUE)) {
                     ret = asn1c_dump_streams(arg, deps, destdir, optc, argv);
-
-                    filename = strdup(asn1c_make_identifier(
-                        AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, arg->expr,
-                        (char *)0));
-                    if((arg->flags & A1C_GEN_PYTHON)
-                       && strcmp(filename, "EXTERNAL")) {
-                        // write out module code for python
-                        saved_cs = arg->target;
-                        arg->target = arg->pytarget;
-                        PY_GEN_MODULE_ADD_TYPE(filename);
-                        arg->target = saved_cs;
-                    }
-
                     if(ret) break;
                 }
             }
@@ -561,40 +547,20 @@ asn1c_save_compiled_output(arg_t *arg, const char *datadir, const char *destdir,
         safe_fprintf(fp_pymod_c, "#include \"py_module.h\"\n\n");
 
         safe_fprintf(fp_pymod_c, "/* Module Cleanup */\n");
-        safe_fprintf(fp_pymod_c,
-                     "static int PyAsnModule_%s__clear(PyObject *m) {\n",
+        safe_fprintf(fp_pymod_c, "PY_IMPL_MODULE_CLEAR(%s,\n",
                      arg->pymodule_name);
         TQ_FOR(ot, &(cs->destination[OT_PY_IMPL_MOD_CLEAR].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_pymod_c);
 
         safe_fprintf(fp_pymod_c, "\tPyCompat_Clear();\n");
-        safe_fprintf(
-            fp_pymod_c,
-            "    return 0;\n}\n\nstatic void PyAsnModule_%s__free(void *m) "
-            "{ PyAsnModule_%s__clear((PyObject *)m); }",
-            arg->pymodule_name, arg->pymodule_name);
+        safe_fprintf(fp_pymod_c, ");\n");
 
         safe_fprintf(fp_pymod_c, "\n/* Module Type */\n");
-        safe_fprintf(fp_pymod_c, "PyModuleDef PyAsnModule_%s = {\n",
+        safe_fprintf(fp_pymod_c, "PY_IMPL_MODULE_DEF(%s);\n",
                      arg->pymodule_name);
-        safe_fprintf(fp_pymod_c, "\tPyModuleDef_HEAD_INIT,\n");
-        safe_fprintf(fp_pymod_c, "\t.m_name = \"%s\",\n",
-                     arg->pymodule_qualname);
-        safe_fprintf(fp_pymod_c, "\t.m_doc = NULL,\n");
-        safe_fprintf(fp_pymod_c, "\t.m_size = 0,\n");
-        safe_fprintf(fp_pymod_c, "\t.m_clear = PyAsnModule_%s__clear,\n",
-                     arg->pymodule_name);
-        safe_fprintf(fp_pymod_c, "\t.m_free = PyAsnModule_%s__free,\n",
-                     arg->pymodule_name);
-        safe_fprintf(fp_pymod_c, "};\n");
 
         safe_fprintf(fp_pymod_c, "\n/* Module Init */\n");
-        safe_fprintf(fp_pymod_c, "PyMODINIT_FUNC PyInit_%s(void) {\n",
-                     arg->pymodule_name);
-        safe_fprintf(fp_pymod_c,
-                     "\tPyObject *nModule = "
-                     "PyState_FindModule(&PyAsnModule_%s); \n\tif(nModule) "
-                     "return Py_NewRef(nModule);\n\n",
+        safe_fprintf(fp_pymod_c, "PY_IMPL_MODULE_INIT_BEGIN(%s)\n",
                      arg->pymodule_name);
         TQ_FOR(ot, &(cs->destination[OT_PY_IMPL_MOD_SETUP_TYPES].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_pymod_c);
@@ -606,7 +572,7 @@ asn1c_save_compiled_output(arg_t *arg, const char *datadir, const char *destdir,
         safe_fprintf(fp_pymod_c, "\tif (PyCompat_Init() < 0) return NULL;\n");
         TQ_FOR(ot, &(cs->destination[OT_PY_IMPL_MOD_INIT].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_pymod_c);
-        safe_fprintf(fp_pymod_c, "\treturn nModule;\n}\n");
+        safe_fprintf(fp_pymod_c, "PY_IMPL_MODULE_INIT_END;\n");
 
         ASN_XCLOSE(fp_pymod_c);
         ASN_XCLOSE(fp_pymod_h);
@@ -679,8 +645,8 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
         return -1;
     }
 
-    filename = strdup(asn1c_make_identifier(
-        AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, expr, (char *)0));
+    filename = strdup(asn1c_make_identifier(AMI_NODELIMITER | AMI_USE_PREFIX,
+                                            expr, (char *)0));
     if(!(arg->flags & A1C_GEN_PYTHON) || strcmp(filename, "EXTERNAL") == 0) {
         include_py = 0;
     }
@@ -768,10 +734,7 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
         SAVE_STREAM(fp_py_h, OT_PY_TYPE_DECLS, filename, 0);
         SAVE_STREAM(fp_py_h, OT_PY_TYPE_CONVERT, "Type Converters", 0);
 
-        safe_fprintf(fp_py_h, "\n/* Module Initializers */\n");
-        safe_fprintf(fp_py_h, "int PyAsn%s_ModSetupTypes(void);\n", filename);
-        safe_fprintf(fp_py_h, "void PyAsn%s_ModClear(PyObject *);\n", filename);
-        safe_fprintf(fp_py_h, "int PyAsn%s_ModInit(PyObject *);\n", filename);
+        SAVE_STREAM(fp_py_h, OT_PY_TYPE_MOD_DECLS, "Module Initializers", 0);
         safe_fprintf(fp_py_h, "\n#ifdef __cplusplus\n}\n#endif\n");
         safe_fprintf(fp_py_h, "\n#endif\t/* _%s_PY_H_ */\n", header_id);
     }

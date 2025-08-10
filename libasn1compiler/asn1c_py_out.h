@@ -20,6 +20,12 @@
     INDENT(-1);           \
     OUT("}\n")
 
+#define PY_GEN_TYPE_MOD_INIT(typeName)                     \
+    REDIR(OT_PY_TYPE_MOD_DECLS);                           \
+    OUT("int PyAsn%s_ModSetupTypes(void);\n", typeName);   \
+    OUT("void PyAsn%s_ModClear(PyObject *);\n", typeName); \
+    OUT("int PyAsn%s_ModInit(PyObject *);\n", typeName);
+
 #define PY_GEN_ASNTYPE_FROMPY_INLINE(name)                                    \
     OUT("static inline int PyAsn%s_FromPython(PyObject *pObj, %s_t *pDst)\n", \
         name, name);                                                          \
@@ -240,17 +246,24 @@
     REDIR(OT_PY_IMPL_CODE_MOD_INIT);             \
     INDENTED(PY_GEN_MOD_INIT_SINGLE(typeName))
 
-#define PY_GEN_MODULE_ADD_TYPE(typeName)                                    \
-    REDIR(OT_PY_IMPL_MOD_SETUP_TYPES);                                      \
-    INDENTED(                                                               \
-        OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n", typeName));  \
-    REDIR(OT_PY_IMPL_MOD_CLEAR);                                            \
-    INDENTED(OUT("PyAsn%s_ModClear(m);\n", typeName));                      \
-    REDIR(OT_PY_IMPL_MOD_INIT);                                             \
-    INDENTED(                                                               \
-        OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n", typeName)); \
-    REDIR(OT_PY_IMPL_MOD_INCLUDES);                                         \
-    OUT("#include \"%s_Py.h\"\n", typeName)
+#define PY_GEN_MODULE_ADD_TYPE(typeName)                                       \
+    do {                                                                       \
+        compiler_streams_t *cs = arg->pytarget, *saved_cs = NULL;              \
+        saved_cs = arg->target;                                                \
+        arg->target = cs;                                                      \
+        REDIR(OT_PY_IMPL_MOD_SETUP_TYPES);                                     \
+        INDENTED(                                                              \
+            OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n", typeName)); \
+        REDIR(OT_PY_IMPL_MOD_CLEAR);                                           \
+        INDENTED(OUT("PyAsn%s_ModClear(m);\n", typeName));                     \
+        REDIR(OT_PY_IMPL_MOD_INIT);                                            \
+        INDENTED(OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n",       \
+                     typeName));                                               \
+        REDIR(OT_PY_IMPL_MOD_INCLUDES);                                        \
+        OUT("#include \"%s_Py.h\"\n", typeName);                               \
+        arg->target = saved_cs;                                                \
+    } while(0)
+
 
 #define PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName,          \
                              type_def_path)                                   \

@@ -1245,4 +1245,33 @@ end:
     }
 
 
+/* MODULE */
+#define PY_IMPL_MODULE_CLEAR(mod, ...)                   \
+    static int PyAsnModule_##mod##__clear(PyObject* m) { \
+        __VA_ARGS__;                                     \
+        return 0;                                        \
+    }                                                    \
+    static void PyAsnModule_##mod##__free(void* m) {     \
+        PyAsnModule_##mod##__clear((PyObject*)m);        \
+    }
+
+#define PY_IMPL_MODULE_DEF(mod)                \
+    PyModuleDef PyAsnModule_##mod = {          \
+        PyModuleDef_HEAD_INIT,                 \
+        .m_name = #mod,                        \
+        .m_doc = NULL,                         \
+        .m_size = 0,                           \
+        .m_free = PyAsnModule_##mod##__free,   \
+        .m_clear = PyAsnModule_##mod##__clear, \
+    };
+
+#define PY_IMPL_MODULE_INIT_BEGIN(mod)                              \
+    PyMODINIT_FUNC PyInit_##mod(void) {                             \
+        PyObject* nModule = PyState_FindModule(&PyAsnModule_##mod); \
+        if(nModule) return Py_NewRef(nModule);
+
+#define PY_IMPL_MODULE_INIT_END \
+    return nModule;             \
+    }
+
 #endif
