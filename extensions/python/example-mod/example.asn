@@ -110,4 +110,22 @@ ExampleSet ::= SET {
     }
 }
 
+SeqOfRefType ::= SEQUENCE OF ExampleBoolean
+SeqOfInt ::= SEQUENCE OF INTEGER
+SeqOfReal ::= SEQUENCE OF REAL
+SetOfNull ::= SET OF NULL
+SeqOfOctetStr ::= SEQUENCE OF OCTET STRING
+SeqOfOid ::= SEQUENCE OF OBJECT IDENTIFIER
+SeqOfRelOid ::= SEQUENCE OF RELATIVE-OID
+SeqOfBitStr ::= SEQUENCE OF BIT STRING
+SeqOfStr ::= SEQUENCE OF UTF8String
+SeqOfEnum ::= SEQUENCE OF ENUMERATED {
+    seqOfEnumA(1),
+    seqOfEnumB(2)
+}
+
+SeqOfSeq ::= SEQUENCE OF SEQUENCE {
+    test    INTEGER
+}
+
 END

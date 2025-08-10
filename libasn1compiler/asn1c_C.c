@@ -852,9 +852,6 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
         tmp_memb->_anonymous_type = 1;
         if(tmp_memb->Identifier == 0) {
             tmp_memb->Identifier = strdup("Member");
-            if(0)
-                tmp_memb->Identifier =
-                    strdup(asn1c_make_identifier(0, expr, "Member", 0));
             assert(tmp_memb->Identifier);
         }
         tmp.default_cb(&tmp, NULL);
@@ -887,6 +884,12 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
         OUT("} %s%s", (expr->marker.flags & EM_INDIRECT) ? "*" : "",
             arg->embed ? c_name(arg).as_member : c_name(arg).short_name);
         if(!expr->_anonymous_type) OUT(";\n");
+    }
+
+    if(arg->flags & A1C_GEN_PYTHON) {
+        if(asn1c_lang_Py_type_SEQ_OF(arg) < 0) {
+            return -1;
+        }
     }
 
     /*

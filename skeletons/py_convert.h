@@ -273,7 +273,7 @@ _PyCompatUnicode_AsUTF8AndSize(PyObject *pObj, Py_ssize_t *size) {
     PyUnicode_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
 #define PyCompatUnicode_AsUTF8(obj, str, size) \
-    PyUnicode_AsUTF8((PyObject *)(obj), (char **)(str), (Py_ssize_t *)(size))
+    _PyCompatUnicode_AsUTF8((PyObject *)(obj), (char **)(str), (Py_ssize_t *)(size))
 
 static inline int
 _PyCompatUnicode_AsUTF8(PyObject *pObj, char **str, Py_ssize_t *size) {

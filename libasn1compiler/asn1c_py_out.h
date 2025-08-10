@@ -3,7 +3,14 @@
 
 #include "asn1c_out.h"
 
-#define PY_GEN_DEFAULT_INCLUDE() GEN_INCLUDE_STD("py_application")
+#define PY_GEN_DEFAULT_INCLUDE()                                          \
+    do {                                                                  \
+        if((arg->flags & A1C_INCLUDES_QUOTED)) {                          \
+            GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "\"py_application.h\""); \
+        } else {                                                          \
+            GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "<py_application.h>");   \
+        }                                                                 \
+    } while(0)
 
 #define PY_GEN_BEGIN_FUNC() \
     OUT("{\n");             \
@@ -333,7 +340,7 @@
         "&dst->choice.%s.size));\n",                                           \
         (typeName), (targetEnumTypeName), (attrName), (attrName), (attrName)); \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
-        "PyCompatBytes_FromStringAndSize(src->choice.%s.buf, "                 \
+        "PyCompatBitArray_FromStringAndSize(src->choice.%s.buf, "              \
         "src->choice.%s.size));\n",                                            \
         (typeName), (attrName), (attrName), (attrName));                       \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
@@ -654,5 +661,135 @@
     PY_GEN_SEQ_TYPEREF_CONV(typeName, targetTypeName, attrName, optional, \
                             indirect);                                    \
     PY_GEN_SET_GETSET(typeName, enumTypeName, attrName, optional)
+
+/* SET OF / SEQUENCE OF */
+#define PY_GEN_SEQ_OF_TYPEREF_BASIC(seqTypeName, typeName)             \
+    OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s_t);\n", seqTypeName, typeName);  \
+    OUT("PY_IMPL_SEQ_OF_SETITEM(%s, %s_t);\n", seqTypeName, typeName); \
+    OUT("PY_IMPL_SEQ_OF_ADD(%s, %s_t);\n", seqTypeName, typeName);
+
+#define PY_GEN_SEQ_OF_BASIC(seqTypeName, typeName)                   \
+    OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s);\n", seqTypeName, typeName);  \
+    OUT("PY_IMPL_SEQ_OF_SETITEM(%s, %s);\n", seqTypeName, typeName); \
+    OUT("PY_IMPL_SEQ_OF_ADD(%s, %s);\n", seqTypeName, typeName);
+
+#define PY_GEN_SEQ_OF_BASICSTR(seqTypeName, typeName)                 \
+    OUT("PY_IMPL_SEQ_OF_FROMPY(%s, " #typeName ");\n", seqTypeName);  \
+    OUT("PY_IMPL_SEQ_OF_SETITEM(%s, " #typeName ");\n", seqTypeName); \
+    OUT("PY_IMPL_SEQ_OF_ADD(%s, " #typeName ");\n", seqTypeName);
+
+#define PY_GEN_SEQ_OF_TYPEREF_GETSET(seqTypeName, refTypeName)       \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s_t, PyAsn%s_ToPython((%s_t " \
+        "*)src, parent));\n",                                        \
+        seqTypeName, refTypeName, refTypeName, refTypeName);         \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s_t, PyAsn%s_FromPython("   \
+        "value, (%s_t *)target));\n",                                \
+        seqTypeName, refTypeName, refTypeName, refTypeName);         \
+    PY_GEN_SEQ_OF_TYPEREF_BASIC(seqTypeName, refTypeName)
+
+#define PY_GEN_SEQ_OF_INTEGER_GETSET(seqTypeName, isSigned)         \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s, "                       \
+        "PyCompatLong_FromObject(value, target, %d));\n",           \
+        (seqTypeName), (isSigned ? "Py_ssize_t" : "unsigned long"), \
+        (isSigned));                                                \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s, "                         \
+        "PyCompatLong_AsObject(src, %d));\n",                       \
+        (seqTypeName), (isSigned ? "Py_ssize_t" : "unsigned long"), \
+        (isSigned));                                                \
+    PY_GEN_SEQ_OF_BASIC(seqTypeName,                                \
+                        (isSigned ? "Py_ssize_t" : "unsigned long"))
+
+#define PY_GEN_SEQ_OF_BOOLEAN_GETSET(seqTypeName)     \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, bool, "       \
+        "PyCompatBool_FromObject(value, target));\n", \
+        (seqTypeName));                               \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, bool, "         \
+        "PyCompatBool_AsObject(src));\n",             \
+        (seqTypeName));                               \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, bool)
+
+#define PY_GEN_SEQ_OF_BYTES_GETSET(seqTypeName)                     \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, OCTET_STRING_t, "           \
+        "PyCompatBytes_ToStringAndSize(value, &target->buf, "       \
+        "&target->size));\n",                                       \
+        (seqTypeName));                                             \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, OCTET_STRING_t, "             \
+        "PyCompatBytes_FromStringAndSize(src->buf, src->size));\n", \
+        (seqTypeName));                                             \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, OCTET_STRING_t)
+
+#define PY_GEN_SEQ_OF_REAL_GETSET(seqTypeName, is_float32)               \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s, "                            \
+        "PyCompatFloat_FromObject(value, (void *)target, %d));\n",       \
+        (seqTypeName), (is_float32 ? "float" : "double"), (is_float32)); \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s, "                              \
+        "PyCompatFloat_AsObject((void *)src, %d));\n",                   \
+        (seqTypeName), (is_float32 ? "float" : "double"), (is_float32)); \
+    PY_GEN_SEQ_OF_BASIC(seqTypeName, (is_float32 ? "float" : "double"))
+
+#define PY_GEN_SEQ_OF_NULL_GETSET(seqTypeName)                            \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, NULL_t, "                         \
+        "PyCompatNull_FromObject(value, target));\n",                     \
+        seqTypeName);                                                     \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, NULL_t, Py_None);\n", seqTypeName); \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, NULL_t)
+
+#define PY_GEN_SEQ_OF_OID_GETSET(seqTypeName)                  \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, OBJECT_IDENTIFIER_t, " \
+        "PyCompatOID_FromUnicode(value, target));\n",          \
+        (seqTypeName));                                        \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, OBJECT_IDENTIFIER_t, "   \
+        "PyCompatOID_AsUTF8String(src));\n",                   \
+        (seqTypeName));                                        \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, OBJECT_IDENTIFIER_t)
+
+#define PY_GEN_SEQ_OF_RELATIVE_OID_GETSET(seqTypeName)        \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, RELATIVE_OID_t, "     \
+        "PyCompatRelativeOID_FromUnicode(value, target));\n", \
+        (seqTypeName));                                       \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, RELATIVE_OID_t, "       \
+        "PyCompatRelativeOID_AsUTF8String(src));\n",          \
+        (seqTypeName));                                       \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, RELATIVE_OID_t)
+
+#define PY_GEN_SEQ_OF_BITSTRING_GETSET(seqTypeName)                    \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, BIT_STRING_t, "                \
+        "PyCompatBitArray_ToStringAndSize(value, &target->buf, "       \
+        "&target->size));\n",                                          \
+        (seqTypeName));                                                \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, BIT_STRING_t, "                  \
+        "PyCompatBitArray_FromStringAndSize(src->buf, src->size));\n", \
+        (seqTypeName));                                                \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, BIT_STRING_t)
+
+#define PY_GEN_SEQ_OF_STRING_GETSET(seqTypeName)                          \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, OCTET_STRING_t, "                 \
+        "PyCompatUnicode_AsUTF8(value, &target->buf, &target->size));\n", \
+        (seqTypeName));                                                   \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, OCTET_STRING_t, "                   \
+        "PyCompatUnicode_FromStringAndSize(src->buf, src->size));\n",              \
+        (seqTypeName));                                                   \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, OCTET_STRING_t)
+
+#define PY_GEN_SEQ_OF_ENUM_GETSET(seqTypeName, enumTypeName, is_signed)        \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s, PyCompatEnum_FromObject(value, "   \
+        "(void*)target, %d));\n",                                              \
+        seqTypeName, (is_signed ? "Py_ssize_t" : "unsigned long"), is_signed); \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, %s, "                                    \
+        "PyCompatEnum_AsObject(PyAsnEnum%s_Type, (void*)src, %d));\n",         \
+        seqTypeName, (is_signed ? "Py_ssize_t" : "unsigned long"),             \
+        enumTypeName, is_signed);                                              \
+    PY_GEN_SEQ_OF_BASIC(seqTypeName,                                           \
+                        (is_signed ? "Py_ssize_t" : "unsigned long"))
+
+#define PY_GEN_SEQ_OF_NAMED_BITSTR_GETSET(seqTypeName, enumTypeName)        \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, BIT_STRING_t, "                     \
+        "PyCompatFlag_FromObject(value, &target->buf, "                     \
+        "&target->size));\n",                                               \
+        (seqTypeName));                                                     \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, BIT_STRING_t, "                       \
+        "PyCompatFlag_AsObject(PyAsnEnum%s_Type, src->buf, src->size));\n", \
+        (seqTypeName), enumTypeName);                                       \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, BIT_STRING_t)
 
 #endif

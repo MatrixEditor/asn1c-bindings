@@ -1047,4 +1047,199 @@ end:
     }
 
 
+/* SEQ OF / SET OF*/
+#define PY_IMPL_SEQ_OF_COMPONENT_TYPE(typeName) \
+    (asn_DEF_##typeName.elements[0].type)
+
+
+#define PY_IMPL_SEQ_OF_NEW(typeName)                              \
+    static PyObject* PyAsn##typeName##__new(                      \
+        PyTypeObject* type, PyObject* args, PyObject* kwargs) {   \
+        PyAsn##typeName##Object* self;                            \
+        self = (PyAsn##typeName##Object*)type->tp_alloc(type, 0); \
+        self->ob_value = PY_IMPL_MALLOC(typeName##_t);            \
+        if(self->ob_value == NULL) {                              \
+            Py_CLEAR(self);                                       \
+        } else {                                                  \
+            /* list components will be initialized by ASN.*/      \
+            memset(self->ob_value, 0, sizeof(typeName##_t));      \
+        }                                                         \
+        self->s_valid = 1;                                        \
+        self->ob_parent = NULL;                                   \
+        return (PyObject*)self;                                   \
+    }
+
+#define PY_IMPL_SEQ_OF_DEALLOC(typeName, EMPTY_FUNC)                        \
+    static void PyAsn##typeName##__dealloc(PyAsn##typeName##Object* self) { \
+        if(self->ob_parent) {                                               \
+            if(Py_REFCNT(self->ob_parent) < 1) {                            \
+                PyErr_SetString(PyExc_MemoryError,                          \
+                                "UAF: parent object already deleted!");     \
+                return;                                                     \
+            }                                                               \
+            Py_DECREF(self->ob_parent);                                     \
+            self->ob_value = NULL;                                          \
+        } else {                                                            \
+            if(self->ob_value != NULL) {                                    \
+                if(self->ob_value->list.count > 0) {                        \
+                    EMPTY_FUNC((void*)&self->ob_value->list);               \
+                }                                                           \
+                PyMem_RawFree(self->ob_value);                              \
+            }                                                               \
+            self->ob_value = NULL;                                          \
+            self->ob_parent = NULL;                                         \
+        }                                                                   \
+        Py_TYPE(self)->tp_free((PyObject*)self);                            \
+    }
+
+#define PY_IMPL_SEQ_OF_REPR(typeName)                                         \
+    static PyObject* PyAsn##typeName##__repr(PyAsn##typeName##Object* self) { \
+        return PyUnicode_FromFormat("<%s elements=%ld>", #typeName,           \
+                                    self->ob_value->list.count);              \
+    }
+
+#define PY_IMPL_SEQ_OF_FROMPY(typeName, memberTypeName)                      \
+    int PyAsn##typeName##_FromPython(PyObject* p_obj, typeName##_t* p_dst) { \
+        PyObject* iterator;                                                  \
+        PyObject* item;                                                      \
+        memberTypeName* item_value;                                          \
+        if((iterator = PyObject_GetIter(p_obj)) == NULL) {                   \
+            return -1;                                                       \
+        }                                                                    \
+        while((item = PyIter_Next(iterator)) != NULL) {                      \
+            item_value = PY_IMPL_MALLOC(memberTypeName);                     \
+            if(item_value == NULL) {                                         \
+                goto end;                                                    \
+            }                                                                \
+            if(PyAsn##typeName##__component_FromPython(item, item_value)     \
+               < 0) {                                                        \
+                goto end;                                                    \
+            }                                                                \
+            if(asn_set_add(&p_dst->list, item_value) < 0) {                  \
+                PyErr_BadInternalCall();                                     \
+                goto end;                                                    \
+            }                                                                \
+            Py_CLEAR(item);                                                  \
+        }                                                                    \
+    end:                                                                     \
+        Py_XDECREF(item);                                                    \
+        Py_DECREF(iterator);                                                 \
+        return PyErr_Occurred() ? -1 : 0;                                    \
+    }
+
+#define PY_IMPL_SEQ_OF_LEN(typeName)                                          \
+    static Py_ssize_t PyAsn##typeName##__len(PyAsn##typeName##Object* self) { \
+        return self->ob_value->list.count;                                    \
+    }
+
+#define PY_IMPL_SEQ_OF_ITEM_TOPY(typeName, memberTypeName, ...)    \
+    static inline PyObject* PyAsn##typeName##__component_ToPython( \
+        memberTypeName* src, PyObject* parent) {                   \
+        return __VA_ARGS__;                                        \
+    }
+
+#define PY_IMPL_SEQ_OF_ITEM_FROMPY(typeName, memberTypeName, ...) \
+    static inline int PyAsn##typeName##__component_FromPython(    \
+        PyObject* value, memberTypeName* target) {                \
+        return __VA_ARGS__;                                       \
+    }
+
+#define PY_IMPL_SEQ_OF_GETITEM(typeName)                                       \
+    static PyObject* PyAsn##typeName##__getitem(PyAsn##typeName##Object* self, \
+                                                Py_ssize_t index) {            \
+        if(index >= self->ob_value->list.count) {                              \
+            PyErr_SetString(PyExc_IndexError, "list index out of range");      \
+            return NULL;                                                       \
+        }                                                                      \
+        return PyAsn##typeName##__component_ToPython(                          \
+            self->ob_value->list.array[index], (PyObject*)self);               \
+    }
+
+#define PY_IMPL_SEQ_OF_SETITEM(typeName, memberTypeName)                       \
+    static int PyAsn##typeName##__setitem(PyAsn##typeName##Object* self,       \
+                                          Py_ssize_t index, PyObject* value) { \
+        void** target;                                                         \
+        if(index >= self->ob_value->list.count) {                              \
+            PyErr_SetString(PyExc_IndexError, "list index out of range");      \
+            return -1;                                                         \
+        }                                                                      \
+        target = (void**)&self->ob_value->list.array[index];                   \
+        if(target != NULL) {                                                   \
+            ASN_STRUCT_FREE(*PY_IMPL_SEQ_OF_COMPONENT_TYPE(typeName),          \
+                            *target);                                          \
+        }                                                                      \
+        if(value == NULL) {                                                    \
+            if(index + 1 != self->ob_value->list.count) {                      \
+                memcpy(                                                        \
+                    &self->ob_value->list.array[index],                        \
+                    &self->ob_value->list.array[index + 1],                    \
+                    sizeof(void*) * (self->ob_value->list.count - index - 1)); \
+            }                                                                  \
+            self->ob_value->list.count--;                                      \
+            return 0;                                                          \
+        }                                                                      \
+        *target = (void*)PY_IMPL_MALLOC(memberTypeName);                       \
+        if(*target == NULL) {                                                  \
+            return -1;                                                         \
+        }                                                                      \
+        memset(*target, 0, sizeof(memberTypeName));                            \
+        return PyAsn##typeName##__component_FromPython(                        \
+            value, (memberTypeName*)(*target));                                \
+    }
+
+#define PY_IMPL_SEQ_OF_ADD(typeName, memberTypeName)                         \
+    static PyObject* PyAsn##typeName##__add(PyAsn##typeName##Object* self,   \
+                                            PyObject* args) {                \
+        static char* kwlist[] = {"value", NULL};                             \
+        PyObject* value = NULL;                                              \
+        memberTypeName* dst = NULL;                                          \
+        if(!PyArg_ParseTupleAndKeywords(args, NULL, "O", kwlist, &value))    \
+            return NULL;                                                     \
+        dst = PY_IMPL_MALLOC(memberTypeName);                                \
+        if(dst == NULL) {                                                    \
+            return NULL;                                                     \
+        }                                                                    \
+        memset(dst, 0, sizeof(memberTypeName));                              \
+        if(PyAsn##typeName##__component_FromPython(value, dst) < 0) {        \
+            PyMem_RawFree(dst);                                              \
+            return NULL;                                                     \
+        }                                                                    \
+        return asn_set_add(&self->ob_value->list, (void*)dst) < 0 ? NULL     \
+                                                                  : Py_None; \
+    }
+
+#define PY_IMPL_SEQ_OF_CLEAR(typeName)                                         \
+    static PyObject* PyAsn##typeName##__clear(PyAsn##typeName##Object* self) { \
+        asn_set_empty(&self->ob_value->list);                                  \
+        Py_RETURN_NONE;                                                        \
+    }
+
+
+#define PY_IMPL_SEQ_OF_EXTEND(typeName)                                       \
+    static PyObject* PyAsn##typeName##__extend(PyAsn##typeName##Object* self, \
+                                               PyObject* args) {              \
+        static char* kwlist[] = {"value", NULL};                              \
+        PyObject* value = NULL;                                               \
+        if(!PyArg_ParseTupleAndKeywords(args, NULL, "O", kwlist, &value))     \
+            return NULL;                                                      \
+        return PyAsn##typeName##_FromPython(value, self->ob_value) < 0        \
+                   ? NULL                                                     \
+                   : Py_None;                                                 \
+    }
+
+#define PY_IMPL_SEQ_OF_INIT(typeName)                                         \
+    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,         \
+                                       PyObject* args, PyObject* kwargs) {    \
+        static char* kwlist[] = {"values", NULL};                             \
+        PyObject* values = NULL;                                              \
+        if(!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &values)) \
+            return -1;                                                        \
+        if(values) {                                                          \
+            if(PyAsn##typeName##_FromPython(values, self->ob_value) < 0)      \
+                return -1;                                                    \
+        }                                                                     \
+        return 0;                                                             \
+    }
+
+
 #endif
