@@ -35,10 +35,10 @@ def test_named_INTEGER_allows_switching_between_enum_values():
     # You can assign either the enum value directly or the
     # enum reference
     obj = NamedSigned8()
-    obj.value = NamedSigned8.VALUES.NamedSigned8_first
-    assert obj.value == NamedSigned8.VALUES.NamedSigned8_first
-    obj.value = NamedSigned8.VALUES.NamedSigned8_second
-    assert obj.value == NamedSigned8.VALUES.NamedSigned8_second
+    obj.value = NamedSigned8.VALUES.V_first
+    assert obj.value == NamedSigned8.VALUES.V_first
+    obj.value = NamedSigned8.VALUES.V_second
+    assert obj.value == NamedSigned8.VALUES.V_second
 
 
 def test_named_INTEGER_is_valid_after_assignment():
@@ -54,7 +54,7 @@ def test_named_INTEGER_round_trip_encoding_decoding():
     # - Encoding an object and then decoding the bytes returns
     #   an equivalent object (value-wise).
     obj = NamedSigned8()
-    obj.value = NamedSigned8.VALUES.NamedSigned8_third
+    obj.value = NamedSigned8.VALUES.V_third
     encoded = obj.ber_encode()
     decoded = NamedSigned8.ber_decode(encoded)
     assert decoded.value == obj.value
@@ -63,9 +63,9 @@ def test_named_INTEGER_round_trip_encoding_decoding():
 @pytest.mark.parametrize(
     "enum_val,expected",
     [
-        (NamedSigned8.VALUES.NamedSigned8_first, b"\x02\x01\xff"),
-        (NamedSigned8.VALUES.NamedSigned8_second, b"\x02\x01\x00"),
-        (NamedSigned8.VALUES.NamedSigned8_third, b"\x02\x01\x01"),
+        (NamedSigned8.VALUES.V_first, b"\x02\x01\xff"),
+        (NamedSigned8.VALUES.V_second, b"\x02\x01\x00"),
+        (NamedSigned8.VALUES.V_third, b"\x02\x01\x01"),
     ],
 )
 def test_named_INTEGER_encoding_of_each_enum_member(
@@ -79,7 +79,7 @@ def test_named_INTEGER_encoding_of_each_enum_member(
 def test_named_INTEGER_repr_shows_class_name():
     # repr(obj) returns only the class name in angle brackets.
     obj = NamedSigned8()
-    obj.value = NamedSigned8.VALUES.NamedSigned8_second
+    obj.value = NamedSigned8.VALUES.V_second
     assert repr(obj) == "<NamedSigned8>"
 
 
@@ -88,5 +88,5 @@ def test_named_INTEGER_str_shows_enum_name_when_valid():
     # - Returns "<NamedSigned8>" if invalid.
     obj = NamedSigned8()
     assert str(obj) == "<NamedSigned8>"
-    obj.value = NamedSigned8.VALUES.NamedSigned8_second
+    obj.value = NamedSigned8.VALUES.V_second
     assert str(obj) == "0"

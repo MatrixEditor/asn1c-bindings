@@ -61,7 +61,7 @@ def test_constr_choice_inner_enum():
     #
     #   class_name := <member_name> '_VALUES'
     obj = ExampleChoice()
-    obj.cEnum = ExampleChoice.cEnum_VALUES.cEnum_ceA
-    assert obj.cEnum == ExampleChoice.cEnum_VALUES.cEnum_ceA
+    obj.cEnum = ExampleChoice.cEnum_VALUES.V_ceA
+    assert obj.cEnum == ExampleChoice.cEnum_VALUES.V_ceA
 
 

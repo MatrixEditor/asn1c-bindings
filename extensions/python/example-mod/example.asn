@@ -124,8 +124,25 @@ SeqOfEnum ::= SEQUENCE OF ENUMERATED {
     seqOfEnumB(2)
 }
 
-SeqOfSeq ::= SEQUENCE OF SEQUENCE {
+SeqOfSet ::= SEQUENCE OF SET {
     test    INTEGER
+}
+
+SeqOfNamedBitStr ::= SEQUENCE OF BIT STRING {
+    test(1)
+}
+
+TestInnerSeqOfinSeq ::= SEQUENCE {
+    test    INTEGER,
+    inner   SEQUENCE OF INTEGER
+}
+
+TestInnerSeqOfSeqInSeq ::= SEQUENCE {
+    -- inner anonymous sequence of anonymous sequences --
+    test    INTEGER,
+    inner   SEQUENCE OF SEQUENCE {
+        innerTest    INTEGER
+    }
 }
 
 END

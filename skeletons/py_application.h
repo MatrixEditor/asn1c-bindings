@@ -1048,9 +1048,8 @@ end:
 
 
 /* SEQ OF / SET OF*/
-#define PY_IMPL_SEQ_OF_COMPONENT_TYPE(typeName) \
-    (asn_DEF_##typeName.elements[0].type)
-
+#define PY_IMPL_SEQ_OF_COMPONENT_TYPE(ptrType_DEF) \
+    ((ptrType_DEF)->elements[0].type)
 
 #define PY_IMPL_SEQ_OF_NEW(typeName)                              \
     static PyObject* PyAsn##typeName##__new(                      \
@@ -1155,7 +1154,12 @@ end:
             self->ob_value->list.array[index], (PyObject*)self);               \
     }
 
-#define PY_IMPL_SEQ_OF_SETITEM(typeName, memberTypeName)                       \
+#define PY_IMPL_SEQ_OF_SETITEM(typeName, memberTypeName) \
+    PY_IMPL_SEQ_OF_GENERIC_SETITEM(                      \
+        typeName, memberTypeName,                        \
+        *(PY_IMPL_SEQ_OF_COMPONENT_TYPE(&asn_DEF_##typeName)))
+
+#define PY_IMPL_SEQ_OF_GENERIC_SETITEM(typeName, memberTypeName, type_DEF)     \
     static int PyAsn##typeName##__setitem(PyAsn##typeName##Object* self,       \
                                           Py_ssize_t index, PyObject* value) { \
         void** target;                                                         \
@@ -1165,8 +1169,7 @@ end:
         }                                                                      \
         target = (void**)&self->ob_value->list.array[index];                   \
         if(target != NULL) {                                                   \
-            ASN_STRUCT_FREE(*PY_IMPL_SEQ_OF_COMPONENT_TYPE(typeName),          \
-                            *target);                                          \
+            ASN_STRUCT_FREE((type_DEF), *target);                              \
         }                                                                      \
         if(value == NULL) {                                                    \
             if(index + 1 != self->ob_value->list.count) {                      \

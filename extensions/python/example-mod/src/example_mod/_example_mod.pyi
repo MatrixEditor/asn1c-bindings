@@ -191,9 +191,9 @@ class Signed8(_BasicAsn1Type[int]):
 
 class NamedSigned8(_Asn1ABC):
     class VALUES(enum.Enum):
-        NamedSigned8_first = -1
-        NamedSigned8_second = 0
-        NamedSigned8_third = 1
+        V_first = -1
+        V_second = 0
+        V_third = 1
 
     @property
     def value(self) -> NamedSigned8.VALUES: ...
