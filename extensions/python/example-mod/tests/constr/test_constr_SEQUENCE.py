@@ -36,6 +36,3 @@ def test_constr_seq_parse():
     assert parsed.is_valid()
     assert parsed.sBitStr == bitarray("01001100")
     assert parsed.ber_encode() == raw_data
-
-
-test_constr_seq_init()

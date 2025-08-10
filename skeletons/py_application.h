@@ -205,9 +205,11 @@ end:
         Py_TYPE(self)->tp_free((PyObject*)self);                        \
     }
 
-#define PY_IMPL_GENERIC_REPR(name)                                    \
+#define PY_IMPL_REPR(name) PY_IMPL_GENERIC_REPR(name, name)
+
+#define PY_IMPL_GENERIC_REPR(name, targetReprName)                    \
     static PyObject* PyAsn##name##__repr(PyAsn##name##Object* self) { \
-        return PyUnicode_FromString(("<" #name ">"));                 \
+        return PyUnicode_FromString(("<" #targetReprName ">"));       \
     }
 
 #define PY_IMPL_GENERIC_STR(name)                                             \
@@ -423,7 +425,7 @@ end:
 
 
 #define PY_IMPL_DECODE_SPECIFIC(typeName, atsName, atsValue) \
-    static PyObject* PyAsn##typeName##__##atsName##_decode(    \
+    static PyObject* PyAsn##typeName##__##atsName##_decode(  \
         PyObject* Py_UNUSED(type), PyObject* args) {         \
         return PyAsn##typeName##__decode(args, atsValue);    \
     }
@@ -548,31 +550,36 @@ end:
         return -1;                                                     \
     }
 
-#define PY_IMPL_CHOICE_ATTR_FROMPY(typeName, attrName, ...)       \
-    static inline int PyAsn##typeName##__##attrName##_FromPython( \
-        PyObject* value, typeName##_t* dst) {                     \
-        if(!value || Py_IsNone(value)) {                          \
-            dst->present = typeName##_PR_NOTHING;                 \
-            return 0;                                             \
-        }                                                         \
-        if((__VA_ARGS__) < 0) return -1;                          \
-        dst->present = typeName##_PR_##attrName;                  \
-        return 0;                                                 \
+#define PY_IMPL_CHOICE_ATTR_FROMPY(typeName, enumTypeName, attrName, ...) \
+    static inline int PyAsn##typeName##__##attrName##_FromPython(         \
+        PyObject* value, typeName##_t* dst) {                             \
+        if(!value || Py_IsNone(value)) {                                  \
+            dst->present = enumTypeName##_PR_NOTHING;                     \
+            return 0;                                                     \
+        }                                                                 \
+        if((__VA_ARGS__) < 0) return -1;                                  \
+        dst->present = enumTypeName##_PR_##attrName;                      \
+        return 0;                                                         \
     }
 
-#define PY_IMPL_CHOICE_SETATTR(typeName, attrName)                             \
+#define PY_IMPL_CHOICE_SETATTR(typeName, enumTypeName, attrName)     \
+    PY_IMPL_CHOICE_GENERIC_SETATTR(typeName, enumTypeName, attrName, \
+                                   asn_DEF_##typeName)
+
+#define PY_IMPL_CHOICE_GENERIC_SETATTR(typeName, enumTypeName, attrName,       \
+                                       type_DEF)                               \
     static int PyAsn##typeName##__set_##attrName(                              \
         PyAsn##typeName##Object* self, PyObject* value,                        \
         void* Py_UNUSED(arg)) {                                                \
-        ASN_STRUCT_RESET(asn_DEF_##typeName, self->ob_value);                  \
-        self->ob_value->present = typeName##_PR_NOTHING;                       \
+        ASN_STRUCT_RESET((type_DEF), self->ob_value);                          \
+        self->ob_value->present = enumTypeName##_PR_NOTHING;                   \
         int result =                                                           \
             PyAsn##typeName##__##attrName##_FromPython(value, self->ob_value); \
         self->s_valid = result != -1;                                          \
         if(result < 0) {                                                       \
             return -1;                                                         \
         }                                                                      \
-        self->ob_value->present = typeName##_PR_##attrName;                    \
+        self->ob_value->present = enumTypeName##_PR_##attrName;                \
         return 0;                                                              \
     }
 
@@ -583,10 +590,10 @@ end:
     }
 
 
-#define PY_IMPL_CHOICE_GETATTR(typeName, attrName)                        \
+#define PY_IMPL_CHOICE_GETATTR(typeName, enumTypeName, attrName)          \
     static PyObject* PyAsn##typeName##__get_##attrName(                   \
         PyAsn##typeName##Object* self, void* Py_UNUSED(arg)) {            \
-        if(self->ob_value->present != typeName##_PR_##attrName)           \
+        if(self->ob_value->present != enumTypeName##_PR_##attrName)       \
             return Py_None;                                               \
         return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
                                                         (PyObject*)self); \
@@ -616,6 +623,15 @@ end:
         return 0;                                                         \
     }
 
+#define PY_IMPL_CHOICE_FROMPY(typeName, ...)                               \
+    int PyAsn##typeName##_FromPython(PyObject* value, typeName##_t* dst) { \
+        PyObject* tmp = NULL;                                              \
+        int result = 0;                                                    \
+        __VA_ARGS__;                                                       \
+        Py_XDECREF(tmp);                                                   \
+        return result;
+
+
 #define PY_IMPL_CHOICE_INIT_ATTR(typeName, attrName, srcObj, tmpValue)   \
     PyCompat_GenericGetAttr((srcObj), attrName, (tmpValue));             \
     if((tmpValue)) {                                                     \
@@ -628,14 +644,17 @@ end:
         PyErr_Clear();
 
 
-#define PY_IMPL_CHOICE_INIT(typeName)                                      \
-    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,      \
-                                       PyObject* args, PyObject* kwargs) { \
-        PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                       \
-        if(PyAsn##typeName##_FromPython(kwargs, self->ob_value) < 0)       \
-            return -1;                                                     \
-        self->s_valid = self->ob_value->present != typeName##_PR_NOTHING;  \
-        return 0;                                                          \
+#define PY_IMPL_CHOICE_INIT(typeName) \
+    PY_IMPL_CHOICE_INIT_GENERIC(typeName, typeName)
+
+#define PY_IMPL_CHOICE_INIT_GENERIC(typeName, enumTypeName)                   \
+    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,         \
+                                       PyObject* args, PyObject* kwargs) {    \
+        PY_IMPL_INIT_KWONLY(typeName, args, kwargs);                          \
+        if(PyAsn##typeName##_FromPython(kwargs, self->ob_value) < 0)          \
+            return -1;                                                        \
+        self->s_valid = self->ob_value->present != enumTypeName##_PR_NOTHING; \
+        return 0;                                                             \
     }
 
 #define PY_IMPL_CHOICE_TOPY(typeName)                                      \
@@ -649,6 +668,7 @@ end:
                 return NULL;                                               \
             }                                                              \
         } else {                                                           \
+            PyMem_RawFree(self->ob_value);                                 \
             self->ob_value = (typeName##_t*)src;                           \
             self->ob_parent = Py_NewRef(parent);                           \
         }                                                                  \
@@ -765,7 +785,8 @@ end:
     }
 
 
-#define PY_IMPL_SEQ_GENERIC_TOPY(typeName)
+#define PY_IMPL_SEQ_GENERIC_TOPY(typeName) \
+    PY_IMPL_SEQ_TOPY(typeName, &asn_DEF_##typeName)
 
 #define PY_IMPL_SEQ_TOPY(typeName, type_DEF)                             \
     PyObject* PyAsn##typeName##_ToPython(typeName##_t* src,              \
@@ -777,6 +798,7 @@ end:
                 return NULL;                                             \
             }                                                            \
         } else {                                                         \
+            PyMem_RawFree(self->ob_value);                               \
             self->ob_value = (typeName##_t*)src;                         \
             self->ob_parent = Py_NewRef(parent);                         \
         }                                                                \
@@ -790,6 +812,8 @@ end:
         if(tmp) {                                                           \
             if(PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
                 result = -1;                                                \
+            } else {                                                        \
+                Py_CLEAR(tmp);                                              \
             }                                                               \
         } else                                                              \
             PyErr_Clear();                                                  \

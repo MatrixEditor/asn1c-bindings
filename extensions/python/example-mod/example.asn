@@ -53,6 +53,13 @@ ExampleChoice ::= CHOICE {
     },
     cSeq        SEQUENCE {
         ciInt       INTEGER
+    },
+    cChoice     CHOICE {
+        ciReal      REAL,
+        ciBool      BOOLEAN,
+        ciSeq       SEQUENCE {
+            cis        INTEGER
+        }
     }
 }
 
@@ -90,6 +97,9 @@ ExampleSequence ::= SEQUENCE {
         siSeq           SEQUENCE {
             siiInt          INTEGER
         }
+    },
+    sChoice         CHOICE {
+        sicInt          INTEGER
     }
 }
 

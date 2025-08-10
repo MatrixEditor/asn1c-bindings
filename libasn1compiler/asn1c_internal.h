@@ -84,9 +84,9 @@ typedef struct arg_s {
 #define FATAL(fmt, args...) LOG(1, fmt, ##args);
 
 /*Utilities*/
-#define ASN_XFREE(p) \
-    if((p)) {        \
-        ASN_FREE(p); \
+#define ASN_XFREE(p)  \
+    if((p) != NULL) { \
+        ASN_FREE(p);  \
     }
 #define ASN_FREE(p) free((p))
 #define ASN_CLEAR(p) \
@@ -94,20 +94,20 @@ typedef struct arg_s {
         ASN_FREE(p); \
         p = NULL;    \
     } while(0)
-#define ASN_XCLEAR(p)    \
-    do {                 \
-        if((p)) {        \
-            ASN_FREE(p); \
-            p = NULL;    \
-        }                \
+#define ASN_XCLEAR(p)     \
+    do {                  \
+        if((p) != NULL) { \
+            ASN_FREE(p);  \
+            p = NULL;     \
+        }                 \
     } while(0)
 
-#define ASN_XCLOSE(p)  \
-    do {               \
-        if((p)) {      \
-            fclose(p); \
-            p = NULL;  \
-        }              \
+#define ASN_XCLOSE(p)     \
+    do {                  \
+        if((p) != NULL) { \
+            fclose(p);    \
+            p = NULL;     \
+        }                 \
     } while(0)
 
 #define ASN_CLOSE(p) \
