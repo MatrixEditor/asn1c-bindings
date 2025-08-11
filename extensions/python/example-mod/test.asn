@@ -1,0 +1,10 @@
+TestsModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+
+
+-- SEQ OF / SET OF tests
+Test-Constr-SeqOf ::= SEQUENCE OF INTEGER
+
+
+
+END

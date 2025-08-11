@@ -88,3 +88,5 @@ Supported Types
    :maxdepth: 2
    :caption: Contents:
 
+   reference/index.rst
+
