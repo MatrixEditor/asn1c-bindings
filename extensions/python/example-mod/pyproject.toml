@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "scikit-build-core~=0.9.0"]
+requires = ["hatchling", "scikit-build-core~=0.9.0", "asn1cpython-support==0.0.1"]
 build-backend = "hatchling.build"
 
 [project]
