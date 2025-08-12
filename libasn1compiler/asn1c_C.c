@@ -365,6 +365,13 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
         OUT("typedef %s {\n", c_name(arg).full_name);
     }
 
+    if(arg->flags & A1C_GEN_PYTHON) {
+        /* this must be done BEFORE generating each member */
+        if(asn1c_lang_Py_stubs_SEQUENCE(arg)) {
+            return -1;
+        }
+    }
+
     TQ_FOR(v, &(expr->members), next) {
         if(v->expr_type == A1TC_EXTENSIBLE)
             if(comp_mode < 3) comp_mode++;
@@ -625,6 +632,13 @@ asn1c_lang_C_type_SET(arg_t *arg) {
         OUT("typedef %s {\n", c_name(arg).full_name);
     }
 
+    if(arg->flags & A1C_GEN_PYTHON) {
+        /* this must be done BEFORE generating each member */
+        if(asn1c_lang_Py_stubs_SEQUENCE(arg)) {
+            return -1;
+        }
+    }
+
     TQ_FOR(v, &(expr->members), next) {
         char ext_name[20];
 
@@ -837,6 +851,13 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
      */
     memb->marker.flags |= EM_INDIRECT;
 
+    if(arg->flags & A1C_GEN_PYTHON) {
+        /* this must be done BEFORE generating each member */
+        if(asn1c_lang_Py_stubs_SEQ_OF(arg)) {
+            return -1;
+        }
+    }
+
     if(memb->expr_type & ASN_CONSTR_MASK
        || ((memb->expr_type == ASN_BASIC_ENUMERATED
             || (0 /* -- prohibited by X.693:8.3.4 */
@@ -1011,6 +1032,13 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
     } else {
         REDIR(OT_TYPE_DECLS);
         OUT("typedef %s {\n", c_name(arg).full_name);
+    }
+
+    if(arg->flags & A1C_GEN_PYTHON) {
+        /* this must be done BEFORE generating each member */
+        if(asn1c_lang_Py_stubs_CHOICE(arg)) {
+            return -1;
+        }
     }
 
     INDENTED(

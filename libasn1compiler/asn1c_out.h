@@ -48,6 +48,7 @@ typedef struct compiler_streams {
         OT_PY_IMPL_MOD_INIT,        /* Python Module: init() */
         OT_PY_IMPL_MOD_INCLUDES,    /* Python Module: includes */
         OT_PY_TYPE_MOD_DECLS,       /* Python Module: declarations */
+        OT_PY_STUBS,                /* Python stubs file */
         OT_MAX
     } target;
 
@@ -84,6 +85,7 @@ static char *_compiler_stream2str[] __attribute__((unused)) = {
     "PY-IMPL-MOD-INIT",
     "PY-IMPL-MOD-INCLUDES",
     "PY-MOD-DECLS",
+    "PY-STUBS",
 };
 
 int asn1c_compiled_output(arg_t *arg, const char *file, int lineno,

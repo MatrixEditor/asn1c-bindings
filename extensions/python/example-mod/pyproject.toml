@@ -58,3 +58,8 @@ exclude_lines = [
 
 [tool.hatch.build.targets.wheel.hooks.scikit-build]
 experimental = true
+
+# To set a custom compiler and skeletons path, use custom defines
+# [tool.scikit-build.cmake.define]
+# A1C_PATH = "..."
+# A1C_SKELETONS_PATH = "..."

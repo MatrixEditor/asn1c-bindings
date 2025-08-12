@@ -9,8 +9,9 @@ int asn1c_lang_Py_type_CHOICE(arg_t *);
 int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *);
 int asn1c_lang_Py_type_SEQ_OF(arg_t *);
 
-// int asn1c_lang_PyStub_type_SEQUENCE(arg_t *);
-// int asn1c_lang_PyStub_type_CHOICE(arg_t *);
-// int asn1c_lang_PyStub_type_SIMPLE_TYPE(arg_t *);
+int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *);
+int asn1c_lang_Py_stubs_SEQUENCE(arg_t *);
+int asn1c_lang_Py_stubs_CHOICE(arg_t *);
+int asn1c_lang_Py_stubs_SEQ_OF(arg_t *);
 
 #endif /* ASN1_COMPILER_LANDUAGE_PY_H */

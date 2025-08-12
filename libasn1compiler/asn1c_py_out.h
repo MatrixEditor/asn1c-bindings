@@ -246,24 +246,68 @@
     REDIR(OT_PY_IMPL_CODE_MOD_INIT);             \
     INDENTED(PY_GEN_MOD_INIT_SINGLE(typeName))
 
-#define PY_GEN_MODULE_ADD_TYPE(typeName)                                       \
-    do {                                                                       \
-        compiler_streams_t *cs = arg->pytarget, *saved_cs = NULL;              \
-        saved_cs = arg->target;                                                \
-        arg->target = cs;                                                      \
-        REDIR(OT_PY_IMPL_MOD_SETUP_TYPES);                                     \
-        INDENTED(                                                              \
-            OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n", typeName)); \
-        REDIR(OT_PY_IMPL_MOD_CLEAR);                                           \
-        INDENTED(OUT("PyAsn%s_ModClear(m);\n", typeName));                     \
-        REDIR(OT_PY_IMPL_MOD_INIT);                                            \
-        INDENTED(OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n",       \
-                     typeName));                                               \
-        REDIR(OT_PY_IMPL_MOD_INCLUDES);                                        \
-        OUT("#include \"%s_Py.h\"\n", typeName);                               \
-        arg->target = saved_cs;                                                \
+#define PY_OUTER(targetStream, ...)                               \
+    do {                                                          \
+        compiler_streams_t *cs = arg->pytarget, *saved_cs = NULL; \
+        saved_cs = arg->target;                                   \
+        arg->target = cs;                                         \
+        REDIR(targetStream);                                      \
+        __VA_ARGS__;                                              \
+        arg->target = saved_cs;                                   \
     } while(0)
 
+#define PY_GEN_MODULE_ADD_TYPE(typeName)                                      \
+    PY_OUTER(OT_PY_IMPL_MOD_SETUP_TYPES,                                      \
+             INDENTED(OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n",  \
+                          typeName));                                         \
+             REDIR(OT_PY_IMPL_MOD_CLEAR);                                     \
+             INDENTED(OUT("PyAsn%s_ModClear(m);\n", typeName));               \
+             REDIR(OT_PY_IMPL_MOD_INIT);                                      \
+             INDENTED(OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n", \
+                          typeName));                                         \
+             REDIR(OT_PY_IMPL_MOD_INCLUDES);                                  \
+             OUT("#include \"%s_Py.h\"\n", typeName));
+
+
+#define PY_GEN_STUBS_BASIC_TYPE(typeName, baseClass)                      \
+    PY_OUTER(OT_PY_STUBS,                                                 \
+             OUT("class %s(_Asn1BasicType[%s]):\n", typeName, baseClass); \
+             OUT("\tpass\n"); OUT("\n"));
+
+#define PY_GEN_STUBS_BEGIN                                        \
+    do {                                                          \
+        compiler_streams_t *cs = arg->pytarget, *saved_cs = NULL; \
+        saved_cs = arg->target;                                   \
+        arg->target = cs;                                         \
+    REDIR(OT_PY_STUBS)
+
+#define PY_GEN_STUBS_END    \
+    arg->target = saved_cs; \
+    }                       \
+    while(0)
+
+#define PY_GEN_STUBS_ENUM_PROPERTY(typeName, optional)                        \
+    OUT("@property\n");                                                       \
+    OUT("def value(self) -> %s.VALUES%s: ...\n", typeName,                    \
+        (optional) ? " | None" : "");                                         \
+    OUT("@value.setter\n");                                                   \
+    OUT("def value(self, value: %s.VALUES | int%s) -> None: ...\n", typeName, \
+        (optional) ? " | None" : "");
+
+#define PY_GEN_STUBS_SEQ_OF(memberTypeName, extra_type_args)                \
+    OUT("def __init__(self, values: EXT_Iterable[%s%s] | None = ...) -> "   \
+        "None: ...\n",                                                      \
+        memberTypeName, extra_type_args);                                   \
+    OUT("def __getitem__(self, index: int) -> %s%s: ...\n", memberTypeName, \
+        extra_type_args);                                                   \
+    OUT("def __setitem__(self, index: int, value: %s%s) -> None: ...\n",    \
+        memberTypeName, extra_type_args);                                   \
+    OUT("def add(self, value: %s%s) -> None: ...\n", memberTypeName,        \
+        extra_type_args);                                                   \
+    OUT("def extend(self, values: EXT_Iterable[%s%s]) -> None: ...\n",      \
+        memberTypeName, extra_type_args);
+
+#define PY_GEN_LF OUT("\n")
 
 #define PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName,          \
                              type_def_path)                                   \

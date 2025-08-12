@@ -1,5 +1,5 @@
 import enum
-from typing import Any, Generic, override, TypeVar
+from typing import Any, Generic, Iterable, override, TypeVar
 
 import bitarray
 
@@ -183,27 +183,19 @@ class _Asn1_ChoiceType(_Asn1Type):
     # Mambers can be set using keyword arguments only!
     def __init__(self, /, **members: Any) -> None: ...
 
-# -- PROPOSED --
-# asn1c should optionally generaty a stub file for each type based in the
-# skeleton code above. For instance:
-class Signed8(_Asn1BasicType[int]):
-    pass
+# Classes for SEQUENCE OF and SET OF implment some behaviour of the
+# Mapping protocol in Python. To convert an object of this type into a list of
+# values, just use list(...).
+#
+# Directly deleting elements can be done using del obj[index], a direct method
+# is not provided (as of today).
+class _Asn1ListType(Generic[_PY_T], _Asn1Type):
+	def __init__(self, values: Iterable[_PY_T] | None = ...) -> None: ...
+	def __len__(self) -> int: ...
+	def __getitem__(self, index: int) -> _PY_T: ...
+	def __setitem__(self, index: int, value: _PY_T) -> None: ...
+	def __delitem__(self, index: int) -> None: ...
+	def add(self, value: _PY_T) -> None: ...
+	def extend(self, values: Iterable[_PY_T]) -> None: ...
+	def clear(self) -> None: ...
 
-class NamedSigned8(_Asn1Type):
-    class VALUES(enum.Enum):
-        V_first = -1
-        V_second = 0
-        V_third = 1
-
-    @property
-    def value(self) -> NamedSigned8.VALUES: ...
-    @value.setter
-    def value(self, value: NamedSigned8.VALUES | int) -> None: ...
-
-class ExampleChoice(_Asn1Type):
-    foo: bytes | None
-    bar: int | None
-    baz: NamedSigned8 | None
-
-class ExampleNull(_Asn1BasicType[None]):
-    pass

@@ -1,6 +1,3 @@
-#ifndef ASN1_COMPILER_LANDUAGE_PY_H
-#define ASN1_COMPILER_LANDUAGE_PY_H
-
 #include "asn1c_internal.h"
 #include "asn1c_Py.h"
 #include "asn1c_out.h"
@@ -35,6 +32,34 @@ enum {
     PYTNF_NONE = 0x00,
     PYTNF_CONSTR = 0x01,
     PYTNF_CLASS = 0x02,
+};
+
+static const char *PY_TYPE_MAP[] = {
+    [ASN_BASIC_INTEGER] = "int",
+    [ASN_BASIC_BIT_STRING] = "EXT_bitarray",
+    [ASN_BASIC_OCTET_STRING] = "bytes",
+    [ASN_BASIC_NULL] = "None",
+    [ASN_BASIC_BOOLEAN] = "bool",
+    [ASN_BASIC_REAL] = "float",
+    [ASN_BASIC_CHARACTER_STRING] = "str",
+    [ASN_BASIC_OBJECT_IDENTIFIER] = "str",
+    [ASN_BASIC_RELATIVE_OID] = "str",
+    [ASN_BASIC_UTCTime] = "bytes",
+    [ASN_BASIC_GeneralizedTime] = "bytes",
+    [ASN_STRING_IA5String] = "str",
+    [ASN_STRING_PrintableString] = "str",
+    [ASN_STRING_VisibleString] = "str",
+    [ASN_STRING_ISO646String] = "str",
+    [ASN_STRING_NumericString] = "str",
+    [ASN_STRING_UniversalString] = "str",
+    [ASN_STRING_BMPString] = "str",
+    [ASN_STRING_UTF8String] = "str",
+    [ASN_STRING_GeneralString] = "str",
+    [ASN_STRING_GraphicString] = "str",
+    [ASN_STRING_TeletexString] = "str",
+    [ASN_STRING_T61String] = "str",
+    [ASN_STRING_VideotexString] = "str",
+    [ASN_STRING_ObjectDescriptor] = "str",
 };
 
 /**
@@ -74,6 +99,7 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     char *constr_member_name;
 
     int saved_target;
+    int saved_indent;
 
     expr = arg->expr;
     v = NULL;
@@ -86,6 +112,7 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     inner_parent_name = NULL;
     constr_path = NULL;
     saved_target = arg->target->target;
+    saved_indent = INDENT_LEVEL;
 
 
     PY_GEN_DEFAULT_INCLUDE();
@@ -211,6 +238,18 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
         }
     }
 
+    PY_GEN_STUBS_BEGIN;
+    PY_GEN_LF;
+    if(arg->embed && !TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)) {
+        INDENT_LEVEL = arg->embed;
+        OUT("%s: %s_TYPE%s\n", constr_member_name, constr_member_name,
+            (expr->marker.flags & EM_OPTIONAL) ? " | None" : "");
+        INDENT_LEVEL = saved_indent;
+    }
+
+    PY_GEN_STUBS_END;
+
+
     ASN_XFREE(type_name);
     ASN_XFREE(constr_struct_name);
     ASN_XFREE(py_class_name);
@@ -236,6 +275,7 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     char *constr_member_name;
 
     int saved_target;
+    int saved_indent;
     size_t presence_value = 0;
 
     ns = c_name(arg);
@@ -247,7 +287,7 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     inner_parent_name = NULL;
     constr_path = NULL;
     saved_target = arg->target->target;
-
+    saved_indent = INDENT_LEVEL;
 
     PY_GEN_DEFAULT_INCLUDE();
     REDIR(OT_PY_TYPE_DECLS);
@@ -400,6 +440,17 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
         PY_GEN_MODULE_ADD_TYPE(type_name);
     }
 
+    PY_GEN_STUBS_BEGIN;
+    PY_GEN_LF;
+    if(arg->embed && !TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)) {
+        INDENT_LEVEL = arg->embed;
+        OUT("%s: %s_TYPE%s\n", constr_member_name, constr_member_name,
+            (expr->marker.flags & EM_OPTIONAL) ? " | None" : "");
+        INDENT_LEVEL = saved_indent;
+    }
+
+    PY_GEN_STUBS_END;
+
     ASN_XFREE(type_name);
     ASN_XFREE(constr_struct_name);
     ASN_XFREE(py_class_name);
@@ -433,7 +484,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
     int indirect;
     int is_signed;
     int is_bitstr;
-
+    int result;
 
     expr = arg->expr;
     saved_target = arg->target->target;
@@ -450,6 +501,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
     el_member_name = NULL;
     constr_enum_name = NULL;
     constr_parent_path = NULL;
+    result = 0;
 
     if(expr->parent_expr) {
         struct c_names parent_ns = c_expr_name(arg, expr->parent_expr);
@@ -920,7 +972,6 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             /*implementation*/
             PY_GEN_BASIC_CLASS(arg->pymodule_qualname, name);
 
-
             /*module init*/
             PY_GEN_MOD_BASIC(name);
             break;
@@ -1228,6 +1279,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
         PY_GEN_MODULE_ADD_TYPE(name);
     }
 
+    result = asn1c_lang_Py_stubs_SIMPLE_TYPE(arg);
+
     REDIR(saved_target);
     ASN_XFREE(parent_type_name);
     ASN_XFREE(parent_struct_name);
@@ -1235,7 +1288,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
     ASN_XFREE(el_member_name);
     ASN_XFREE(name);
     ASN_XFREE(constr_enum_name);
-    return 0;
+    return result;
 }
 
 int
@@ -1253,6 +1306,8 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     char *inner_parent_struct_name;
 
     int saved_target;
+    int saved_indent;
+    int el_count;
     enum asn1p_expr_marker_e flags;
 
     expr = arg->expr;
@@ -1266,6 +1321,8 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     list_constr_path = NULL;
     inner_parent_name = NULL;
     inner_parent_struct_name = NULL;
+    saved_indent = INDENT_LEVEL;
+    el_count = expr_elements_count(arg, memb);
 
     if(expr->parent_expr != NULL) {
         arg->embed--;
@@ -1277,9 +1334,8 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     PY_GEN_DEFAULT_INCLUDE();
     if(!(memb->expr_type & ASN_CONSTR_MASK
          || ((memb->expr_type == ASN_BASIC_ENUMERATED
-              || (0 /* -- prohibited by X.693:8.3.4 */
-                  && memb->expr_type == ASN_BASIC_INTEGER))
-             && expr_elements_count(arg, memb)))) {
+              || (memb->expr_type == ASN_BASIC_INTEGER))
+             && el_count))) {
         if(memb->Identifier == NULL) {
             memb->Identifier = strdup("Member");
         }
@@ -1296,8 +1352,11 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
         memb->marker.flags = flags;
     }
 
+
     REDIR(OT_PY_TYPE_DECLS);
-    OUT("typedef struct %s %s_t;\n", ns.base_name, list_type_name);
+    if(arg->embed && !expr->_anonymous_type) {
+        OUT("typedef struct %s %s_t;\n", ns.base_name, list_type_name);
+    }
     PY_GEN_DEF_TYPE(list_type_name);
 
 
@@ -1404,6 +1463,17 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
         PY_GEN_MODULE_ADD_TYPE(list_type_name);
     }
 
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
+    INDENT(+1);
+    OUT("def clear(self) -> None: ...\n");
+    OUT("def __len__(self) -> int: ...\n");
+    OUT("def __delitem__(self, index: int) -> None: ...\n");
+    INDENT(-1);
+    PY_GEN_LF;
+    PY_GEN_STUBS_END;
+
+    INDENT_LEVEL = saved_indent;
     REDIR(saved_target);
     ASN_XFREE(list_type_name);
     ASN_XFREE(list_struct_name);
@@ -1413,6 +1483,240 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     ASN_XFREE(inner_parent_struct_name);
     return 0;
 }
+
+/* stubs gen */
+int
+asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg) {
+    asn1p_expr_t *expr;
+    asn1p_expr_t *v;
+
+    const char *py_conv_type;
+    char *memb_name;
+
+    int saved_target;
+    int is_bitstr;
+    int el_count;
+    int indent_level;
+    int parent_is_seq;
+    int optional;
+
+    expr = arg->expr;
+    saved_target = arg->target->target;
+    is_bitstr = expr->expr_type == ASN_BASIC_BIT_STRING;
+    el_count = expr_elements_count(arg, expr);
+    memb_name = NULL;
+    indent_level = INDENT_LEVEL;
+    py_conv_type = PY_TYPE_MAP[expr->expr_type];
+    memb_name = strdup(MKID(expr));
+    parent_is_seq = expr->parent_expr
+                        ? TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)
+                        : 0;
+    optional = (expr->marker.flags & EM_OPTIONAL)
+               || (TYPE_IS_UNION(expr->parent_expr));
+
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
+
+    if(expr->expr_type == A1TC_REFERENCE) {
+        py_conv_type = c_expr_name(arg, expr->reference->ref_expr).as_member;
+    }
+
+    if(!el_count) {
+        if(!py_conv_type) {
+            WARNING("SIMPLE TYPE %#x - no python type found!", expr->expr_type);
+            py_conv_type = "EXT_Any";
+        }
+
+        if(arg->embed) {
+            if(!parent_is_seq) {
+                OUT("%s: %s%s\n", memb_name, py_conv_type,
+                    (optional) ? " | None" : "");
+            } else {
+                PY_GEN_STUBS_SEQ_OF(py_conv_type, "");
+            }
+        } else {
+            OUT("class %s(_Asn1BasicType[%s%s]):\n", memb_name, py_conv_type,
+                (optional) ? " | None" : "");
+            INDENTED(OUT("pass\n"));
+            PY_GEN_LF;
+        }
+    } else {
+        switch(expr->expr_type) {
+        case ASN_BASIC_INTEGER:
+        case ASN_BASIC_BIT_STRING:
+        case ASN_BASIC_ENUMERATED: {
+            if(!arg->embed) {
+                OUT("class %s(_Asn1Type):\n", memb_name);
+                INDENT(+1);
+            }
+            OUT("class %s%sVALUES(EXT_%s):\n", arg->embed ? memb_name : "",
+                arg->embed ? "_" : "", is_bitstr ? "IntFlag" : "IntEnum");
+            INDENT(+1);
+            TQ_FOR(v, &(expr->members), next) {
+                switch(v->expr_type) {
+                case A1TC_UNIVERVAL:
+                    OUT("V_%s = %s%s\n", c_expr_name(arg, v).as_member,
+                        is_bitstr ? "1 << " : "",
+                        asn1p_itoa(v->value->value.v_integer));
+                    break;
+                case A1TC_EXTENSIBLE:
+                    OUT("/*\n");
+                    OUT(" * Enumeration is extensible\n");
+                    OUT(" */\n");
+                    break;
+                default:
+                    return -1;
+                }
+            };
+            INDENT(-1);
+            PY_GEN_LF;
+            if(arg->embed) {
+                if(!parent_is_seq) {
+                    OUT("%s: %s_VALUES%s\n", memb_name, memb_name,
+                        (optional) ? " | None" : "");
+                } else {
+                    PY_GEN_STUBS_SEQ_OF(memb_name, "_VALUES");
+                }
+                INDENT(-1);
+            } else {
+                PY_GEN_STUBS_ENUM_PROPERTY(memb_name, optional);
+                PY_GEN_LF;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+
+    PY_GEN_STUBS_END;
+
+    INDENT_LEVEL = indent_level;
+    REDIR(saved_target);
+    ASN_XFREE(memb_name);
+    return 0;
+}
+
+int
+asn1c_lang_Py_stubs_SEQUENCE(arg_t *arg) {
+    struct c_names cn;
+
+    asn1p_expr_t *expr;
+
+    char *type_name;
+
+    int saved_target;
+    int saved_indent;
+
+    expr = arg->expr;
+    saved_target = arg->target->target;
+    cn = c_name(arg);
+    type_name = strdup(cn.as_member);
+    saved_indent = INDENT_LEVEL;
+
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
+    if(arg->embed) {
+        PY_GEN_LF;
+        OUT("class %s_TYPE(_Asn1Type):\n", type_name);
+    } else {
+        OUT("class %s(_Asn1Type):\n", type_name);
+    }
+    PY_GEN_STUBS_END;
+
+    INDENT_LEVEL = saved_indent;
+    REDIR(saved_target);
+    ASN_FREE(type_name);
+    return 0;
+}
+
+int
+asn1c_lang_Py_stubs_CHOICE(arg_t *arg) {
+    struct c_names cn;
+
+    asn1p_expr_t *expr;
+    asn1p_expr_t *v;
+
+    char *type_name;
+
+    int saved_target;
+    int saved_indent;
+    size_t presence_value;
+
+    expr = arg->expr;
+    saved_target = arg->target->target;
+    cn = c_name(arg);
+    type_name = strdup(cn.as_member);
+    saved_indent = INDENT_LEVEL;
+    presence_value = 0;
+
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
+    if(arg->embed) {
+        PY_GEN_LF;
+        OUT("class %s_TYPE(_Asn1Type):\n", type_name);
+    } else {
+        OUT("class %s(_Asn1Type):\n", type_name);
+    }
+    INDENT(+1);
+    OUT("class PRESENT(EXT_IntEnum):\n");
+    INDENT(+1);
+    OUT("PR_NOTHING = 0\n");
+    presence_value++;
+    TQ_FOR(v, &(expr->members), next) {
+        if(v->expr_type == A1TC_EXTENSIBLE) {
+            OUT("/* Extensions may appear below */\n");
+            continue;
+        }
+
+        OUT("PR_%s = %ld\n", MKID_safe(v), presence_value);
+        presence_value++;
+    }
+    INDENT(-1);
+    PY_GEN_LF;
+    OUT("@property\n");
+    OUT("def present(self) -> PRESENT: ...\n");
+    INDENT(-1);
+
+    PY_GEN_STUBS_END;
+
+    INDENT_LEVEL = saved_indent;
+    REDIR(saved_target);
+    ASN_FREE(type_name);
+    return 0;
+}
+
+int
+asn1c_lang_Py_stubs_SEQ_OF(arg_t *arg) {
+    struct c_names cn;
+
+    char *type_name;
+
+    int saved_indent;
+    int saved_target;
+
+    cn = c_name(arg);
+    saved_indent = INDENT_LEVEL;
+    saved_target = arg->target->target;
+    type_name = strdup(cn.as_member);
+
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
+    if(arg->embed) {
+        PY_GEN_LF;
+        OUT("class %s_TYPE(_Asn1Type):\n", type_name);
+    } else {
+        OUT("class %s(_Asn1Type):\n", type_name);
+    }
+    PY_GEN_STUBS_END;
+
+    INDENT_LEVEL = saved_indent;
+    REDIR(saved_target);
+    ASN_FREE(type_name);
+    return 0;
+}
+
 
 /* static functions */
 static inline int
@@ -1778,5 +2082,3 @@ asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn) {
     ASN_XFREE(inner_parent_path);
     return 0;
 }
-
-#endif /* ASN1_COMPILER_LANDUAGE_PY_H */

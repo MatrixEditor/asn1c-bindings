@@ -435,7 +435,7 @@ asn1c_save_compiled_output(arg_t *arg, const char *datadir, const char *destdir,
     int ret = -1;
     char *filename = NULL;
     out_chunk_t *ot = NULL;
-    FILE *fp_pymod_c = NULL, *fp_pymod_h = NULL;
+    FILE *fp_pymod_c = NULL, *fp_pymod_h = NULL, *py_stubs = NULL;
     compiler_streams_t *cs = arg->pytarget, *saved_cs = NULL;
 
     const char *example_am_makefile = "Makefile.am.asn1convert";
@@ -578,6 +578,89 @@ asn1c_save_compiled_output(arg_t *arg, const char *datadir, const char *destdir,
         ASN_XCLOSE(fp_pymod_h);
         safe_fprintf(stderr, "Compiled %spy_module.c\n", destdir);
         safe_fprintf(stderr, "Compiled %spy_module.h\n", destdir);
+
+        /* stubs file */
+        py_stubs = asn1c_open_file(destdir, "py_module", ".pyi", NULL);
+        if(!py_stubs) {
+            return -1;
+        }
+        /* imports */
+        safe_fprintf(py_stubs,
+                     "from enum import IntEnum as EXT_IntEnum\n"
+                     "from enum import IntFlag as EXT_IntFlag\n");
+        safe_fprintf(py_stubs,
+                     "from typing import Generic as EXT_Generic\n"
+                     "from typing import override as EXT_override\n"
+                     "from typing import TypeVar as EXT_TypeVar\n"
+                     "from typing import Iterable as EXT_Iterable\n"
+                     "from typing import Any as EXT_Any\n");
+
+        safe_fprintf(py_stubs,
+                     "\nfrom bitarray import bitarray as EXT_bitarray\n\n");
+
+        /* type vars */
+        safe_fprintf(py_stubs, "_PY_T = EXT_TypeVar(\"_PY_T\")\n");
+        safe_fprintf(
+            py_stubs,
+            "_ASN_T = EXT_TypeVar(\"_ASN_T\", bound=\"_Asn1Type\")\n\n");
+
+        /* base type */
+        safe_fprintf(py_stubs,
+                     "class _Asn1Type:\n"
+                     "\t@EXT_override\n"
+                     "\tdef __repr__(self) -> str: ...\n"
+                     "\t@EXT_override\n"
+                     "\tdef __str__(self) -> str: ...\n"
+                     "\tdef is_valid(self) -> bool: ...\n"
+                     "\tdef check_constraints(self) -> None: ...\n");
+#define PY_GEN_STUB_PARSERS(name, extra_args)                                 \
+    safe_fprintf(py_stubs, "\tdef %s_encode(self%s) -> bytes: ...\n", #name,  \
+                 extra_args);                                                 \
+    safe_fprintf(                                                             \
+        py_stubs,                                                             \
+        "\t@classmethod\n"                                                    \
+        "\tdef %s_decode(cls: type[_ASN_T], data: bytes%s) -> _ASN_T: ...\n", \
+        #name, extra_args);
+
+        if(arg->flags & A1C_GEN_BER) {
+            PY_GEN_STUB_PARSERS(ber, "");
+            PY_GEN_STUB_PARSERS(cer, "");
+            PY_GEN_STUB_PARSERS(der, "");
+        }
+        if(arg->flags & A1C_GEN_XER) {
+            PY_GEN_STUB_PARSERS(xer, ", /, *, canonical: bool = ...");
+        }
+        if(arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {
+            PY_GEN_STUB_PARSERS(
+                per, ", /, *, canonical: bool = ..., aligned: bool = ...");
+        }
+        if(arg->flags & A1C_GEN_JER) {
+            PY_GEN_STUB_PARSERS(jer, ", /, *, minified: bool = ...");
+        }
+        if(arg->flags & A1C_GEN_OER) {
+            PY_GEN_STUB_PARSERS(oer, ", /, *, canonical: bool = ...");
+        }
+        if(arg->flags & A1C_GEN_PRINT) {
+            safe_fprintf(py_stubs, "\tdef to_text(self) -> str: ...\n");
+        }
+#undef PY_GEN_STUB_PARSERS
+
+        safe_fprintf(py_stubs,
+                     "\nclass _Asn1BasicType(EXT_Generic[_PY_T], _Asn1Type):\n"
+                     "\tdef __init__(self, value: _PY_T = ...) -> None: ...\n"
+                     "\t@property\n"
+                     "\tdef value(self) -> _PY_T: ...\n"
+                     "\t@value.setter\n"
+                     "\tdef value(self, value: _PY_T) -> None: ...\n\n");
+
+        safe_fprintf(py_stubs, "### BEGIN GENERATED CODE ###\n");
+        TQ_FOR(ot, &(cs->destination[OT_PY_STUBS].chunks), next) {
+            safe_fwrite(ot->buf, ot->len, 1, py_stubs);
+        }
+        safe_fprintf(py_stubs, "### END GENERATED CODE ###\n");
+
+        ASN_XCLOSE(py_stubs);
+        safe_fprintf(stderr, "Compiled %spy_module.pyi\n", destdir);
     }
 
 
