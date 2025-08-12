@@ -730,7 +730,7 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
 
     filename = strdup(asn1c_make_identifier(AMI_NODELIMITER | AMI_USE_PREFIX,
                                             expr, (char *)0));
-    if(!(arg->flags & A1C_GEN_PYTHON) || strcmp(filename, "EXTERNAL") == 0) {
+    if(!(arg->flags & A1C_GEN_PYTHON)) {
         include_py = 0;
     }
 

@@ -587,11 +587,11 @@
 #define PY_GEN_SEQ_STRING_CONV(typeName, attrName, optional, indirect)        \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                  \
         "PyCompatUnicode_AsUTF8(value, &((OCTET_STRING_t *)(target))->buf, "  \
-        "&((OCTET_STRING_t *)(target))->size);\n",                            \
+        "&((OCTET_STRING_t *)(target))->size));\n",                            \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));   \
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                    \
         "PyCompatUnicode_FromStringAndSize(((OCTET_STRING_t *)target)->buf, " \
-        "((OCTET_STRING_t *)target)->size);\n",                               \
+        "((OCTET_STRING_t *)target)->size));\n",                               \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
 
 #define PY_GEN_SEQ_STRING_GETSET(typeName, attrName, optional, indirect) \
