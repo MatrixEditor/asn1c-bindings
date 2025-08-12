@@ -475,6 +475,8 @@ All generated Python named BIT STRING classes conform to the following conceptua
 
 .. py:class:: _Asn1FlagType
 
+    *Inherits from* :class:`_Asn1Type`.
+
     Conceptual base class for all ASN.1 named ``BIT STRING`` types.
 
     .. py:class:: VALUES(enum.IntFlag)
@@ -514,8 +516,8 @@ All generated Python named BIT STRING classes conform to the following conceptua
         If ``None`` is provided, the instance is created in an *unset* state.
 
 
-ASN.1 Conceptual CHOICE Types
------------------------------
+ASN.1 Conceptual CHOICE Type
+----------------------------
 
 The ASN.1 ``CHOICE`` type represents a union-like structure where **only one** of
 several possible fields can be set at any given time. This constraint is enforced
@@ -525,6 +527,8 @@ Each CHOICE class exposes an internal enumeration ``PRESENT`` that tracks which
 field is currently active.
 
 .. py:class:: _Asn1ChoiceType
+
+    *Inherits from* :class:`_Asn1Type`.
 
     .. py:class:: PRESENT(enum.IntEnum)
 
@@ -566,5 +570,110 @@ field is currently active.
 
     - The CHOICE type behaves conceptually like a C union, but with Pythonic
       safety checks and clear state tracking.
+
+
+ASN.1 Conceptual List Type
+--------------------------
+
+The :class:`_Asn1ListType` class is the conceptual base for all generated Python
+classes that represent ASN.1 ``SEQUENCE OF`` and ``SET OF`` types.
+
+These ASN.1 types hold an ordered or unordered collection of elements of the
+same type:
+
+- ``SEQUENCE OF`` preserves the element order.
+- ``SET OF`` does not guarantee ordering in ASN.1 semantics (although Python
+  will typically maintain insertion order internally).
+
+In Python, the generated classes behave like mutable sequences (similar to
+lists) and implement part of Python's *mapping protocol*, allowing index-based
+access and assignment. To convert such an ASN.1 list to a native Python list,
+use ``list(my_obj)``.
+
+Example ASN.1 definition:
+
+.. code-block:: asn1
+
+    MySequenceOfIntegers ::= SEQUENCE OF INTEGER
+
+which generates a Python class roughly equivalent to:
+
+.. code-block:: python
+
+    class MySequenceOfIntegers(_Asn1ListType[int]):
+        pass
+
+Each generated Python class conforms to the conceptual list type specified
+below. However, there are some constrains when using this type:
+
+- **Deletion** is supported with ``del my_obj[index]``, but there is no direct
+  ``remove(value)`` method.
+- Values assigned to the collection are converted to the target ASN.1 Python
+  type automatically (see the :ref:`conversion model <reference_conversion_model>`).
+- Mutating the returned Python element directly **will not** update the
+  internal ASN.1 representation unless explicitly re-assigned.
+
+.. py:class:: _Asn1ListType[_PY_T]
+
+    *Inherits from* :class:`_Asn1Type`.
+
+    Represents a SEQUENCE OF or SET OF ASN.1 type containing elements
+    of type ``_PY_T``.
+
+    .. py:method:: __init__(self, values: Iterable[_PY_T] | None = None) -> None
+
+        :text-req:`Required.`
+
+        Initializes the collection with an optional iterable of elements.
+
+
+    .. py:method:: __len__(self) -> int
+
+        :text-req:`Required.`
+
+        Returns the number of elements in the collection.
+
+
+    .. py:method:: __getitem__(self, index: int) -> _PY_T
+
+        :text-req:`Required.`
+
+        Retrieves the element at the specified index.
+
+
+    .. py:method:: __setitem__(self, index: int, value: _PY_T) -> None
+
+        :text-req:`Required.`
+
+        Replaces the element at the specified index with ``value``.
+
+
+    .. py:method:: __delitem__(self, index: int) -> None
+
+        :text-req:`Required.`
+
+        Removes the element at the specified index.
+
+
+    .. py:method:: add(self, value: _PY_T) -> None
+
+        :text-req:`Required.`
+
+        Appends a single element to the end of the collection.
+
+
+    .. py:method:: extend(self, values: Iterable[_PY_T]) -> None
+
+        :text-req:`Required.`
+
+        Appends multiple elements from the iterable ``values``.
+
+
+    .. py:method:: clear(self) -> None
+
+        :text-req:`Required.`
+
+        Removes all elements from the collection.
+
 
 

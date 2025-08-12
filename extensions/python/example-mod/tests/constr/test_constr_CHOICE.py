@@ -13,7 +13,7 @@ def test_constr_choice_init():
     # Initialization can be done using keyword arguments:
     obj = ExampleChoice(foo=b"...")
     # Upon successful initialization, is_valid will return True, indicating
-    # a value has been set (may be invalid to the ASN.1 schema).
+    # a value has been set.
     assert obj.is_valid()
     assert obj.foo == b"..."
     assert obj.bar is None

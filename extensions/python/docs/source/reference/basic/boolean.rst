@@ -26,15 +26,18 @@ Conceptual Representation
 --------------------------
 
 .. py:class:: _Asn1BasicType[bool]
+    :no-index:
 
     Represents a Boolean ASN.1 type.
 
     .. py:method:: __init__(self, value: bool | None = None) -> None
+        :no-index:
 
         Initializes the BOOLEAN instance with an optional initial value.
 
     .. py:property:: value
         :type: bool
+        :no-index:
 
         Gets or sets the Boolean value.
 

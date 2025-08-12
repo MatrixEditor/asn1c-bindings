@@ -125,22 +125,33 @@ PyCompatFloat_AsObject(void *val, int is_float) {
 
 static inline int
 _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str, Py_ssize_t *size) {
-    PyCompatBytes_Check(pObj, -1);
-    *size = PyBytes_Size(pObj);
+    Py_buffer view;
+    char *p = NULL;
+    int result = 0;
+
+    PyCompat_ArgCheck(pObj, -1);
+    if(!PyObject_CheckBuffer(pObj)) {
+        PyErr_Format(PyExc_ValueError,
+                     "Expected a buffer-like but got %R instead", pObj);
+        return -1;
+    }
+
+    if(PyObject_GetBuffer(pObj, &view, PyBUF_FULL_RO) < 0) return -1;
+
     if(*str) {
         PyMem_Free(*str);
     }
-    *str = (char *)PyMem_RawMalloc(*size);
+    *size = view.len;
+    *str = (char *)PyMem_RawMalloc(view.len);
     if(*str == NULL) {
-        return -1;
+        result = -1;
+        goto end;
     }
-    char *p = (char *)PyBytes_AsString(pObj);
-    if(p == NULL) {
-        PyMem_Free(*str);
-        return -1;
-    }
-    memcpy(*str, p, *size);
-    return 0;
+    memcpy(*str, view.buf, view.len);
+
+end:
+    PyBuffer_Release(&view);
+    return result;
 }
 
 static inline PyObject *
@@ -190,7 +201,7 @@ _PyCompatBitArray_ToStringAndSize(PyObject *pObj, char **str,
                                   Py_ssize_t *size) {
     PyObject *nTmpBytes = NULL;
     int result = 0;
-    if(!PyBytes_CheckExact(pObj)) {
+    if(!PyObject_CheckBuffer(pObj)) {
         if((nTmpBytes =
                 PyObject_CallMethodNoArgs(pObj, PyCompatTable->str__to_bytes))
            == NULL) {
@@ -272,8 +283,9 @@ _PyCompatUnicode_AsUTF8AndSize(PyObject *pObj, Py_ssize_t *size) {
 #define PyCompatUnicode_FromStringAndSize(str, size) \
     PyUnicode_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
 
-#define PyCompatUnicode_AsUTF8(obj, str, size) \
-    _PyCompatUnicode_AsUTF8((PyObject *)(obj), (char **)(str), (Py_ssize_t *)(size))
+#define PyCompatUnicode_AsUTF8(obj, str, size)                 \
+    _PyCompatUnicode_AsUTF8((PyObject *)(obj), (char **)(str), \
+                            (Py_ssize_t *)(size))
 
 static inline int
 _PyCompatUnicode_AsUTF8(PyObject *pObj, char **str, Py_ssize_t *size) {

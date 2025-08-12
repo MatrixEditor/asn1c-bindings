@@ -33,17 +33,20 @@ Conceptual Representation
 --------------------------
 
 .. py:class:: _Asn1BasicType[None]
+    :no-index:
 
     Represents a NULL value. This type ignores any assigned value and
     always returns ``None`` when accessed.
 
     .. py:method:: __init__(self) -> None
+        :no-index:
 
         Creates a NULL instance. Since the type has no internal data,
         no parameters are accepted.
 
     .. py:property:: value
         :type: None
+        :no-index:
 
         Always returns ``None``. Any attempt to set ``value`` will
         overwrite nothing — the result is still ``None``.

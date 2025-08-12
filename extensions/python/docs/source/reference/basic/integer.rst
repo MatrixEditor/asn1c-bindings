@@ -25,23 +25,26 @@ Conceptual Representation
 --------------------------
 
 .. py:class:: _Asn1BasicType[int]
+    :no-index:
 
     Represents an INTEGER ASN.1 type.
 
     .. py:method:: __init__(self, value: int | None = None) -> None
+        :no-index:
 
         Initializes the INTEGER instance with an optional initial value.
 
     .. py:property:: value
         :type: int
+        :no-index:
 
         Gets or sets the integer value.
 
         Setting the value accepts any Python object coercible to int.
 
 
-Named INTEGER values (Enumerations)
------------------------------------
+ENUMERATED
+==========
 
 ASN.1 also supports named INTEGER values using the ``ENUMERATED`` type, where
 each integer constant is given a symbolic name.
@@ -51,6 +54,13 @@ Example ASN.1 enumeration:
 .. code-block:: asn1
 
     MyEnum ::= ENUMERATED {
+        red(0),
+        green(1),
+        blue(2)
+    }
+
+    -- or --
+    MyEnum ::= INTEGER {
         red(0),
         green(1),
         blue(2)

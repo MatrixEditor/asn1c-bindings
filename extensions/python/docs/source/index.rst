@@ -84,9 +84,17 @@ Supported Types
 - Constructed Types: ``SEQUENCE``, ``CHOICE``, ``SET``, ``SEQUENCE OF``, ``SET
   OF`` (anonymous types are supported too, e.g. ``SET OF SET``)
 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Basics
+
+   installation
+   build_system
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference:
 
    reference/index.rst
-

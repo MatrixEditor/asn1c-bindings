@@ -10,3 +10,8 @@ ASN.1 Basic Types
     null
     boolean
     integer
+    real
+    octet_string
+    bit_string
+    oid
+    strings
