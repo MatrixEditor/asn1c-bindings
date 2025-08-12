@@ -201,7 +201,8 @@ _PyCompatBitArray_ToStringAndSize(PyObject *pObj, char **str,
                                   Py_ssize_t *size) {
     PyObject *nTmpBytes = NULL;
     int result = 0;
-    if(!PyObject_CheckBuffer(pObj)) {
+    if(PyObject_TypeCheck(pObj,
+                          (PyTypeObject *)PyCompatTable->PyBitArray_Type)) {
         if((nTmpBytes =
                 PyObject_CallMethodNoArgs(pObj, PyCompatTable->str__to_bytes))
            == NULL) {

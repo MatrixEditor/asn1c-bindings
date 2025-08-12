@@ -20,6 +20,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
+    "sphinxcontrib.moderncmakedomain"
 ]
 
 # The master toctree document.

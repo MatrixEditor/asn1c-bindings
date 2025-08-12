@@ -35,6 +35,7 @@ enum {
 };
 
 static const char *PY_TYPE_MAP[] = {
+    [ASN_TYPE_ANY] = "bytes",
     [ASN_BASIC_INTEGER] = "int",
     [ASN_BASIC_BIT_STRING] = "EXT_bitarray",
     [ASN_BASIC_OCTET_STRING] = "bytes",
@@ -616,6 +617,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             };
             break;
 
+        case ASN_TYPE_ANY:
         case ASN_BASIC_UTCTime:
         case ASN_BASIC_GeneralizedTime:
         case ASN_BASIC_OCTET_STRING:
@@ -1145,6 +1147,7 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
         }
 
         /*Bytes types*/
+        case ASN_TYPE_ANY:
         case ASN_BASIC_UTCTime:
         case ASN_BASIC_GeneralizedTime:
         case ASN_BASIC_OCTET_STRING: {
@@ -1470,6 +1473,12 @@ asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     OUT("def __len__(self) -> int: ...\n");
     OUT("def __delitem__(self, index: int) -> None: ...\n");
     INDENT(-1);
+
+    if(arg->embed && !TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)) {
+        PY_GEN_LF;
+        OUT("%s: %s_TYPE%s\n", ns.as_member, ns.as_member,
+            (expr->marker.flags & EM_OPTIONAL) ? " | None" : "");
+    }
     PY_GEN_LF;
     PY_GEN_STUBS_END;
 

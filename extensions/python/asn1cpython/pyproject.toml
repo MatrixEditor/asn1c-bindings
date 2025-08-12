@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "asn1cpython-support"
+description = "CMake support files for ASN.1 C extension bindings"
+dynamic = ["version"]
+
+[tool.hatch]
+
+[tool.hatch.version]
+path = "asn1cpython_support/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["*.cmake"]
