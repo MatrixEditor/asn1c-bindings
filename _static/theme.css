@@ -1,0 +1,14 @@
+.text-req {
+    color: var(--tabs--label-text--active--hover);
+    font-style: italic;
+}
+
+.text-opt {
+    color: var(--color-api-overall);
+    font-style: italic;
+}
+
+.text-dep {
+    color: var(--color-admonition-title--warning);
+    font-style: italic;
+}
