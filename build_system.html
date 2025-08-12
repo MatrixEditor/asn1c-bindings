@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Library Reference" href="reference/index.html" /><link rel="prev" title="Installing the Compiler" href="installation.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Library Reference" href="reference/index.html" /><link rel="prev" title="Installing the ASN.1 Compiler" href="installation.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
         <title>Setting up a build system - asn1-cpython</title>
@@ -180,7 +180,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -201,7 +201,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Basics</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing the Compiler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing the ASN.1 Compiler</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Setting up a build system</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
@@ -231,6 +231,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="reference/cmake.html">CMake API</a></li>
 </ul>
 
 </div>
@@ -265,7 +266,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -273,6 +274,165 @@
         <article role="main" id="furo-main-content">
           <section id="setting-up-a-build-system">
 <span id="build-system"></span><h1>Setting up a build system<a class="headerlink" href="#setting-up-a-build-system" title="Link to this heading">¶</a></h1>
+<p>The recommended way to include the modified <em>asn1c</em> compiler into a Python
+package is by using a CMake-based build system. While it is possible to use
+other build systems, they are <strong>not officially supported</strong> and may require
+significant manual integration work.</p>
+<p>In this small tutorial, we will create a <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code>-based build system for a Python
+extension module, using <a class="reference external" href="https://hatch.pypa.io/">hatchling</a> as the project builder
+and <a class="reference external" href="https://scikit-build-core.readthedocs.io">scikit-build-core</a> to integrate
+CMake into the Python packaging process.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>You may also want to take a look at the example module in the repository on GitHub
+that implements a basic extension and a submodule extension here: <a class="reference external" href="https://github.com/MatrixEditor/asn1c-bindings/tree/vlm_master/extensions/python/example-mod">example_mod</a></p>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>This build setup relies on several components working together:</p>
+<ul class="simple">
+<li><p><strong>asn1cpython-support</strong>:
+A Python package that provides helper utilities for ASN.1 compilation and
+integration. It offers a CLI interface to retrieve the installation path of
+the <code class="docutils literal notranslate"><span class="pre">asn1c-bindings</span></code> CMake configuration files.</p></li>
+<li><p><strong>asn1c-bindings</strong>:
+A CMake package that exports helper functions, including
+<span class="target" id="index-0-command:asn1c_add_extension"></span><a class="reference internal" href="reference/cmake.html#command:asn1c_add_extension" title="asn1c_add_extension"><code class="xref cmake cmake-command docutils literal notranslate"><span class="pre">asn1c_add_extension()</span></code></a>, which generates ASN.1 C sources at
+configure time, compiles them into Python extension modules, copies stub
+files, and ensures correct installation paths.</p></li>
+<li><p><strong>scikit-build-core</strong> (or compatible PEP 517 build backend): Used as the
+Python build backend, facilitating CMake-driven builds integrated into
+standard Python packaging workflows.</p></li>
+</ul>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
+<p>Before you begin, ensure the following:</p>
+<ul class="simple">
+<li><p><strong>CMake</strong> between <strong>3.15</strong> and <strong>3.27</strong> (inclusive).</p></li>
+<li><p>The ASN.1 compiler toolchain (<code class="docutils literal notranslate"><span class="pre">asn1c</span></code>) is installed and accessible via your system PATH,
+or configured via environment variables or CMake defines such as <code class="docutils literal notranslate"><span class="pre">A1C_PATH</span></code>.</p></li>
+<li><p>Python <strong>3.8</strong> or newer.</p></li>
+<li><p>A working installation of <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">hatch</span></code>.</p></li>
+</ul>
+</section>
+<section id="project-structure-example">
+<h2>Project Structure Example<a class="headerlink" href="#project-structure-example" title="Link to this heading">¶</a></h2>
+<p>A minimal project might look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>example-mod/
+├── CMakeLists.txt
+├── example.asn
+├── src/
+│   ├── example_mod/ # Python sources go here
+│   └── generated/   # Populated by the ASN.1 compiler at configure time
+├── pyproject.toml
+└── README.md
+</pre></div>
+</div>
+<p>In this example:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">example.asn</span></code> is your ASN.1 schema.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/generated</span></code> will hold generated C and Python files during the configure step.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> defines how to build your extension.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> configures the Python overall project.</p></li>
+</ul>
+</section>
+<section id="cmake-setup">
+<h2>CMake Setup<a class="headerlink" href="#cmake-setup" title="Link to this heading">¶</a></h2>
+<p>CMake is a cross-platform build system that uses <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> files to define
+build rules. In our case, we need a total of three steps to create a new
+extension:</p>
+<section id="finding-the-cmake-package">
+<h3>1. Finding the CMake package<a class="headerlink" href="#finding-the-cmake-package" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">asn1cpython-support</span></code> package includes a helper command that tells CMake
+where the <code class="docutils literal notranslate"><span class="pre">asn1c-bindings</span></code> package is installed. The following snippet can be
+used to insert the required package into the search path of CMake:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Retrieve the path to asn1c-bindings CMake package via the Python helper</span>
+<span class="nf">execute_process(</span>
+<span class="w">    </span><span class="no">COMMAND</span><span class="w"> </span><span class="s">&quot;${Python_EXECUTABLE}&quot;</span><span class="w"> </span><span class="p">-</span><span class="nb">m</span><span class="w"> </span><span class="nb">asn1cpython_support</span><span class="w"> </span><span class="p">--</span><span class="nb">cmake-dir</span>
+<span class="w">    </span><span class="no">OUTPUT_STRIP_TRAILING_WHITESPACE</span>
+<span class="w">    </span><span class="no">OUTPUT_VARIABLE</span><span class="w"> </span><span class="nb">asn1c-bindings_ROOT</span>
+<span class="nf">)</span>
+<span class="c"># Load the asn1c-bindings CMake package</span>
+<span class="nf">find_package(</span><span class="nb">asn1c-bindings</span><span class="w"> </span><span class="no">CONFIG</span><span class="w"> </span><span class="no">REQUIRED</span><span class="nf">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must list <code class="docutils literal notranslate"><span class="pre">asn1cpython-support</span></code> in the <code class="docutils literal notranslate"><span class="pre">[build-system]</span> <span class="pre">requires</span></code>
+section of your <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, otherwise CMake will not be able to find
+the helper. For instance:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[build-system]</span>
+<span class="c1"># just add the python package as a build dependency</span>
+<span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;hatchling&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;scikit-build-core~=0.9.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;asn1cpython-support&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="adding-a-new-extension">
+<h3>2. Adding a new extension<a class="headerlink" href="#adding-a-new-extension" title="Link to this heading">¶</a></h3>
+<p>The <span class="target" id="index-1-command:asn1c_add_extension"></span><a class="reference internal" href="reference/cmake.html#command:asn1c_add_extension" title="asn1c_add_extension"><code class="xref cmake cmake-command docutils literal notranslate"><span class="pre">asn1c_add_extension()</span></code></a> function declares a Python extension
+module that will be generated and compiled automatically. This call performs
+multiple actions, which include running the <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> compiler at configure time
+to generate C and Python interface files, adds them to a new Python extension
+and ensures the generated <code class="docutils literal notranslate"><span class="pre">.pyi</span></code> type stub file is renamed and installed
+correctly.</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Add an ASN.1 extension module.</span>
+<span class="nf">asn1c_add_extension(</span>
+<span class="w">    </span><span class="no">NAME</span><span class="w"> </span><span class="nb">_example_mod</span>
+<span class="w">    </span><span class="no">ASN_FILES</span><span class="w"> </span><span class="o">${</span><span class="nt">CMAKE_CURRENT_SOURCE_DIR</span><span class="o">}</span><span class="na">/example.asn</span>
+<span class="nf">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="python-packaging-integration">
+<h2>Python Packaging Integration<a class="headerlink" href="#python-packaging-integration" title="Link to this heading">¶</a></h2>
+<p>When using <code class="docutils literal notranslate"><span class="pre">scikit-build-core</span></code> together with <em>hatchling</em>, your
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> could look like this:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">pyproject.toml</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[build-system]</span>
+<span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;hatchling&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;scikit-build-core~=0.9.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;asn1cpython-support&quot;</span><span class="p">]</span>
+<span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hatchling.build&quot;</span>
+
+<span class="k">[project]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;example-mod&quot;</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span>
+<span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Example Python extension built from ASN.1&quot;</span>
+<span class="n">readme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;README.md&quot;</span>
+<span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;bitarray&quot;</span><span class="p">]</span><span class="w">  </span><span class="c1"># Needed for BIT STRING type</span>
+
+<span class="k">[tool.hatch.build.targets.wheel.hooks.scikit-build]</span>
+<span class="n">experimental</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="c1"># Optional: define custom compiler or skeleton paths</span>
+<span class="c1"># [tool.scikit-build.cmake.define]</span>
+<span class="c1"># A1C_PATH = &quot;path/to/custom/asn1c&quot;</span>
+<span class="c1"># A1C_SKELETONS_PATH = &quot;path/to/skeletons&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>This configuration allows you to build your package with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
+<span class="c1"># or</span>
+hatch<span class="w"> </span>build
+</pre></div>
+</div>
+</section>
+<section id="stub-files-and-installation">
+<h2>Stub Files and Installation<a class="headerlink" href="#stub-files-and-installation" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">asn1c-bindings</span></code> CMake functions also handle type stub installation:</p>
+<ul class="simple">
+<li><p>The ASN.1C compiler generates a generic stub file named <code class="docutils literal notranslate"><span class="pre">py_module.pyi</span></code>.</p></li>
+<li><p>During installation, this file is renamed to match your module name
+(e.g. <code class="docutils literal notranslate"><span class="pre">_example_mod.pyi</span></code>).</p></li>
+<li><p>The renamed file is installed alongside the compiled extension,
+respecting any submodule hierarchy.</p></li>
+</ul>
+<p><strong>This means type hints will work automatically in your IDE without any
+additional configuration.</strong></p>
+</section>
 </section>
 
         </article>
@@ -296,7 +456,7 @@
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Installing the Compiler</div>
+                <div class="title">Installing the ASN.1 Compiler</div>
                 
               </div>
             </a>
@@ -318,8 +478,36 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Setting up a build system</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#project-structure-example">Project Structure Example</a></li>
+<li><a class="reference internal" href="#cmake-setup">CMake Setup</a><ul>
+<li><a class="reference internal" href="#finding-the-cmake-package">1. Finding the CMake package</a></li>
+<li><a class="reference internal" href="#adding-a-new-extension">2. Adding a new extension</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#python-packaging-integration">Python Packaging Integration</a></li>
+<li><a class="reference internal" href="#stub-files-and-installation">Stub Files and Installation</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

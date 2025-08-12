@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installing the Compiler" href="installation.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installing the ASN.1 Compiler" href="installation.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
         <title>asn1-cpython</title>
@@ -201,7 +201,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Basics</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing the Compiler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing the ASN.1 Compiler</a></li>
 <li class="toctree-l1"><a class="reference internal" href="build_system.html">Setting up a build system</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
@@ -231,6 +231,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="reference/cmake.html">CMake API</a></li>
 </ul>
 
 </div>
@@ -273,9 +274,12 @@
         <article role="main" id="furo-main-content">
           <section id="asn-1-compiler-for-c-python">
 <h1>ASN.1 Compiler for C(Python)<a class="headerlink" href="#asn-1-compiler-for-c-python" title="Link to this heading">¶</a></h1>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
 <p>This project was started by <a class="reference external" href="https://github.com/vlm/asn1c">vlm</a> and then updated
 for recent bug fixes by <a class="reference external" href="https://github.com/mouse07410/asn1c">mouse07410</a>. Any
 updates from these projects will be merged into this one.</p>
+</div>
 <section id="about">
 <h2>About<a class="headerlink" href="#about" title="Link to this heading">¶</a></h2>
 <p>ASN.1 to C compiler takes the ASN.1 module files (example) and generates
@@ -346,8 +350,24 @@ type above can be used as a generic Python class:</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Basics</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing the Compiler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="build_system.html">Setting up a build system</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing the ASN.1 Compiler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#downloading-the-source">Downloading the Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#build">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#id1">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="build_system.html">Setting up a build system</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="build_system.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_system.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_system.html#project-structure-example">Project Structure Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_system.html#cmake-setup">CMake Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_system.html#python-packaging-integration">Python Packaging Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_system.html#stub-files-and-installation">Stub Files and Installation</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
@@ -358,6 +378,10 @@ type above can be used as a generic Python class:</p>
 <li class="toctree-l2"><a class="reference internal" href="reference/object_model.html">ASN.1 Object Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/basic/index.html">ASN.1 Basic Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/constr/index.html">ASN.1 Constructed Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/cmake.html">CMake API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/cmake.html#core-variables">Core Variables</a></li>
 </ul>
 </li>
 </ul>
@@ -375,7 +399,7 @@ type above can be used as a generic Python class:</p>
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Installing the Compiler</div>
+                <div class="title">Installing the ASN.1 Compiler</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
