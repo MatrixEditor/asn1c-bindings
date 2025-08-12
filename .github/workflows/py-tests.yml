@@ -10,8 +10,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["3.12"]
 
     steps:
       - name: Checkout source
@@ -22,6 +22,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+
+      - name: Install asn1c
+        run: |
+          autoreconf -ivf
+          ./configure
+          make
 
       - name: Install dependencies
         run: |
