@@ -437,4 +437,22 @@ _PyCompatFlag_AsObject(PyObject *pEnumType, const char *str, Py_ssize_t size) {
 
 #define PyCompatCHOICE_New(typeName) PyCompatAsnType_New(typeName)
 
+static inline PyObject *
+PyCompatAsnType_FromParent(PyTypeObject *type, PyObject *parent, void *value) {
+    PyCompatAsnObject_t *obj = NULL;
+    if(value == NULL || type == NULL || parent == NULL) {
+        PyErr_BadArgument();
+        return NULL;
+    }
+
+    obj = (PyCompatAsnObject_t *)PyObject_CallNoArgs((PyObject *)type);
+    if(obj == NULL) {
+        return NULL;
+    }
+
+    obj->ob_value = value;
+    obj->ob_parent = Py_NewRef(parent);
+    obj->s_valid = 1;
+    return (PyObject *)obj;
+}
 #endif

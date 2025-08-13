@@ -1,4 +1,4 @@
-.. _reference_basic_int:
+.. _reference_basic_integer:
 
 INTEGER
 =======

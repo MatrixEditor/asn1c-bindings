@@ -52,7 +52,12 @@
     OUT("PyCompat_DEF_STRUCT(%s);\n", name); \
     OUT("PyCompat_DEF_TYPE(%s);\n", name)
 
-#define PY_GEN_TYPE_NEW(name) OUT("PY_IMPL_GENERIC_NEW(%s);\n", name)
+#define PY_GEN_TYPE_NEW(name, setTypeDef)                             \
+    if((setTypeDef)) {                                                \
+        OUT("PY_IMPL_GENERIC_NEW(%s, &asn_DEF_%s);\n", name, (name)); \
+    } else {                                                          \
+        OUT("PY_IMPL_GENERIC_NEW(%s, NULL);\n", name);                \
+    }
 
 #define PY_GEN_TYPE_DEALLOC(name) OUT("PY_IMPL_GENERIC_DEALLOC(%s);\n", name)
 
@@ -205,7 +210,7 @@
 
 #define PY_GEN_BASIC_CLASS(modName, typeName)             \
     REDIR(OT_PY_IMPL_CODE);                               \
-    PY_GEN_TYPE_NEW(typeName);                            \
+    PY_GEN_TYPE_NEW(typeName, 0);                         \
     PY_GEN_TYPE_INIT(typeName);                           \
     PY_GEN_TYPE_DEALLOC(typeName);                        \
     PY_GEN_TYPE_REPR(typeName);                           \
@@ -328,9 +333,9 @@
         (typeName), (targetEnumTypeName), (attrName), (targetTypeName),    \
         (attrName));                                                       \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                \
-        "PyAsn%s_ToPython((%s_t *)&src->choice.%s, parent));\n",           \
-        (typeName), (attrName), (targetTypeName), (targetTypeName),        \
-        (attrName));                                                       \
+        "PyCompatAsnType_FromParent(&PyAsn%s_Type, parent,  (void "        \
+        "*)&src->choice.%s));\n",                                          \
+        (typeName), (attrName), (targetTypeName), (attrName));             \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
 #define PY_GEN_CHOICE_INTEGER_GETSET(typeName, targetEnumTypeName, attrName,   \
@@ -475,10 +480,9 @@
         "PyAsn%s_FromPython(value, (%s_t *)target));\n",                      \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName),    \
         (targetTypeName), (targetTypeName));                                  \
-    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                    \
-        "PyAsn%s_ToPython((%s_t *)target, parent));\n",                       \
+    OUT("PY_IMPL_SEQ_REF_ATTR%s_TOPY(%s, %s, %s);\n",                         \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName),    \
-        (targetTypeName), (targetTypeName));
+        (targetTypeName));
 
 #define PY_GEN_SEQ_TYPEREF_GETSET(typeName, targetTypeName, attrName,     \
                                   optional, indirect)                     \
@@ -587,11 +591,11 @@
 #define PY_GEN_SEQ_STRING_CONV(typeName, attrName, optional, indirect)        \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                  \
         "PyCompatUnicode_AsUTF8(value, &((OCTET_STRING_t *)(target))->buf, "  \
-        "&((OCTET_STRING_t *)(target))->size));\n",                            \
+        "&((OCTET_STRING_t *)(target))->size));\n",                           \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));   \
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                    \
         "PyCompatUnicode_FromStringAndSize(((OCTET_STRING_t *)target)->buf, " \
-        "((OCTET_STRING_t *)target)->size));\n",                               \
+        "((OCTET_STRING_t *)target)->size));\n",                              \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
 
 #define PY_GEN_SEQ_STRING_GETSET(typeName, attrName, optional, indirect) \

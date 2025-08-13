@@ -51,7 +51,7 @@ def test_constr_choice_parse():
     # it back to the Python representation.
     parsed = ExampleChoice.ber_decode(raw_data)
     with pytest.raises(ValueError):
-        _ = parsed.baz
+        _ = parsed.baz.value
 
 
 def test_constr_choice_inner_enum():

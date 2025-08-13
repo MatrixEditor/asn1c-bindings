@@ -8,8 +8,8 @@
  * This structure even contains pointer to these encoding and decoding routines
  * for each defined ASN.1 type.
  */
-#ifndef	_CONSTR_TYPE_H_
-#define	_CONSTR_TYPE_H_
+#ifndef _CONSTR_TYPE_H_
+#define _CONSTR_TYPE_H_
 
 #include <ber_tlv_length.h>
 #include <ber_tlv_tag.h>
@@ -18,8 +18,8 @@
 extern "C" {
 #endif
 
-struct asn_TYPE_descriptor_s;	/* Forward declaration */
-struct asn_TYPE_member_s;	/* Forward declaration */
+struct asn_TYPE_descriptor_s; /* Forward declaration */
+struct asn_TYPE_member_s;     /* Forward declaration */
 
 /*
  * This type provides the context information for various ASN.1 routines,
@@ -27,60 +27,61 @@ struct asn_TYPE_member_s;	/* Forward declaration */
  * included into certain target language's structures, such as compound types.
  */
 typedef struct asn_struct_ctx_s {
-	short phase;		/* Decoding phase */
-	short step;		/* Elementary step of a phase */
-	int context;		/* Other context information */
-	void *ptr;		/* Decoder-specific stuff (stack elements) */
-	ber_tlv_len_t left;	/* Number of bytes left, -1 for indefinite */
+    short phase;        /* Decoding phase */
+    short step;         /* Elementary step of a phase */
+    int context;        /* Other context information */
+    void *ptr;          /* Decoder-specific stuff (stack elements) */
+    ber_tlv_len_t left; /* Number of bytes left, -1 for indefinite */
 } asn_struct_ctx_t;
 
 #if !defined(ASN_DISABLE_BER_SUPPORT)
-#include <ber_decoder.h>  /* Basic Encoding Rules decoder */
-#include <der_encoder.h>  /* Distinguished Encoding Rules encoder */
+#include <ber_decoder.h> /* Basic Encoding Rules decoder */
+#include <der_encoder.h> /* Distinguished Encoding Rules encoder */
 #else
-typedef void (ber_type_decoder_f)(void);
-typedef void (der_type_encoder_f)(void);
-#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+typedef void(ber_type_decoder_f)(void);
+typedef void(der_type_encoder_f)(void);
+#endif /* !defined(ASN_DISABLE_BER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-#include <xer_decoder.h>  /* Decoder of XER (XML, text) */
-#include <xer_encoder.h>  /* Encoder into XER (XML, text) */
+#include <xer_decoder.h> /* Decoder of XER (XML, text) */
+#include <xer_encoder.h> /* Encoder into XER (XML, text) */
 #else
-typedef void (xer_type_decoder_f)(void);
-typedef void (xer_type_encoder_f)(void);
-#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+typedef void(xer_type_decoder_f)(void);
+typedef void(xer_type_encoder_f)(void);
+#endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-#include <jer_decoder.h>  /* Decoder of JER (JSON, text) */
-#include <jer_encoder.h>  /* Encoder into JER (JSON, text) */
+#include <jer_decoder.h> /* Decoder of JER (JSON, text) */
+#include <jer_encoder.h> /* Encoder into JER (JSON, text) */
 #else
-typedef void (jer_type_decoder_f)(void);
-typedef void (jer_type_encoder_f)(void);
-#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+typedef void(jer_type_decoder_f)(void);
+typedef void(jer_type_encoder_f)(void);
+#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-#include <per_decoder.h>  /* Packet Encoding Rules decoder */
-#include <per_encoder.h>  /* Packet Encoding Rules encoder */
+#include <per_decoder.h> /* Packet Encoding Rules decoder */
+#include <per_encoder.h> /* Packet Encoding Rules encoder */
 #else
-typedef void (per_type_decoder_f)(void);
-typedef void (per_type_encoder_f)(void);
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+typedef void(per_type_decoder_f)(void);
+typedef void(per_type_encoder_f)(void);
+#endif /* !defined(ASN_DISABLE_UPER_SUPPORT) || \
+          !defined(ASN_DISABLE_APER_SUPPORT) */
 
-#include <constraints.h>  /* Subtype constraints support */
+#include <constraints.h> /* Subtype constraints support */
 
 #if !defined(ASN_DISABLE_RFILL_SUPPORT)
-#include <asn_random_fill.h>  /* Random structures support */
+#include <asn_random_fill.h> /* Random structures support */
 #else
-typedef void (asn_random_fill_f)(void);
-#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+typedef void(asn_random_fill_f)(void);
+#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-#include <oer_decoder.h>  /* Octet Encoding Rules encoder */
-#include <oer_encoder.h>  /* Octet Encoding Rules encoder */
+#include <oer_decoder.h> /* Octet Encoding Rules encoder */
+#include <oer_encoder.h> /* Octet Encoding Rules encoder */
 #else
-typedef void (oer_type_decoder_f)(void);
-typedef void (oer_type_encoder_f)(void);
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+typedef void(oer_type_decoder_f)(void);
+typedef void(oer_type_encoder_f)(void);
+#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
 
 /*
  * Free the structure according to its specification.
@@ -88,13 +89,13 @@ typedef void (oer_type_encoder_f)(void);
  * Do not use directly.
  */
 enum asn_struct_free_method {
-    ASFM_FREE_EVERYTHING,   /* free(struct_ptr) and underlying members */
-    ASFM_FREE_UNDERLYING,   /* free underlying members */
-    ASFM_FREE_UNDERLYING_AND_RESET   /* FREE_UNDERLYING + memset(0) */
+    ASFM_FREE_EVERYTHING,          /* free(struct_ptr) and underlying members */
+    ASFM_FREE_UNDERLYING,          /* free underlying members */
+    ASFM_FREE_UNDERLYING_AND_RESET /* FREE_UNDERLYING + memset(0) */
 };
-typedef void (asn_struct_free_f)(
-		const struct asn_TYPE_descriptor_s *type_descriptor,
-		void *struct_ptr, enum asn_struct_free_method);
+typedef void(asn_struct_free_f)(
+    const struct asn_TYPE_descriptor_s *type_descriptor, void *struct_ptr,
+    enum asn_struct_free_method);
 
 /*
  * Free the structure including freeing the memory pointed to by ptr itself.
@@ -124,11 +125,26 @@ typedef void (asn_struct_free_f)(
     (asn_DEF).op->free_struct(&(asn_DEF), (ptr), ASFM_FREE_UNDERLYING)
 
 /*
+ * Initialize the structure according to its specification and fill it with
+ * default values.
+ */
+#define ASN_STRUCT_INIT(asn_DEF, ptr) asn_struct_init((asn_DEF), (void *)(ptr))
+
+/**
+ * @brief Initialize a structure with default values
+ *
+ * @param type_descriptor a pointer to the type descriptor
+ * @param struct_ptr a pointer to the structure to be filled
+ * @return int zero on success and -1 on failure
+ */
+int asn_struct_init(const struct asn_TYPE_descriptor_s *type_descriptor,
+                    void *struct_ptr);
+
+/*
  * Print the structure according to its specification.
  */
 typedef int(asn_struct_print_f)(
-    const struct asn_TYPE_descriptor_s *type_descriptor,
-    const void *struct_ptr,
+    const struct asn_TYPE_descriptor_s *type_descriptor, const void *struct_ptr,
     int level, /* Indentation level */
     asn_app_consume_bytes_f *callback, void *app_key);
 
@@ -138,20 +154,17 @@ typedef int(asn_struct_print_f)(
  * and =0 if "equal to", for some type-specific, stable definition of
  * "smaller", "greater" and "equal to".
  */
-typedef int (asn_struct_compare_f)(
-		const struct asn_TYPE_descriptor_s *type_descriptor,
-		const void *struct_A,
-		const void *struct_B);
+typedef int(asn_struct_compare_f)(
+    const struct asn_TYPE_descriptor_s *type_descriptor, const void *struct_A,
+    const void *struct_B);
 
 /*
  * Copies struct B into struct A.
  * Allocates memory for struct A, if necessary.
  */
-typedef int (asn_struct_copy_f)(
-		const struct asn_TYPE_descriptor_s *type_descriptor,
-		void **struct_A,
-		const void *struct_B
-        );
+typedef int(asn_struct_copy_f)(
+    const struct asn_TYPE_descriptor_s *type_descriptor, void **struct_A,
+    const void *struct_B);
 
 /*
  * Return the outmost tag of the type.
@@ -159,9 +172,9 @@ typedef int (asn_struct_copy_f)(
  * NOTE: This function pointer type is only useful internally.
  * Do not use it in your application.
  */
-typedef ber_tlv_tag_t (asn_outmost_tag_f)(
-		const struct asn_TYPE_descriptor_s *type_descriptor,
-		const void *struct_ptr, int tag_mode, ber_tlv_tag_t tag);
+typedef ber_tlv_tag_t(asn_outmost_tag_f)(
+    const struct asn_TYPE_descriptor_s *type_descriptor, const void *struct_ptr,
+    int tag_mode, ber_tlv_tag_t tag);
 /* The instance of the above function type; used internally. */
 asn_outmost_tag_f asn_TYPE_outmost_tag;
 
@@ -182,8 +195,8 @@ typedef asn_type_selector_result_t(asn_type_selector_f)(
  * May be directly invoked by applications.
  */
 typedef struct asn_TYPE_operation_s {
-    asn_struct_free_f *free_struct;     /* Free the structure */
-    asn_struct_print_f *print_struct;   /* Human readable output */
+    asn_struct_free_f *free_struct;       /* Free the structure */
+    asn_struct_print_f *print_struct;     /* Human readable output */
     asn_struct_compare_f *compare_struct; /* Compare two structures */
     asn_struct_copy_f *copy_struct;       /* Copy method */
     ber_type_decoder_f *ber_decoder;      /* Generic BER decoder */
@@ -208,13 +221,14 @@ typedef struct asn_TYPE_operation_s {
 typedef struct asn_encoding_constraints_s {
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     const struct asn_oer_constraints_s *oer_constraints;
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
     const struct asn_per_constraints_s *per_constraints;
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_UPER_SUPPORT) || \
+          !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
     const struct asn_jer_constraints_s *jer_constraints;
-#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
     asn_constr_check_f *general_constraints;
 } asn_encoding_constraints_t;
 
@@ -222,8 +236,8 @@ typedef struct asn_encoding_constraints_s {
  * The definitive description of the destination language's structure.
  */
 typedef struct asn_TYPE_descriptor_s {
-    const char *name;       /* A name of the ASN.1 type. "" in some cases. */
-    const char *xml_tag;    /* Name used in XML tag */
+    const char *name;    /* A name of the ASN.1 type. "" in some cases. */
+    const char *xml_tag; /* Name used in XML tag */
 
     /*
      * Generalized functions for dealing with the specific type.
@@ -238,10 +252,10 @@ typedef struct asn_TYPE_descriptor_s {
     /*
      * Tags that are expected to occur.
      */
-    const ber_tlv_tag_t *tags;      /* Effective tags sequence for this type */
-    unsigned tags_count;            /* Number of tags which are expected */
-    const ber_tlv_tag_t *all_tags;  /* Every tag for BER/containment */
-    unsigned all_tags_count;        /* Number of tags */
+    const ber_tlv_tag_t *tags;     /* Effective tags sequence for this type */
+    unsigned tags_count;           /* Number of tags which are expected */
+    const ber_tlv_tag_t *all_tags; /* Every tag for BER/containment */
+    unsigned all_tags_count;       /* Number of tags */
 
     /* OER, PER, and general constraints */
     asn_encoding_constraints_t encoding_constraints;
@@ -263,20 +277,20 @@ typedef struct asn_TYPE_descriptor_s {
  * This type describes an element of the constructed type,
  * i.e. SEQUENCE, SET, CHOICE, etc.
  */
-  enum asn_TYPE_flags_e {
+enum asn_TYPE_flags_e {
     ATF_NOFLAGS,
     ATF_POINTER = 0x01,   /* Represented by the pointer */
     ATF_OPEN_TYPE = 0x02, /* Open Type */
     ATF_ANY_TYPE = 0x04   /* ANY type (deprecated!) */
-  };
+};
 typedef struct asn_TYPE_member_s {
     enum asn_TYPE_flags_e flags; /* Element's presentation flags */
-    unsigned optional;      /* Following optional members, including current */
-    unsigned memb_offset;   /* Offset of the element */
-    ber_tlv_tag_t tag;      /* Outmost (most immediate) tag */
-    int tag_mode;           /* IMPLICIT/no/EXPLICIT tag at current level */
-    asn_TYPE_descriptor_t *type;            /* Member type descriptor */
-    asn_type_selector_f *type_selector;     /* IoS runtime type selector */
+    unsigned optional;    /* Following optional members, including current */
+    unsigned memb_offset; /* Offset of the element */
+    ber_tlv_tag_t tag;    /* Outmost (most immediate) tag */
+    int tag_mode;         /* IMPLICIT/no/EXPLICIT tag at current level */
+    asn_TYPE_descriptor_t *type;        /* Member type descriptor */
+    asn_type_selector_f *type_selector; /* IoS runtime type selector */
     asn_encoding_constraints_t encoding_constraints;
     int (*default_value_cmp)(const void *sptr); /* Compare DEFAULT <value> */
     int (*default_value_set)(void **sptr);      /* Set DEFAULT <value> */
@@ -287,10 +301,10 @@ typedef struct asn_TYPE_member_s {
  * BER tag to element number mapping.
  */
 typedef struct asn_TYPE_tag2member_s {
-    ber_tlv_tag_t el_tag;   /* Outmost tag of the member */
-    unsigned el_no;         /* Index of the associated member, base 0 */
-    int toff_first;         /* First occurrence of the el_tag, relative */
-    int toff_last;          /* Last occurrence of the el_tag, relative */
+    ber_tlv_tag_t el_tag; /* Outmost tag of the member */
+    unsigned el_no;       /* Index of the associated member, base 0 */
+    int toff_first;       /* First occurrence of the el_tag, relative */
+    int toff_last;        /* Last occurrence of the el_tag, relative */
 } asn_TYPE_tag2member_t;
 
 /*
@@ -306,7 +320,7 @@ int asn_fprint(FILE *stream, /* Destination stream descriptor */
                const void *struct_ptr);         /* Structure to be printed */
 
 /*
- * Copies a source structure (struct_src) into destination structure 
+ * Copies a source structure (struct_src) into destination structure
  * (struct_dst). Allocates memory for the destination structure, if necessary.
  * RETURN VALUES:
  *   0: Copy OK.
@@ -320,4 +334,4 @@ int asn_copy(const asn_TYPE_descriptor_t *td, /* ASN.1 type descriptor */
 }
 #endif
 
-#endif	/* _CONSTR_TYPE_H_ */
+#endif /* _CONSTR_TYPE_H_ */

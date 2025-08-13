@@ -172,7 +172,7 @@ asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     PY_GEN_TYPE_PARSERS(type_name);
 
     /* next methods are shared */
-    PY_GEN_TYPE_NEW(type_name);
+    PY_GEN_TYPE_NEW(type_name, !arg->embed);
     PY_GEN_TYPE_REPR(type_name);
     PY_GEN_TYPE_IS_VALID(type_name);
     OUT("PY_IMPL_SEQ_FROMPY(%s,\n", type_name);
@@ -340,7 +340,7 @@ asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     OUT("PyObject *PyAsnEnum%s_PRESENT_Type = NULL;\n", type_name);
     OUT("PY_IMPL_CHOICE_PRESENT_ATTR(%s);\n", type_name);
 
-    PY_GEN_TYPE_NEW(type_name);
+    PY_GEN_TYPE_NEW(type_name, !arg->embed);
 
     PY_GEN_TYPE_IS_VALID(type_name);
     /* Conversion from a generic Python object for CHOICE */
@@ -617,8 +617,6 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             break;
 
         case ASN_TYPE_ANY:
-        case ASN_BASIC_UTCTime:
-        case ASN_BASIC_GeneralizedTime:
         case ASN_BASIC_OCTET_STRING:
             // will get their own implementation
             REDIR(OT_PY_IMPL_INCLUDES);
@@ -776,6 +774,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             break;
 
         /*string types*/
+        case ASN_BASIC_UTCTime:
+        case ASN_BASIC_GeneralizedTime:
         case ASN_STRING_IA5String:
         case ASN_STRING_PrintableString:
         case ASN_STRING_VisibleString:
@@ -939,12 +939,28 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
         OUT("PyCompat_DEF_TYPE(%s);\n", name);
         if(expr->expr_type == ASN_BASIC_ENUMERATED || el_count) {
             /* Simple enumerations will be created lazily */
-            OUT("typedef PyObject PyAsnEnum%sObject;\n", name);
-            OUT("extern PyObject *PyAsnEnum%s_Type;\n", name);
+            OUT("PyCompat_DEF_ENUM(%s);\n", name);
         }
         /* some type converters are built-in*/
         REDIR(OT_PY_TYPE_CONVERT);
         switch(expr->expr_type) {
+        case A1TC_REFERENCE: {
+            ref_type_name = strdup(c_expr_name(arg, expr->reference->ref_expr).base_name);
+            PY_GEN_ASNTYPE_TOPY_INLINE(name);
+            OUT("return PyAsn%s_ToPython(pSrc, parent);\n", ref_type_name);
+            PY_GEN_END_FUNC();
+
+            PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+            OUT("return PyAsn%s_FromPython(pObj, pDst);\n", ref_type_name);
+            PY_GEN_END_FUNC();
+
+            PY_GEN_BASIC_CLASS(arg->pymodule_qualname, name);
+            PY_GEN_MOD_BASIC(name);
+
+            REDIR(OT_PY_TYPE_INCLUDES);
+            OUT("#include \"%s_Py.h\"\n", ref_type_name);
+            break;
+        }
         case ASN_BASIC_INTEGER: {
             // if this integer has named parts, convert it to an enum
             if(el_count) {
@@ -1147,8 +1163,6 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
 
         /*Bytes types*/
         case ASN_TYPE_ANY:
-        case ASN_BASIC_UTCTime:
-        case ASN_BASIC_GeneralizedTime:
         case ASN_BASIC_OCTET_STRING: {
             PY_GEN_ASNTYPE_FROMPY_INLINE(name);
             OUT("return PyCompatBytes_ToStringAndSize(pObj, &pDst->buf, "
@@ -1169,6 +1183,8 @@ asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
         }
 
         /*string types*/
+        case ASN_BASIC_UTCTime:
+        case ASN_BASIC_GeneralizedTime:
         case ASN_STRING_IA5String:
         case ASN_STRING_PrintableString:
         case ASN_STRING_VisibleString:
@@ -1610,14 +1626,11 @@ int
 asn1c_lang_Py_stubs_SEQUENCE(arg_t *arg) {
     struct c_names cn;
 
-    asn1p_expr_t *expr;
-
     char *type_name;
 
     int saved_target;
     int saved_indent;
 
-    expr = arg->expr;
     saved_target = arg->target->target;
     cn = c_name(arg);
     type_name = strdup(cn.as_member);

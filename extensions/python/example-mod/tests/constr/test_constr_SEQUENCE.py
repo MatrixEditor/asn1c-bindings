@@ -31,6 +31,9 @@ def test_constr_seq_parse():
     obj.sOid = "1.2.3.4"
     obj.sRelOid = "1.2.3.4.5"
     obj.sChoice.sicInt = 1
+    # NOTE: we can also set the value directly here
+    # obj.sOctetStr = b"\x01\x02\x03"
+    obj.sOctetStr.value = b"\x01\x02\x03"
     raw_data = obj.ber_encode()
 
     parsed = ExampleSequence.ber_decode(raw_data)

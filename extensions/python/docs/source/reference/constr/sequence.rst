@@ -1,4 +1,4 @@
-.. _reference_constructed_sequence:
+.. _reference_constr_sequence:
 
 SEQUENCE
 ========

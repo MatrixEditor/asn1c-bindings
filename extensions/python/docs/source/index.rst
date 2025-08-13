@@ -72,10 +72,11 @@ Supported Types
 
 - Basic Types: ``NULL``, ``INTEGER`` (*named*), ``BOOLEAN``, ``BIT STRING``
   (*named*), ``OCTET STRING``, ``OBJECT IDENTIFIER,``, ``RELATIVE-OID``,
-  ``REAL``, ``ENUMERATED``, ``UTF8String`` and variants,
+  ``REAL``, ``ENUMERATED``, ``UTF8String`` and variants, ``CHARACTER STRING``,
+  ``ANY``, time types, ``EMBEDDED PDV`` and *open types*.
 
 .. note::
-   ``UTCTIME`` is currently implemented as raw bytes
+   ``UTCTIME`` and ``GeneralizedTime`` are both implemented as strings.
 
 - Constructed Types: ``SEQUENCE``, ``CHOICE``, ``SET``, ``SEQUENCE OF``, ``SET
   OF`` (anonymous types are supported too, e.g. ``SET OF SET``)

@@ -22,7 +22,7 @@ asn1c_add_extension(
 # Example call to install the extension as a submodule within the project. The
 # name is always given WITHOUT the project name.
 asn1c_add_extension(
-  NAME submodule._example_submod
+  NAME submodule._test
   SUBMODULE
   ASN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/test.asn
 )

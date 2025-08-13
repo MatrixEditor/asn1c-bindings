@@ -291,10 +291,11 @@ will generate a Python class:
     class MyInteger(_Asn1BasicType[int]):
         pass
 
-.. note::
+.. important::
     When a basic type is used *inside* a ``SEQUENCE``, ``CHOICE``,
-    or other constructed type **without** being given its own type name,
-    it is *inlined* and **no separate Python class** will be generated.
+    or other constructed type **with** or **without** being given its own type name,
+    it is *inlined*, meaning the type wrapper won't be used and conversion from the
+    value type is incorporated directly.
 
 All generated Python classes — excluding those with named values (e.g.
 ``ENUMERATED`` types) — follow the conceptual API defined by the

@@ -32,7 +32,8 @@
 
 #undef COPYRIGHT
 #define COPYRIGHT \
-    "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n"
+    "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n" \
+    "Copyright (c) 2025 MatrixEditor @ github and contributors.\n"
 
 #include <asn1parser.h>   /* Parse the ASN.1 file and build a tree */
 #include <asn1fix.h>      /* Fix the ASN.1 tree */
@@ -596,6 +597,7 @@ usage(const char *av0) {
 "                        (Default is \"%s\")\n"
 "  -D <dir>              Destination directory for generated files (default current dir)\n"
 "  -X                    Generate and print the XML DTD\n"
+"  -M <module>           Set the target python extension module name (module name only)\n"
 "\n"
 
 "  -Werror               Treat warnings as errors; abort if any warning\n"

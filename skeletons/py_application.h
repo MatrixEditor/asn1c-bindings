@@ -33,6 +33,14 @@ typedef struct {
     int canonical;
 } PyAsnFlags_t;
 
+/* used for conversion (generic template type)*/
+typedef struct _pycompat_asnobject_s {
+    PyObject_HEAD
+    void* ob_value;
+    int s_valid;
+    PyObject *ob_parent;
+} PyCompatAsnObject_t;
+
 int PyCompat_Init(void);
 void PyCompat_Clear(void);
 
@@ -135,7 +143,6 @@ end:
         PyObject* ob_parent;              \
     } PyAsn##name##Object;
 
-
 #define PyCompat_DEF_ENUM(name)               \
     typedef PyObject PyAsnEnum##name##Object; \
     extern PyObject* PyAsnEnum##name##_Type;
@@ -182,7 +189,7 @@ end:
     } while(0)
 
 
-#define PY_IMPL_GENERIC_NEW(name)                                           \
+#define PY_IMPL_GENERIC_NEW(name, type_DEF)                                 \
     static PyObject* PyAsn##name##__new(PyTypeObject* type, PyObject* args, \
                                         PyObject* kwds) {                   \
         PyAsn##name##Object* self =                                         \
@@ -196,6 +203,12 @@ end:
                 Py_CLEAR(self);                                             \
             } else {                                                        \
                 memset(self->ob_value, 0, sizeof(name##_t));                \
+                if((type_DEF) != NULL) {                                    \
+                    if(ASN_STRUCT_INIT((type_DEF), self->ob_value) < 0) {   \
+                        Py_CLEAR(self);                                     \
+                        PyErr_SetFromErrno(PyExc_ValueError);               \
+                    }                                                       \
+                }                                                           \
             }                                                               \
         }                                                                   \
         return (PyObject*)self;                                             \
@@ -763,6 +776,35 @@ end:
         typeName##_t* src, PyObject* parent) {                        \
         void* target = (void*)&src->attrName;                         \
         return __VA_ARGS__;                                           \
+    }
+
+#define PY_IMPL_SEQ_REF_ATTR_TOPY(typeName, attrName, targetTypeName) \
+    static inline PyObject* PyAsn##typeName##__##attrName##_ToPython( \
+        typeName##_t* src, PyObject* parent) {                        \
+        void* target = (void*)&src->attrName;                         \
+        PyAsn##targetTypeName##Object* targetObj =                    \
+            PyCompatAsnType_New(targetTypeName);                      \
+        if(!targetObj) {                                              \
+            return NULL;                                              \
+        }                                                             \
+        targetObj->ob_value = (targetTypeName##_t*)target;            \
+        targetObj->ob_parent = Py_NewRef(parent);                     \
+        targetObj->s_valid = 1;                                       \
+        return (PyObject*)targetObj;                                  \
+    }
+
+#define PY_IMPL_SEQ_REF_ATTR_INDIRECT_TOPY(typeName, attrName, targetTypeName) \
+    static inline PyObject* PyAsn##typeName##__##attrName##_ToPython(          \
+        typeName##_t* src, PyObject* parent) {                                 \
+        void* target = (void*)src->attrName;                                   \
+        PyAsn##targetTypeName##Object* targetObj = NULL;                       \
+        if(target == NULL) Py_RETURN_NONE;                                     \
+        targetObj = PyCompatAsnType_New(targetTypeName);                       \
+        if(targetObj == NULL) return NULL;                                     \
+        targetObj->ob_value = (targetTypeName##_t*)target;                     \
+        targetObj->ob_parent = Py_NewRef(parent);                              \
+        targetObj->s_valid = 1;                                                \
+        return (PyObject*)targetObj;                                           \
     }
 
 

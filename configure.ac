@@ -1,4 +1,4 @@
-AC_INIT([asn1c],m4_esyscmd([echo -n `git describe --tags --long --always --dirty --broken`]),[vlm@lionet.info])
+AC_INIT([asn1c],m4_esyscmd([echo -n `git describe --tags --long --always --dirty --broken`]),[https://github.com/MatrixEditor/asn1c-bindings/issues])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([config.h])

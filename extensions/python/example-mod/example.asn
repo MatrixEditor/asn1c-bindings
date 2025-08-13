@@ -63,6 +63,12 @@ ExampleChoice ::= CHOICE {
     }
 }
 
+ExampleOpenType ::= SEQUENCE {
+        marker OBJECT IDENTIFIER,
+        parameters ANY DEFINED BY marker OPTIONAL
+}
+ExampleExternal ::= EXTERNAL
+
 ExampleSequence ::= SEQUENCE {
     sInt            INTEGER,
     sIntOpt         INTEGER OPTIONAL,
@@ -82,7 +88,7 @@ ExampleSequence ::= SEQUENCE {
         namedC(2)
     },
     sBitStrOpt      BIT STRING OPTIONAL,
-    sOctetStr       OCTET STRING,
+    sOctetStr       ExampleOctetString,
     sOctetStrOpt    OCTET STRING OPTIONAL,
     sNull           NULL,
     sNullOpt        NULL OPTIONAL,

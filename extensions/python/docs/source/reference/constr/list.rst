@@ -1,4 +1,4 @@
-.. _reference_constructed_list:
+.. _reference_constr_list:
 
 SET OF / SEQUENCE OF
 ====================
