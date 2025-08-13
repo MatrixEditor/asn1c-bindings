@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="OCTET STRING" href="octet_string.html" /><link rel="prev" title="INTEGER" href="integer.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="EMBEDDED PDV" href="embedded_pdv.html" /><link rel="prev" title="SET OF / SEQUENCE OF" href="list.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>REAL - asn1-cpython</title>
+        <title>EXTERNAL - asn1-cpython</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -210,29 +210,29 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">Library Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Library Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../overview.html">ASN.1 Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../object_model.html">ASN.1 Object Model</a></li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">ASN.1 Basic Types</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of ASN.1 Basic Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="null.html">NULL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="boolean.html">BOOLEAN</a></li>
-<li class="toctree-l3"><a class="reference internal" href="integer.html">INTEGER</a></li>
-<li class="toctree-l3"><a class="reference internal" href="integer.html#enumerated">ENUMERATED</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">REAL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="octet_string.html">OCTET STRING</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bit_string.html">BIT STRING</a></li>
-<li class="toctree-l3"><a class="reference internal" href="oid.html">OBJECT IDENTIFIER</a></li>
-<li class="toctree-l3"><a class="reference internal" href="oid.html#relative-oid">RELATIVE-OID</a></li>
-<li class="toctree-l3"><a class="reference internal" href="any.html">ANY / ANY DEFINED BY</a></li>
-<li class="toctree-l3"><a class="reference internal" href="time.html">TIME</a></li>
-<li class="toctree-l3"><a class="reference internal" href="strings.html">ASN.1 String Types</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../basic/index.html">ASN.1 Basic Types</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of ASN.1 Basic Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../basic/null.html">NULL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/boolean.html">BOOLEAN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/integer.html">INTEGER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/integer.html#enumerated">ENUMERATED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/real.html">REAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/octet_string.html">OCTET STRING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/bit_string.html">BIT STRING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/oid.html">OBJECT IDENTIFIER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/time.html">TIME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../constr/index.html">ASN.1 Constructed Types</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of ASN.1 Constructed Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../constr/sequence.html">SEQUENCE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/set.html">SET</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/choice.html">CHOICE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/list.html">SET OF / SEQUENCE OF</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/external.html">EXTERNAL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/embedded_pdv.html">EMBEDDED PDV</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/character_string.html">CHARACTER STRING</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">ASN.1 Constructed Types</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of ASN.1 Constructed Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sequence.html">SEQUENCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="set.html">SET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="choice.html">CHOICE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -258,7 +258,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../../_sources/reference/basic/real.rst.txt" title="View this page">
+  <a class="muted-link" href="../../_sources/reference/constr/external.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -278,54 +278,101 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="real">
-<span id="reference-basic-real"></span><h1>REAL<a class="headerlink" href="#real" title="Link to this heading">¶</a></h1>
-<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">REAL</span></code> type represents a floating-point number, optionally including
-special values such as <code class="docutils literal notranslate"><span class="pre">PLUS-INFINITY</span></code>, <code class="docutils literal notranslate"><span class="pre">MINUS-INFINITY</span></code>, and <code class="docutils literal notranslate"><span class="pre">NOT-A-NUMBER</span></code> (NaN),
-depending on the encoding rules used.</p>
-<p>In Python, the generated <code class="docutils literal notranslate"><span class="pre">REAL</span></code> class wraps the native <code class="docutils literal notranslate"><span class="pre">float</span></code> type, providing
-encoding, decoding, and constraint checks compliant with ASN.1 rules.</p>
+          <section id="external">
+<span id="reference-constr-external"></span><h1>EXTERNAL<a class="headerlink" href="#external" title="Link to this heading">¶</a></h1>
+<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code> type is a <strong>constructed</strong> universal type used to encapsulate
+data that may be defined outside the current ASN.1 module.
+It typically contains an identifier describing the external data,
+an optional indirect reference, and the encoded data itself.</p>
+<p>In the ASN.1 specification, <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code> is defined as a <strong>SEQUENCE</strong>
+with a predefined structure, but in code generation it is represented as
+a <strong>custom type name</strong> that inherits the same behavior as any generated
+<code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code> class.</p>
 <p>Example ASN.1 definition:</p>
-<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyReal</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">REAL</span>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyExternalData</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">EXTERNAL</span>
 </pre></div>
 </div>
 <p>which generates a Python class roughly equivalent to:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyReal</span><span class="p">(</span><span class="n">_Asn1BasicType</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyExternalData</span><span class="p">(</span><span class="n">_Asn1BasicType</span><span class="p">[</span><span class="n">EXTERNAL</span><span class="p">]):</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
 <section id="conceptual-representation">
 <h2>Conceptual Representation<a class="headerlink" href="#conceptual-representation" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_Asn1BasicType</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">]</span></dt>
-<dd><p>Represents a REAL ASN.1 type.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dd><p>Initializes the REAL instance with an optional initial value.</p>
-<p>The value may be any Python object coercible to a floating-point number.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="EXTERNAL">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EXTERNAL</span></span><a class="headerlink" href="#EXTERNAL" title="Link to this definition">¶</a></dt>
+<dd><p><em>Inherits from</em> <a class="reference internal" href="../overview.html#Asn1Type" title="_Asn1Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1Type</span></code></a>.</p>
+<p>Represents a constructed ASN.1 type where fields are assigned in a
+fixed order. In the case of <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code>, the generated class will
+have members as specified by the ASN.1 standard for the <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code>
+type, such as:</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="EXTERNAL.direct_reference">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">direct_reference</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#EXTERNAL.direct_reference" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em></dt>
-<dd><p>Gets or sets the floating-point value.</p>
-<p>Setting the value accepts any Python number type or a string representing
-a number in decimal or scientific notation.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="EXTERNAL.indirect_reference">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">indirect_reference</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#EXTERNAL.indirect_reference" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
-</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="EXTERNAL.data_value_descriptor">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_value_descriptor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#EXTERNAL.data_value_descriptor" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
-</section>
-<section id="special-considerations">
-<h2>Special Considerations<a class="headerlink" href="#special-considerations" title="Link to this heading">¶</a></h2>
+<dl class="py property">
+<dt class="sig sig-object py" id="EXTERNAL.encoding">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encoding</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#EXTERNAL.encoding_TYPE" title="EXTERNAL.encoding_TYPE"><span class="pre">encoding_TYPE</span></a></em><a class="headerlink" href="#EXTERNAL.encoding" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Since <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code> is implemented as a specialized <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>,
+it will behave identically to any generated SEQUENCE object in Python.
+This means:</p>
 <ul class="simple">
-<li><p>Some ASN.1 encoding rules allow representation of infinities and NaN, which
-are mapped directly to their Python <code class="docutils literal notranslate"><span class="pre">float</span></code> equivalents.</p></li>
-<li><p>Precision and range depend on the underlying platform’s floating-point
-implementation (IEEE 754 double-precision on most systems).</p></li>
+<li><p>All values are initialized to <code class="docutils literal notranslate"><span class="pre">None</span></code> if optional.</p></li>
+<li><p>Non-optional members have default values where applicable.</p></li>
+<li><p>The object may be directly encodable even without explicitly setting values,
+depending on the default assignments.</p></li>
 </ul>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">members</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Initializes the EXTERNAL instance with optional member assignments.
+Unspecified optional fields will default to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="EXTERNAL.encoding_TYPE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encoding_TYPE</span></span><a class="headerlink" href="#EXTERNAL.encoding_TYPE" title="Link to this definition">¶</a></dt>
+<dd><p>Representation of the  <code class="docutils literal notranslate"><span class="pre">encoding</span></code> field as a CHOICE.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="EXTERNAL.encoding_TYPE.single_ASN1_type">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">single_ASN1_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#EXTERNAL.encoding_TYPE.single_ASN1_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="EXTERNAL.encoding_TYPE.octet_aligned">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">octet_aligned</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#EXTERNAL.encoding_TYPE.octet_aligned" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="EXTERNAL.encoding_TYPE.arbitrary">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arbitrary</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#EXTERNAL.encoding_TYPE.arbitrary" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>CHOICE generation concept in: <a class="reference internal" href="../overview.html#Asn1ChoiceType" title="_Asn1ChoiceType"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1ChoiceType</span></code></a>.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -334,23 +381,23 @@ implementation (IEEE 754 double-precision on most systems).</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="octet_string.html">
+          <a class="next-page" href="embedded_pdv.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">OCTET STRING</div>
+                <div class="title">EMBEDDED PDV</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="integer.html">
+          <a class="prev-page" href="list.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">INTEGER</div>
+                <div class="title">SET OF / SEQUENCE OF</div>
                 
               </div>
             </a>
@@ -384,9 +431,23 @@ implementation (IEEE 754 double-precision on most systems).</p></li>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">REAL</a><ul>
-<li><a class="reference internal" href="#conceptual-representation">Conceptual Representation</a></li>
-<li><a class="reference internal" href="#special-considerations">Special Considerations</a></li>
+<li><a class="reference internal" href="#">EXTERNAL</a><ul>
+<li><a class="reference internal" href="#conceptual-representation">Conceptual Representation</a><ul>
+<li><a class="reference internal" href="#EXTERNAL"><code class="docutils literal notranslate"><span class="pre">EXTERNAL</span></code></a><ul>
+<li><a class="reference internal" href="#EXTERNAL.direct_reference"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.direct_reference</span></code></a></li>
+<li><a class="reference internal" href="#EXTERNAL.indirect_reference"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.indirect_reference</span></code></a></li>
+<li><a class="reference internal" href="#EXTERNAL.data_value_descriptor"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.data_value_descriptor</span></code></a></li>
+<li><a class="reference internal" href="#EXTERNAL.encoding"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.encoding</span></code></a></li>
+<li><a class="reference internal" href="#EXTERNAL.encoding_TYPE"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.encoding_TYPE</span></code></a><ul>
+<li><a class="reference internal" href="#EXTERNAL.encoding_TYPE.single_ASN1_type"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.encoding_TYPE.single_ASN1_type</span></code></a></li>
+<li><a class="reference internal" href="#EXTERNAL.encoding_TYPE.octet_aligned"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.encoding_TYPE.octet_aligned</span></code></a></li>
+<li><a class="reference internal" href="#EXTERNAL.encoding_TYPE.arbitrary"><code class="docutils literal notranslate"><span class="pre">EXTERNAL.encoding_TYPE.arbitrary</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

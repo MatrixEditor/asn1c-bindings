@@ -10,6 +10,7 @@
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="_static/theme.css?v=c4557fd3" />
     
@@ -219,6 +220,8 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/bit_string.html">BIT STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/basic/time.html">TIME</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
@@ -227,6 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/constr/set.html">SET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/constr/choice.html">CHOICE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/constr/list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/constr/external.html">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/constr/embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/constr/character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -337,11 +343,12 @@ type above can be used as a generic Python class:</p>
 <ul class="simple">
 <li><p>Basic Types: <code class="docutils literal notranslate"><span class="pre">NULL</span></code>, <code class="docutils literal notranslate"><span class="pre">INTEGER</span></code> (<em>named</em>), <code class="docutils literal notranslate"><span class="pre">BOOLEAN</span></code>, <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code>
 (<em>named</em>), <code class="docutils literal notranslate"><span class="pre">OCTET</span> <span class="pre">STRING</span></code>, <code class="docutils literal notranslate"><span class="pre">OBJECT</span> <span class="pre">IDENTIFIER,</span></code>, <code class="docutils literal notranslate"><span class="pre">RELATIVE-OID</span></code>,
-<code class="docutils literal notranslate"><span class="pre">REAL</span></code>, <code class="docutils literal notranslate"><span class="pre">ENUMERATED</span></code>, <code class="docutils literal notranslate"><span class="pre">UTF8String</span></code> and variants,</p></li>
+<code class="docutils literal notranslate"><span class="pre">REAL</span></code>, <code class="docutils literal notranslate"><span class="pre">ENUMERATED</span></code>, <code class="docutils literal notranslate"><span class="pre">UTF8String</span></code> and variants, <code class="docutils literal notranslate"><span class="pre">CHARACTER</span> <span class="pre">STRING</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ANY</span></code>, time types, <code class="docutils literal notranslate"><span class="pre">EMBEDDED</span> <span class="pre">PDV</span></code> and <em>open types</em>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">UTCTIME</span></code> is currently implemented as raw bytes</p>
+<p><code class="docutils literal notranslate"><span class="pre">UTCTIME</span></code> and <code class="docutils literal notranslate"><span class="pre">GeneralizedTime</span></code> are both implemented as strings.</p>
 </div>
 <ul class="simple">
 <li><p>Constructed Types: <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>, <code class="docutils literal notranslate"><span class="pre">CHOICE</span></code>, <code class="docutils literal notranslate"><span class="pre">SET</span></code>, <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span> <span class="pre">OF</span></code>, <code class="docutils literal notranslate"><span class="pre">SET</span>
@@ -376,8 +383,7 @@ type above can be used as a generic Python class:</p>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Library Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="reference/overview.html">ASN.1 Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/object_model.html">ASN.1 Object Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/basic/index.html">ASN.1 Basic Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference/constr/index.html">ASN.1 Constructed Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/index.html#asn-1-types-by-category">ASN.1 Types by Category</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference/cmake.html">CMake API</a><ul>
@@ -457,5 +463,6 @@ type above can be used as a generic Python class:</p>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

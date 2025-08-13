@@ -10,6 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=c4557fd3" />
     
@@ -180,7 +181,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -219,6 +220,8 @@
 <li class="toctree-l3"><a class="reference internal" href="basic/bit_string.html">BIT STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basic/oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic/time.html">TIME</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
@@ -227,6 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="constr/set.html">SET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="constr/choice.html">CHOICE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="constr/list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constr/external.html">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constr/embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constr/character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -266,7 +272,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -289,9 +295,339 @@ compiler.</p>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#asn-1-conceptual-list-type">ASN.1 Conceptual List Type</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="object_model.html">ASN.1 Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object_model.html">ASN.1 Object Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="object_model.html#reading-the-value">Reading the Value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object_model.html#writing-to-the-value">Writing to the Value</a></li>
+</ul>
+</li>
 </ul>
 </div>
+<section id="asn-1-types-by-category">
+<h2>ASN.1 Types by Category<a class="headerlink" href="#asn-1-types-by-category" title="Link to this heading">¶</a></h2>
+<section id="generic-basic-types">
+<h3>Generic / Basic Types<a class="headerlink" href="#generic-basic-types" title="Link to this heading">¶</a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 sd-p-0 docutils">
+<div class="sd-row sd-row-cols-4 sd-row-cols-xs-4 sd-row-cols-sm-4 sd-row-cols-md-4 sd-row-cols-lg-4 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 surface docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+BOOLEAN</div>
+<p class="sd-card-text">[Tag: 01]</p>
+</div>
+<span class="sd-stretched-link sd-hide-link-text">reference_basic_bool</span></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+INTEGER</div>
+<p class="sd-card-text">[Tag: 02]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/integer.html#reference-basic-integer"><span class="std std-ref">INTEGER</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+BIT STRING</div>
+<p class="sd-card-text">[Tag: 03]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/bit_string.html#reference-basic-bitstring"><span class="std std-ref">BIT STRING</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+OCTET STRING</div>
+<p class="sd-card-text">[Tag: 04]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/octet_string.html#reference-basic-octetstring"><span class="std std-ref">OCTET STRING</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+NULL</div>
+<p class="sd-card-text">[Tag: 05]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/null.html#reference-basic-null"><span class="std std-ref">NULL</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+OBJECT IDENTIFIER</div>
+<p class="sd-card-text">[Tag: 06]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/oid.html#reference-basic-oid"><span class="std std-ref">OBJECT IDENTIFIER</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+ObjectDescriptor</div>
+<p class="sd-card-text">[Tag: 07]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+REAL</div>
+<p class="sd-card-text">[Tag: 09]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/real.html#reference-basic-real"><span class="std std-ref">REAL</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+ENUMERATED</div>
+<p class="sd-card-text">[Tag: 10]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/integer.html#reference-basic-integer"><span class="std std-ref">INTEGER</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+RELATIVE-OID</div>
+<p class="sd-card-text">[Tag: 13]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/oid.html#reference-basic-oid"><span class="std std-ref">OBJECT IDENTIFIER</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+ANY</div>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/any.html#reference-basic-any"><span class="std std-ref">ANY / ANY DEFINED BY</span></a></div>
+</div>
+</div>
+</div>
+</section>
+<section id="constructed-types">
+<h3>Constructed Types<a class="headerlink" href="#constructed-types" title="Link to this heading">¶</a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 sd-p-0 docutils">
+<div class="sd-row sd-row-cols-4 sd-row-cols-xs-4 sd-row-cols-sm-4 sd-row-cols-md-4 sd-row-cols-lg-4 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+CHOICE</div>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/choice.html#reference-constr-choice"><span class="std std-ref">CHOICE</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+SEQUENCE</div>
+<p class="sd-card-text">[Tag: 16]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/sequence.html#reference-constr-sequence"><span class="std std-ref">SEQUENCE</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+SET</div>
+<p class="sd-card-text">[Tag: 17]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/set.html#reference-constr-set"><span class="std std-ref">SET</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+SEQUENCE OF</div>
+<p class="sd-card-text">[Tag: 16]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/list.html#reference-constr-list"><span class="std std-ref">SET OF / SEQUENCE OF</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+SET OF</div>
+<p class="sd-card-text">[Tag: 17]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/list.html#reference-constr-list"><span class="std std-ref">SET OF / SEQUENCE OF</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+EXTERNAL</div>
+<p class="sd-card-text">[Tag: 08]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/external.html#reference-constr-external"><span class="std std-ref">EXTERNAL</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+EMBEDDED PDV</div>
+<p class="sd-card-text">[Tag: 11]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/embedded_pdv.html#reference-constr-embedded-pdv"><span class="std std-ref">EMBEDDED PDV</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+CHARACTER STRING</div>
+<p class="sd-card-text">[Tag: 29]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="constr/character_string.html#reference-constr-character-string"><span class="std std-ref">CHARACTER STRING</span></a></div>
+</div>
+</div>
+</div>
+</section>
+<section id="character-string-types">
+<h3>Character String Types<a class="headerlink" href="#character-string-types" title="Link to this heading">¶</a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 sd-p-0 docutils">
+<div class="sd-row sd-row-cols-4 sd-row-cols-xs-4 sd-row-cols-sm-4 sd-row-cols-md-4 sd-row-cols-lg-4 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 surface docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+UTF8String</div>
+<p class="sd-card-text">[Tag: 12]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+NumericString</div>
+<p class="sd-card-text">[Tag: 18]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+PrintableString</div>
+<p class="sd-card-text">[Tag: 19]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+TeletexString</div>
+<p class="sd-card-text">[Tag: 20]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+VideotexString</div>
+<p class="sd-card-text">[Tag: 21]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+IA5String</div>
+<p class="sd-card-text">[Tag: 22]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+GraphicString</div>
+<p class="sd-card-text">[Tag: 25]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+VisibleString</div>
+<p class="sd-card-text">[Tag: 26]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+GeneralString</div>
+<p class="sd-card-text">[Tag: 27]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+UniversalString</div>
+<p class="sd-card-text">[Tag: 28]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+BMPString</div>
+<p class="sd-card-text">[Tag: 30]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+</div>
+</div>
+</section>
+<section id="time-types">
+<h3>Time Types<a class="headerlink" href="#time-types" title="Link to this heading">¶</a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 sd-p-0 docutils">
+<div class="sd-row sd-row-cols-4 sd-row-cols-xs-4 sd-row-cols-sm-4 sd-row-cols-md-4 sd-row-cols-lg-4 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 surface docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+UTCTime</div>
+<p class="sd-card-text">[Tag: 23]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+GeneralizedTime</div>
+<p class="sd-card-text">[Tag: 24]</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="basic/strings.html#reference-basic-strings"><span class="std std-ref">ASN.1 String Types</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+TIME</div>
+<p class="sd-card-text">[Tag: 14]</p>
+<p class="sd-card-text"><em>(and derivates)</em></p>
+</div>
+<span class="sd-stretched-link sd-hide-link-text">reference_basic_time</span></div>
+</div>
+</div>
+</div>
+<p>The list is also available as a TOC:</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">ASN.1 Types</span></p>
 <ul>
@@ -305,6 +641,8 @@ compiler.</p>
 <li class="toctree-l2"><a class="reference internal" href="basic/bit_string.html">BIT STRING</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basic/oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic/time.html">TIME</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
@@ -313,10 +651,15 @@ compiler.</p>
 <li class="toctree-l2"><a class="reference internal" href="constr/set.html">SET</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constr/choice.html">CHOICE</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constr/list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constr/external.html">EXTERNAL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constr/embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constr/character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
 </div>
+</section>
+</section>
 </section>
 
         </article>
@@ -362,8 +705,33 @@ compiler.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Library Reference</a><ul>
+<li><a class="reference internal" href="#asn-1-types-by-category">ASN.1 Types by Category</a><ul>
+<li><a class="reference internal" href="#generic-basic-types">Generic / Basic Types</a></li>
+<li><a class="reference internal" href="#constructed-types">Constructed Types</a></li>
+<li><a class="reference internal" href="#character-string-types">Character String Types</a></li>
+<li><a class="reference internal" href="#time-types">Time Types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -374,5 +742,6 @@ compiler.</p>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

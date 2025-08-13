@@ -1,4 +1,4 @@
-.. _reference_constructed_choice:
+.. _reference_constr_choice:
 
 CHOICE
 ======

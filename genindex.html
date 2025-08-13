@@ -8,6 +8,7 @@
 <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="_static/theme.css?v=c4557fd3" />
     
@@ -217,6 +218,8 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/bit_string.html">BIT STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/basic/time.html">TIME</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
@@ -225,6 +228,9 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/constr/set.html">SET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/constr/choice.html">CHOICE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/constr/list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/constr/external.html">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/constr/embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/constr/character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -267,7 +273,7 @@
           
 <section class="genindex-section">
   <h1 id="index">Index</h1>
-  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#J"><strong>J</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#X"><strong>X</strong></a></div>
+  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#J"><strong>J</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#X"><strong>X</strong></a></div>
 </section>
 <section id="_" class="genindex-section">
   <h2>_</h2>
@@ -455,6 +461,8 @@
         </ul></li>
         <li><a href="reference/overview.html#Asn1ListType.add">add() (_Asn1ListType method)</a>
 </li>
+        <li><a href="reference/constr/external.html#EXTERNAL.encoding_TYPE.arbitrary">arbitrary (EXTERNAL.encoding_TYPE property)</a>
+</li>
         <li>
     asn1c_add_extension
 
@@ -502,12 +510,14 @@
 </li>
         <li><a href="reference/overview.html#Asn1Type.cer_encode">cer_encode() (_Asn1Type method)</a>
 </li>
-        <li><a href="reference/overview.html#Asn1Type.check_constraints">check_constraints() (_Asn1Type method)</a>
+        <li><a href="reference/constr/character_string.html#CHARACTER_STRING.identification_TYPE">CHARACTER_STRING.identification_TYPE (built-in class)</a>
 </li>
-        <li><a href="reference/overview.html#Asn1ListType.clear">clear() (_Asn1ListType method)</a>
+        <li><a href="reference/overview.html#Asn1Type.check_constraints">check_constraints() (_Asn1Type method)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/overview.html#Asn1ListType.clear">clear() (_Asn1ListType method)</a>
+</li>
         <li>
     command
 
@@ -527,11 +537,15 @@
   <h2>D</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/external.html#EXTERNAL.data_value_descriptor">data_value_descriptor (EXTERNAL property)</a>
+</li>
         <li><a href="reference/overview.html#Asn1Type.der_decode">der_decode() (_Asn1Type static method)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="reference/overview.html#Asn1Type.der_encode">der_encode() (_Asn1Type method)</a>
+</li>
+        <li><a href="reference/constr/external.html#EXTERNAL.direct_reference">direct_reference (EXTERNAL property)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -541,7 +555,15 @@
   <h2>E</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/external.html#EXTERNAL.encoding">encoding (EXTERNAL property)</a>
+</li>
         <li><a href="reference/overview.html#Asn1ListType.extend">extend() (_Asn1ListType method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/external.html#EXTERNAL">EXTERNAL (built-in class)</a>
+</li>
+        <li><a href="reference/constr/external.html#EXTERNAL.encoding_TYPE">EXTERNAL.encoding_TYPE (built-in class)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -551,6 +573,12 @@
   <h2>I</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/character_string.html#CHARACTER_STRING.identification">identification (CHARACTER_STRING property)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/external.html#EXTERNAL.indirect_reference">indirect_reference (EXTERNAL property)</a>
+</li>
         <li><a href="reference/overview.html#Asn1Type.is_valid">is_valid() (_Asn1Type method)</a>
 </li>
     </ul></td>
@@ -575,10 +603,12 @@
   <h2>O</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/overview.html#Asn1Type.oer_decode">oer_decode() (_Asn1Type static method)</a>
+        <li><a href="reference/constr/external.html#EXTERNAL.encoding_TYPE.octet_aligned">octet_aligned (EXTERNAL.encoding_TYPE property)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/overview.html#Asn1Type.oer_decode">oer_decode() (_Asn1Type static method)</a>
+</li>
         <li><a href="reference/overview.html#Asn1Type.oer_encode">oer_encode() (_Asn1Type method)</a>
 </li>
     </ul></td>
@@ -596,6 +626,20 @@
         <li><a href="reference/overview.html#Asn1Type.per_encode">per_encode() (_Asn1Type method)</a>
 </li>
         <li><a href="reference/overview.html#Asn1ChoiceType.present">present (_Asn1ChoiceType attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/external.html#EXTERNAL.encoding_TYPE.single_ASN1_type">single_ASN1_type (EXTERNAL.encoding_TYPE property)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/constr/character_string.html#CHARACTER_STRING.string_value">string_value (CHARACTER_STRING property)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -720,5 +764,6 @@
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

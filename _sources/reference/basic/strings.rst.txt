@@ -20,6 +20,8 @@ Python ``str`` type. This applies to the following ASN.1 string types:
 - TeletexString (T61String)
 - VideotexString
 - ObjectDescriptor
+- UTCTime
+- GeneralizedTime
 
 Example ASN.1 definition:
 

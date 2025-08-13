@@ -1,4 +1,4 @@
-.. _reference_basic_bool:
+.. _reference_basic_boolean:
 
 BOOLEAN
 =======

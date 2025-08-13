@@ -11,3 +11,6 @@ ASN.1 Constructed Types
     set
     choice
     list
+    external
+    embedded_pdv
+    character_string

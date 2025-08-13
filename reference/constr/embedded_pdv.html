@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="SEQUENCE" href="sequence.html" /><link rel="prev" title="ASN.1 String Types" href="../basic/strings.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="CHARACTER STRING" href="character_string.html" /><link rel="prev" title="EXTERNAL" href="external.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>ASN.1 Constructed Types - asn1-cpython</title>
+        <title>EMBEDDED PDV - asn1-cpython</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -181,7 +181,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -225,13 +225,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">ASN.1 Constructed Types</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of ASN.1 Constructed Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">ASN.1 Constructed Types</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of ASN.1 Constructed Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="sequence.html">SEQUENCE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="set.html">SET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="choice.html">CHOICE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="list.html">SET OF / SEQUENCE OF</a></li>
 <li class="toctree-l3"><a class="reference internal" href="external.html">EXTERNAL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">EMBEDDED PDV</a></li>
 <li class="toctree-l3"><a class="reference internal" href="character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
@@ -258,7 +258,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../../_sources/reference/constr/index.rst.txt" title="View this page">
+  <a class="muted-link" href="../../_sources/reference/constr/embedded_pdv.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -272,26 +272,119 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="asn-1-constructed-types">
-<span id="reference"></span><h1>ASN.1 Constructed Types<a class="headerlink" href="#asn-1-constructed-types" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Constructed Types</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="sequence.html">SEQUENCE</a></li>
-<li class="toctree-l1"><a class="reference internal" href="set.html">SET</a></li>
-<li class="toctree-l1"><a class="reference internal" href="choice.html">CHOICE</a></li>
-<li class="toctree-l1"><a class="reference internal" href="list.html">SET OF / SEQUENCE OF</a></li>
-<li class="toctree-l1"><a class="reference internal" href="external.html">EXTERNAL</a></li>
-<li class="toctree-l1"><a class="reference internal" href="embedded_pdv.html">EMBEDDED PDV</a></li>
-<li class="toctree-l1"><a class="reference internal" href="character_string.html">CHARACTER STRING</a></li>
-</ul>
+          <section id="embedded-pdv">
+<span id="reference-constr-embedded-pdv"></span><h1>EMBEDDED PDV<a class="headerlink" href="#embedded-pdv" title="Link to this heading">¶</a></h1>
+<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">EMBEDDED</span> <span class="pre">PDV</span></code> type represents a structured value used for transporting
+presentation data values. In the abstract syntax, it is defined as a specialized
+form of the <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code> type with a fixed set of components describing the
+presentation context, transfer syntax, and the actual data.</p>
+<p>In practice, the generated Python class for <code class="docutils literal notranslate"><span class="pre">EMBEDDED</span> <span class="pre">PDV</span></code> behaves exactly like a
+<code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>-derived type, since the ASN.1 standard defines it as such.
+All attribute access, assignment rules, and encoding/decoding logic are identical
+to any other generated sequence object.</p>
+<p>Example ASN.1 definition:</p>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="c1">-- From ITU-T X.680</span>
+<span class="n n-Type">EMBEDDED-PDV</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="p">[</span><span class="k">UNIVERSAL</span><span class="w"> </span><span class="mi">11</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">identification</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kd">CHOICE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nv">syntaxes</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nv">abstract</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">                </span><span class="nv">transfer</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nv">syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">presentation-context-id</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="kt">INTEGER</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">context-negotiation</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nv">presentation-context-id</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kt">INTEGER</span><span class="p">,</span>
+<span class="w">                </span><span class="nv">transfer-syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nv">transfer-syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">fixed</span><span class="w"> </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="kc">NULL</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="c1">-- NOTE - The embedded-pdv type does not allow the inclusion of a</span>
+<span class="w">    </span><span class="c1">-- data-value-descriptor value.</span>
+<span class="w">    </span><span class="c1">--  data-value-descriptor [1] ObjectDescriptor OPTIONAL,</span>
+<span class="w">    </span><span class="nv">data-value</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="kt">OCTET STRING</span>
+<span class="p">}</span><span class="w"> </span><span class="c1">-- (WITH COMPONENTS {... , data-value-descriptor ABSENT })</span>
+
+<span class="n n-Type">MyPDV</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="n n-Type">EMBEDDED-PDV</span>
+</pre></div>
 </div>
+<p>which generates a Python class roughly equivalent to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyPDV</span><span class="p">(</span><span class="n">_Asn1BasicType</span><span class="p">[</span><span class="n">EMBEDDED_PDV</span><span class="p">]):</span>
+    <span class="c1"># Generated members according to ASN.1 definition of EMBEDDED PDV</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<section id="python-representation">
+<h2>Python Representation<a class="headerlink" href="#python-representation" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EMBEDDED_PDV</span></span></dt>
+<dd><p>Represents a SEQUENCE-based ASN.1 type. All constraints, encoding rules,
+and attribute semantics of SEQUENCE apply.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">members</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Initializes the object with keyword arguments for each member.</p>
+<p>All members follow the assignment rules for SEQUENCE types — optional
+fields default to <code class="docutils literal notranslate"><span class="pre">None</span></code>, while required fields are initialized with
+their default ASN.1 values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">&lt;member&gt;</span></span></dt>
+<dd><p>Each defined component of the EMBEDDED PDV structure is accessible
+as an attribute. Modifying these attributes updates the parent object
+directly, as is the case for SEQUENCE fields represented by generated classes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="special-notes">
+<h2>Special Notes<a class="headerlink" href="#special-notes" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Even though <code class="docutils literal notranslate"><span class="pre">EMBEDDED</span> <span class="pre">PDV</span></code> is a <em>universal</em> ASN.1 type with its own tag
+([Tag: 11]), it is internally realized as a <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>. This means that in
+Python, its behavior is indistinguishable from any other generated sequence type.</p></li>
+<li><p><strong>Not officially implemented:</strong> This universal type is not natively available
+in the library and must be explicitly defined in your ASN.1 module before it can
+be used. You must declare it manually using the following definition:</p>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">EMBEDDED-PDV</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="p">[</span><span class="k">UNIVERSAL</span><span class="w"> </span><span class="mi">11</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">identification</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kd">CHOICE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">syntaxes</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nv">abstract</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">transfer</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nv">syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">presentation-context-id</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="kt">INTEGER</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">context-negotiation</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nv">presentation-context-id</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kt">INTEGER</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">transfer-syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nv">transfer-syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">fixed</span><span class="w"> </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="kc">NULL</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="c1">-- NOTE – The embedded-pdv type does not allow the inclusion of a</span>
+<span class="w">    </span><span class="c1">-- data-value-descriptor value.</span>
+<span class="w">    </span><span class="c1">--  data-value-descriptor [1] ObjectDescriptor OPTIONAL,</span>
+<span class="w">    </span><span class="nv">data-value</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="kt">OCTET STRING</span>
+<span class="p">}</span><span class="w"> </span><span class="c1">-- (WITH COMPONENTS {... , data-value-descriptor ABSENT })</span>
+</pre></div>
+</div>
+<p>After declaring this type, you <strong>must</strong> use the <cite>EMBEDDED-PDV</cite> identifier
+exactly as shown in your ASN.1 schema.</p>
+</li>
+<li><p>Because the underlying representation is a sequence object, the same encoding
+constraints and decoding behavior apply.</p></li>
+</ul>
+</section>
 </section>
 
         </article>
@@ -299,23 +392,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="sequence.html">
+          <a class="next-page" href="character_string.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">SEQUENCE</div>
+                <div class="title">CHARACTER STRING</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../basic/strings.html">
+          <a class="prev-page" href="external.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">ASN.1 String Types</div>
+                <div class="title">EXTERNAL</div>
                 
               </div>
             </a>
@@ -337,8 +430,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">EMBEDDED PDV</a><ul>
+<li><a class="reference internal" href="#python-representation">Python Representation</a></li>
+<li><a class="reference internal" href="#special-notes">Special Notes</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

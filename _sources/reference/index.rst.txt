@@ -15,6 +15,278 @@ compiler.
     overview
     object_model
 
+
+ASN.1 Types by Category
+-----------------------
+
+Generic / Basic Types
+~~~~~~~~~~~~~~~~~~~~~
+
+.. grid:: 4
+    :gutter: 2
+    :padding: 0
+    :class-row: surface
+
+    .. grid-item-card:: BOOLEAN
+        :link: reference_basic_bool
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 01]
+
+    .. grid-item-card:: INTEGER
+        :link: reference_basic_integer
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 02]
+
+    .. grid-item-card:: BIT STRING
+        :link: reference_basic_bitstring
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 03]
+
+    .. grid-item-card:: OCTET STRING
+        :link: reference_basic_octetstring
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 04]
+
+    .. grid-item-card:: NULL
+        :link: reference_basic_null
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 05]
+
+    .. grid-item-card:: OBJECT IDENTIFIER
+        :link: reference_basic_oid
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 06]
+
+    .. grid-item-card:: ObjectDescriptor
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 07]
+
+
+    .. grid-item-card:: REAL
+        :link: reference_basic_real
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 09]
+
+    .. grid-item-card:: ENUMERATED
+        :link: reference_basic_integer
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 10]
+
+    .. grid-item-card:: RELATIVE-OID
+        :link: reference_basic_oid
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 13]
+
+    .. grid-item-card:: ANY
+        :link: reference_basic_any
+        :link-type: ref
+        :text-align: center
+
+
+
+
+Constructed Types
+~~~~~~~~~~~~~~~~~
+
+.. grid:: 4
+    :gutter: 2
+    :padding: 0
+
+    .. grid-item-card:: CHOICE
+        :link: reference_constr_choice
+        :link-type: ref
+        :text-align: center
+
+    .. grid-item-card:: SEQUENCE
+        :link: reference_constr_sequence
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 16]
+
+    .. grid-item-card:: SET
+        :link: reference_constr_set
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 17]
+
+    .. grid-item-card:: SEQUENCE OF
+        :link: reference_constr_list
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 16]
+
+    .. grid-item-card:: SET OF
+        :link: reference_constr_list
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 17]
+
+    .. grid-item-card:: EXTERNAL
+        :link: reference_constr_external
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 08]
+
+    .. grid-item-card:: EMBEDDED PDV
+        :link: reference_constr_embedded_pdv
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 11]
+
+    .. grid-item-card:: CHARACTER STRING
+        :link: reference_constr_character_string
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 29]
+
+Character String Types
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. grid:: 4
+    :gutter: 2
+    :padding: 0
+    :class-row: surface
+
+    .. grid-item-card:: UTF8String
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 12]
+
+    .. grid-item-card:: NumericString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 18]
+
+    .. grid-item-card:: PrintableString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 19]
+
+    .. grid-item-card:: TeletexString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 20]
+
+    .. grid-item-card:: VideotexString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 21]
+
+    .. grid-item-card:: IA5String
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 22]
+
+    .. grid-item-card:: GraphicString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 25]
+
+    .. grid-item-card:: VisibleString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 26]
+
+    .. grid-item-card:: GeneralString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 27]
+
+    .. grid-item-card:: UniversalString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 28]
+
+    .. grid-item-card:: BMPString
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 30]
+
+
+Time Types
+~~~~~~~~~~
+
+.. grid:: 4
+    :gutter: 2
+    :padding: 0
+    :class-row: surface
+
+    .. grid-item-card:: UTCTime
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 23]
+
+    .. grid-item-card:: GeneralizedTime
+        :link: reference_basic_strings
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 24]
+
+    .. grid-item-card:: TIME
+        :link: reference_basic_time
+        :link-type: ref
+        :text-align: center
+
+        [Tag: 14]
+
+        *(and derivates)*
+
+
+The list is also available as a TOC:
+
 .. toctree::
     :caption: ASN.1 Types
     :maxdepth: 2

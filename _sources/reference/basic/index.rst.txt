@@ -14,4 +14,6 @@ ASN.1 Basic Types
     octet_string
     bit_string
     oid
+    any
+    time
     strings

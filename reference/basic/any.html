@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="OCTET STRING" href="octet_string.html" /><link rel="prev" title="INTEGER" href="integer.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="TIME" href="time.html" /><link rel="prev" title="OBJECT IDENTIFIER" href="oid.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>REAL - asn1-cpython</title>
+        <title>ANY / ANY DEFINED BY - asn1-cpython</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -215,12 +215,12 @@
 <li class="toctree-l3"><a class="reference internal" href="boolean.html">BOOLEAN</a></li>
 <li class="toctree-l3"><a class="reference internal" href="integer.html">INTEGER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="integer.html#enumerated">ENUMERATED</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">REAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="real.html">REAL</a></li>
 <li class="toctree-l3"><a class="reference internal" href="octet_string.html">OCTET STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bit_string.html">BIT STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="oid.html#relative-oid">RELATIVE-OID</a></li>
-<li class="toctree-l3"><a class="reference internal" href="any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">ANY / ANY DEFINED BY</a></li>
 <li class="toctree-l3"><a class="reference internal" href="time.html">TIME</a></li>
 <li class="toctree-l3"><a class="reference internal" href="strings.html">ASN.1 String Types</a></li>
 </ul>
@@ -258,7 +258,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../../_sources/reference/basic/real.rst.txt" title="View this page">
+  <a class="muted-link" href="../../_sources/reference/basic/any.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -278,54 +278,80 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="real">
-<span id="reference-basic-real"></span><h1>REAL<a class="headerlink" href="#real" title="Link to this heading">¶</a></h1>
-<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">REAL</span></code> type represents a floating-point number, optionally including
-special values such as <code class="docutils literal notranslate"><span class="pre">PLUS-INFINITY</span></code>, <code class="docutils literal notranslate"><span class="pre">MINUS-INFINITY</span></code>, and <code class="docutils literal notranslate"><span class="pre">NOT-A-NUMBER</span></code> (NaN),
-depending on the encoding rules used.</p>
-<p>In Python, the generated <code class="docutils literal notranslate"><span class="pre">REAL</span></code> class wraps the native <code class="docutils literal notranslate"><span class="pre">float</span></code> type, providing
-encoding, decoding, and constraint checks compliant with ASN.1 rules.</p>
-<p>Example ASN.1 definition:</p>
-<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyReal</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">REAL</span>
+          <section id="any-any-defined-by">
+<span id="reference-basic-any"></span><h1>ANY / ANY DEFINED BY<a class="headerlink" href="#any-any-defined-by" title="Link to this heading">¶</a></h1>
+<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">ANY</span></code> and <code class="docutils literal notranslate"><span class="pre">ANY</span> <span class="pre">DEFINED</span> <span class="pre">BY</span></code> types are flexible container types
+intended to hold <strong>arbitrary ASN.1 values</strong>.
+They differ mainly in how the contained type is determined:</p>
+<ul class="simple">
+<li><p><strong>ANY</strong> — accepts <em>any</em> ASN.1 value, without further constraints.</p></li>
+<li><p><strong>ANY DEFINED BY</strong> — links the actual type to another field’s value
+(usually an enumerated field, OID, or similar), allowing dynamic type selection.</p></li>
+</ul>
+<p>In modern ASN.1 usage, <code class="docutils literal notranslate"><span class="pre">ANY</span></code> and <code class="docutils literal notranslate"><span class="pre">ANY</span> <span class="pre">DEFINED</span> <span class="pre">BY</span></code> are considered <strong>legacy
+constructs</strong> and are replaced by <code class="docutils literal notranslate"><span class="pre">OPEN</span> <span class="pre">TYPE</span></code> in the X.680 ASN.1 standard.
+However, they still appear in many older ASN.1 specifications and thus remain
+relevant.</p>
+<section id="python-representation">
+<h2>Python Representation<a class="headerlink" href="#python-representation" title="Link to this heading">¶</a></h2>
+<p>In Python, generated <code class="docutils literal notranslate"><span class="pre">ANY</span></code> and <code class="docutils literal notranslate"><span class="pre">ANY</span> <span class="pre">DEFINED</span> <span class="pre">BY</span></code> classes store their
+contents as <strong>raw encoded bytes</strong>.
+These bytes represent the full BER/DER/CER/… encoding of the underlying value.</p>
+<p>The generated classes <strong>will not automatically decode these bytes</strong> — instead, you must
+explicitly invoke the target class’ decoding method to interpret the value.</p>
+<p>Example ASN.1 definitions:</p>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyAny</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="n n-Type">ANY</span>
+
+<span class="n n-Type">MyAnyDefinedBy</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">typeId</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">value</span><span class="w"> </span><span class="n n-Type">ANY</span><span class="w"> </span><span class="n n-Type">DEFINED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nv">typeId</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>which generates a Python class roughly equivalent to:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyReal</span><span class="p">(</span><span class="n">_Asn1BasicType</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+<p>Generated Python representations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyAny</span><span class="p">(</span><span class="n">_BasicAsn1Type</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]):</span>
     <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyAnyDefinedBy</span><span class="p">(</span><span class="n">_Asn1Type</span><span class="p">):</span>
+    <span class="n">typeId</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">bytes</span>  <span class="c1"># raw encoding of the referenced type</span>
 </pre></div>
 </div>
+</section>
 <section id="conceptual-representation">
 <h2>Conceptual Representation<a class="headerlink" href="#conceptual-representation" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_Asn1BasicType</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">]</span></dt>
-<dd><p>Represents a REAL ASN.1 type.</p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_BasicAsn1Type</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">]</span></dt>
+<dd><p>Represents an ASN.1 type holding raw encoded bytes.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dd><p>Initializes the REAL instance with an optional initial value.</p>
-<p>The value may be any Python object coercible to a floating-point number.</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Initializes the object with optional raw ASN.1-encoded data.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em></dt>
-<dd><p>Gets or sets the floating-point value.</p>
-<p>Setting the value accepts any Python number type or a string representing
-a number in decimal or scientific notation.</p>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em></dt>
+<dd><p>Gets or sets the raw encoded bytes.</p>
+<p>Assigning a new value replaces the underlying stored encoding.</p>
 </dd></dl>
 
 </dd></dl>
 
 </section>
-<section id="special-considerations">
-<h2>Special Considerations<a class="headerlink" href="#special-considerations" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>Some ASN.1 encoding rules allow representation of infinities and NaN, which
-are mapped directly to their Python <code class="docutils literal notranslate"><span class="pre">float</span></code> equivalents.</p></li>
-<li><p>Precision and range depend on the underlying platform’s floating-point
-implementation (IEEE 754 double-precision on most systems).</p></li>
-</ul>
+<section id="decoding-contents">
+<h2>Decoding Contents<a class="headerlink" href="#decoding-contents" title="Link to this heading">¶</a></h2>
+<p>To interpret the contents of an <code class="docutils literal notranslate"><span class="pre">ANY</span></code> or <code class="docutils literal notranslate"><span class="pre">ANY</span> <span class="pre">DEFINED</span> <span class="pre">BY</span></code> value,
+use the decoding API of the target type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Suppose we expect the value to be a BOOLEAN</span>
+<span class="n">decoded_bool</span> <span class="o">=</span> <span class="n">MyBoolean</span><span class="o">.</span><span class="n">ber_decode</span><span class="p">(</span><span class="n">my_any_instance</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+<span class="c1"># Or with ANY DEFINED BY, decide based on typeId</span>
+<span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">typeId</span> <span class="o">==</span> <span class="n">some_oid</span><span class="p">:</span>
+    <span class="n">decoded_value</span> <span class="o">=</span> <span class="n">TargetType</span><span class="o">.</span><span class="n">ber_decode</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -334,23 +360,23 @@ implementation (IEEE 754 double-precision on most systems).</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="octet_string.html">
+          <a class="next-page" href="time.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">OCTET STRING</div>
+                <div class="title">TIME</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="integer.html">
+          <a class="prev-page" href="oid.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">INTEGER</div>
+                <div class="title">OBJECT IDENTIFIER</div>
                 
               </div>
             </a>
@@ -384,9 +410,10 @@ implementation (IEEE 754 double-precision on most systems).</p></li>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">REAL</a><ul>
+<li><a class="reference internal" href="#">ANY / ANY DEFINED BY</a><ul>
+<li><a class="reference internal" href="#python-representation">Python Representation</a></li>
 <li><a class="reference internal" href="#conceptual-representation">Conceptual Representation</a></li>
-<li><a class="reference internal" href="#special-considerations">Special Considerations</a></li>
+<li><a class="reference internal" href="#decoding-contents">Decoding Contents</a></li>
 </ul>
 </li>
 </ul>

@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="OCTET STRING" href="octet_string.html" /><link rel="prev" title="INTEGER" href="integer.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="CMake API" href="../cmake.html" /><link rel="prev" title="EMBEDDED PDV" href="embedded_pdv.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>REAL - asn1-cpython</title>
+        <title>CHARACTER STRING - asn1-cpython</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -210,29 +210,29 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">Library Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Library Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../overview.html">ASN.1 Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../object_model.html">ASN.1 Object Model</a></li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">ASN.1 Basic Types</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of ASN.1 Basic Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="null.html">NULL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="boolean.html">BOOLEAN</a></li>
-<li class="toctree-l3"><a class="reference internal" href="integer.html">INTEGER</a></li>
-<li class="toctree-l3"><a class="reference internal" href="integer.html#enumerated">ENUMERATED</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">REAL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="octet_string.html">OCTET STRING</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bit_string.html">BIT STRING</a></li>
-<li class="toctree-l3"><a class="reference internal" href="oid.html">OBJECT IDENTIFIER</a></li>
-<li class="toctree-l3"><a class="reference internal" href="oid.html#relative-oid">RELATIVE-OID</a></li>
-<li class="toctree-l3"><a class="reference internal" href="any.html">ANY / ANY DEFINED BY</a></li>
-<li class="toctree-l3"><a class="reference internal" href="time.html">TIME</a></li>
-<li class="toctree-l3"><a class="reference internal" href="strings.html">ASN.1 String Types</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../basic/index.html">ASN.1 Basic Types</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of ASN.1 Basic Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../basic/null.html">NULL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/boolean.html">BOOLEAN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/integer.html">INTEGER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/integer.html#enumerated">ENUMERATED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/real.html">REAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/octet_string.html">OCTET STRING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/bit_string.html">BIT STRING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/oid.html">OBJECT IDENTIFIER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/time.html">TIME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../constr/index.html">ASN.1 Constructed Types</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of ASN.1 Constructed Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../constr/sequence.html">SEQUENCE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/set.html">SET</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/choice.html">CHOICE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/list.html">SET OF / SEQUENCE OF</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/external.html">EXTERNAL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/embedded_pdv.html">EMBEDDED PDV</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../constr/character_string.html">CHARACTER STRING</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">ASN.1 Constructed Types</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of ASN.1 Constructed Types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sequence.html">SEQUENCE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="set.html">SET</a></li>
+<li class="toctree-l3"><a class="reference internal" href="choice.html">CHOICE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external.html">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -258,7 +258,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../../_sources/reference/basic/real.rst.txt" title="View this page">
+  <a class="muted-link" href="../../_sources/reference/constr/character_string.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -278,54 +278,85 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="real">
-<span id="reference-basic-real"></span><h1>REAL<a class="headerlink" href="#real" title="Link to this heading">¶</a></h1>
-<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">REAL</span></code> type represents a floating-point number, optionally including
-special values such as <code class="docutils literal notranslate"><span class="pre">PLUS-INFINITY</span></code>, <code class="docutils literal notranslate"><span class="pre">MINUS-INFINITY</span></code>, and <code class="docutils literal notranslate"><span class="pre">NOT-A-NUMBER</span></code> (NaN),
-depending on the encoding rules used.</p>
-<p>In Python, the generated <code class="docutils literal notranslate"><span class="pre">REAL</span></code> class wraps the native <code class="docutils literal notranslate"><span class="pre">float</span></code> type, providing
-encoding, decoding, and constraint checks compliant with ASN.1 rules.</p>
-<p>Example ASN.1 definition:</p>
-<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyReal</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">REAL</span>
+          <section id="character-string">
+<span id="reference-constr-character-string"></span><h1>CHARACTER STRING<a class="headerlink" href="#character-string" title="Link to this heading">¶</a></h1>
+<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">CHARACTER</span> <span class="pre">STRING</span></code> type is a general-purpose string type defined
+in the ASN.1 standard. Unlike specific string encodings such as <code class="docutils literal notranslate"><span class="pre">UTF8String</span></code>
+or <code class="docutils literal notranslate"><span class="pre">PrintableString</span></code>, <code class="docutils literal notranslate"><span class="pre">CHARACTER</span> <span class="pre">STRING</span></code> is intended to carry an arbitrary
+string whose encoding and structure can be determined by additional
+information elements.</p>
+<p>Internally, the ASN.1 standard defines <code class="docutils literal notranslate"><span class="pre">CHARACTER</span> <span class="pre">STRING</span></code> as a <strong>SEQUENCE</strong>-based
+type containing an optional data value descriptor and the actual string data.</p>
+<p>In Python, the generated <code class="docutils literal notranslate"><span class="pre">CHARACTER</span> <span class="pre">STRING</span></code> class behaves exactly like a
+<code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>-derived object — each of its components is accessible as a class
+attribute, and assignment follows the same rules as for any SEQUENCE type.</p>
+<div class="admonition-implementation-note admonition">
+<p class="admonition-title">Implementation note</p>
+<p>This universal type is rarely used in modern ASN.1 applications and is <strong>not</strong>
+defined by default. If required, you need to manually include the
+definition in your ASN.1 schema.</p>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="c1">-- From ITU-T X.680</span>
+
+<span class="n n-Type">CHARACTER-STRING</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="p">[</span><span class="k">UNIVERSAL</span><span class="w"> </span><span class="mi">29</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nv">identification</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kd">CHOICE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nv">syntaxes</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">abstract</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">transfer</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nv">syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">      </span><span class="nv">presentation-context-id</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="kt">INTEGER</span><span class="p">,</span>
+<span class="w">      </span><span class="nv">context-negotiation</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">presentation-context-id</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="kt">INTEGER</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">transfer-syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nv">transfer-syntax</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="kt">OBJECT IDENTIFIER</span><span class="p">,</span>
+<span class="w">      </span><span class="nv">fixed</span><span class="w"> </span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="kc">NULL</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="c1">-- NOTE - The unrestricted character string typ does not allow the</span>
+<span class="w">  </span><span class="c1">-- inclusion of a data-value-descriptor value.</span>
+<span class="w">  </span><span class="c1">--  data-value-descriptor [1] ObjectDescriptor OPTIONAL,</span>
+<span class="w">  </span><span class="nv">string-value</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="kt">OCTET STRING</span>
+<span class="p">}</span><span class="w"> </span><span class="c1">-- (WITH COMPONENTS {... , data-value-descriptor ABSENT })</span>
 </pre></div>
 </div>
-<p>which generates a Python class roughly equivalent to:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyReal</span><span class="p">(</span><span class="n">_Asn1BasicType</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
-    <span class="k">pass</span>
-</pre></div>
 </div>
-<section id="conceptual-representation">
-<h2>Conceptual Representation<a class="headerlink" href="#conceptual-representation" title="Link to this heading">¶</a></h2>
+<section id="python-representation">
+<h2>Python Representation<a class="headerlink" href="#python-representation" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_Asn1BasicType</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">]</span></dt>
-<dd><p>Represents a REAL ASN.1 type.</p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CHARACTER_STRING</span></span></dt>
+<dd><p><em>Inherits from</em> <a class="reference internal" href="../overview.html#Asn1Type" title="_Asn1Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1Type</span></code></a>.</p>
+<p>Represents a SEQUENCE-based ASN.1 type. All constraints, encoding rules,
+and attribute semantics of SEQUENCE apply.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dd><p>Initializes the REAL instance with an optional initial value.</p>
-<p>The value may be any Python object coercible to a floating-point number.</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">members</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Initializes the object with keyword arguments for each member.</p>
+<p>Optional fields default to <code class="docutils literal notranslate"><span class="pre">None</span></code>, while required fields are
+initialized with their default ASN.1 values.</p>
 </dd></dl>
+
+<p>Each defined component of the CHARACTER STRING structure is accessible
+as an attribute. Modifying these attributes updates the parent object
+directly.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="CHARACTER_STRING.identification">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identification</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#CHARACTER_STRING.identification_TYPE" title="CHARACTER_STRING.identification_TYPE"><span class="pre">CHARACTER_STRING.identification_TYPE</span></a></em><a class="headerlink" href="#CHARACTER_STRING.identification" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em></dt>
-<dd><p>Gets or sets the floating-point value.</p>
-<p>Setting the value accepts any Python number type or a string representing
-a number in decimal or scientific notation.</p>
+<dt class="sig sig-object py" id="CHARACTER_STRING.string_value">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">string_value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#CHARACTER_STRING.string_value" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CHARACTER_STRING.identification_TYPE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identification_TYPE</span></span><a class="headerlink" href="#CHARACTER_STRING.identification_TYPE" title="Link to this definition">¶</a></dt>
+<dd><p><em>Inherits from</em> <a class="reference internal" href="../overview.html#Asn1ChoiceType" title="_Asn1ChoiceType"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1ChoiceType</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
 
-</section>
-<section id="special-considerations">
-<h2>Special Considerations<a class="headerlink" href="#special-considerations" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>Some ASN.1 encoding rules allow representation of infinities and NaN, which
-are mapped directly to their Python <code class="docutils literal notranslate"><span class="pre">float</span></code> equivalents.</p></li>
-<li><p>Precision and range depend on the underlying platform’s floating-point
-implementation (IEEE 754 double-precision on most systems).</p></li>
-</ul>
 </section>
 </section>
 
@@ -334,23 +365,23 @@ implementation (IEEE 754 double-precision on most systems).</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="octet_string.html">
+          <a class="next-page" href="../cmake.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">OCTET STRING</div>
+                <div class="title">CMake API</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="integer.html">
+          <a class="prev-page" href="embedded_pdv.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">INTEGER</div>
+                <div class="title">EMBEDDED PDV</div>
                 
               </div>
             </a>
@@ -384,9 +415,13 @@ implementation (IEEE 754 double-precision on most systems).</p></li>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">REAL</a><ul>
-<li><a class="reference internal" href="#conceptual-representation">Conceptual Representation</a></li>
-<li><a class="reference internal" href="#special-considerations">Special Considerations</a></li>
+<li><a class="reference internal" href="#">CHARACTER STRING</a><ul>
+<li><a class="reference internal" href="#python-representation">Python Representation</a><ul>
+<li><a class="reference internal" href="#CHARACTER_STRING.identification"><code class="docutils literal notranslate"><span class="pre">CHARACTER_STRING.identification</span></code></a></li>
+<li><a class="reference internal" href="#CHARACTER_STRING.string_value"><code class="docutils literal notranslate"><span class="pre">CHARACTER_STRING.string_value</span></code></a></li>
+<li><a class="reference internal" href="#CHARACTER_STRING.identification_TYPE"><code class="docutils literal notranslate"><span class="pre">CHARACTER_STRING.identification_TYPE</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

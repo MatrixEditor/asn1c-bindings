@@ -10,6 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=c4557fd3" />
     
@@ -180,7 +181,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -219,6 +220,8 @@
 <li class="toctree-l3"><a class="reference internal" href="basic/bit_string.html">BIT STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basic/oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basic/oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic/any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic/time.html">TIME</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basic/strings.html">ASN.1 String Types</a></li>
 </ul>
 </li>
@@ -227,6 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="constr/set.html">SET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="constr/choice.html">CHOICE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="constr/list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constr/external.html">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constr/embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constr/character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -266,7 +272,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -278,7 +284,8 @@
 an internal native (C-extension) representation. To provide a natural Python interface,
 accessing or assigning the value of an ASN.1 object involves conversion between
 the native format and native Python types.</p>
-<p><strong>Reading the Value</strong></p>
+<section id="reading-the-value">
+<h2>Reading the Value<a class="headerlink" href="#reading-the-value" title="Link to this heading">¶</a></h2>
 <p>When you access the <code class="docutils literal notranslate"><span class="pre">value</span></code> property of an ASN.1 object, the underlying native
 value is converted <strong>on-demand</strong> to the corresponding Python object, for example:</p>
 <ul class="simple">
@@ -289,10 +296,13 @@ value is converted <strong>on-demand</strong> to the corresponding Python object
 <code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>, depending on the type</p></li>
 </ul>
 <p>This conversion produces a <strong>new</strong> Python object representing the current state.</p>
-<p><strong>Writing to the Value</strong></p>
+</section>
+<section id="writing-to-the-value">
+<h2>Writing to the Value<a class="headerlink" href="#writing-to-the-value" title="Link to this heading">¶</a></h2>
 <p>Assigning to the <code class="docutils literal notranslate"><span class="pre">value</span></code> property performs the inverse conversion: the provided
 Python object is converted back into the native ASN.1 internal format.</p>
-<p><strong>Important Note</strong></p>
+<div class="note admonition">
+<p class="admonition-title">Important Note</p>
 <p>Modifying the Python object obtained from <code class="docutils literal notranslate"><span class="pre">value</span></code> does <strong>not</strong> affect the
 underlying ASN.1 object unless the modified object is explicitly assigned back
 to the <code class="docutils literal notranslate"><span class="pre">value</span></code> property.</p>
@@ -308,6 +318,35 @@ to the <code class="docutils literal notranslate"><span class="pre">value</span>
 <span class="n">asn1_integer</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">py_int</span>
 </pre></div>
 </div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>When an attribute of an ASN.1 object is itself represented by another <strong>generated class</strong>
+(e.g., a nested <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>, <code class="docutils literal notranslate"><span class="pre">SET</span></code>, or a user-defined type wrapping a basic ASN.1 type),
+accessing that attribute does <strong>not</strong> return a copy of the value, but a direct reference to
+the contained object.</p>
+<p>This means that <strong>modifying the returned object will also modify the parent</strong>.
+Unlike attributes that map directly to Python native types (<code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">bool</span></code>, etc.)
+— which require explicitly reassigning the attribute to update the encoded value —
+changes made to generated-class attributes are immediately reflected in the parent
+object’s internal state.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">()</span>
+<span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">NameType</span><span class="p">(</span><span class="n">given</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="s2">&quot;Smith&quot;</span><span class="p">)</span>
+
+<span class="c1"># Access the nested NameType object</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span>
+
+<span class="c1"># Modifying the nested object updates the parent directly</span>
+<span class="n">n</span><span class="o">.</span><span class="n">given</span> <span class="o">=</span> <span class="s2">&quot;Jonathan&quot;</span>
+
+<span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">given</span> <span class="o">==</span> <span class="s2">&quot;Jonathan&quot;</span>  <span class="c1"># True</span>
+</pre></div>
+</div>
+<p>This behavior is intentional and allows in-place updates of complex ASN.1 structures
+without requiring reassignment of the entire sub-object.</p>
+</div>
+</section>
 </section>
 
         </article>
@@ -353,8 +392,28 @@ to the <code class="docutils literal notranslate"><span class="pre">value</span>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">ASN.1 Object Model</a><ul>
+<li><a class="reference internal" href="#reading-the-value">Reading the Value</a></li>
+<li><a class="reference internal" href="#writing-to-the-value">Writing to the Value</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -365,5 +424,6 @@ to the <code class="docutils literal notranslate"><span class="pre">value</span>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>

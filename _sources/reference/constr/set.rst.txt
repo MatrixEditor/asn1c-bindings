@@ -1,4 +1,4 @@
-.. _reference_constructed_set:
+.. _reference_constr_set:
 
 SET
 ===

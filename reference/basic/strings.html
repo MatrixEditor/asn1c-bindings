@@ -3,13 +3,14 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="ASN.1 Constructed Types" href="../constr/index.html" /><link rel="prev" title="OBJECT IDENTIFIER" href="oid.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="ASN.1 Constructed Types" href="../constr/index.html" /><link rel="prev" title="TIME" href="time.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
         <title>ASN.1 String Types - asn1-cpython</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=c4557fd3" />
     
@@ -219,6 +220,8 @@
 <li class="toctree-l3"><a class="reference internal" href="bit_string.html">BIT STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="oid.html">OBJECT IDENTIFIER</a></li>
 <li class="toctree-l3"><a class="reference internal" href="oid.html#relative-oid">RELATIVE-OID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="any.html">ANY / ANY DEFINED BY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="time.html">TIME</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">ASN.1 String Types</a></li>
 </ul>
 </li>
@@ -227,6 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../constr/set.html">SET</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../constr/choice.html">CHOICE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../constr/list.html">SET OF / SEQUENCE OF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../constr/external.html">EXTERNAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../constr/embedded_pdv.html">EMBEDDED PDV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../constr/character_string.html">CHARACTER STRING</a></li>
 </ul>
 </li>
 </ul>
@@ -291,6 +297,8 @@ Python <code class="docutils literal notranslate"><span class="pre">str</span></
 <li><p>TeletexString (T61String)</p></li>
 <li><p>VideotexString</p></li>
 <li><p>ObjectDescriptor</p></li>
+<li><p>UTCTime</p></li>
+<li><p>GeneralizedTime</p></li>
 </ul>
 <p>Example ASN.1 definition:</p>
 <div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyUTF8String</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">UTF8String</span>
@@ -368,14 +376,14 @@ are immutable. To change the value, assign a new string explicitly.</p>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="oid.html">
+          <a class="prev-page" href="time.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">OBJECT IDENTIFIER</div>
+                <div class="title">TIME</div>
                 
               </div>
             </a>
@@ -428,5 +436,6 @@ are immutable. To change the value, assign a new string explicitly.</p>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>
