@@ -84,6 +84,7 @@ static size_t asn1c_get_member_index(arg_t *arg, asn1p_expr_t *expr,
                                      const char *name);
 static int expr_elements_count(arg_t *arg, asn1p_expr_t *expr);
 static int asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn);
+static int asn1c_lang_Py_stubs_generate_init(arg_t *arg);
 
 /* global functions */
 int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
@@ -236,6 +237,7 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
         PY_GEN_MODULE_ADD_TYPE(type_name);
     }
 
+    if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
     PY_GEN_STUBS_BEGIN;
     PY_GEN_LF;
     if (arg->embed && !TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)) {
@@ -436,6 +438,7 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
         PY_GEN_MODULE_ADD_TYPE(type_name);
     }
 
+    if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
     PY_GEN_STUBS_BEGIN;
     PY_GEN_LF;
     if (arg->embed && !TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)) {
@@ -1593,6 +1596,8 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg) {
                 if (!arg->embed) {
                     OUT("class %s(_Asn1Type):\n", memb_name);
                     INDENT(+1);
+                } else {
+                    PY_GEN_LF;
                 }
                 OUT("class %s%sVALUES(EXT_%s):\n", arg->embed ? memb_name : "",
                     arg->embed ? "_" : "", is_bitstr ? "IntFlag" : "IntEnum");
@@ -1625,6 +1630,8 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg) {
                     INDENT(-1);
                 } else {
                     PY_GEN_STUBS_ENUM_PROPERTY(memb_name, optional);
+                    OUT("def __init__(self, value: VALUES = ...) -> None: "
+                        "...\n");
                     PY_GEN_LF;
                 }
                 break;
@@ -2110,5 +2117,75 @@ static int asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn) {
     ASN_XFREE(inner_parent_type_name);
     ASN_XFREE(inner_parent_struct_name);
     ASN_XFREE(inner_parent_path);
+    return 0;
+}
+
+static int asn1c_lang_Py_stubs_generate_init(arg_t *arg) {
+    asn1p_expr_t *expr;
+    asn1p_expr_t *v;
+
+    const char *type_name;
+    char *memb_name;
+
+    int saved_target;
+    int saved_indent;
+
+    saved_target = arg->target->target;
+    saved_indent = INDENT_LEVEL;
+    expr = arg->expr;
+
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
+    INDENT(+1);
+    OUT("def __init__(\n");
+    INDENT(+1);
+    OUT("self, /, *,\n");
+    TQ_FOR (v, &(expr->members), next) {
+        struct c_names cn = c_expr_name(arg, v);
+        int el_count = expr_elements_count(arg, v);
+        if (v->expr_type == A1TC_EXTENSIBLE) {
+            continue;
+        }
+
+        memb_name = strdup(cn.as_member);
+        /* We have get the target type name  based on the expression type */
+        switch (v->expr_type) {
+            case ASN_CONSTR_SEQUENCE_OF:
+            case ASN_CONSTR_SET_OF:
+            case ASN_CONSTR_SEQUENCE:
+            case ASN_CONSTR_CHOICE: {
+                OUT("%s: %s_TYPE = ...,\n", memb_name, memb_name);
+                break;
+            }
+            case A1TC_REFERENCE: {
+                type_name = c_expr_name(arg, v->reference->ref_expr).as_member;
+                OUT("%s: %s = ...,\n", memb_name, type_name);
+                break;
+            }
+
+            default: {
+                if (el_count) {
+                    OUT("%s: %s_VALUES = ...,\n", memb_name, memb_name);
+                } else {
+                    type_name = PY_TYPE_MAP[v->expr_type];
+                    if (type_name != NULL) {
+                        OUT("%s: %s = ...,\n", memb_name, type_name);
+                    }
+                    else {
+                        OUT("%s: EXT_Any = ...,\n", memb_name);
+                    }
+                }
+                break;
+            }
+        }
+        ASN_XFREE(memb_name);
+    }
+    INDENT(-1);
+    OUT(") -> None: ...\n");
+
+    PY_GEN_STUBS_END;
+
+    INDENT_LEVEL = saved_indent;
+    REDIR(saved_target);
     return 0;
 }
