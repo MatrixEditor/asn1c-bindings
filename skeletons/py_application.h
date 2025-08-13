@@ -186,6 +186,18 @@ end:
         }                        \
     } while (0)
 
+#define PY_IMPL_FROMPY_COMPAT(typeName, obj, dst)                        \
+    do {                                                                 \
+        if (PyObject_TypeCheck((obj), &PyAsn##typeName##_Type)) {      \
+            if (asn_copy(&asn_DEF_##typeName, (void**)&dst,              \
+                         ((PyCompatAsnObject_t*)(obj))->ob_value) < 0) { \
+                PyErr_BadInternalCall();                                 \
+                return -1;                                               \
+            }                                                            \
+            return 0;                                                    \
+        }                                                                \
+    } while (0)
+
 #define PY_IMPL_GENERIC_NEW(name, type_DEF)                                 \
     static PyObject* PyAsn##name##__new(PyTypeObject* type, PyObject* args, \
                                         PyObject* kwds) {                   \

@@ -1003,6 +1003,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("PyCompatLong_Check(pObj, -1);\n");
                 if (asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
                     OUT("*pDst = (%s)PyCompatLong_AsSize_t(pObj);\n", name);
@@ -1026,8 +1027,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
-                // we actually don't need this
-                // OUT("PyCompatBool_Check(pObj, -1);\n");
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("*pDst = (%s_t)PyCompatBool_AsLong(pObj);\n", name);
                 OUT("return 0;\n");
                 PY_GEN_END_FUNC();
@@ -1047,6 +1047,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyCompatFloat_FromObject(pObj, (void *)pDst, "
                     "%d);\n",
                     is_float32);
@@ -1078,6 +1079,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             }
             case ASN_BASIC_BIT_STRING: {
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 if (el_count) {
                     OUT("return PyCompatFlag_FromObject(pObj, &pDst->buf, "
                         "&pDst->size);\n");
@@ -1150,6 +1152,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             case ASN_BASIC_OBJECT_IDENTIFIER: { /* for now, use special
                                                    converter*/
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyCompatOID_FromUnicode(pObj, pDst);");
                 PY_GEN_END_FUNC();
 
@@ -1170,6 +1173,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             }
             case ASN_BASIC_RELATIVE_OID: { /* for now, use special converter*/
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyCompatRelativeOID_FromUnicode(pObj, pDst);");
                 PY_GEN_END_FUNC();
 
@@ -1193,6 +1197,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             case ASN_TYPE_ANY:
             case ASN_BASIC_OCTET_STRING: {
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyCompatBytes_ToStringAndSize(pObj, &pDst->buf, "
                     "&pDst->size);");
                 PY_GEN_END_FUNC();
@@ -1228,6 +1233,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             case ASN_STRING_VideotexString:
             case ASN_STRING_ObjectDescriptor: {
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("pDst->buf = (uint8_t "
                     "*)PyCompatUnicode_AsUTF8AndSize(pObj, "
                     "&pDst->size);\n");
@@ -1250,6 +1256,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg) {
             case ASN_BASIC_ENUMERATED: {
             basic_enumeration:
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyCompatEnum_FromObject(pObj, (void *)pDst, %d);\n",
                     is_signed);
                 PY_GEN_END_FUNC();
@@ -2170,8 +2177,7 @@ static int asn1c_lang_Py_stubs_generate_init(arg_t *arg) {
                     type_name = PY_TYPE_MAP[v->expr_type];
                     if (type_name != NULL) {
                         OUT("%s: %s = ...,\n", memb_name, type_name);
-                    }
-                    else {
+                    } else {
                         OUT("%s: EXT_Any = ...,\n", memb_name);
                     }
                 }
