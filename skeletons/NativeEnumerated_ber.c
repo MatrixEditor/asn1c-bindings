@@ -10,10 +10,10 @@
 /*
  * Decode NativeEnumerated type.
  */
-asn_dec_rval_t
-NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
-                         const asn_TYPE_descriptor_t *td, void **nint_ptr,
-                         const void *buf_ptr, size_t size, int tag_mode) {
+asn_dec_rval_t NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
+                                           const asn_TYPE_descriptor_t *td,
+                                           void **nint_ptr, const void *buf_ptr,
+                                           size_t size, int tag_mode) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     long *native = (long *)*nint_ptr;
@@ -24,25 +24,23 @@ NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
     /*
      * If the structure is not there, allocate it.
      */
-    if(native == NULL) {
+    if (native == NULL) {
         native = (long *)(*nint_ptr = CALLOC(1, sizeof(*native)));
-        if(native == NULL) {
+        if (native == NULL) {
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
         }
     }
 
-    ASN_DEBUG("Decoding %s as NativeEnumerated (tm=%d)",
-              td->name, tag_mode);
+    ASN_DEBUG("Decoding %s as NativeEnumerated (tm=%d)", td->name, tag_mode);
 
     /*
      * Check tags.
      */
-    rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size,
-                          tag_mode, 0, &length, 0);
-    if(rval.code != RC_OK)
-        return rval;
+    rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size, tag_mode, 0,
+                          &length, 0);
+    if (rval.code != RC_OK) return rval;
 
     ASN_DEBUG("%s length is %d bytes", td->name, (int)length);
 
@@ -51,7 +49,7 @@ NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      */
     buf_ptr = ((const char *)buf_ptr) + rval.consumed;
     size -= rval.consumed;
-    if(length > (ber_tlv_len_t)size) {
+    if (length > (ber_tlv_len_t)size) {
         rval.code = RC_WMORE;
         rval.consumed = 0;
         return rval;
@@ -74,16 +72,16 @@ NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
         tmp.buf = (uint8_t *)unconst_buf.nonconstbuf;
         tmp.size = length;
 
-        if((specs&&specs->field_unsigned)
-            ? asn_INTEGER2ulong(&tmp, (unsigned long *)&l) /* sic */
-            : asn_INTEGER2long(&tmp, &l)) {
+        if ((specs && specs->field_unsigned)
+                ? asn_INTEGER2ulong(&tmp, (unsigned long *)&l) /* sic */
+                : asn_INTEGER2long(&tmp, &l)) {
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
         }
 
         el = INTEGER_map_value2enum(specs, l);
-        if(!el) {
+        if (!el) {
             ASN_DEBUG("No element corresponds to the value %ld", l);
             ASN__DECODE_FAILED;
         }
@@ -94,8 +92,8 @@ NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
     rval.code = RC_OK;
     rval.consumed += length;
 
-    ASN_DEBUG("Took %ld/%ld bytes to encode %s (%ld)",
-              (long)rval.consumed, (long)length, td->name, (long)*native);
+    ASN_DEBUG("Took %ld/%ld bytes to encode %s (%ld)", (long)rval.consumed,
+              (long)length, td->name, (long)*native);
 
     return rval;
 }
@@ -103,27 +101,26 @@ NativeEnumerated_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 /*
  * Encode the NativeEnumerated using the standard INTEGER type DER encoder.
  */
-asn_enc_rval_t
-NativeEnumerated_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
-                         int tag_mode, ber_tlv_tag_t tag,
-                         asn_app_consume_bytes_f *cb, void *app_key) {
+asn_enc_rval_t NativeEnumerated_encode_der(const asn_TYPE_descriptor_t *td,
+                                           const void *sptr, int tag_mode,
+                                           ber_tlv_tag_t tag,
+                                           asn_app_consume_bytes_f *cb,
+                                           void *app_key) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     unsigned long native = *(const unsigned long *)sptr; /* Disable sign ext. */
 
-
-    asn_enc_rval_t erval = {0,0,0};
+    asn_enc_rval_t erval = {0, 0, 0};
     INTEGER_t tmp;
     const asn_INTEGER_enum_map_t *el;
 
     el = INTEGER_map_value2enum(specs, native);
-    if(!el) {
-        ASN_DEBUG(
-            "No elemenet corresponds to the value %ld", native);
+    if (!el) {
+        ASN_DEBUG("No elemenet corresponds to the value %ld", native);
         ASN__ENCODE_FAILED;
     }
 
-#ifdef WORDS_BIGENDIAN  /* Opportunistic optimization */
+#ifdef WORDS_BIGENDIAN /* Opportunistic optimization */
 
     tmp.buf = (uint8_t *)&native;
     tmp.size = sizeof(native);
@@ -133,16 +130,16 @@ NativeEnumerated_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
     uint8_t *p;
 
     /* Prepare a fake INTEGER */
-    for(p = buf + sizeof(buf) - 1; p >= buf; p--, native >>= 8)
+    for (p = buf + sizeof(buf) - 1; p >= buf; p--, native >>= 8)
         *p = (uint8_t)native;
 
     tmp.buf = buf;
     tmp.size = sizeof(buf);
-#endif  /* WORDS_BIGENDIAN */
+#endif /* WORDS_BIGENDIAN */
 
     /* Encode fake INTEGER */
     erval = INTEGER_encode_der(td, &tmp, tag_mode, tag, cb, app_key);
-    if(erval.structure_ptr == &tmp) {
+    if (erval.structure_ptr == &tmp) {
         erval.structure_ptr = sptr;
     }
     return erval;

@@ -12,16 +12,14 @@ static int asn1c_detach_streams(asn1p_expr_t *expr);
 static int asn1c_attach_py_streams(arg_t *arg);
 static int asn1c_detach_py_streams(arg_t *arg);
 
-static inline const char *
-get_pymodule_name(const char *qualname) {
+static inline const char *get_pymodule_name(const char *qualname) {
     const char *last = strrchr(qualname, '.');
     return (last != NULL) ? (last + 1) : qualname;
 }
 
-int
-asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
-             enum asn1c_flags flags, int argc, int optc, char **argv,
-             const char *pymodule) {
+int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
+                 enum asn1c_flags flags, int argc, int optc, char **argv,
+                 const char *pymodule) {
     arg_t arg_s;
     arg_t *arg = &arg_s;
     asn1p_module_t *mod;
@@ -45,7 +43,7 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
     arg->flags = flags;
     arg->asn = asn;
 
-    if(asn1c_attach_py_streams(arg)) {
+    if (asn1c_attach_py_streams(arg)) {
         return -1;
     }
     cs = arg->pytarget;
@@ -53,13 +51,13 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
     /*
      * Compile each individual top level structure.
      */
-    TQ_FOR(mod, &(asn->modules), mod_next) {
-        TQ_FOR(arg->expr, &(mod->members), next) {
+    TQ_FOR (mod, &(asn->modules), mod_next) {
+        TQ_FOR (arg->expr, &(mod->members), next) {
             arg->ns = asn1_namespace_new_from_module(mod, 0);
 
             compiler_streams_t *cs = NULL;
 
-            if(asn1c_attach_streams(arg->expr)) return -1;
+            if (asn1c_attach_streams(arg->expr)) return -1;
 
             cs = arg->expr->data;
             cs->target = OT_TYPE_DECLS;
@@ -68,7 +66,7 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
             arg->pymodule_name = pymodule_name;
             arg->anonymous_inner = 0;
             ret = asn1c_compile_expr(arg, NULL);
-            if(ret) {
+            if (ret) {
                 FATAL("Cannot compile \"%s\" (%x:%x) at line %d",
                       arg->expr->Identifier, arg->expr->expr_type,
                       arg->expr->meta_type, arg->expr->_lineno);
@@ -80,15 +78,15 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
         }
     }
 
-    if(c_name_clash(arg)) {
-        if(arg->flags & A1C_COMPOUND_NAMES) {
+    if (c_name_clash(arg)) {
+        if (arg->flags & A1C_COMPOUND_NAMES) {
             FATAL("Name clashes encountered even with -fcompound-names flag");
             /* Proceed further for better debugging. */
         } else {
             FATAL(
                 "Use \"-fcompound-names\" flag to asn1c to resolve name "
                 "clashes");
-            if(arg->flags & A1C_PRINT_COMPILED) {
+            if (arg->flags & A1C_PRINT_COMPILED) {
                 /* Proceed further for better debugging. */
             } else {
                 return -1;
@@ -106,11 +104,11 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
     /*
      * Save or print out the compiled result.
      */
-    if(asn1c_save_compiled_output(arg, datadir, destdir, argc, optc, argv))
+    if (asn1c_save_compiled_output(arg, datadir, destdir, argc, optc, argv))
         return -1;
 
-    TQ_FOR(mod, &(asn->modules), mod_next) {
-        TQ_FOR(arg->expr, &(mod->members), next) {
+    TQ_FOR (mod, &(asn->modules), mod_next) {
+        TQ_FOR (arg->expr, &(mod->members), next) {
             asn1c_detach_streams(arg->expr);
         }
     }
@@ -119,8 +117,8 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
     return 0;
 }
 
-static int
-asn1c_compile_expr(arg_t *arg, const asn1c_ioc_table_and_objset_t *opt_ioc) {
+static int asn1c_compile_expr(arg_t *arg,
+                              const asn1c_ioc_table_and_objset_t *opt_ioc) {
     asn1p_expr_t *expr = arg->expr;
     int (*type_cb)(arg_t *);
     int ret;
@@ -131,10 +129,10 @@ asn1c_compile_expr(arg_t *arg, const asn1c_ioc_table_and_objset_t *opt_ioc) {
     assert(expr->expr_type < ASN_EXPR_TYPE_MAX);
 
     type_cb = asn1_lang_map[expr->meta_type][expr->expr_type].type_cb;
-    if(type_cb) {
+    if (type_cb) {
         DEBUG("Compiling %s at line %d", expr->Identifier, expr->_lineno);
 
-        if(expr->lhs_params && expr->spec_index == -1) {
+        if (expr->lhs_params && expr->spec_index == -1) {
             int i;
             ret = 0;
             DEBUG("Parameterized type %s at line %d: %s (%d)", expr->Identifier,
@@ -142,10 +140,10 @@ asn1c_compile_expr(arg_t *arg, const asn1c_ioc_table_and_objset_t *opt_ioc) {
                   expr->specializations.pspecs_count ? "compiling"
                                                      : "unused, skipping",
                   expr->specializations.pspecs_count);
-            for(i = 0; i < expr->specializations.pspecs_count; i++) {
+            for (i = 0; i < expr->specializations.pspecs_count; i++) {
                 arg->expr = expr->specializations.pspec[i].my_clone;
                 ret = asn1c_compile_expr(arg, opt_ioc);
-                if(ret) break;
+                if (ret) break;
             }
             arg->expr = expr; /* Restore */
         } else {
@@ -158,20 +156,20 @@ asn1c_compile_expr(arg_t *arg, const asn1c_ioc_table_and_objset_t *opt_ioc) {
          * how to compile the given expression, we know that
          * certain expressions need not to be compiled at all.
          */
-        switch(expr->meta_type) {
-        case AMT_OBJECT:
-        case AMT_OBJECTCLASS:
-        case AMT_OBJECTFIELD:
-        case AMT_VALUE:
-        case AMT_VALUESET:
-            ret = 0;
-            break;
-        default:
-            break;
+        switch (expr->meta_type) {
+            case AMT_OBJECT:
+            case AMT_OBJECTCLASS:
+            case AMT_OBJECTFIELD:
+            case AMT_VALUE:
+            case AMT_VALUESET:
+                ret = 0;
+                break;
+            default:
+                break;
         }
     }
 
-    if(ret == -1) {
+    if (ret == -1) {
         FATAL("Cannot compile \"%s\" (%x:%x) at line %d", arg->expr->Identifier,
               arg->expr->expr_type, arg->expr->meta_type, arg->expr->_lineno);
         OUT("#error Cannot compile \"%s\" (%x/%x) at line %d\n",
@@ -182,53 +180,50 @@ asn1c_compile_expr(arg_t *arg, const asn1c_ioc_table_and_objset_t *opt_ioc) {
     return ret;
 }
 
-int
-asn1c_attach_streams(asn1p_expr_t *expr) {
+int asn1c_attach_streams(asn1p_expr_t *expr) {
     compiler_streams_t *cs;
     int i;
 
-    if(expr->data) return 0; /* Already attached? */
+    if (expr->data) return 0; /* Already attached? */
 
     expr->data = calloc(1, sizeof(compiler_streams_t));
-    if(expr->data == NULL) return -1;
+    if (expr->data == NULL) return -1;
 
     cs = expr->data;
-    for(i = 0; i < OT_MAX; i++) {
+    for (i = 0; i < OT_MAX; i++) {
         TQ_INIT(&(cs->destination[i].chunks));
     }
 
     return 0;
 }
 
-static int
-asn1c_attach_py_streams(arg_t *arg) {
+static int asn1c_attach_py_streams(arg_t *arg) {
     compiler_streams_t *cs;
     int i;
 
-    if(arg->pytarget) return 0; /* Already attached? */
+    if (arg->pytarget) return 0; /* Already attached? */
 
     arg->pytarget = calloc(1, sizeof(compiler_streams_t));
-    if(arg->pytarget == NULL) return -1;
+    if (arg->pytarget == NULL) return -1;
 
     cs = arg->pytarget;
-    for(i = 0; i < OT_MAX; i++) {
+    for (i = 0; i < OT_MAX; i++) {
         TQ_INIT(&(cs->destination[i].chunks));
     }
 
     return 0;
 }
 
-static int
-asn1c_detach_py_streams(arg_t *arg) {
+static int asn1c_detach_py_streams(arg_t *arg) {
     compiler_streams_t *cs;
     out_chunk_t *m;
     int i;
 
-    if(!arg->pytarget) return 0; /* Already detached? */
+    if (!arg->pytarget) return 0; /* Already detached? */
 
     cs = arg->pytarget;
-    for(i = 0; i < OT_MAX; i++) {
-        while((m = TQ_REMOVE(&(cs->destination[i].chunks), next))) {
+    for (i = 0; i < OT_MAX; i++) {
+        while ((m = TQ_REMOVE(&(cs->destination[i].chunks), next))) {
             free(m->buf);
             free(m);
         }
@@ -239,17 +234,16 @@ asn1c_detach_py_streams(arg_t *arg) {
     return 0;
 }
 
-int
-asn1c_detach_streams(asn1p_expr_t *expr) {
+int asn1c_detach_streams(asn1p_expr_t *expr) {
     compiler_streams_t *cs;
     out_chunk_t *m;
     int i;
 
-    if(!expr->data) return 0; /* Already detached? */
+    if (!expr->data) return 0; /* Already detached? */
 
     cs = expr->data;
-    for(i = 0; i < OT_MAX; i++) {
-        while((m = TQ_REMOVE(&(cs->destination[i].chunks), next))) {
+    for (i = 0; i < OT_MAX; i++) {
+        while ((m = TQ_REMOVE(&(cs->destination[i].chunks), next))) {
             free(m->buf);
             free(m);
         }
@@ -260,21 +254,20 @@ asn1c_detach_streams(asn1p_expr_t *expr) {
     return 0;
 }
 
-static void
-default_logger_cb(int _severity, const char *fmt, ...) {
+static void default_logger_cb(int _severity, const char *fmt, ...) {
     va_list ap;
     char *pfx = "";
 
-    switch(_severity) {
-    case -1:
-        pfx = "DEBUG: ";
-        break;
-    case 0:
-        pfx = "WARNING: ";
-        break;
-    case 1:
-        pfx = "FATAL: ";
-        break;
+    switch (_severity) {
+        case -1:
+            pfx = "DEBUG: ";
+            break;
+        case 0:
+            pfx = "WARNING: ";
+            break;
+        case 1:
+            pfx = "FATAL: ";
+            break;
     }
 
     fprintf(stderr, "%s", pfx);
@@ -284,8 +277,7 @@ default_logger_cb(int _severity, const char *fmt, ...) {
     fprintf(stderr, "\n");
 }
 
-static void
-asn1c_debug_expr_naming(arg_t *arg) {
+static void asn1c_debug_expr_naming(arg_t *arg) {
     asn1p_expr_t *expr = arg->expr;
 
     printf("%s: ", expr->Identifier);
@@ -294,9 +286,8 @@ asn1c_debug_expr_naming(arg_t *arg) {
     printf("\n");
 }
 
-void
-asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags flags,
-                        char **asn_type_names) {
+void asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags flags,
+                             char **asn_type_names) {
     arg_t arg_s;
     arg_t *arg = &arg_s;
     asn1p_module_t *mod;
@@ -311,14 +302,14 @@ asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags flags,
     /*
      * Compile each individual top level structure.
      */
-    TQ_FOR(mod, &(asn->modules), mod_next) {
+    TQ_FOR (mod, &(asn->modules), mod_next) {
         int namespace_shown = 0;
-        TQ_FOR(arg->expr, &(mod->members), next) {
+        TQ_FOR (arg->expr, &(mod->members), next) {
             arg->ns = asn1_namespace_new_from_module(mod, 0);
 
-            for(char **t = asn_type_names; *t; t++) {
-                if(strcmp(*t, arg->expr->Identifier) == 0) {
-                    if(!namespace_shown) {
+            for (char **t = asn_type_names; *t; t++) {
+                if (strcmp(*t, arg->expr->Identifier) == 0) {
+                    if (!namespace_shown) {
                         namespace_shown = 1;
                         printf("Namespace %s\n",
                                asn1_namespace_string(arg->ns));

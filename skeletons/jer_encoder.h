@@ -2,8 +2,8 @@
  * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_JER_ENCODER_H_
-#define	_JER_ENCODER_H_
+#ifndef _JER_ENCODER_H_
+#define _JER_ENCODER_H_
 
 #include <asn_application.h>
 #include <jer_support.h>
@@ -12,15 +12,15 @@
 extern "C" {
 #endif
 
-struct asn_TYPE_descriptor_s;	/* Forward declaration */
+struct asn_TYPE_descriptor_s; /* Forward declaration */
 
 /*
  * Flags used by the jer_encode() and (*jer_type_encoder_f), defined below
  */
 enum jer_encoder_flags_e {
-	/* Mode of encoding */
-	JER_F	        = 0x01,	/* JER (pretty-printing) */
-	JER_F_MINIFIED	= 0x02,	/* JER (minified) */
+    /* Mode of encoding */
+    JER_F = 0x01,          /* JER (pretty-printing) */
+    JER_F_MINIFIED = 0x02, /* JER (minified) */
 };
 
 /*
@@ -84,4 +84,4 @@ typedef asn_enc_rval_t(jer_type_encoder_f)(
 }
 #endif
 
-#endif	/* _JER_ENCODER_H_ */
+#endif /* _JER_ENCODER_H_ */

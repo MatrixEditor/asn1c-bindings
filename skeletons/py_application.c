@@ -3,14 +3,13 @@
 /*global state storing extra Python objects*/
 PyCompatTable_t *PyCompatTable = NULL;
 
-int
-PyCompat_GetFlagsFromArgs(PyObject *kwargs, PyAsnFlags_t *flags) {
+int PyCompat_GetFlagsFromArgs(PyObject *kwargs, PyAsnFlags_t *flags) {
     static char *kwlist[] = {"minified", "aligned", "canonical", NULL};
 
     flags->aligned = 0;
     flags->canonical = 0;
     flags->minified = 0;
-    if(kwargs == NULL) {
+    if (kwargs == NULL) {
         return 0;
     }
     return PyArg_ParseTupleAndKeywords(NULL, kwargs, "|$ppp", kwlist,
@@ -18,8 +17,7 @@ PyCompat_GetFlagsFromArgs(PyObject *kwargs, PyAsnFlags_t *flags) {
                                        &flags->canonical);
 }
 
-void
-PyCompat_Clear(void) {
+void PyCompat_Clear(void) {
     Py_CLEAR(PyCompatTable->PyBytesIO_Type);
     Py_CLEAR(PyCompatTable->PyBitArray_Type);
     Py_CLEAR(PyCompatTable->PyIntEnum_Type);
@@ -36,19 +34,18 @@ PyCompat_Clear(void) {
     PyCompatTable = NULL;
 }
 
-int
-PyCompat_Init(void) {
+int PyCompat_Init(void) {
 #define _CACHED_STRING(state, attr, str, label) \
-    if(((state)->attr = PyUnicode_InternFromString((str))) == NULL) goto label
+    if (((state)->attr = PyUnicode_InternFromString((str))) == NULL) goto label
 
-#define _IMPORT_ATTR(ext_mod, attr, target)                             \
-    if((target = PyObject_GetAttrString((ext_mod), (attr)), !target)) { \
-        goto error;                                                     \
+#define _IMPORT_ATTR(ext_mod, attr, target)                              \
+    if ((target = PyObject_GetAttrString((ext_mod), (attr)), !target)) { \
+        goto error;                                                      \
     }
 
     PyObject *nTmpModule = NULL;
     PyCompatTable = PyMem_RawMalloc(sizeof(PyCompatTable_t));
-    if(PyCompatTable == NULL) {
+    if (PyCompatTable == NULL) {
         return -1;
     }
 
@@ -61,21 +58,21 @@ PyCompat_Init(void) {
     _CACHED_STRING(PyCompatTable, str__to_bytes, "tobytes", error);
 
     nTmpModule = PyImport_ImportModule("io");
-    if(!nTmpModule) {
+    if (!nTmpModule) {
         goto error;
     }
     _IMPORT_ATTR(nTmpModule, "BytesIO", PyCompatTable->PyBytesIO_Type);
     Py_CLEAR(nTmpModule);
 
     nTmpModule = PyImport_ImportModule("bitarray");
-    if(!nTmpModule) {
+    if (!nTmpModule) {
         goto error;
     }
     _IMPORT_ATTR(nTmpModule, "bitarray", PyCompatTable->PyBitArray_Type);
     Py_CLEAR(nTmpModule);
 
     nTmpModule = PyImport_ImportModule("bitarray.util");
-    if(!nTmpModule) {
+    if (!nTmpModule) {
         goto error;
     }
     _IMPORT_ATTR(nTmpModule, "ba2int", PyCompatTable->PyBitArray_AsLong);
@@ -83,14 +80,13 @@ PyCompat_Init(void) {
     Py_CLEAR(nTmpModule);
 
     nTmpModule = PyImport_ImportModule("enum");
-    if(!nTmpModule) {
+    if (!nTmpModule) {
         goto error;
     }
     _IMPORT_ATTR(nTmpModule, "IntEnum", PyCompatTable->PyIntEnum_Type);
     _IMPORT_ATTR(nTmpModule, "IntFlag", PyCompatTable->PyIntFlag_Type);
     _IMPORT_ATTR(nTmpModule, "EnumType", PyCompatTable->PyEnumMeta_Type);
     Py_CLEAR(nTmpModule);
-
 
     return PyCompatTable->PyBytesIO_Type ? 0 : -1;
 

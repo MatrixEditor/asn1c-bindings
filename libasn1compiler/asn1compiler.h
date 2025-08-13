@@ -152,5 +152,4 @@ const char *asn1c_prefix_get(void);
 
 int asn1c_attach_streams(asn1p_expr_t *expr);
 
-
 #endif /* ASN1_COMPILER_H */

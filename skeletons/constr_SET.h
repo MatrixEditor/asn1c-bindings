@@ -11,7 +11,6 @@
 extern "C" {
 #endif
 
-
 typedef struct asn_SET_specifics_s {
     /*
      * Target structure description.
@@ -82,7 +81,6 @@ asn_random_fill_f SET_random_fill;
 
 extern asn_TYPE_operation_t asn_OP_SET;
 
-
 /* Check that all the mandatory members are present */
 int _SET_is_populated(const asn_TYPE_descriptor_t *td, const void *st);
 
@@ -97,20 +95,20 @@ int _SET_is_populated(const asn_TYPE_descriptor_t *td, const void *st);
 #define ASN_SET_ISPRESENT(set_ptr, PR_x) \
     ASN_SET_ISPRESENT2(&((set_ptr)->_presence_map), PR_x)
 
-#define ASN_SET_ISPRESENT2(map_ptr, PR_x)                             \
-    (((unsigned int *)(map_ptr))[(PR_x) / (8 * sizeof(unsigned int))] \
-     & (1u << ((8 * sizeof(unsigned int)) - 1                         \
-               - ((PR_x) % (8 * sizeof(unsigned int))))))
+#define ASN_SET_ISPRESENT2(map_ptr, PR_x)                               \
+    (((unsigned int *)(map_ptr))[(PR_x) / (8 * sizeof(unsigned int))] & \
+     (1u << ((8 * sizeof(unsigned int)) - 1 -                           \
+             ((PR_x) % (8 * sizeof(unsigned int))))))
 
 #define ASN_SET_MKPRESENT(map_ptr, PR_x)                                 \
     (((unsigned int *)(map_ptr))[(PR_x) / (8 * sizeof(unsigned int))] |= \
-     (1u << ((8 * sizeof(unsigned int)) - 1                              \
-             - ((PR_x) % (8 * sizeof(unsigned int))))))
+     (1u << ((8 * sizeof(unsigned int)) - 1 -                            \
+             ((PR_x) % (8 * sizeof(unsigned int))))))
 
 #define ASN_SET_RMPRESENT(map_ptr, PR_x)                                 \
     (((unsigned int *)(map_ptr))[(PR_x) / (8 * sizeof(unsigned int))] &= \
-     ~(1u << ((8 * sizeof(unsigned int)) - 1                             \
-              - ((PR_x) % (8 * sizeof(unsigned int))))))
+     ~(1u << ((8 * sizeof(unsigned int)) - 1 -                           \
+              ((PR_x) % (8 * sizeof(unsigned int))))))
 
 #ifdef __cplusplus
 }

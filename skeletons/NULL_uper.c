@@ -6,11 +6,10 @@
 #include <asn_internal.h>
 #include <NULL.h>
 
-asn_dec_rval_t
-NULL_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
-                 const asn_TYPE_descriptor_t *td,
-                 const asn_per_constraints_t *constraints, void **sptr,
-                 asn_per_data_t *pd) {
+asn_dec_rval_t NULL_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
+                                const asn_TYPE_descriptor_t *td,
+                                const asn_per_constraints_t *constraints,
+                                void **sptr, asn_per_data_t *pd) {
     asn_dec_rval_t rv;
 
     (void)opt_codec_ctx;
@@ -18,9 +17,9 @@ NULL_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
     (void)constraints;
     (void)pd;
 
-    if(!*sptr) {
+    if (!*sptr) {
         *sptr = MALLOC(sizeof(NULL_t));
-        if(*sptr) {
+        if (*sptr) {
             *(NULL_t *)*sptr = 0;
         } else {
             ASN__DECODE_FAILED;
@@ -36,11 +35,10 @@ NULL_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
     return rv;
 }
 
-asn_enc_rval_t
-NULL_encode_uper(const asn_TYPE_descriptor_t *td,
-                 const asn_per_constraints_t *constraints, const void *sptr,
-                 asn_per_outp_t *po) {
-    asn_enc_rval_t er = {0,0,0};
+asn_enc_rval_t NULL_encode_uper(const asn_TYPE_descriptor_t *td,
+                                const asn_per_constraints_t *constraints,
+                                const void *sptr, asn_per_outp_t *po) {
+    asn_enc_rval_t er = {0, 0, 0};
 
     (void)td;
     (void)constraints;

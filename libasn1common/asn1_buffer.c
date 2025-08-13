@@ -15,8 +15,7 @@ int vasprintf(char **ret, const char *fmt, va_list args);
 /*
  * Create and destroy the buffer.
  */
-abuf *
-abuf_new() {
+abuf *abuf_new() {
     abuf *ab = calloc(1, sizeof(abuf));
     assert(ab);
     ab->length = 0;
@@ -27,7 +26,7 @@ abuf_new() {
 }
 
 void abuf_free(abuf *ab) {
-    if(ab) {
+    if (ab) {
         union {
             const char *c_buf;
             char *nc_buf;
@@ -41,13 +40,12 @@ void abuf_free(abuf *ab) {
 /*
  * Erase contents of the buffer (without destroying it).
  */
-void
-abuf_clear(abuf *ab) {
+void abuf_clear(abuf *ab) {
     union {
         const char *c_buf;
         char *nc_buf;
     } const_cast;
-    if(!ab->buffer) {
+    if (!ab->buffer) {
         ab->size = 32;
         ab->buffer = calloc(1, ab->size);
         assert(ab->buffer);
@@ -57,8 +55,7 @@ abuf_clear(abuf *ab) {
     const_cast.nc_buf[0] = '\0';
 }
 
-static void
-abuf_resize_by(abuf *ab, size_t size) {
+static void abuf_resize_by(abuf *ab, size_t size) {
     union {
         const char *c_buf;
         char *nc_buf;
@@ -70,7 +67,7 @@ abuf_resize_by(abuf *ab, size_t size) {
     size_t new_size = ab->length + size;
     char *p = realloc(const_cast.nc_buf, new_size);
     assert(p);
-    if(!ab->buffer) {
+    if (!ab->buffer) {
         assert(ab->length == 0);
         *p = '\0';
     }
@@ -102,7 +99,7 @@ void abuf_buf(abuf *ab, const abuf *buf) {
 int abuf_printf(abuf *ab, const char *fmt, ...) {
     va_list ap;
 
-    for(;;) {
+    for (;;) {
         union {
             const char *c_buf;
             char *nc_buf;
@@ -113,7 +110,7 @@ int abuf_printf(abuf *ab, const char *fmt, ...) {
                             ab->size - ab->length, fmt, ap);
         va_end(ap);
         assert(ret >= 0);
-        if((size_t)ret < ab->size - ab->length) {
+        if ((size_t)ret < ab->size - ab->length) {
             ab->length += ret;
             assert(ab->buffer[ab->length] == '\0');
             return ret;
@@ -140,18 +137,17 @@ int abuf_vprintf(abuf *ab, const char *fmt, va_list ap) {
 
 #if !defined(HAVE_DECL_VASPRINTF) || (HAVE_DECL_VASPRINTF == 0)
 /* Solaris doesn't have vasprintf(3). */
-int
-vasprintf(char **ret, const char *fmt, va_list args) {
+int vasprintf(char **ret, const char *fmt, va_list args) {
     int actual_length = -1;
     va_list copy;
     va_copy(copy, args);
 
     int suggested = vsnprintf(NULL, 0, fmt, args);
-    if(suggested >= 0) {
+    if (suggested >= 0) {
         *ret = malloc(suggested + 1);
-        if(*ret) {
+        if (*ret) {
             actual_length = vsnprintf(*ret, suggested + 1, fmt, copy);
-            if(actual_length >= 0) {
+            if (actual_length >= 0) {
                 assert(actual_length == suggested);
                 assert((*ret)[actual_length] == '\0');
             } else {

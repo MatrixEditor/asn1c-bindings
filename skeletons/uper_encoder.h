@@ -2,8 +2,8 @@
  * Copyright (c) 2006-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_UPER_ENCODER_H_
-#define	_UPER_ENCODER_H_
+#ifndef _UPER_ENCODER_H_
+#define _UPER_ENCODER_H_
 
 #include <asn_application.h>
 #include <uper_support.h>
@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-struct asn_TYPE_descriptor_s;	/* Forward declaration */
+struct asn_TYPE_descriptor_s; /* Forward declaration */
 
 /*
  * Unaligned PER encoder of any ASN.1 type. May be invoked by the application.
@@ -59,4 +59,4 @@ ssize_t uper_encode_to_new_buffer(
 }
 #endif
 
-#endif	/* _UPER_ENCODER_H_ */
+#endif /* _UPER_ENCODER_H_ */

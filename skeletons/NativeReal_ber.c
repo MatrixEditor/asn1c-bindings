@@ -10,10 +10,10 @@
 /*
  * Decode REAL type.
  */
-asn_dec_rval_t
-NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
-                      const asn_TYPE_descriptor_t *td, void **sptr,
-                      const void *buf_ptr, size_t size, int tag_mode) {
+asn_dec_rval_t NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
+                                     const asn_TYPE_descriptor_t *td,
+                                     void **sptr, const void *buf_ptr,
+                                     size_t size, int tag_mode) {
     asn_dec_rval_t rval;
     ber_tlv_len_t length;
 
@@ -24,8 +24,8 @@ NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      */
     rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size, tag_mode, 0,
                           &length, 0);
-    if(rval.code != RC_OK) return rval;
-    assert(length >= 0);    /* Ensured by ber_check_tags */
+    if (rval.code != RC_OK) return rval;
+    assert(length >= 0); /* Ensured by ber_check_tags */
 
     ASN_DEBUG("%s length is %d bytes", td->name, (int)length);
 
@@ -34,7 +34,7 @@ NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      */
     buf_ptr = ((const char *)buf_ptr) + rval.consumed;
     size -= rval.consumed;
-    if(length > (ber_tlv_len_t)size) {
+    if (length > (ber_tlv_len_t)size) {
         rval.code = RC_WMORE;
         rval.consumed = 0;
         return rval;
@@ -51,14 +51,14 @@ NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
         double d;
         int ret;
 
-        if((size_t)length < sizeof(scratch)) {
+        if ((size_t)length < sizeof(scratch)) {
             tmp.buf = scratch;
             tmp.size = length;
         } else {
             /* This rarely happens: impractically long value */
             tmp.buf = CALLOC(1, length + 1);
             tmp.size = length;
-            if(!tmp.buf) {
+            if (!tmp.buf) {
                 rval.code = RC_FAIL;
                 rval.consumed = 0;
                 return rval;
@@ -69,15 +69,14 @@ NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
         tmp.buf[length] = '\0';
 
         ret = asn_REAL2double(&tmp, &d);
-        if(tmp.buf != scratch) FREEMEM(tmp.buf);
-        if(ret) {
+        if (tmp.buf != scratch) FREEMEM(tmp.buf);
+        if (ret) {
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
         }
 
-        if(NativeReal__set(td, sptr, d) < 0)
-            ASN__DECODE_FAILED;
+        if (NativeReal__set(td, sptr, d) < 0) ASN__DECODE_FAILED;
     }
 
     rval.code = RC_OK;
@@ -92,23 +91,23 @@ NativeReal_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 /*
  * Encode the NativeReal using the standard REAL type DER encoder.
  */
-asn_enc_rval_t
-NativeReal_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
-                      int tag_mode, ber_tlv_tag_t tag,
-                      asn_app_consume_bytes_f *cb, void *app_key) {
+asn_enc_rval_t NativeReal_encode_der(const asn_TYPE_descriptor_t *td,
+                                     const void *sptr, int tag_mode,
+                                     ber_tlv_tag_t tag,
+                                     asn_app_consume_bytes_f *cb,
+                                     void *app_key) {
     double d = NativeReal__get_double(td, sptr);
-    asn_enc_rval_t erval = {0,0,0};
+    asn_enc_rval_t erval = {0, 0, 0};
     REAL_t tmp;
 
     /* Prepare a temporary clean structure */
     memset(&tmp, 0, sizeof(tmp));
 
-    if(asn_double2REAL(&tmp, d))
-        ASN__ENCODE_FAILED;
+    if (asn_double2REAL(&tmp, d)) ASN__ENCODE_FAILED;
 
     /* Encode a fake REAL */
     erval = der_encode_primitive(td, &tmp, tag_mode, tag, cb, app_key);
-    if(erval.encoded == -1) {
+    if (erval.encoded == -1) {
         assert(erval.structure_ptr == &tmp);
         erval.structure_ptr = sptr;
     }

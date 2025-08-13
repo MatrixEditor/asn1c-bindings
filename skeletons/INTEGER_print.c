@@ -9,15 +9,14 @@
 /*
  * INTEGER specific human-readable output.
  */
-int
-INTEGER_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-              asn_app_consume_bytes_f *cb, void *app_key) {
+int INTEGER_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
+                  asn_app_consume_bytes_f *cb, void *app_key) {
     const INTEGER_t *st = (const INTEGER_t *)sptr;
     ssize_t ret;
 
     (void)ilevel;
 
-    if(!st || !st->buf)
+    if (!st || !st->buf)
         ret = cb("<absent>", 8, app_key);
     else
         ret = INTEGER__dump(td, st, cb, app_key, 0);

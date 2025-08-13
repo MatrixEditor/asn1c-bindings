@@ -2,8 +2,8 @@
  * Copyright (c) 2007-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_UPER_OPENTYPE_H_
-#define	_UPER_OPENTYPE_H_
+#ifndef _UPER_OPENTYPE_H_
+#define _UPER_OPENTYPE_H_
 
 #include <per_opentype.h>
 
@@ -31,4 +31,4 @@ int uper_open_type_put(const asn_TYPE_descriptor_t *td,
 }
 #endif
 
-#endif	/* _UPER_OPENTYPE_H_ */
+#endif /* _UPER_OPENTYPE_H_ */

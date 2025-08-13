@@ -9,8 +9,7 @@
 /*
  * Biased function for randomizing UTF-8 sequences.
  */
-static size_t
-UTF8String__random_char(uint8_t *b, size_t size) {
+static size_t UTF8String__random_char(uint8_t *b, size_t size) {
     static const struct rnd_value {
         const char *value;
         size_t size;
@@ -25,20 +24,20 @@ UTF8String__random_char(uint8_t *b, size_t size) {
     const struct rnd_value *v;
     size_t max_idx = 0;
 
-    switch(size) {
-    case 0:
-        assert(size != 0);
-        return 0;
-    case 1:
-        max_idx = 2;
-        break;
-    case 2:
-        max_idx = 3;
-        break;
-    default:
-    case 4:
-        max_idx = sizeof(values) / sizeof(values[0]) - 1;
-        break;
+    switch (size) {
+        case 0:
+            assert(size != 0);
+            return 0;
+        case 1:
+            max_idx = 2;
+            break;
+        case 2:
+            max_idx = 3;
+            break;
+        default:
+        case 4:
+            max_idx = sizeof(values) / sizeof(values[0]) - 1;
+            break;
     }
 
     v = &values[asn_random_between(0, max_idx)];
@@ -46,10 +45,9 @@ UTF8String__random_char(uint8_t *b, size_t size) {
     return v->size;
 }
 
-asn_random_fill_result_t
-UTF8String_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
-                       const asn_encoding_constraints_t *constraints,
-                       size_t max_length) {
+asn_random_fill_result_t UTF8String_random_fill(
+    const asn_TYPE_descriptor_t *td, void **sptr,
+    const asn_encoding_constraints_t *constraints, size_t max_length) {
     asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
     asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
     asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
@@ -60,28 +58,28 @@ UTF8String_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
     size_t idx;
     UTF8String_t *st;
 
-    if(max_length == 0 && !*sptr) return result_skipped;
+    if (max_length == 0 && !*sptr) return result_skipped;
 
     /* Figure out how far we should go */
-    rnd_len = OCTET_STRING_random_length_constrained(td, constraints,
-                                                     max_length / 4);
+    rnd_len =
+        OCTET_STRING_random_length_constrained(td, constraints, max_length / 4);
 
     buf = CALLOC(4, rnd_len + 1);
-    if(!buf) return result_failed;
+    if (!buf) return result_failed;
 
     bend = &buf[4 * rnd_len];
 
-    for(b = buf, idx = 0; idx < rnd_len; idx++) {
+    for (b = buf, idx = 0; idx < rnd_len; idx++) {
         b += UTF8String__random_char(b, (bend - b));
     }
     *(uint8_t *)b = 0;
 
-    if(*sptr) {
+    if (*sptr) {
         st = *sptr;
         FREEMEM(st->buf);
     } else {
         st = (OCTET_STRING_t *)(*sptr = CALLOC(1, sizeof(UTF8String_t)));
-        if(!st) {
+        if (!st) {
             FREEMEM(buf);
             return result_failed;
         }

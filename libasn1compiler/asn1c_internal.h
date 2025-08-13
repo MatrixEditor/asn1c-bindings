@@ -61,7 +61,6 @@ typedef struct arg_s {
 
     int embed;
 
-
     /*python code generation*/
     size_t anonymous_inner;        /* anonymous inner type counter*/
     const char *pymodule_qualname; /* python module qualname*/
@@ -75,45 +74,45 @@ typedef struct arg_s {
 #define LOG(ll, fmt, args...)            \
     do {                                 \
         arg->logger_cb(ll, fmt, ##args); \
-    } while(0)
-#define DEBUG(fmt, args...)                              \
-    do {                                                 \
-        if(arg->flags & A1C_DEBUG) LOG(-1, fmt, ##args); \
-    } while(0)
+    } while (0)
+#define DEBUG(fmt, args...)                               \
+    do {                                                  \
+        if (arg->flags & A1C_DEBUG) LOG(-1, fmt, ##args); \
+    } while (0)
 #define WARNING(fmt, args...) LOG(0, fmt, ##args);
 #define FATAL(fmt, args...) LOG(1, fmt, ##args);
 
 /*Utilities*/
-#define ASN_XFREE(p)  \
-    if((p) != NULL) { \
-        ASN_FREE(p);  \
+#define ASN_XFREE(p)   \
+    if ((p) != NULL) { \
+        ASN_FREE(p);   \
     }
 #define ASN_FREE(p) free((p))
 #define ASN_CLEAR(p) \
     do {             \
         ASN_FREE(p); \
         p = NULL;    \
-    } while(0)
-#define ASN_XCLEAR(p)     \
-    do {                  \
-        if((p) != NULL) { \
-            ASN_FREE(p);  \
-            p = NULL;     \
-        }                 \
-    } while(0)
+    } while (0)
+#define ASN_XCLEAR(p)      \
+    do {                   \
+        if ((p) != NULL) { \
+            ASN_FREE(p);   \
+            p = NULL;      \
+        }                  \
+    } while (0)
 
-#define ASN_XCLOSE(p)     \
-    do {                  \
-        if((p) != NULL) { \
-            fclose(p);    \
-            p = NULL;     \
-        }                 \
-    } while(0)
+#define ASN_XCLOSE(p)      \
+    do {                   \
+        if ((p) != NULL) { \
+            fclose(p);     \
+            p = NULL;      \
+        }                  \
+    } while (0)
 
 #define ASN_CLOSE(p) \
     do {             \
         fclose(p);   \
         p = NULL;    \
-    } while(0)
+    } while (0)
 
 #endif /* ASN1_COMPILER_INTERNAL_H */

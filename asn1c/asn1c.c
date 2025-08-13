@@ -31,7 +31,7 @@
 #include "asn1_common.h"
 
 #undef COPYRIGHT
-#define COPYRIGHT \
+#define COPYRIGHT                                                              \
     "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n" \
     "Copyright (c) 2025 MatrixEditor @ github and contributors.\n"
 
@@ -53,21 +53,20 @@
 static void usage(const char *av0); /* Print the Usage screen and exit */
 static int importStandardModules(asn1p_t *asn, const char *skeletons_dir);
 
-int
-main(int ac, char **av) {
+int main(int ac, char **av) {
     enum asn1p_flags asn1_parser_flags = A1P_NOFLAGS;
     enum asn1f_flags asn1_fixer_flags = A1F_NOFLAGS;
     enum asn1c_flags asn1_compiler_flags =
-        A1C_NO_C99 | A1C_GEN_BER | A1C_GEN_XER | A1C_GEN_OER | A1C_GEN_UPER
-        | A1C_GEN_APER | A1C_GEN_PRINT | A1C_GEN_RFILL | A1C_GEN_EXAMPLE
-        | A1C_GEN_JER | A1C_GEN_PYTHON;
+        A1C_NO_C99 | A1C_GEN_BER | A1C_GEN_XER | A1C_GEN_OER | A1C_GEN_UPER |
+        A1C_GEN_APER | A1C_GEN_PRINT | A1C_GEN_RFILL | A1C_GEN_EXAMPLE |
+        A1C_GEN_JER | A1C_GEN_PYTHON;
     enum asn1print_flags asn1_printer_flags = APF_NOFLAGS;
-    int print_arg__print_out = 0;      /* Don't compile, just print parsed */
-    int print_arg__fix_n_print = 0;    /* Fix and print */
-    int warnings_as_errors = 0;        /* Treat warnings as errors */
-    char *skeletons_dir = NULL;        /* Directory with supplementary stuff */
-    char *destdir = NULL;              /* Destination for generated files */
-    char **debug_type_names = 0;       /* Debug stuff */
+    int print_arg__print_out = 0;   /* Don't compile, just print parsed */
+    int print_arg__fix_n_print = 0; /* Fix and print */
+    int warnings_as_errors = 0;     /* Treat warnings as errors */
+    char *skeletons_dir = NULL;     /* Directory with supplementary stuff */
+    char *destdir = NULL;           /* Destination for generated files */
+    char **debug_type_names = 0;    /* Debug stuff */
     char *python_module_name = "_asn1types"; /* Python module name */
     size_t debug_type_names_count = 0;
     asn1p_t *asn = 0;  /* An ASN.1 parsed tree */
@@ -79,243 +78,244 @@ main(int ac, char **av) {
     /*
      * Process command-line options.
      */
-    while((ch = getopt(ac, av, "D:M:d:EFf:g:hn:LPp:RS:vW:X")) != -1)
-        switch(ch) {
-        case 'D':
-            if(optarg && *optarg) {
-                size_t optarg_len = strlen(optarg);
-                free(destdir);
-                destdir = calloc(1, optarg_len + 2); /* + "/\0" */
-                assert(destdir);
-                strcpy(destdir, optarg);
-                if(destdir[optarg_len - 1] != '/') {
-                    destdir[optarg_len] = '/';
-                }
-            } else {
-                free(destdir);
-                destdir = NULL;
-            }
-            break;
-        case 'M':
-            if(optarg && *optarg) {
-                size_t optarg_len = strlen(optarg);
-                python_module_name = calloc(1, optarg_len + 1);
-                assert(python_module_name);
-                strcpy(python_module_name, optarg);
-                printf("Python module name: %s\n", python_module_name);
-            }
-            else {
-                free(python_module_name);
-                python_module_name = NULL;
-            }
-            break;
-        case 'd':
-            if(strncmp(optarg, "ebug-type-naming=", 17) == 0) {
-                char **p = realloc(debug_type_names,
-                                   (debug_type_names_count + 2) * sizeof(*p));
-                assert(p);
-                debug_type_names = p;
-                debug_type_names[debug_type_names_count++] =
-                    strdup(optarg + 17);
-                debug_type_names[debug_type_names_count] = NULL;
-                break;
-            } else if(strcmp(optarg, "ebug-output-origin-lines") == 0) {
-                asn1_compiler_flags |= A1C_DEBUG_OUTPUT_ORIGIN_LINES;
-                break;
-            }
-            usage(av[0]);
-        case 'E':
-            print_arg__print_out = 1;
-            break;
-        case 'F':
-            print_arg__fix_n_print = 1;
-            break;
-        case 'f':
-            if(strcmp(optarg, "all-defs-global") == 0) {
-                asn1_compiler_flags |= A1C_ALL_DEFS_GLOBAL;
-            } else if(strcmp(optarg, "bless-SIZE") == 0) {
-                asn1_fixer_flags |= A1F_EXTENDED_SizeConstraint;
-            } else if(strcmp(optarg, "compound-names") == 0) {
-                asn1_compiler_flags |= A1C_COMPOUND_NAMES;
-                asn1_fixer_flags |= A1F_COMPOUND_NAMES;
-            } else if(strcmp(optarg, "indirect-choice") == 0) {
-                asn1_compiler_flags |= A1C_INDIRECT_CHOICE;
-            } else if(strncmp(optarg, "known-extern-type=", 18) == 0) {
-                char *known_type = optarg + 18;
-                ret = asn1f_make_known_external_type(known_type);
-                assert(ret == 0 || errno == EEXIST);
-            } else if(strcmp(optarg, "native-types") == 0) {
-                fprintf(stderr, "-f%s: Deprecated option\n", optarg);
-                asn1_compiler_flags &= ~A1C_USE_WIDE_TYPES;
-            } else if(strcmp(optarg, "wide-types") == 0) {
-                asn1_compiler_flags |= A1C_USE_WIDE_TYPES;
-            } else if(strcmp(optarg, "line-refs") == 0) {
-                asn1_compiler_flags |= A1C_LINE_REFS;
-            } else if(strcmp(optarg, "no-constraints") == 0) {
-                asn1_compiler_flags |= A1C_NO_CONSTRAINTS;
-            } else if(strcmp(optarg, "no-include-deps") == 0) {
-                asn1_compiler_flags |= A1C_NO_INCLUDE_DEPS;
-            } else if(strcmp(optarg, "includes-quoted") == 0) {
-                asn1_compiler_flags |= A1C_INCLUDES_QUOTED;
-            } else if(strcmp(optarg, "unnamed-unions") == 0) {
-                asn1_compiler_flags |= A1C_UNNAMED_UNIONS;
-            } else if(strcmp(optarg, "skeletons-copy") == 0) {
-                fprintf(stderr, "-f%s: Deprecated option\n", optarg);
-                asn1_compiler_flags &= ~A1C_LINK_SKELETONS;
-            } else if(strcmp(optarg, "link-skeletons") == 0) {
-                asn1_compiler_flags |= A1C_LINK_SKELETONS;
-            } else if(strncmp(optarg, "prefix=", 7) == 0) {
-                char *prefix = optarg + 7;
-                asn1c_prefix_set(prefix);
-            } else {
-                fprintf(stderr, "-f%s: Invalid argument\n", optarg);
-                exit(EX_USAGE);
-            }
-            break;
-        case 'g':
-            if(strcmp(optarg, "en-BER") == 0) {
-                asn1_compiler_flags |= A1C_GEN_BER;
-            } else if(strcmp(optarg, "en-XER") == 0) {
-                asn1_compiler_flags |= A1C_GEN_XER;
-            } else if(strcmp(optarg, "en-JER") == 0) {
-                asn1_compiler_flags |= A1C_GEN_JER;
-            } else if(strcmp(optarg, "en-OER") == 0) {
-                asn1_compiler_flags |= A1C_GEN_OER;
-            } else if(strcmp(optarg, "en-UPER") == 0) {
-                asn1_compiler_flags |= A1C_GEN_UPER;
-            } else if(strcmp(optarg, "en-APER") == 0) {
-                asn1_compiler_flags |= A1C_GEN_APER;
-            } else if(strcmp(optarg, "en-print") == 0) {
-                asn1_compiler_flags |= A1C_GEN_PRINT;
-            } else if(strcmp(optarg, "en-random-fill") == 0) {
-                asn1_compiler_flags |= A1C_GEN_RFILL;
-            } else if(strcmp(optarg, "en-example") == 0) {
-                asn1_compiler_flags |= A1C_GEN_EXAMPLE;
-            } else if(strcmp(optarg, "en-autotools") == 0) {
-                asn1_compiler_flags |= A1C_GEN_AUTOTOOLS_EXAMPLE;
-            } else if(strcmp(optarg, "en-python") == 0) {
-                asn1_compiler_flags |= A1C_GEN_PYTHON;
-            } else {
-                fprintf(stderr, "-g%s: Invalid argument\n", optarg);
-                exit(EX_USAGE);
-            }
-            break;
-        case 'h':
-            usage(av[0]);
-        case 'n':
-            if(strcmp(optarg, "o-gen-BER") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_BER;
-            } else if(strcmp(optarg, "o-gen-XER") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_XER;
-            } else if(strcmp(optarg, "o-gen-JER") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_JER;
-            } else if(strcmp(optarg, "o-gen-OER") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_OER;
-            } else if(strcmp(optarg, "o-gen-UPER") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_UPER;
-            } else if(strcmp(optarg, "o-gen-APER") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_APER;
-            } else if(strcmp(optarg, "o-gen-print") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_PRINT;
-            } else if(strcmp(optarg, "o-gen-random-fill") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_RFILL;
-            } else if(strcmp(optarg, "o-gen-example") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_EXAMPLE;
-            } else if(strcmp(optarg, "o-gen-autotools") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_AUTOTOOLS_EXAMPLE;
-            } else if(strcmp(optarg, "o-gen-python") == 0) {
-                asn1_compiler_flags &= ~A1C_GEN_PYTHON;
-            } else {
-                fprintf(stderr, "-n%s: Invalid argument\n", optarg);
-                exit(EX_USAGE);
-            }
-            break;
-        case 'P':
-            asn1_compiler_flags |= A1C_PRINT_COMPILED;
-            asn1_compiler_flags &= ~A1C_NO_C99;
-            break;
-        case 'p':
-            if(strncmp(optarg, "du=", 3) == 0) {
-                char *pduname = optarg + 3;
-                if(strcmp(pduname, "all") == 0) {
-                    asn1_compiler_flags |= A1C_PDU_ALL;
-                } else if(strcmp(pduname, "auto") == 0) {
-                    asn1_compiler_flags |= A1C_PDU_AUTO;
-                } else if(pduname[0] >= 'A' && pduname[0] <= 'Z') {
-                    asn1c__add_pdu_type(pduname);
-                    asn1_compiler_flags |= A1C_PDU_TYPE;
+    while ((ch = getopt(ac, av, "D:M:d:EFf:g:hn:LPp:RS:vW:X")) != -1)
+        switch (ch) {
+            case 'D':
+                if (optarg && *optarg) {
+                    size_t optarg_len = strlen(optarg);
+                    free(destdir);
+                    destdir = calloc(1, optarg_len + 2); /* + "/\0" */
+                    assert(destdir);
+                    strcpy(destdir, optarg);
+                    if (destdir[optarg_len - 1] != '/') {
+                        destdir[optarg_len] = '/';
+                    }
                 } else {
-                    fprintf(stderr, "-pdu=%s: expected -pdu={all|auto|Type}\n",
-                            pduname);
+                    free(destdir);
+                    destdir = NULL;
+                }
+                break;
+            case 'M':
+                if (optarg && *optarg) {
+                    size_t optarg_len = strlen(optarg);
+                    python_module_name = calloc(1, optarg_len + 1);
+                    assert(python_module_name);
+                    strcpy(python_module_name, optarg);
+                    printf("Python module name: %s\n", python_module_name);
+                } else {
+                    free(python_module_name);
+                    python_module_name = NULL;
+                }
+                break;
+            case 'd':
+                if (strncmp(optarg, "ebug-type-naming=", 17) == 0) {
+                    char **p =
+                        realloc(debug_type_names,
+                                (debug_type_names_count + 2) * sizeof(*p));
+                    assert(p);
+                    debug_type_names = p;
+                    debug_type_names[debug_type_names_count++] =
+                        strdup(optarg + 17);
+                    debug_type_names[debug_type_names_count] = NULL;
+                    break;
+                } else if (strcmp(optarg, "ebug-output-origin-lines") == 0) {
+                    asn1_compiler_flags |= A1C_DEBUG_OUTPUT_ORIGIN_LINES;
+                    break;
+                }
+                usage(av[0]);
+            case 'E':
+                print_arg__print_out = 1;
+                break;
+            case 'F':
+                print_arg__fix_n_print = 1;
+                break;
+            case 'f':
+                if (strcmp(optarg, "all-defs-global") == 0) {
+                    asn1_compiler_flags |= A1C_ALL_DEFS_GLOBAL;
+                } else if (strcmp(optarg, "bless-SIZE") == 0) {
+                    asn1_fixer_flags |= A1F_EXTENDED_SizeConstraint;
+                } else if (strcmp(optarg, "compound-names") == 0) {
+                    asn1_compiler_flags |= A1C_COMPOUND_NAMES;
+                    asn1_fixer_flags |= A1F_COMPOUND_NAMES;
+                } else if (strcmp(optarg, "indirect-choice") == 0) {
+                    asn1_compiler_flags |= A1C_INDIRECT_CHOICE;
+                } else if (strncmp(optarg, "known-extern-type=", 18) == 0) {
+                    char *known_type = optarg + 18;
+                    ret = asn1f_make_known_external_type(known_type);
+                    assert(ret == 0 || errno == EEXIST);
+                } else if (strcmp(optarg, "native-types") == 0) {
+                    fprintf(stderr, "-f%s: Deprecated option\n", optarg);
+                    asn1_compiler_flags &= ~A1C_USE_WIDE_TYPES;
+                } else if (strcmp(optarg, "wide-types") == 0) {
+                    asn1_compiler_flags |= A1C_USE_WIDE_TYPES;
+                } else if (strcmp(optarg, "line-refs") == 0) {
+                    asn1_compiler_flags |= A1C_LINE_REFS;
+                } else if (strcmp(optarg, "no-constraints") == 0) {
+                    asn1_compiler_flags |= A1C_NO_CONSTRAINTS;
+                } else if (strcmp(optarg, "no-include-deps") == 0) {
+                    asn1_compiler_flags |= A1C_NO_INCLUDE_DEPS;
+                } else if (strcmp(optarg, "includes-quoted") == 0) {
+                    asn1_compiler_flags |= A1C_INCLUDES_QUOTED;
+                } else if (strcmp(optarg, "unnamed-unions") == 0) {
+                    asn1_compiler_flags |= A1C_UNNAMED_UNIONS;
+                } else if (strcmp(optarg, "skeletons-copy") == 0) {
+                    fprintf(stderr, "-f%s: Deprecated option\n", optarg);
+                    asn1_compiler_flags &= ~A1C_LINK_SKELETONS;
+                } else if (strcmp(optarg, "link-skeletons") == 0) {
+                    asn1_compiler_flags |= A1C_LINK_SKELETONS;
+                } else if (strncmp(optarg, "prefix=", 7) == 0) {
+                    char *prefix = optarg + 7;
+                    asn1c_prefix_set(prefix);
+                } else {
+                    fprintf(stderr, "-f%s: Invalid argument\n", optarg);
                     exit(EX_USAGE);
                 }
-            } else if(strcmp(optarg, "rint-class-matrix") == 0) {
-                asn1_printer_flags |= APF_PRINT_CLASS_MATRIX;
-            } else if(strcmp(optarg, "rint-constraints") == 0) {
-                asn1_printer_flags |= APF_PRINT_CONSTRAINTS;
-            } else if(strcmp(optarg, "rint-lines") == 0) {
-                asn1_printer_flags |= APF_LINE_COMMENTS;
-            } else {
-                fprintf(stderr, "-p%s: Invalid argument\n", optarg);
-                exit(EX_USAGE);
-            }
-            break;
-        case 'R':
-            asn1_compiler_flags |= A1C_OMIT_SUPPORT_CODE;
-            break;
-        case 'S':
-            skeletons_dir = optarg;
-            break;
-        case 'v':
-            fprintf(stderr, "ASN.1 Compiler, " VERSION "\n" COPYRIGHT);
-            exit(0);
-            break;
-        case 'W':
-            if(strcmp(optarg, "error") == 0) {
-                warnings_as_errors = 1;
                 break;
-            } else if(strcmp(optarg, "debug-lexer") == 0) {
-                asn1_parser_flags |= A1P_DEBUG_LEXER;
+            case 'g':
+                if (strcmp(optarg, "en-BER") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_BER;
+                } else if (strcmp(optarg, "en-XER") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_XER;
+                } else if (strcmp(optarg, "en-JER") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_JER;
+                } else if (strcmp(optarg, "en-OER") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_OER;
+                } else if (strcmp(optarg, "en-UPER") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_UPER;
+                } else if (strcmp(optarg, "en-APER") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_APER;
+                } else if (strcmp(optarg, "en-print") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_PRINT;
+                } else if (strcmp(optarg, "en-random-fill") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_RFILL;
+                } else if (strcmp(optarg, "en-example") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_EXAMPLE;
+                } else if (strcmp(optarg, "en-autotools") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_AUTOTOOLS_EXAMPLE;
+                } else if (strcmp(optarg, "en-python") == 0) {
+                    asn1_compiler_flags |= A1C_GEN_PYTHON;
+                } else {
+                    fprintf(stderr, "-g%s: Invalid argument\n", optarg);
+                    exit(EX_USAGE);
+                }
                 break;
-            } else if(strcmp(optarg, "debug-parser") == 0) {
-                asn1_parser_flags |= A1P_DEBUG_PARSER;
+            case 'h':
+                usage(av[0]);
+            case 'n':
+                if (strcmp(optarg, "o-gen-BER") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_BER;
+                } else if (strcmp(optarg, "o-gen-XER") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_XER;
+                } else if (strcmp(optarg, "o-gen-JER") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_JER;
+                } else if (strcmp(optarg, "o-gen-OER") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_OER;
+                } else if (strcmp(optarg, "o-gen-UPER") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_UPER;
+                } else if (strcmp(optarg, "o-gen-APER") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_APER;
+                } else if (strcmp(optarg, "o-gen-print") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_PRINT;
+                } else if (strcmp(optarg, "o-gen-random-fill") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_RFILL;
+                } else if (strcmp(optarg, "o-gen-example") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_EXAMPLE;
+                } else if (strcmp(optarg, "o-gen-autotools") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_AUTOTOOLS_EXAMPLE;
+                } else if (strcmp(optarg, "o-gen-python") == 0) {
+                    asn1_compiler_flags &= ~A1C_GEN_PYTHON;
+                } else {
+                    fprintf(stderr, "-n%s: Invalid argument\n", optarg);
+                    exit(EX_USAGE);
+                }
                 break;
-            } else if(strcmp(optarg, "debug-fixer") == 0) {
-                asn1_fixer_flags |= A1F_DEBUG;
+            case 'P':
+                asn1_compiler_flags |= A1C_PRINT_COMPILED;
+                asn1_compiler_flags &= ~A1C_NO_C99;
                 break;
-            } else if(strcmp(optarg, "debug-compiler") == 0) {
-                asn1_compiler_flags |= A1C_DEBUG;
+            case 'p':
+                if (strncmp(optarg, "du=", 3) == 0) {
+                    char *pduname = optarg + 3;
+                    if (strcmp(pduname, "all") == 0) {
+                        asn1_compiler_flags |= A1C_PDU_ALL;
+                    } else if (strcmp(pduname, "auto") == 0) {
+                        asn1_compiler_flags |= A1C_PDU_AUTO;
+                    } else if (pduname[0] >= 'A' && pduname[0] <= 'Z') {
+                        asn1c__add_pdu_type(pduname);
+                        asn1_compiler_flags |= A1C_PDU_TYPE;
+                    } else {
+                        fprintf(stderr,
+                                "-pdu=%s: expected -pdu={all|auto|Type}\n",
+                                pduname);
+                        exit(EX_USAGE);
+                    }
+                } else if (strcmp(optarg, "rint-class-matrix") == 0) {
+                    asn1_printer_flags |= APF_PRINT_CLASS_MATRIX;
+                } else if (strcmp(optarg, "rint-constraints") == 0) {
+                    asn1_printer_flags |= APF_PRINT_CONSTRAINTS;
+                } else if (strcmp(optarg, "rint-lines") == 0) {
+                    asn1_printer_flags |= APF_LINE_COMMENTS;
+                } else {
+                    fprintf(stderr, "-p%s: Invalid argument\n", optarg);
+                    exit(EX_USAGE);
+                }
                 break;
-            } else {
-                fprintf(stderr, "-W%s: Invalid argument\n", optarg);
-                exit(EX_USAGE);
-            }
-            break;
-        case 'X':
-            print_arg__print_out = 1;   /* Implicit -E */
-            print_arg__fix_n_print = 1; /* Implicit -F */
-            asn1_printer_flags |= APF_PRINT_XML_DTD;
-            break;
-        default:
-            usage(av[0]);
+            case 'R':
+                asn1_compiler_flags |= A1C_OMIT_SUPPORT_CODE;
+                break;
+            case 'S':
+                skeletons_dir = optarg;
+                break;
+            case 'v':
+                fprintf(stderr, "ASN.1 Compiler, " VERSION "\n" COPYRIGHT);
+                exit(0);
+                break;
+            case 'W':
+                if (strcmp(optarg, "error") == 0) {
+                    warnings_as_errors = 1;
+                    break;
+                } else if (strcmp(optarg, "debug-lexer") == 0) {
+                    asn1_parser_flags |= A1P_DEBUG_LEXER;
+                    break;
+                } else if (strcmp(optarg, "debug-parser") == 0) {
+                    asn1_parser_flags |= A1P_DEBUG_PARSER;
+                    break;
+                } else if (strcmp(optarg, "debug-fixer") == 0) {
+                    asn1_fixer_flags |= A1F_DEBUG;
+                    break;
+                } else if (strcmp(optarg, "debug-compiler") == 0) {
+                    asn1_compiler_flags |= A1C_DEBUG;
+                    break;
+                } else {
+                    fprintf(stderr, "-W%s: Invalid argument\n", optarg);
+                    exit(EX_USAGE);
+                }
+                break;
+            case 'X':
+                print_arg__print_out = 1;   /* Implicit -E */
+                print_arg__fix_n_print = 1; /* Implicit -F */
+                asn1_printer_flags |= APF_PRINT_XML_DTD;
+                break;
+            default:
+                usage(av[0]);
         }
 
     /*
      * Validate the options combination.
      */
-    if(print_arg__print_out) {
-        if((asn1_printer_flags & APF_PRINT_CONSTRAINTS)
-           && !print_arg__fix_n_print) {
+    if (print_arg__print_out) {
+        if ((asn1_printer_flags & APF_PRINT_CONSTRAINTS) &&
+            !print_arg__fix_n_print) {
             fprintf(stderr,
                     "Error: -print-constraints argument requires -E -F\n");
             exit(EX_USAGE);
         }
     } else {
-        if(print_arg__fix_n_print) {
+        if (print_arg__fix_n_print) {
             fprintf(stderr, "Error: -F requires -E\n");
             exit(EX_USAGE);
         }
-        if(asn1_printer_flags) {
+        if (asn1_printer_flags) {
             fprintf(stderr, "Error: -print-... arguments require -E\n");
             exit(EX_USAGE);
         }
@@ -324,7 +324,7 @@ main(int ac, char **av) {
     /*
      * Ensure that there are some input files present.
      */
-    if(ac > optind) {
+    if (ac > optind) {
         ac -= optind;
         av += optind;
     } else {
@@ -339,11 +339,11 @@ main(int ac, char **av) {
     /*
      * Make sure the skeleton directory is out there.
      */
-    if(skeletons_dir == NULL) {
+    if (skeletons_dir == NULL) {
         struct stat sb;
         skeletons_dir = DATADIR;
-        if((av[-optind][0] == '.' || av[-optind][1] == '/')
-           && stat(skeletons_dir, &sb)) {
+        if ((av[-optind][0] == '.' || av[-optind][1] == '/') &&
+            stat(skeletons_dir, &sb)) {
             /*
              * The default skeletons directory does not exist,
              * compute it from my file name:
@@ -358,12 +358,12 @@ main(int ac, char **av) {
             skeletons_dir = malloc(len);
             assert(skeletons_dir);
             snprintf(skeletons_dir, len, "%s/../skeletons", skel_dir);
-            if(stat(skeletons_dir, &sb)) {
+            if (stat(skeletons_dir, &sb)) {
                 fprintf(stderr,
                         "WARNING: skeletons are neither in "
                         "\"%s\" nor in \"%s\"!\n",
                         DATADIR, skeletons_dir);
-                if(warnings_as_errors) exit(EX_OSFILE);
+                if (warnings_as_errors) exit(EX_OSFILE);
             }
         }
     }
@@ -372,11 +372,11 @@ main(int ac, char **av) {
      * Iterate over input files and parse each.
      * All syntax trees from all files will be bundled together.
      */
-    for(i = 0; i < ac; i++) {
+    for (i = 0; i < ac; i++) {
         asn1p_t *new_asn;
 
         new_asn = asn1p_parse_file(av[i], asn1_parser_flags);
-        if(new_asn == NULL) {
+        if (new_asn == NULL) {
             fprintf(stderr, "Cannot parse \"%s\"\n", av[i]);
             exit_code = EX_DATAERR;
             goto cleanup;
@@ -385,9 +385,9 @@ main(int ac, char **av) {
         /*
          * Bundle the parsed tree with existing one.
          */
-        if(asn) {
+        if (asn) {
             asn1p_module_t *mod;
-            while((mod = TQ_REMOVE(&(new_asn->modules), mod_next)))
+            while ((mod = TQ_REMOVE(&(new_asn->modules), mod_next)))
                 TQ_ADD(&(asn->modules), mod, mod_next);
             asn1p_delete(new_asn);
         } else {
@@ -402,8 +402,8 @@ main(int ac, char **av) {
     /*
      * Dump the parsed ASN.1 tree if -E specified and -F is NOT given.
      */
-    if(print_arg__print_out && !print_arg__fix_n_print) {
-        if(asn1print(asn, asn1_printer_flags)) {
+    if (print_arg__print_out && !print_arg__fix_n_print) {
+        if (asn1print(asn, asn1_printer_flags)) {
             exit_code = EX_SOFTWARE;
             goto cleanup;
         }
@@ -413,8 +413,8 @@ main(int ac, char **av) {
     /*
      * Read in the files from skeletons/standard-modules
      */
-    if(importStandardModules(asn, skeletons_dir)) {
-        if(warnings_as_errors) {
+    if (importStandardModules(asn, skeletons_dir)) {
+        if (warnings_as_errors) {
             exit_code = EX_DATAERR;
             goto cleanup;
         }
@@ -429,24 +429,24 @@ main(int ac, char **av) {
      */
     ret = asn1f_process(asn, asn1_fixer_flags,
                         NULL /* default fprintf(stderr) */);
-    switch(ret) {
-    case 0:
-        break; /* All clear */
-    case 1:
-        if(!warnings_as_errors) {
-            break;
-        }
-        /* Fall through */
-    case -1:
-        exit_code = EX_DATAERR; /* Fatal failure */
-        goto cleanup;
+    switch (ret) {
+        case 0:
+            break; /* All clear */
+        case 1:
+            if (!warnings_as_errors) {
+                break;
+            }
+            /* Fall through */
+        case -1:
+            exit_code = EX_DATAERR; /* Fatal failure */
+            goto cleanup;
     }
 
     /*
      * Dump the parsed ASN.1 tree if -E specified and -F is given.
      */
-    if(print_arg__print_out && print_arg__fix_n_print) {
-        if(asn1print(asn, asn1_printer_flags)) {
+    if (print_arg__print_out && print_arg__fix_n_print) {
+        if (asn1print(asn, asn1_printer_flags)) {
             exit_code = EX_SOFTWARE;
             goto cleanup;
         }
@@ -456,7 +456,7 @@ main(int ac, char **av) {
     /*
      * -debug-type-naming=Type
      */
-    if(debug_type_names) {
+    if (debug_type_names) {
         asn1c_debug_type_naming(asn, asn1_compiler_flags, debug_type_names);
         return 0;
     }
@@ -465,16 +465,16 @@ main(int ac, char **av) {
      * Compile the ASN.1 tree into a set of source files
      * of another language.
      */
-    if(asn1_compile(asn, skeletons_dir, destdir ? destdir : "",
-                    asn1_compiler_flags, ac + optind, optind, av - optind,
-                    python_module_name)) {
+    if (asn1_compile(asn, skeletons_dir, destdir ? destdir : "",
+                     asn1_compiler_flags, ac + optind, optind, av - optind,
+                     python_module_name)) {
         exit_code = EX_SOFTWARE;
     }
 
 cleanup:
     asn1p_delete(asn);
     asn1p_lex_destroy();
-    if(exit_code) exit(exit_code);
+    if (exit_code) exit(exit_code);
 
     return 0;
 }
@@ -482,8 +482,7 @@ cleanup:
 /*
  * Parse and import *.asn1 from skeletons/standard-modules
  */
-static int
-importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
+static int importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
     asn1p_t *new_asn;
     asn1p_module_t *mod;
     const char *filename;
@@ -520,10 +519,10 @@ importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
     assert(pattern);
     snprintf(pattern, len, "%s/*.asn1", target_dir);
     dir = _findfirst(pattern, &c_file);
-    if(dir == -1L) {
+    if (dir == -1L) {
 #else
     dir = opendir(target_dir);
-    if(!dir) {
+    if (!dir) {
 #endif
         fprintf(stderr, "WARNING: Cannot find standard modules in %s\n",
                 target_dir);
@@ -534,19 +533,19 @@ importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
     do {
         filename = c_file.name;
 #else
-    while((dp = readdir(dir))) {
+    while ((dp = readdir(dir))) {
         filename = dp->d_name;
 #endif
         len = strlen(filename);
-        if(len <= 5 || strcmp(filename + len - 5, ".asn1")) continue;
+        if (len <= 5 || strcmp(filename + len - 5, ".asn1")) continue;
         len = target_dir_len + 1 + len + 1;
         fullname = malloc(len);
-        if(!fullname) continue; /* Just skip it, no big deal */
+        if (!fullname) continue; /* Just skip it, no big deal */
         snprintf(fullname, len, "%s/%s", target_dir, filename);
         filename = fullname;
 
         new_asn = asn1p_parse_file(filename, A1P_NOFLAGS);
-        if(new_asn == NULL) {
+        if (new_asn == NULL) {
             fprintf(stderr, "WARNING: Cannot parse standard module \"%s\"\n",
                     filename);
             ret = -1;
@@ -554,7 +553,7 @@ importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
         }
 
         /* Import these modules and mark them as "standard" */
-        while((mod = TQ_REMOVE(&(new_asn->modules), mod_next))) {
+        while ((mod = TQ_REMOVE(&(new_asn->modules), mod_next))) {
             mod->_tags |= MT_STANDARD_MODULE;
             TQ_ADD(&(asn->modules), mod, mod_next);
         }
@@ -562,7 +561,7 @@ importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
         asn1p_lex_destroy();
 
 #ifdef _WIN32
-    } while(_findnext(dir, &c_file) == 0);
+    } while (_findnext(dir, &c_file) == 0);
     _findclose(dir);
 #else
         free(fullname);
@@ -581,8 +580,7 @@ importStandardModules(asn1p_t *asn, const char *skeletons_dir) {
 /*
  * Print the usage screen and exit(EX_USAGE).
  */
-static void __attribute__((noreturn))
-usage(const char *av0) {
+static void __attribute__((noreturn)) usage(const char *av0) {
     /* clang-format off */
 	fprintf(stderr,
 "ASN.1 Compiler, " VERSION "\n" COPYRIGHT

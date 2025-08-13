@@ -5,12 +5,12 @@
 
 #define PY_GEN_DEFAULT_INCLUDE()                                          \
     do {                                                                  \
-        if((arg->flags & A1C_INCLUDES_QUOTED)) {                          \
+        if ((arg->flags & A1C_INCLUDES_QUOTED)) {                         \
             GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "\"py_application.h\""); \
         } else {                                                          \
             GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "<py_application.h>");   \
         }                                                                 \
-    } while(0)
+    } while (0)
 
 #define PY_GEN_BEGIN_FUNC() \
     OUT("{\n");             \
@@ -53,7 +53,7 @@
     OUT("PyCompat_DEF_TYPE(%s);\n", name)
 
 #define PY_GEN_TYPE_NEW(name, setTypeDef)                             \
-    if((setTypeDef)) {                                                \
+    if ((setTypeDef)) {                                               \
         OUT("PY_IMPL_GENERIC_NEW(%s, &asn_DEF_%s);\n", name, (name)); \
     } else {                                                          \
         OUT("PY_IMPL_GENERIC_NEW(%s, NULL);\n", name);                \
@@ -98,26 +98,26 @@
     OUT("PY_IMPL_METHODDEF_ITEM(%s, is_valid, METH_NOARGS),\n", type_id); \
     OUT("PY_IMPL_METHODDEF_ITEM(%s, check_constraints, METH_NOARGS),\n",  \
         type_id);                                                         \
-    if(arg->flags & A1C_GEN_BER) {                                        \
+    if (arg->flags & A1C_GEN_BER) {                                       \
         PY_GEN_TYPE_METHODS_PARSER_NOARGS(type_id, ber);                  \
         PY_GEN_TYPE_METHODS_PARSER_NOARGS(type_id, der);                  \
         PY_GEN_TYPE_METHODS_PARSER_NOARGS(type_id, cer);                  \
     }                                                                     \
-    if(arg->flags & A1C_GEN_XER) {                                        \
+    if (arg->flags & A1C_GEN_XER) {                                       \
         PY_GEN_TYPE_METHODS_PARSER_KW(type_id, xer);                      \
     }                                                                     \
-    if(arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {                      \
+    if (arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {                     \
         PY_GEN_TYPE_METHODS_PARSER_KW(type_id, per);                      \
     }                                                                     \
-    if(arg->flags & (A1C_GEN_PRINT)) {                                    \
+    if (arg->flags & (A1C_GEN_PRINT)) {                                   \
         OUT("{\"to_text\", (PyCFunction)PyAsn%s__plain_encode, "          \
             "(METH_NOARGS), NULL},\n",                                    \
             type_id);                                                     \
     }                                                                     \
-    if(arg->flags & (A1C_GEN_OER)) {                                      \
+    if (arg->flags & (A1C_GEN_OER)) {                                     \
         PY_GEN_TYPE_METHODS_PARSER_KW(type_id, oer);                      \
     }                                                                     \
-    if(arg->flags & (A1C_GEN_JER)) {                                      \
+    if (arg->flags & (A1C_GEN_JER)) {                                     \
         PY_GEN_TYPE_METHODS_PARSER_KW(type_id, jer);                      \
     }
 
@@ -134,7 +134,6 @@
     OUT("static PyGetSetDef PyAsn%s_getset[] = {\n", name); \
     INDENT(+1)
 
-
 #define PY_GEN_TYPE_ATTRS_END()                             \
     OUT("{NULL, NULL, NULL, NULL, NULL} /* sentinel */\n"); \
     INDENT(-1);                                             \
@@ -147,7 +146,7 @@
     OUT(("PY_IMPL_GETSET_ITEM(%s, %s),\n"), typeName, attrName)
 
 #define PY_GEN_TYPE_PARSERS(typeName)                                  \
-    if(arg->flags & A1C_GEN_BER) {                                     \
+    if (arg->flags & A1C_GEN_BER) {                                    \
         /*        E        D  */                                       \
         /* BER:  ber <--> ber */                                       \
         OUT("PY_IMPL_DECODE_BER(%s);\n", typeName);                    \
@@ -159,24 +158,24 @@
         OUT("PY_IMPL_DECODE_CER(%s);\n", typeName);                    \
         OUT("PY_IMPL_ENCODE_SPECIFIC(%s, cer, ATS_BER);\n", typeName); \
     }                                                                  \
-    if(arg->flags & A1C_GEN_XER) {                                     \
+    if (arg->flags & A1C_GEN_XER) {                                    \
         OUT("PY_IMPL_DECODE_XER(%s);\n", typeName);                    \
         OUT("PY_IMPL_ENCODE_XER(%s);\n", typeName);                    \
     }                                                                  \
-    if(arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {                   \
+    if (arg->flags & (A1C_GEN_APER | A1C_GEN_UPER)) {                  \
         OUT("PY_IMPL_DECODE_PER(%s);\n", typeName);                    \
         OUT("PY_IMPL_ENCODE_PER(%s);\n", typeName);                    \
     }                                                                  \
-    if(arg->flags & (A1C_GEN_PRINT)) {                                 \
+    if (arg->flags & (A1C_GEN_PRINT)) {                                \
         OUT("PY_IMPL_ENCODE_SPECIFIC(%s, plain, "                      \
             "ATS_NONSTANDARD_PLAINTEXT);\n",                           \
             typeName);                                                 \
     }                                                                  \
-    if(arg->flags & (A1C_GEN_OER)) {                                   \
+    if (arg->flags & (A1C_GEN_OER)) {                                  \
         OUT("PY_IMPL_DECODE_OER(%s);\n", typeName);                    \
         OUT("PY_IMPL_ENCODE_OER(%s);\n", typeName);                    \
     }                                                                  \
-    if(arg->flags & (A1C_GEN_JER)) {                                   \
+    if (arg->flags & (A1C_GEN_JER)) {                                  \
         OUT("PY_IMPL_DECODE_JER(%s);\n", typeName);                    \
         OUT("PY_IMPL_ENCODE_JER(%s);\n", typeName);                    \
     }
@@ -187,7 +186,6 @@
 
 #define PY_GEN_CLASS_DOC(docfmt, ...) \
     OUT(".tp_doc = \"" docfmt "\",\n", __VA_ARGS__);
-
 
 #define PY_GEN_CLASS_BEGIN_INTERNAL(modName, typeName, pyTypeName)  \
     OUT("PyTypeObject PyAsn%s_Type = {\n", typeName);               \
@@ -202,7 +200,6 @@
     OUT(".tp_init = (initproc)PyAsn%s__init,\n", typeName);         \
     OUT(".tp_getset = PyAsn%s_getset,\n", typeName);                \
     OUT(".tp_methods = PyAsn%s_methods,\n", typeName)
-
 
 #define PY_GEN_CLASS_END() \
     INDENT(-1);            \
@@ -259,7 +256,7 @@
         REDIR(targetStream);                                      \
         __VA_ARGS__;                                              \
         arg->target = saved_cs;                                   \
-    } while(0)
+    } while (0)
 
 #define PY_GEN_MODULE_ADD_TYPE(typeName)                                      \
     PY_OUTER(OT_PY_IMPL_MOD_SETUP_TYPES,                                      \
@@ -272,7 +269,6 @@
                           typeName));                                         \
              REDIR(OT_PY_IMPL_MOD_INCLUDES);                                  \
              OUT("#include \"%s_Py.h\"\n", typeName));
-
 
 #define PY_GEN_STUBS_BASIC_TYPE(typeName, baseClass)                      \
     PY_OUTER(OT_PY_STUBS,                                                 \
@@ -289,7 +285,7 @@
 #define PY_GEN_STUBS_END    \
     arg->target = saved_cs; \
     }                       \
-    while(0)
+    while (0)
 
 #define PY_GEN_STUBS_ENUM_PROPERTY(typeName, optional)                        \
     OUT("@property\n");                                                       \
@@ -318,7 +314,7 @@
                              type_def_path)                                   \
     OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s);\n", (typeName),                  \
         (targetEnumTypeName), (attrName));                                    \
-    if(arg->embed > 1) {                                                      \
+    if (arg->embed > 1) {                                                     \
         OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, *%s);\n", (typeName), \
             (targetEnumTypeName), (attrName), (type_def_path));               \
     } else {                                                                  \
@@ -348,7 +344,6 @@
         (typeName), (attrName), (attrName), (isSigned));                       \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
-
 #define PY_GEN_CHOICE_BOOLEAN_GETSET(typeName, targetEnumTypeName, attrName, \
                                      type_def_path)                          \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s,"                             \
@@ -358,7 +353,6 @@
         "PyCompatBool_FromLong(src->choice.%s));\n",                         \
         (typeName), (attrName), (attrName));                                 \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
-
 
 #define PY_GEN_CHOICE_BYTES_GETSET(typeName, targetEnumTypeName, attrName,     \
                                    type_def_path)                              \
@@ -372,7 +366,6 @@
         (typeName), (attrName), (attrName), (attrName));                       \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
-
 #define PY_GEN_CHOICE_REAL_GETSET(typeName, targetEnumTypeName, attrName,   \
                                   is_float32, type_def_path)                \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                           \
@@ -384,7 +377,6 @@
         (typeName), (attrName), (attrName), (is_float32));                  \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
-
 #define PY_GEN_CHOICE_NULL_GETSET(typeName, targetEnumTypeName, attrName, \
                                   type_def_path)                          \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                         \
@@ -393,7 +385,6 @@
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, Py_None);\n", (typeName),       \
         (attrName));                                                      \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
-
 
 #define PY_GEN_CHOICE_BITSTRING_GETSET(typeName, targetEnumTypeName, attrName, \
                                        type_def_path)                          \
@@ -407,7 +398,6 @@
         (typeName), (attrName), (attrName), (attrName));                       \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
-
 #define PY_GEN_CHOICE_NAMED_BITSTRING_GETSET(                                  \
     typeName, targetEnumTypeName, attrName, enumTypeName, type_def_path)       \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                              \
@@ -420,7 +410,6 @@
         (typeName), (attrName), (enumTypeName), (attrName), (attrName));       \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
-
 #define PY_GEN_CHOICE_OID_GETSET(typeName, targetEnumTypeName, attrName, \
                                  type_def_path)                          \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                        \
@@ -431,7 +420,6 @@
         (typeName), (attrName), (attrName));                             \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
 
-
 #define PY_GEN_CHOICE_RELATIVE_OID_GETSET(typeName, targetEnumTypeName, \
                                           attrName, type_def_path)      \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s,"                        \
@@ -441,7 +429,6 @@
         "PyCompatRelativeOID_AsUTF8String(&src->choice.%s));\n",        \
         (typeName), (attrName), (attrName));                            \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
-
 
 #define PY_GEN_CHOICE_STRING_GETSET(typeName, targetEnumTypeName, attrName,    \
                                     type_def_path)                             \
@@ -532,7 +519,6 @@
     PY_GEN_SEQ_BYTES_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-
 #define PY_GEN_SEQ_REAL_CONV(typeName, attrName, optional, indirect,       \
                              is_float32)                                   \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                               \
@@ -549,7 +535,6 @@
     PY_GEN_SEQ_REAL_CONV(typeName, attrName, optional, indirect, is_float32); \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-
 #define PY_GEN_SEQ_NULL_CONV(typeName, attrName, optional, indirect)        \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
         "PyCompatNull_FromObject(value, (int *)target));\n",                \
@@ -560,7 +545,6 @@
 #define PY_GEN_SEQ_NULL_GETSET(typeName, attrName, optional, indirect) \
     PY_GEN_SEQ_NULL_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
-
 
 #define PY_GEN_SEQ_OID_CONV(typeName, attrName, optional, indirect)          \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
@@ -573,7 +557,6 @@
 #define PY_GEN_SEQ_OID_GETSET(typeName, attrName, optional, indirect) \
     PY_GEN_SEQ_OID_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
-
 
 #define PY_GEN_SEQ_RELATIVE_OID_CONV(typeName, attrName, optional, indirect) \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
@@ -601,7 +584,6 @@
 #define PY_GEN_SEQ_STRING_GETSET(typeName, attrName, optional, indirect) \
     PY_GEN_SEQ_STRING_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
-
 
 #define PY_GEN_SEQ_ENUM_CONV(typeName, attrName, enumTypeName, isSigned,   \
                              optional, indirect)                           \
@@ -726,7 +708,7 @@
 /* SET OF / SEQUENCE OF */
 #define PY_GEN_SEQ_OF_TYPEREF_BASIC(seqTypeName, typeName, constrParentPath) \
     OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s_t);\n", seqTypeName, typeName);        \
-    if((constrParentPath) != NULL) {                                         \
+    if ((constrParentPath) != NULL) {                                        \
         OUT("PY_IMPL_SEQ_OF_GENERIC_SETITEM(%s, %s_t, "                      \
             "*PY_IMPL_SEQ_OF_COMPONENT_TYPE(%s));\n",                        \
             seqTypeName, typeName, constrParentPath);                        \
@@ -737,7 +719,7 @@
 
 #define PY_GEN_SEQ_OF_BASIC(seqTypeName, typeName, constrParentPath)     \
     OUT("PY_IMPL_SEQ_OF_FROMPY(%s, %s);\n", seqTypeName, typeName);      \
-    if((constrParentPath) != NULL) {                                     \
+    if ((constrParentPath) != NULL) {                                    \
         OUT("PY_IMPL_SEQ_OF_GENERIC_SETITEM(%s, %s, "                    \
             "*PY_IMPL_SEQ_OF_COMPONENT_TYPE(%s));\n",                    \
             seqTypeName, typeName, constrParentPath);                    \
@@ -748,7 +730,7 @@
 
 #define PY_GEN_SEQ_OF_BASICSTR(seqTypeName, typeName, constrParentPath)   \
     OUT("PY_IMPL_SEQ_OF_FROMPY(%s, " #typeName ");\n", seqTypeName);      \
-    if((constrParentPath) != NULL) {                                      \
+    if ((constrParentPath) != NULL) {                                     \
         OUT("PY_IMPL_SEQ_OF_GENERIC_SETITEM(%s, " #typeName               \
             ", *PY_IMPL_SEQ_OF_COMPONENT_TYPE(%s));\n",                   \
             seqTypeName, constrParentPath);                               \

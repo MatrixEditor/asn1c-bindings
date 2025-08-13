@@ -2,8 +2,8 @@
  * Copyright (c) 2006-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_PER_ENCODER_H_
-#define	_PER_ENCODER_H_
+#ifndef _PER_ENCODER_H_
+#define _PER_ENCODER_H_
 
 #include <asn_application.h>
 #include <per_support.h>
@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-struct asn_TYPE_descriptor_s;	/* Forward declaration */
+struct asn_TYPE_descriptor_s; /* Forward declaration */
 
 /*
  * Type of the generic PER encoder function.
@@ -35,4 +35,4 @@ int encode_dyn_cb(const void *buffer, size_t size, void *key);
 }
 #endif
 
-#endif	/* _PER_ENCODER_H_ */
+#endif /* _PER_ENCODER_H_ */

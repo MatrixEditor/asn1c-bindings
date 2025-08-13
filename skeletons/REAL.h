@@ -2,29 +2,29 @@
  * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	ASN_TYPE_REAL_H
-#define	ASN_TYPE_REAL_H
+#ifndef ASN_TYPE_REAL_H
+#define ASN_TYPE_REAL_H
 
 #include <asn_application.h>
 #include <asn_codecs_prim.h>
 
-#define	_ISOC99_SOURCE		/* For ilogb() and quiet NAN */
+#define _ISOC99_SOURCE /* For ilogb() and quiet NAN */
 #ifndef _BSD_SOURCE
-#define	_BSD_SOURCE		/* To reintroduce finite(3) */
+#define _BSD_SOURCE /* To reintroduce finite(3) */
 #endif
-#if	defined(__alpha)
-#include <sys/resource.h>	/* For INFINITY */
+#if defined(__alpha)
+#include <sys/resource.h> /* For INFINITY */
 #endif
 #include <math.h>
 
-#if	!(defined(NAN) || defined(INFINITY))
+#if !(defined(NAN) || defined(INFINITY))
 static volatile double real_zero CC_NOTUSED = 0.0;
 #endif
-#ifndef	NAN
-#define	NAN	(0.0/0.0)
+#ifndef NAN
+#define NAN (0.0 / 0.0)
 #endif
-#ifndef	INFINITY
-#define	INFINITY	(1.0/0.0)
+#ifndef INFINITY
+#define INFINITY (1.0 / 0.0)
 #endif
 
 #ifdef __cplusplus
@@ -51,51 +51,52 @@ extern asn_TYPE_operation_t asn_OP_REAL;
 
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
 asn_struct_print_f REAL_print;
-#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f REAL_compare;
-asn_struct_copy_f    REAL_copy;
+asn_struct_copy_f REAL_copy;
 
 #define REAL_constraint asn_generic_no_constraint
 
 #if !defined(ASN_DISABLE_BER_SUPPORT)
 #define REAL_decode_ber ber_decode_primitive
 #define REAL_encode_der der_encode_primitive
-#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_BER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
 xer_type_decoder_f REAL_decode_xer;
 xer_type_encoder_f REAL_encode_xer;
-#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 jer_type_decoder_f REAL_decode_jer;
 jer_type_encoder_f REAL_encode_jer;
-#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f REAL_decode_oer;
 oer_type_encoder_f REAL_encode_oer;
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f REAL_decode_uper;
 per_type_encoder_f REAL_encode_uper;
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_UPER_SUPPORT) */
 #if !defined(ASN_DISABLE_APER_SUPPORT)
 per_type_decoder_f REAL_decode_aper;
 per_type_encoder_f REAL_encode_aper;
-#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+#endif /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_RFILL_SUPPORT)
-asn_random_fill_f  REAL_random_fill;
-#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+asn_random_fill_f REAL_random_fill;
+#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 /***********************************
  * Some handy conversion routines. *
  ***********************************/
 
-ssize_t REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_key);
+ssize_t REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb,
+                   void *app_key);
 
 /*
  * Convert between native double type and REAL representation (DER).
@@ -121,4 +122,4 @@ int asn_double2float(double d, float *outcome);
 }
 #endif
 
-#endif	/* ASN_TYPE_REAL_H */
+#endif /* ASN_TYPE_REAL_H */

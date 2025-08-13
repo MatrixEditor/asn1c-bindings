@@ -9,11 +9,10 @@
 /*
  * Decode the chunk of JSON text encoding ENUMERATED.
  */
-asn_dec_rval_t
-NativeEnumerated_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                         const asn_TYPE_descriptor_t *td,
-                         const asn_jer_constraints_t *constraints, void **sptr,
-                         const void *buf_ptr, size_t size) {
+asn_dec_rval_t NativeEnumerated_decode_jer(
+    const asn_codec_ctx_t *opt_codec_ctx, const asn_TYPE_descriptor_t *td,
+    const asn_jer_constraints_t *constraints, void **sptr, const void *buf_ptr,
+    size_t size) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     asn_dec_rval_t rval;
@@ -21,18 +20,19 @@ NativeEnumerated_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
     void *st_ptr = (void *)&st;
     long *native = (long *)*sptr;
 
-    if(!native) {
+    if (!native) {
         native = (long *)(*sptr = CALLOC(1, sizeof(*native)));
-        if(!native) ASN__DECODE_FAILED;
+        if (!native) ASN__DECODE_FAILED;
     }
 
     memset(&st, 0, sizeof(st));
-    rval = ENUMERATED_decode_jer(opt_codec_ctx, td, constraints, &st_ptr, buf_ptr, size);
-    if(rval.code == RC_OK) {
+    rval = ENUMERATED_decode_jer(opt_codec_ctx, td, constraints, &st_ptr,
+                                 buf_ptr, size);
+    if (rval.code == RC_OK) {
         long l;
-        if((specs&&specs->field_unsigned)
-            ? asn_INTEGER2ulong(&st, (unsigned long *)&l) /* sic */
-            : asn_INTEGER2long(&st, &l)) {
+        if ((specs && specs->field_unsigned)
+                ? asn_INTEGER2ulong(&st, (unsigned long *)&l) /* sic */
+                : asn_INTEGER2long(&st, &l)) {
             rval.code = RC_FAIL;
             rval.consumed = 0;
         } else {
@@ -50,27 +50,26 @@ NativeEnumerated_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
     return rval;
 }
 
-asn_enc_rval_t
-NativeEnumerated_encode_jer(const asn_TYPE_descriptor_t *td,
-                            const asn_jer_constraints_t *constraints,
-                            const void *sptr, int ilevel, enum jer_encoder_flags_e flags,
-                            asn_app_consume_bytes_f *cb, void *app_key) {
+asn_enc_rval_t NativeEnumerated_encode_jer(
+    const asn_TYPE_descriptor_t *td, const asn_jer_constraints_t *constraints,
+    const void *sptr, int ilevel, enum jer_encoder_flags_e flags,
+    asn_app_consume_bytes_f *cb, void *app_key) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
-    asn_enc_rval_t er = {0,0,0};
+    asn_enc_rval_t er = {0, 0, 0};
     const long *native = (const long *)sptr;
     const asn_INTEGER_enum_map_t *el;
 
     (void)ilevel;
     (void)flags;
 
-    if(!native) ASN__ENCODE_FAILED;
+    if (!native) ASN__ENCODE_FAILED;
 
     el = INTEGER_map_value2enum(specs, *native);
-    if(el) {
+    if (el) {
         er.encoded =
             asn__format_to_callback(cb, app_key, "\"%s\"", el->enum_name);
-        if(er.encoded < 0) ASN__ENCODE_FAILED;
+        if (er.encoded < 0) ASN__ENCODE_FAILED;
         ASN__ENCODED_OK(er);
     } else {
         ASN_DEBUG(

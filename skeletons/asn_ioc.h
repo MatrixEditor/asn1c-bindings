@@ -3,10 +3,10 @@
  * Copyright (c) 2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	ASN_IOC_H
-#define	ASN_IOC_H
+#ifndef ASN_IOC_H
+#define ASN_IOC_H
 
-#include <asn_system.h>		/* Platform-specific types */
+#include <asn_system.h> /* Platform-specific types */
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +23,6 @@ typedef struct asn_ioc_set_s {
     size_t columns_count;
     const struct asn_ioc_cell_s *rows;
 } asn_ioc_set_t;
-
 
 typedef struct asn_ioc_cell_s {
     const char *field_name; /* Is equal to corresponding column_name */
@@ -43,9 +42,8 @@ typedef struct asn_ioc_cell_s {
     } open_type;
 } asn_ioc_cell_t;
 
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* ASN_IOC_H */
+#endif /* ASN_IOC_H */

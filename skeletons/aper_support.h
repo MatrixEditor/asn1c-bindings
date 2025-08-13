@@ -2,10 +2,10 @@
  * Copyright (c) 2005-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef	_APER_SUPPORT_H_
-#define	_APER_SUPPORT_H_
+#ifndef _APER_SUPPORT_H_
+#define _APER_SUPPORT_H_
 
-#include <asn_system.h>		/* Platform-specific types */
+#include <asn_system.h> /* Platform-specific types */
 #include <per_support.h>
 
 #ifdef __cplusplus
@@ -64,10 +64,11 @@ int aper_put_nsnnwn(asn_per_outp_t *po, int number);
 /*
  * Put the constrained whole number.
  */
-int aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long number);
+int aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub,
+                                      long number);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _APER_SUPPORT_H_ */
+#endif /* _APER_SUPPORT_H_ */

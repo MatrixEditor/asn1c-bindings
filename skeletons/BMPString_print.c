@@ -6,19 +6,16 @@
 #include <asn_internal.h>
 #include <BMPString.h>
 
-int
-BMPString_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                asn_app_consume_bytes_f *cb, void *app_key) {
+int BMPString_print(const asn_TYPE_descriptor_t *td, const void *sptr,
+                    int ilevel, asn_app_consume_bytes_f *cb, void *app_key) {
     const BMPString_t *st = (const BMPString_t *)sptr;
 
-    (void)td;  /* Unused argument */
-    (void)ilevel;  /* Unused argument */
+    (void)td;     /* Unused argument */
+    (void)ilevel; /* Unused argument */
 
-    if(!st || !st->buf)
-        return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
+    if (!st || !st->buf) return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
 
-    if(BMPString__dump(st, cb, app_key) < 0)
-        return -1;
+    if (BMPString__dump(st, cb, app_key) < 0) return -1;
 
     return 0;
 }

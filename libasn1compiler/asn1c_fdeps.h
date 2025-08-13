@@ -1,12 +1,11 @@
-#ifndef	ASN1C_FDEPS_H
-#define	ASN1C_FDEPS_H
+#ifndef ASN1C_FDEPS_H
+#define ASN1C_FDEPS_H
 
 typedef struct {
     char *filename;
     int lineno;
     int column;
 } asn1c_dep_filename;
-
 
 /*
  * Format:
@@ -28,15 +27,16 @@ typedef struct {
         FDEP_CONVERTER = (1 << 3),    /* Name of the file with int main() */
         FDEP_COMMON_FILES = (1 << 4), /* Section for mandatory dependencies */
         FDEP_CODEC_OER = (1 << 5),    /* Use contents only if not -no-gen-OER */
-        FDEP_CODEC_UPER = (1 << 6),   /* Use contents only if not -no-gen-UPER */
-        FDEP_CODEC_APER = (1 << 7),   /* Use contents only if not -no-gen-APER */
-        FDEP_CODEC_BER = (1 << 8),    /* Use contents only if not -no-gen-BER */
-        FDEP_CODEC_XER = (1 << 9),    /* Use contents only if not -no-gen-XER */
-        FDEP_PRINT = (1 << 10),       /* Use contents only if not -no-gen-print */
-        FDEP_RFILL = (1 << 11),       /* Use contents only if not -no-gen-random-fill */
-        FDEP_CODEC_JER = (1 << 12),   /* Use contents only if not -no-gen-JER */
-        FDEP_PYTHON = (1 << 13)       /* Use contents only if not -no-gen-python */
-    } section;                        /* Some file refers to it */
+        FDEP_CODEC_UPER = (1 << 6), /* Use contents only if not -no-gen-UPER */
+        FDEP_CODEC_APER = (1 << 7), /* Use contents only if not -no-gen-APER */
+        FDEP_CODEC_BER = (1 << 8),  /* Use contents only if not -no-gen-BER */
+        FDEP_CODEC_XER = (1 << 9),  /* Use contents only if not -no-gen-XER */
+        FDEP_PRINT = (1 << 10),     /* Use contents only if not -no-gen-print */
+        FDEP_RFILL =
+            (1 << 11), /* Use contents only if not -no-gen-random-fill */
+        FDEP_CODEC_JER = (1 << 12), /* Use contents only if not -no-gen-JER */
+        FDEP_PYTHON = (1 << 13) /* Use contents only if not -no-gen-python */
+    } section;                  /* Some file refers to it */
 
     /* Whether this chain is alive and has to be present in the output */
     struct {
@@ -65,4 +65,4 @@ asn1c_dep_chain *asn1c_deps_flatten(const asn1c_dep_chainset *deps,
 void asn1c_dep_chain_free(asn1c_dep_chain *);
 void asn1c_dep_chainset_free(asn1c_dep_chainset *);
 
-#endif	/* ASN1C_FDEPS_H */
+#endif /* ASN1C_FDEPS_H */
