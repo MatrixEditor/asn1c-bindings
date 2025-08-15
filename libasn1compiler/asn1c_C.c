@@ -1311,6 +1311,7 @@ int asn1c_lang_C_type_REFERENCE(arg_t *arg) {
         tmp = *arg;
         tmp.asn = arg->asn;
         tmp.expr = extract;
+        extract->marker.flags = arg->expr->marker.flags;
 
         ret = arg->default_cb(&tmp, NULL);
 
@@ -1526,9 +1527,12 @@ int asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
     }
 
 end:
+    /* will be called in CHOICE, SEQ, SET and SEQ_OF/SET_OF*/
     if (arg->flags & A1C_GEN_PYTHON) {
-        if (asn1c_lang_Py_type_SIMPLE_TYPE(arg) < 0) {
-            return -1;
+        if (!arg->embed) {
+            if (asn1c_lang_Py_type_SIMPLE_TYPE(arg, NULL) < 0) {
+                return -1;
+            }
         }
     }
     REDIR(saved_target);
