@@ -1339,15 +1339,28 @@ int asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
          * If this is an optional compound type,
          * refer it using "struct X" convention,
          * as it may recursively include the current structure.
+         *
+         * ==>> This will cause some issues IF the referenced tyoe is a single
+         * assignment. <<==
          */
         if (expr->marker.flags & (EM_INDIRECT | EM_UNRECURSE)) {
             if (terminal_structable(arg, expr)) {
-                tnfmt = TNF_RSAFE;
-                if (saved_target != OT_FWD_DECLS) {
-                    REDIR(OT_FWD_DECLS);
-                    OUT("%s;\n", asn1c_type_name(arg, arg->expr, tnfmt));
+                if (expr->expr_type == A1TC_REFERENCE) {
+                    if (expr->reference->ref_expr->expr_type !=
+                        A1TC_REFERENCE) {
+                        /*
+                         * This will result in another SIMPLE_TYPE definition,so
+                         * we dont want a forward reference.
+                         */
+                        tnfmt = TNF_RSAFE;
+                        if (saved_target != OT_FWD_DECLS) {
+                            REDIR(OT_FWD_DECLS);
+                            OUT("%s;\n",
+                                asn1c_type_name(arg, arg->expr, tnfmt));
+                        }
+                        REDIR(saved_target);
+                    }
                 }
-                REDIR(saved_target);
             }
         }
 
@@ -3420,6 +3433,7 @@ static int out_name_chain(arg_t *arg, enum onc_flags onc_flags) {
 static int emit_include_dependencies(arg_t *arg) {
     asn1p_expr_t *expr = arg->expr;
     asn1p_expr_t *memb;
+    int simple_typeref;
 
     /* Avoid recursive definitions. */
     TQ_FOR (memb, &(expr->members), next) {
@@ -3427,8 +3441,14 @@ static int emit_include_dependencies(arg_t *arg) {
     }
 
     TQ_FOR (memb, &(expr->members), next) {
+        simple_typeref = 0;
+        if (memb->expr_type == A1TC_REFERENCE) {
+            if (memb->reference->ref_expr->expr_type == A1TC_REFERENCE) {
+                simple_typeref = 1;
+            }
+        }
         if (memb->marker.flags & (EM_INDIRECT | EM_UNRECURSE)) {
-            if (terminal_structable(arg, memb)) {
+            if (terminal_structable(arg, memb) && !simple_typeref) {
                 int saved_target = arg->target->target;
                 if (saved_target != OT_FWD_DECLS) {
                     REDIR(OT_FWD_DECLS);
@@ -3441,10 +3461,14 @@ static int emit_include_dependencies(arg_t *arg) {
         if ((!(memb->expr_type & ASN_CONSTR_MASK) &&
              memb->expr_type > ASN_CONSTR_MASK) ||
             memb->meta_type == AMT_TYPEREF) {
-            GEN_POS_INCLUDE_BASE((memb->marker.flags & EM_UNRECURSE)
-                                     ? OT_POST_INCLUDE
-                                     : OT_INCLUDES,
-                                 memb);
+            if (simple_typeref) {
+                GEN_POS_INCLUDE_BASE(OT_INCLUDES, memb);
+            } else {
+                GEN_POS_INCLUDE_BASE((memb->marker.flags & EM_UNRECURSE)
+                                         ? OT_POST_INCLUDE
+                                         : OT_INCLUDES,
+                                     memb);
+            }
         }
     }
 

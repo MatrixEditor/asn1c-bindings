@@ -718,8 +718,7 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         return -1;
     }
 
-    filename = strdup(asn1c_make_identifier(AMI_NODELIMITER | AMI_USE_PREFIX,
-                                            expr, (char *)0));
+    filename = strdup(asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, (char *)0));
     if (!(arg->flags & A1C_GEN_PYTHON)) {
         include_py = 0;
     }
@@ -855,19 +854,19 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
             safe_fwrite(ot->buf, ot->len, 1, fp_py_c);
 
         safe_fprintf(fp_py_c, "\n/* module initializer */\n");
-        safe_fprintf(fp_py_c, "int PyAsn%s_ModSetupTypes(void) {\n", filename);
+        safe_fprintf(fp_py_c, "int PyAsn%s_ModSetupTypes(void) {\n", header_id);
         TQ_FOR (ot, &(cs->destination[OT_PY_IMPL_CODE_MOD_SETUP].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_py_c);
         safe_fprintf(fp_py_c, "    return 0;\n}\n\n");
 
         safe_fprintf(fp_py_c, "void PyAsn%s_ModClear(PyObject *mod) {\n",
-                     filename);
+                     header_id);
         TQ_FOR (ot, &(cs->destination[OT_PY_IMPL_CODE_MOD_CLEAR].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_py_c);
         safe_fprintf(fp_py_c, "}\n\n");
 
         safe_fprintf(fp_py_c, "int PyAsn%s_ModInit(PyObject *mod) {\n",
-                     filename);
+                     header_id);
         TQ_FOR (ot, &(cs->destination[OT_PY_IMPL_CODE_MOD_INIT].chunks), next)
             safe_fwrite(ot->buf, ot->len, 1, fp_py_c);
         safe_fprintf(fp_py_c, "    return 0;\n}\n");

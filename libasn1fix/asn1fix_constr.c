@@ -142,6 +142,7 @@ int asn1f_fix_constr_ext(arg_t *arg) {
                 default:
                     r_value = -1;
             }
+            continue;
         }
 
         TQ_ADD(cur_list, v, next);

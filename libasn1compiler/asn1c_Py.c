@@ -91,6 +91,7 @@ static int asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn);
 static int asn1c_lang_Py_stubs_generate_init(arg_t *arg);
 static int asn1c_lang_Py_member(arg_t *arg, asn1p_expr_t *memb,
                                 asn1p_expr_t *parent_expr);
+static asn1p_expr_t *asn1c_get_REFERENCE(arg_t *arg);
 
 /* global functions */
 int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
@@ -160,6 +161,7 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     TQ_FOR (v, &(expr->members), next) {
         if (asn1c_lang_Py_member(arg, v, expr) < 0) return -1;
     }
+    /* needs to be refreshed */
 
     /* default methods */
     if (arg->embed) {
@@ -195,7 +197,7 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     OUT(");\n");
     OUT("PY_IMPL_SEQ_INIT(%s);\n", type_name);
     if (arg->embed) {
-        if (asn1c_lang_Py_type_CONSTR(arg, &ns) < 0) {
+        if (asn1c_lang_Py_type_CONSTR(arg, NULL) < 0) {
             return -1;
         }
     }
@@ -516,6 +518,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
     constr_enum_name = NULL;
     constr_parent_path = NULL;
     result = 0;
+    ref = NULL;
     is_open_type = 0;
 
     if (parent_expr) {
@@ -534,15 +537,12 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
         if (ref->components[ref->comp_count - 1].name[0] == '&') {
             /* type defined elsewhere -> revert to ANY_t */
             is_open_type = 1;
-            printf("Open type: %s, %d, %d\n", ref_type_name, indirect, optional);
         }
     }
 
     if (arg->embed) {
         name = strdup(asn1c_type_name(arg, arg->expr, TNF_CTYPE));
         el_member_name = strdup(MKID_safe(expr));
-        printf("type %#4x, %s, parent: %#04x\n", expr->expr_type,
-               el_member_name, parent_expr_type);
         REDIR(OT_PY_IMPL_CODE);
 
         /* sequence code is common for all types */
@@ -591,7 +591,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 // we assume every referenced type is defined has a Python
                 // candidate.
                 REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"%s_Py.h\"\n", ref_type_name);
+                OUT("#include \"%s_Py.h\"\n",
+                    asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES,
+                                          ref->ref_expr, NULL));
                 break;
             }
 
@@ -1021,7 +1023,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 PY_GEN_MOD_BASIC(name);
 
                 REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"%s_Py.h\"\n", ref_type_name);
+                OUT("#include \"%s_Py.h\"\n",
+                    asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES,
+                                          ref->ref_expr, NULL));
                 break;
             }
             case ASN_BASIC_INTEGER: {
@@ -1429,6 +1433,7 @@ int asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     memb->marker.flags &= ~EM_INDIRECT;
     asn1c_lang_Py_member(arg, memb, expr);
     memb->marker.flags = flags;
+    ns = c_name(arg);
 
     REDIR(OT_PY_TYPE_DECLS);
     if (arg->embed && !expr->_anonymous_type) {
@@ -1572,6 +1577,12 @@ static int asn1c_lang_Py_member(arg_t *arg, asn1p_expr_t *memb,
     arg->embed++;
     switch (memb->expr_type) {
         case A1TC_EXTENSIBLE:
+        case ASN_CONSTR_SEQUENCE:
+        case ASN_CONSTR_CHOICE:
+        case ASN_CONSTR_SET:
+        case ASN_CONSTR_SEQUENCE_OF:
+        case ASN_CONSTR_SET_OF:
+        case ASN_CONSTR_OPEN_TYPE:
             break;
 
         /* All other cases are handled */
@@ -1591,6 +1602,9 @@ static int asn1c_lang_Py_member(arg_t *arg, asn1p_expr_t *memb,
 int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
     asn1p_expr_t *expr;
     asn1p_expr_t *v;
+    asn1p_expr_t *ref_expr;
+
+    asn1p_ref_t *ref;
 
     const char *py_conv_type;
     char *memb_name;
@@ -1607,6 +1621,8 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
     is_bitstr = expr->expr_type == ASN_BASIC_BIT_STRING;
     el_count = expr_elements_count(arg, expr);
     memb_name = NULL;
+    ref = NULL;
+    ref_expr = NULL;
     indent_level = INDENT_LEVEL;
     py_conv_type = PY_TYPE_MAP[expr->expr_type];
     memb_name = strdup(MKID(expr));
@@ -1620,6 +1636,11 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
 
     if (expr->expr_type == A1TC_REFERENCE) {
         py_conv_type = c_expr_name(arg, expr->reference->ref_expr).as_member;
+        ref = expr->reference;
+        ref_expr = asn1c_get_REFERENCE(arg);
+        if (ref_expr) {
+            py_conv_type = PY_TYPE_MAP[ASN_TYPE_ANY];
+        }
     }
 
     if (!el_count || expr->expr_type == A1TC_REFERENCE) {
@@ -1699,6 +1720,7 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
     INDENT_LEVEL = indent_level;
     REDIR(saved_target);
     ASN_XFREE(memb_name);
+    if (ref_expr) asn1p_expr_free(ref_expr);
     return 0;
 }
 
@@ -2042,7 +2064,8 @@ static int asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn) {
     cn = (pre_cn != NULL) ? *pre_cn : c_name(arg);
     constr_type_name = py_type_name(arg, expr, PYTNF_CONSTR);
     constr_struct_name = strdup(cn.base_name);
-    constr_member_name = strdup(cn.as_member);
+    constr_member_name = strdup(MKID(expr));
+
     constr_path = NULL;
     parent_type_name = py_parent_type_name(arg, expr);
     inner_parent_type_name = NULL;
@@ -2114,11 +2137,12 @@ static int asn1c_lang_Py_type_CONSTR(arg_t *arg, struct c_names *pre_cn) {
                     deep_embed ? inner_parent_type_name : parent_type_name,
                     constr_member_name, (indirect ? "" : "&"), "src->",
                     constr_member_name, constr_type_name);
-                OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s);\n",
+                OUT("PY_IMPL_SET_INNER%s_SETATTR(%s, %s, %s, %s, %s%s%s);\n",
                     optional ? "_OPT" : "",
                     deep_embed ? inner_parent_type_name : parent_type_name,
                     deep_embed ? inner_parent_struct_name : parent_type_name,
-                    constr_member_name, constr_member_name, constr_type_name);
+                    constr_member_name, constr_member_name, constr_type_name,
+                    (indirect ? ", *" : ""), (indirect) ? constr_path : "");
                 OUT("PY_IMPL_SET_INNER_GETATTR(%s, %s, %s, "
                     "%sself->ob_value->%s, "
                     "%s);\n",
@@ -2240,4 +2264,37 @@ static int asn1c_lang_Py_stubs_generate_init(arg_t *arg) {
     INDENT_LEVEL = saved_indent;
     REDIR(saved_target);
     return 0;
+}
+
+static asn1p_expr_t *asn1c_get_REFERENCE(arg_t *arg) {
+    asn1p_expr_t *expr;
+    asn1p_expr_t *ref_expr;
+    asn1p_ref_t *ref;
+
+    expr = arg->expr;
+    ref_expr = NULL;
+    if (expr->expr_type != A1TC_REFERENCE || expr->reference == NULL) {
+        return NULL;
+    }
+
+    ref = expr->reference;
+    if (ref->components[ref->comp_count - 1].name[0] == '&') {
+        ref_expr = WITH_MODULE_NAMESPACE(
+            arg->expr->module, expr_ns,
+            asn1f_class_access_ex(arg->asn, arg->expr->module, expr_ns,
+                                  arg->expr, arg->expr->rhs_pspecs, ref));
+        if (ref_expr == NULL) return NULL;
+
+        ref_expr = asn1p_expr_clone(ref_expr, 0);
+        if (ref_expr) {
+            free(ref_expr->Identifier);
+            ref_expr->Identifier = strdup(arg->expr->Identifier);
+            if (ref_expr->Identifier == NULL) {
+                asn1p_expr_free(ref_expr);
+                return NULL;
+            }
+        }
+    }
+
+    return ref_expr;
 }
