@@ -59,6 +59,12 @@ exclude_lines = [
 [tool.hatch.build.targets.wheel.hooks.scikit-build]
 experimental = true
 
+[tool.hatch.build.targets.sdist]
+include = ["*.pyi"]
+
+[tool.hatch.build.targets.wheel]
+artifacts = ["*.pyi"]
+
 # To set a custom compiler and skeletons path, use custom defines
 # [tool.scikit-build.cmake.define]
 # A1C_PATH = "..."

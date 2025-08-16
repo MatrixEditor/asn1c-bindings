@@ -15,10 +15,10 @@
 # =====================================================================
 include_guard(GLOBAL)
 
-if (CMAKE_VERSION VERSION_LESS 3.18)
-  set(DEV_MODULE Development)
+if(CMAKE_VERSION VERSION_LESS 3.18)
+    set(DEV_MODULE Development)
 else()
-  set(DEV_MODULE Development.Module)
+    set(DEV_MODULE Development.Module)
 endif()
 
 find_package(Python REQUIRED COMPONENTS Interpreter ${DEV_MODULE})
@@ -27,9 +27,9 @@ find_package(Python REQUIRED COMPONENTS Interpreter ${DEV_MODULE})
 # If the build type is not set (single-config generators like Makefiles),
 # default to Release and provide the standard build type options.
 # ---------------------------------------------------------------------
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 # =====================================================================
@@ -50,11 +50,11 @@ endif()
 # =====================================================================
 function(asn1c_add_extension)
     cmake_parse_arguments(
-        A1C_EXT              # Prefix for parsed arguments
-        "SUBMODULE"          # Boolean options
-        "NAME"               # Single-value arguments
-        "ASN_FILES"          # Multi-value arguments
-        ${ARGN}              # All passed arguments
+        A1C_EXT # Prefix for parsed arguments
+        "SUBMODULE;CUSTOM_OUTPUT" # Boolean options
+        "NAME;PY_SRC_DIR;PY_STUB_DIR;PY_H_DIR;C_SRC_DIR;C_H_DIR;SK_OUT_DIR"
+        "ASN_FILES" # Multi-value arguments
+        ${ARGN} # All passed arguments
     )
 
     message(STATUS "[asn1c-bindings] ==================  Adding ASN.1 extension   ==================")
@@ -104,12 +104,19 @@ function(asn1c_add_extension)
     # --------------------------------------------------------------
     # Prepare output directory for generated code
     # --------------------------------------------------------------
-    set_from_env_or_default(A1C_GENERATED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${A1C_EXT_NAME}")
-    file(MAKE_DIRECTORY ${A1C_GENERATED_DIR})
-
     message(STATUS "[asn1c-bindings] Configuring extension: ${A1C_EXT_NAME}")
     message(STATUS "[asn1c-bindings]  - module basename: ${A1C_EXT_BASENAME}")
-    message(STATUS "[asn1c-bindings]  - generated dir: ${A1C_GENERATED_DIR}")
+    asn1c_append_out_args()
+
+
+    set_from_env_or_default(A1C_GENERATED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${A1C_EXT_NAME}")
+    if(A1C_EXT_CUSTOM_OUTPUT)
+        set(A1C_GENERATED_DIR "")
+    else()
+        file(MAKE_DIRECTORY ${A1C_GENERATED_DIR})
+        message(STATUS "[asn1c-bindings]  - generated dir: ${A1C_GENERATED_DIR}")
+    endif()
+
     foreach(_f ${A1C_SOURCE_FILES})
         message(STATUS "[asn1c-bindings]  - ASN.1 source: ${_f}")
     endforeach()
@@ -118,9 +125,23 @@ function(asn1c_add_extension)
     # Generate ASN.1 C sources
     # --------------------------------------------------------------
     asn1c_generate()
+
     file(GLOB A1C_GENERATED_SOURCES "${A1C_GENERATED_DIR}/*.c")
+    if(A1C_EXT_PY_SRC_DIR)
+        file(GLOB _py_src "${A1C_EXT_PY_SRC_DIR}/*.c")
+        list(APPEND A1C_GENERATED_SOURCES ${_py_src})
+    endif()
+    if(A1C_EXT_C_SRC_DIR)
+        file(GLOB _c_src "${A1C_EXT_C_SRC_DIR}/*.c")
+        list(APPEND A1C_GENERATED_SOURCES ${_c_src})
+    endif()
+    if(A1C_EXT_SK_OUT_DIR)
+        file(GLOB _c_src "${A1C_EXT_SK_OUT_DIR}/*.c")
+        list(APPEND A1C_GENERATED_SOURCES ${_c_src})
+    endif()
+
     if(NOT A1C_GENERATED_SOURCES)
-        message(FATAL_ERROR "No generated C sources found in ${A1C_GENERATED_DIR}!")
+        message(FATAL_ERROR "No generated C sources found in output directories! Check your configuration")
     endif()
 
     # --------------------------------------------------------------
@@ -128,10 +149,14 @@ function(asn1c_add_extension)
     # WITH_SOABI ensures the extension has the correct ABI tag
     # --------------------------------------------------------------
     python_add_library(${A1C_EXT_BASENAME} MODULE ${A1C_GENERATED_SOURCES} WITH_SOABI)
-    target_include_directories(${A1C_EXT_BASENAME} PRIVATE ${A1C_GENERATED_DIR})
+
+    target_include_directories(${A1C_EXT_BASENAME}
+        PRIVATE
+        ${A1C_GENERATED_DIR} ${A1C_EXT_C_H_DIR} ${A1C_EXT_PY_H_DIR}
+        ${A1C_EXT_SK_OUT_DIR} ${A1C_EXT_C_SRC_DIR} ${A1C_EXT_PY_SRC_DIR}
+    )
 
     if(A1C_EXT_SUBMODULE)
-        get_filename_component(SUBMODULE_DIR ${A1C_EXT_PATH} DIRECTORY)
         install(TARGETS ${A1C_EXT_BASENAME} DESTINATION ${SKBUILD_PROJECT_NAME}/${SUBMODULE_DIR})
         asn1c_install_stub(${SKBUILD_PROJECT_NAME}/${SUBMODULE_DIR})
     else()

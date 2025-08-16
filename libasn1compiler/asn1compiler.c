@@ -17,7 +17,7 @@ static inline const char *get_pymodule_name(const char *qualname) {
     return (last != NULL) ? (last + 1) : qualname;
 }
 
-int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
+int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
                  enum asn1c_flags flags, int argc, int optc, char **argv,
                  const char *pymodule) {
     arg_t arg_s;
@@ -104,7 +104,7 @@ int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
     /*
      * Save or print out the compiled result.
      */
-    if (asn1c_save_compiled_output(arg, datadir, destdir, argc, optc, argv))
+    if (asn1c_save_compiled_output(arg, datadirs, argc, optc, argv))
         return -1;
 
     TQ_FOR (mod, &(asn->modules), mod_next) {

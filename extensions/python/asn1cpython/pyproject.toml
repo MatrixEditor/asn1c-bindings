@@ -24,4 +24,7 @@ project = "https://github.com/MatrixEditor/asn1c-bindings"
 path = "asn1cpython_support/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-include = ["*.cmake"]
+only-include  = ["asn1cpython_support"]
+
+[tool.hatch.build.targets.wheel]
+artifacts = ["*.cmake"]

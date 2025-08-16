@@ -168,16 +168,3 @@ This configuration allows you to build your package with:
     hatch build
 
 
-Stub Files and Installation
----------------------------
-
-The ``asn1c-bindings`` CMake functions also handle type stub installation:
-
-* The ASN.1C compiler generates a generic stub file named ``py_module.pyi``.
-* During installation, this file is renamed to match your module name
-  (e.g. ``_example_mod.pyi``).
-* The renamed file is installed alongside the compiled extension,
-  respecting any submodule hierarchy.
-
-**This means type hints will work automatically in your IDE without any
-additional configuration.**

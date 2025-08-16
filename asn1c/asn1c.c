@@ -53,6 +53,21 @@
 static void usage(const char *av0); /* Print the Usage screen and exit */
 static int importStandardModules(asn1p_t *asn, const char *skeletons_dir);
 
+static inline char *make_path(const char *name) {
+    size_t len = strlen(name);
+    char *path = calloc(1, len + 2);
+    if (path) {
+        strcpy(path, name);
+        if (path[len - 1] != '/') {
+            path[len] = '/';
+            path[len + 1] = '\0';
+        } else {
+            path[len] = '\0';
+        }
+    }
+    return path;
+}
+
 int main(int ac, char **av) {
     enum asn1p_flags asn1_parser_flags = A1P_NOFLAGS;
     enum asn1f_flags asn1_fixer_flags = A1F_NOFLAGS;
@@ -74,22 +89,18 @@ int main(int ac, char **av) {
     int ch;            /* Command line character */
     int i;             /* Index in some loops */
     int exit_code = 0; /* Exit code */
+    asn1c_datadirs_t datadirs = {0};
 
     /*
      * Process command-line options.
      */
-    while ((ch = getopt(ac, av, "D:M:d:EFf:g:hn:LPp:RS:vW:X")) != -1)
+    while ((ch = getopt(ac, av, "D:M:d:EFf:o:g:hn:LPp:RS:vW:X")) != -1)
         switch (ch) {
             case 'D':
                 if (optarg && *optarg) {
-                    size_t optarg_len = strlen(optarg);
                     free(destdir);
-                    destdir = calloc(1, optarg_len + 2); /* + "/\0" */
+                    destdir = make_path(optarg);
                     assert(destdir);
-                    strcpy(destdir, optarg);
-                    if (destdir[optarg_len - 1] != '/') {
-                        destdir[optarg_len] = '/';
-                    }
                 } else {
                     free(destdir);
                     destdir = NULL;
@@ -101,7 +112,6 @@ int main(int ac, char **av) {
                     python_module_name = calloc(1, optarg_len + 1);
                     assert(python_module_name);
                     strcpy(python_module_name, optarg);
-                    printf("Python module name: %s\n", python_module_name);
                 } else {
                     free(python_module_name);
                     python_module_name = NULL;
@@ -128,6 +138,93 @@ int main(int ac, char **av) {
                 break;
             case 'F':
                 print_arg__fix_n_print = 1;
+                break;
+            case 'o':
+                if (strncmp(optarg, "ut-oython=", 10) == 0) {
+                    if (datadirs.py_c_datadir) free(datadirs.py_c_datadir);
+                    if (datadirs.py_h_datadir) free(datadirs.py_h_datadir);
+                    if (datadirs.py_stubs_datadir)
+                        free(datadirs.py_stubs_datadir);
+                    datadirs.py_c_datadir = make_path(optarg + 10);
+                    datadirs.py_h_datadir = strdup(datadirs.py_c_datadir);
+                    datadirs.py_stubs_datadir = strdup(datadirs.py_c_datadir);
+                    if (datadirs.h_datadir == NULL)
+                        datadirs.h_datadir = strdup(datadirs.py_c_datadir);
+                    if (datadirs.c_datadir == NULL)
+                        datadirs.c_datadir = strdup(datadirs.py_c_datadir);
+                    if (datadirs.skeleton_out_datadir == NULL)
+                        datadirs.skeleton_out_datadir =
+                            strdup(datadirs.py_c_datadir);
+                } else if (strncmp(optarg, "ut-python-headers=", 18) == 0) {
+                    if (datadirs.py_h_datadir) free(datadirs.py_h_datadir);
+                    datadirs.py_h_datadir = make_path(optarg + 18);
+                    if (datadirs.h_datadir == NULL)
+                        datadirs.h_datadir = strdup(datadirs.py_h_datadir);
+                    if (datadirs.c_datadir == NULL)
+                        datadirs.c_datadir = strdup(datadirs.py_h_datadir);
+                    if (datadirs.py_c_datadir == NULL)
+                        datadirs.py_c_datadir = strdup(datadirs.py_h_datadir);
+                    if (datadirs.py_stubs_datadir == NULL) {
+                        datadirs.py_stubs_datadir =
+                            strdup(datadirs.py_h_datadir);
+                    }
+                    if (datadirs.skeleton_out_datadir == NULL)
+                        datadirs.skeleton_out_datadir =
+                            strdup(datadirs.py_h_datadir);
+                } else if (strncmp(optarg, "ut-python-sources=", 18) == 0) {
+                    if (datadirs.py_c_datadir) free(datadirs.py_c_datadir);
+                    datadirs.py_c_datadir = make_path(optarg + 18);
+                    if (datadirs.h_datadir == NULL)
+                        datadirs.h_datadir = strdup(datadirs.py_c_datadir);
+                    if (datadirs.c_datadir == NULL)
+                        datadirs.c_datadir = strdup(datadirs.py_c_datadir);
+                    if (datadirs.py_h_datadir == NULL)
+                        datadirs.py_h_datadir = strdup(datadirs.py_c_datadir);
+                    if (datadirs.py_stubs_datadir == NULL) {
+                        datadirs.py_stubs_datadir =
+                            strdup(datadirs.py_c_datadir);
+                    }
+                    if (datadirs.skeleton_out_datadir == NULL)
+                        datadirs.skeleton_out_datadir =
+                            strdup(datadirs.py_c_datadir);
+                } else if (strncmp(optarg, "ut-python-stubs=", 16) == 0) {
+                    if (datadirs.py_stubs_datadir)
+                        free(datadirs.py_stubs_datadir);
+                    datadirs.py_stubs_datadir = make_path(optarg + 16);
+                } else if (strncmp(optarg, "ut-headers=", 11) == 0) {
+                    if (datadirs.h_datadir) free(datadirs.h_datadir);
+                    datadirs.h_datadir = make_path(optarg + 11);
+                    if (datadirs.py_c_datadir == NULL)
+                        datadirs.py_c_datadir = strdup(datadirs.h_datadir);
+                    if (datadirs.py_h_datadir == NULL)
+                        datadirs.py_h_datadir = strdup(datadirs.h_datadir);
+                    if (datadirs.c_datadir == NULL)
+                        datadirs.c_datadir = strdup(datadirs.h_datadir);
+                    if (datadirs.skeleton_out_datadir == NULL)
+                        datadirs.skeleton_out_datadir =
+                            strdup(datadirs.h_datadir);
+                } else if (strncmp(optarg, "ut-sources=", 11) == 0) {
+                    if (datadirs.c_datadir) free(datadirs.c_datadir);
+                    datadirs.c_datadir = make_path(optarg + 11);
+                    if (datadirs.py_c_datadir == NULL)
+                        datadirs.py_c_datadir = strdup(datadirs.c_datadir);
+                    if (datadirs.py_h_datadir == NULL)
+                        datadirs.py_h_datadir = strdup(datadirs.c_datadir);
+                    if (datadirs.h_datadir == NULL)
+                        datadirs.h_datadir = strdup(datadirs.c_datadir);
+                    if (datadirs.skeleton_out_datadir == NULL)
+                        datadirs.skeleton_out_datadir =
+                            strdup(datadirs.c_datadir);
+                } else if (strncmp(optarg, "ut-skeletons=", 13) == 0) {
+                    if (datadirs.skeleton_out_datadir)
+                        free(datadirs.skeleton_out_datadir);
+                    datadirs.skeleton_out_datadir = make_path(optarg + 13);
+                } else if (strcmp(optarg, "ut-skip-imports") == 0) {
+                    asn1_compiler_flags |= A1C_SKIP_IMPORTS;
+                } else {
+                    fprintf(stderr, "-o%s: Invalid argument\n", optarg);
+                    exit(EX_USAGE);
+                }
                 break;
             case 'f':
                 if (strcmp(optarg, "all-defs-global") == 0) {
@@ -465,13 +562,33 @@ int main(int ac, char **av) {
      * Compile the ASN.1 tree into a set of source files
      * of another language.
      */
-    if (asn1_compile(asn, skeletons_dir, destdir ? destdir : "",
-                     asn1_compiler_flags, ac + optind, optind, av - optind,
-                     python_module_name)) {
+    if (destdir == NULL) {
+        destdir = "./";
+    }
+    datadirs.skeletons_datadir = strdup(skeletons_dir);
+    if (datadirs.c_datadir == NULL) datadirs.c_datadir = strdup(destdir);
+    if (datadirs.h_datadir == NULL) datadirs.h_datadir = strdup(destdir);
+    if (datadirs.py_c_datadir == NULL) datadirs.py_c_datadir = strdup(destdir);
+    if (datadirs.py_h_datadir == NULL) datadirs.py_h_datadir = strdup(destdir);
+    if (datadirs.py_stubs_datadir == NULL)
+        datadirs.py_stubs_datadir = strdup(destdir);
+    if (datadirs.skeleton_out_datadir == NULL)
+        datadirs.skeleton_out_datadir = strdup(destdir);
+
+    if (asn1_compile(asn, &datadirs, asn1_compiler_flags, ac + optind, optind,
+                     av - optind, python_module_name)) {
         exit_code = EX_SOFTWARE;
     }
 
 cleanup:
+    if (datadirs.c_datadir) free(datadirs.c_datadir);
+    if (datadirs.h_datadir) free(datadirs.h_datadir);
+    if (datadirs.skeleton_out_datadir) free(datadirs.skeleton_out_datadir);
+    if (datadirs.py_c_datadir) free(datadirs.py_c_datadir);
+    if (datadirs.py_h_datadir) free(datadirs.py_h_datadir);
+    if (datadirs.py_stubs_datadir) free(datadirs.py_stubs_datadir);
+    if (datadirs.skeletons_datadir) free(datadirs.skeletons_datadir);
+
     asn1p_delete(asn);
     asn1p_lex_destroy();
     if (exit_code) exit(exit_code);
@@ -618,18 +735,29 @@ static void __attribute__((noreturn)) usage(const char *av0) {
 "  -fprefix=<prefix>     Add the specified prefix to generated types\n"
 "\n"
 
-"  -no-gen-BER           Do not generate the Basic Encoding Rules (BER, X.690) support code\n"
-"  -no-gen-XER           Do not generate the XML Encoding Rules (XER, X.693) support code\n"
-"  -no-gen-JER           Do not generate the JSON Encoding Rules (JER, X.697) support code\n"
-"  -no-gen-OER           Do not generate the Octet Encoding Rules (OER, X.696) support code\n"
-"  -no-gen-UPER          Do not generate the Unaligned Packed Encoding Rules (PER, X.691) support code\n"
-"  -no-gen-APER          Do not generate the Aligned Packed Encoding Rules (PER, X.691) support code\n"
-"  -no-gen-print         Do not generate the print code\n"
-"  -no-gen-random-fill   Do not generate the random fill code\n"
-"  -no-gen-example       Do not generate the ASN.1 format converter example\n"
-"  -no-gen-python        Do not generate the Python bindings\n"
-"  -gen-autotools        Generate example top-level configure.ac and Makefile.am\n"
+"  -[no-]gen-BER           (Do not) / Generate the Basic Encoding Rules (BER, X.690) support code (default: on)\n"
+"  -[no-]gen-XER           (Do not) / Generate the XML Encoding Rules (XER, X.693) support code (default: on)\n"
+"  -[no-]gen-JER           (Do not) / Generate the JSON Encoding Rules (JER, X.697) support code (default: on)\n"
+"  -[no-]gen-OER           (Do not) / Generate the Octet Encoding Rules (OER, X.696) support code (default: on)\n"
+"  -[no-]gen-UPER          (Do not) / Generate the Unaligned Packed Encoding Rules (PER, X.691) support code (default: on)\n"
+"  -[no-]gen-APER          (Do not) / Generate the Aligned Packed Encoding Rules (PER, X.691) support code (default: on)\n"
+"  -[no-]gen-print         (Do not) / Generate the print code (default: on)\n"
+"  -[no-]gen-random-fill   (Do not) / Generate the random fill code\n"
+"  -[no-]gen-example       (Do not) / Generate the ASN.1 format converter example (default: on)\n"
+"  -[no-]gen-python        (Do not) / Generate the Python bindings\n"
+"  -[no-]gen-python-stubs  (Do not) / Generate the Python stubs file\n"
+"  -[no-]gen-autotools     (Do not) / Generate example top-level configure.ac and Makefile.am (default: on)\n"
 "  -pdu={all|auto|Type}  Generate PDU table (discover PDUs automatically)\n"
+"\n"
+
+"  -out-python=<DIR>           Python output directory\n"
+"  -out-python-headers=<DIR>   Python header output directory\n"
+"  -out-python-sources=<DIR>   Python source output directory\n"
+"  -out-python-stubs=<DIR>     Python stubs output directory\n"
+"  -out-headers=<DIR>          C header output directory\n"
+"  -out-sources=<DIR>          C source output directory\n"
+"  -out-skeletons=<DIR>        C skeleton output directory\n"
+"  -out-skip-imports           Do not generate C source files for imported types\n"
 "\n"
 
 "  -print-class-matrix   Print out the collected object class matrix (debug)\n"

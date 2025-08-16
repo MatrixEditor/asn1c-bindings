@@ -24,5 +24,9 @@ asn1c_add_extension(
 asn1c_add_extension(
   NAME submodule._test
   SUBMODULE
+  CUSTOM_OUTPUT
+  # This will place ALL generated files in the src/generated_submodule directory
+  # even if we don't specify them here
+  PY_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/generated_submodule
   ASN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/test.asn
 )

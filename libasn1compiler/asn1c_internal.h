@@ -63,8 +63,8 @@ typedef struct arg_s {
 
     /*python code generation*/
     size_t anonymous_inner;        /* anonymous inner type counter*/
-    const char *pymodule_qualname; /* python module qualname*/
-    const char *pymodule_name;     /* python module name*/
+    const char *pymodule_qualname; /* python module qualname, e.g. "example.mymodule"*/
+    const char *pymodule_name;     /* python module name, e.g. "mymodule"*/
     struct compiler_streams *pytarget;
 } arg_t;
 

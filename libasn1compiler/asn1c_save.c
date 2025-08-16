@@ -40,11 +40,13 @@ enum include_type_result {
     TI_INCLUDED_FROM_CMDLINE
 };
 
-static int asn1c_dump_streams(arg_t *arg, asn1c_dep_chainset *, const char *,
-                              int, char **);
+static int asn1c_dump_streams(arg_t *arg, asn1c_dep_chainset *deps,
+                              const asn1c_datadirs_t *datadirs, int optc,
+                              char **argv);
 static int asn1c_print_streams(arg_t *arg);
-static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *, const char *,
-                              int, char **);
+static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
+                              const asn1c_datadirs_t *datadirs, int optc,
+                              char **argv);
 static int asn1c_copy_over(arg_t *arg, const char *destdir, const char *path,
                            const char *msg);
 static int identical_files(const char *fname1, const char *fname2);
@@ -96,13 +98,12 @@ static int asn1c__save_asn_config(arg_t *arg, const char *destdir,
 
 static int asn1c__save_library_makefile(arg_t *arg,
                                         const asn1c_dep_chainset *deps,
-                                        const char *datadir,
-                                        const char *destdir,
+                                        const asn1c_datadirs_t *datadirs,
                                         const char *makefile_name) {
     asn1p_module_t *mod;
     FILE *mkf;
 
-    mkf = asn1c_open_file(destdir, makefile_name, "", 0);
+    mkf = asn1c_open_file(datadirs->c_datadir, makefile_name, "", 0);
     if (mkf == NULL) {
         perror(makefile_name);
         return -1;
@@ -115,7 +116,7 @@ static int asn1c__save_library_makefile(arg_t *arg,
                     .type_cb &&
                 (arg->expr->meta_type != AMT_VALUE)) {
                 safe_fprintf(
-                    mkf, "\t\\\n\t%s%s.c", destdir,
+                    mkf, "\t\\\n\t%s%s.c", datadirs->c_datadir,
                     asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
                                           arg->expr, 0));
             }
@@ -128,7 +129,7 @@ static int asn1c__save_library_makefile(arg_t *arg,
                     .type_cb &&
                 (arg->expr->meta_type != AMT_VALUE)) {
                 safe_fprintf(
-                    mkf, "\t\\\n\t%s%s.h", destdir,
+                    mkf, "\t\\\n\t%s%s.h", datadirs->h_datadir,
                     asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
                                           arg->expr, 0));
             }
@@ -143,10 +144,10 @@ static int asn1c__save_library_makefile(arg_t *arg,
     if (dlist) {
         char dstpath[PATH_MAX];
         char *dir_end;
-        size_t dlen = strlen(datadir);
+        size_t dlen = strlen(datadirs->skeletons_datadir);
 
         assert(dlen < (sizeof(dstpath) / 2 - 2));
-        memcpy(dstpath, datadir, dlen);
+        memcpy(dstpath, datadirs->skeletons_datadir, dlen);
         dir_end = dstpath + dlen;
         *dir_end++ = '/';
 
@@ -167,7 +168,8 @@ static int asn1c__save_library_makefile(arg_t *arg,
                 where[0] = '\0';
             }
 
-            if (asn1c_copy_over(arg, destdir, dstpath, where) == -1) {
+            if (asn1c_copy_over(arg, datadirs->skeleton_out_datadir, dstpath,
+                                where) == -1) {
                 safe_fprintf(mkf, ">>>ABORTED<<<");
                 fclose(mkf);
                 return -1;
@@ -180,8 +182,8 @@ static int asn1c__save_library_makefile(arg_t *arg,
             } else {
                 what_kind = "SRCS";
             }
-            safe_fprintf(mkf, "ASN_MODULE_%s+=%s%s\n", what_kind, destdir,
-                         fname);
+            safe_fprintf(mkf, "ASN_MODULE_%s+=%s%s\n", what_kind,
+                         datadirs->skeleton_out_datadir, fname);
         }
 
         asn1c_dep_chain_free(dlist);
@@ -200,17 +202,19 @@ static int asn1c__save_library_makefile(arg_t *arg,
         (arg->flags & A1C_GEN_RFILL) ? "" : "-DASN_DISABLE_RFILL_SUPPORT ",
         (arg->flags & A1C_GEN_JER) ? "" : "-DASN_DISABLE_JER_SUPPORT ");
 
-    safe_fprintf(mkf,
-                 "\n\n"
-                 "lib_LTLIBRARIES+=libasncodec.la\n"
-                 "libasncodec_la_SOURCES="
-                 "$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)\n"
-                 "libasncodec_la_CPPFLAGS=-I$(top_srcdir)/%s\n"
-                 "libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)\n"
-                 "libasncodec_la_LDFLAGS=-lm\n",
-                 destdir);
+    safe_fprintf(
+        mkf,
+        "\n\n"
+        "lib_LTLIBRARIES+=libasncodec.la\n"
+        "libasncodec_la_SOURCES="
+        "$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)\n"
+        "libasncodec_la_CPPFLAGS=-I$(top_srcdir)/%s -I$(top_srcdir)/%s\n"
+        "libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)\n"
+        "libasncodec_la_LDFLAGS=-lm\n",
+        datadirs->skeleton_out_datadir, datadirs->h_datadir);
     fclose(mkf);
-    safe_fprintf(stderr, "Generated %s%s\n", destdir, makefile_name);
+    safe_fprintf(stderr, "Generated %s%s\n", datadirs->skeleton_out_datadir,
+                 makefile_name);
 
     return 0;
 }
@@ -424,9 +428,8 @@ static int can_generate_pdu_collection(arg_t *arg) {
     return 0;
 }
 
-int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
-                               const char *destdir, int argc, int optc,
-                               char **argv) {
+int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
+                               int argc, int optc, char **argv) {
     int ret = -1;
     char *filename = NULL;
     out_chunk_t *ot = NULL;
@@ -449,12 +452,12 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
     do {
         asn1p_module_t *mod;
 
-        deps = asn1c_read_file_dependencies(arg, datadir);
-        if (!deps && datadir) {
+        deps = asn1c_read_file_dependencies(arg, datadirs->skeletons_datadir);
+        if (!deps && datadirs->skeletons_datadir) {
             WARNING(
                 "Cannot read file-dependencies information "
                 "from %s\n",
-                datadir);
+                datadirs->skeletons_datadir);
         }
 
         TQ_FOR (mod, &(arg->asn->modules), mod_next) {
@@ -462,7 +465,7 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
                 if (asn1_lang_map[arg->expr->meta_type][arg->expr->expr_type]
                         .type_cb &&
                     (arg->expr->meta_type != AMT_VALUE)) {
-                    ret = asn1c_dump_streams(arg, deps, destdir, optc, argv);
+                    ret = asn1c_dump_streams(arg, deps, datadirs, optc, argv);
                     if (ret) break;
                 }
             }
@@ -479,26 +482,26 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
 
         if (ret) break;
 
-        ret = asn1c__save_asn_config(arg, destdir, cfgfile_name);
+        ret = asn1c__save_asn_config(arg, datadirs->h_datadir, cfgfile_name);
         if (ret) break;
 
-        ret = asn1c__save_library_makefile(arg, deps, datadir, destdir,
-                                           library_makefile);
+        ret =
+            asn1c__save_library_makefile(arg, deps, datadirs, library_makefile);
         if (ret) break;
 
         if (arg->flags & A1C_GEN_EXAMPLE) {
-            ret = asn1c__save_example_mk_makefile(arg, deps, datadir, destdir,
-                                                  program_makefile,
-                                                  library_makefile, argc, argv);
+            ret = asn1c__save_example_mk_makefile(
+                arg, deps, datadirs->skeletons_datadir, datadirs->c_datadir,
+                program_makefile, library_makefile, argc, argv);
             if (ret) break;
-            ret = asn1c__save_example_am_makefile(arg, deps, datadir, destdir,
-                                                  example_am_makefile,
-                                                  library_makefile, argc, argv);
+            ret = asn1c__save_example_am_makefile(
+                arg, deps, datadirs->skeletons_datadir, datadirs->c_datadir,
+                example_am_makefile, library_makefile, argc, argv);
             if (ret) break;
 
             if (arg->flags & A1C_GEN_AUTOTOOLS_EXAMPLE) {
-                ret =
-                    asn1c__save_autotools_example(destdir, example_am_makefile);
+                ret = asn1c__save_autotools_example(datadirs->c_datadir,
+                                                    example_am_makefile);
                 if (ret) break;
             }
         }
@@ -506,11 +509,13 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
 
     // save collected python types to module file
     if (arg->flags & A1C_GEN_PYTHON) {
-        fp_pymod_c = asn1c_open_file(destdir, "py_module", ".c", NULL);
+        fp_pymod_c =
+            asn1c_open_file(datadirs->py_c_datadir, "py_module", ".c", NULL);
         if (!fp_pymod_c) {
             return -1;
         }
-        fp_pymod_h = asn1c_open_file(destdir, "py_module", ".h", NULL);
+        fp_pymod_h =
+            asn1c_open_file(datadirs->py_h_datadir, "py_module", ".h", NULL);
         if (!fp_pymod_h) {
             ASN_CLOSE(fp_pymod_c);
             return -1;
@@ -570,11 +575,14 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
 
         ASN_XCLOSE(fp_pymod_c);
         ASN_XCLOSE(fp_pymod_h);
-        safe_fprintf(stderr, "Compiled %spy_module.c\n", destdir);
-        safe_fprintf(stderr, "Compiled %spy_module.h\n", destdir);
+        safe_fprintf(stderr, "Compiled %spy_module.c\n",
+                     datadirs->py_c_datadir);
+        safe_fprintf(stderr, "Compiled %spy_module.h\n",
+                     datadirs->py_h_datadir);
 
         /* stubs file */
-        py_stubs = asn1c_open_file(destdir, "py_module", ".pyi", NULL);
+        py_stubs = asn1c_open_file(datadirs->py_stubs_datadir,
+                                   arg->pymodule_name, ".pyi", NULL);
         if (!py_stubs) {
             return -1;
         }
@@ -592,8 +600,12 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
         safe_fprintf(py_stubs,
                      "\nfrom bitarray import bitarray as EXT_bitarray\n\n");
 
+        TQ_FOR (ot, &(cs->destination[OT_PY_STUBS_IMPORTS].chunks), next) {
+            safe_fwrite(ot->buf, ot->len, 1, py_stubs);
+        }
+
         /* type vars */
-        safe_fprintf(py_stubs, "_PY_T = EXT_TypeVar(\"_PY_T\")\n");
+        safe_fprintf(py_stubs, "\n_PY_T = EXT_TypeVar(\"_PY_T\")\n");
         safe_fprintf(
             py_stubs,
             "_ASN_T = EXT_TypeVar(\"_ASN_T\", bound=\"_Asn1Type\")\n\n");
@@ -654,13 +666,14 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
         safe_fprintf(py_stubs, "### END GENERATED CODE ###\n");
 
         ASN_XCLOSE(py_stubs);
-        safe_fprintf(stderr, "Compiled %spy_module.pyi\n", destdir);
+        safe_fprintf(stderr, "Compiled %s%s.pyi\n", datadirs->py_stubs_datadir,
+                     arg->pymodule_name);
     }
 
     asn1c_dep_chainset_free(deps);
     asn1c__cleanup_pdu_type();
 
-    generate_constant_file(arg, destdir);
+    generate_constant_file(arg, datadirs->h_datadir);
 
     return ret;
 }
@@ -669,11 +682,12 @@ int asn1c_save_compiled_output(arg_t *arg, const char *datadir,
  * Dump the streams.
  */
 static int asn1c_dump_streams(arg_t *arg, asn1c_dep_chainset *deps,
-                              const char *destdir, int optc, char **argv) {
+                              const asn1c_datadirs_t *datadirs, int optc,
+                              char **argv) {
     if (arg->flags & A1C_PRINT_COMPILED) {
         return asn1c_print_streams(arg);
     } else {
-        return asn1c_save_streams(arg, deps, destdir, optc, argv);
+        return asn1c_save_streams(arg, deps, datadirs, optc, argv);
     }
 }
 
@@ -698,7 +712,8 @@ static int asn1c_print_streams(arg_t *arg) {
 }
 
 static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
-                              const char *destdir, int optc, char **argv) {
+                              const asn1c_datadirs_t *datadirs, int optc,
+                              char **argv) {
     asn1p_expr_t *expr = arg->expr;
     compiler_streams_t *cs = expr->data;
     out_chunk_t *ot;
@@ -718,28 +733,31 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         return -1;
     }
 
-    filename = strdup(asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, (char *)0));
+    filename = strdup(asn1c_make_identifier(
+        AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, (char *)0));
     if (!(arg->flags & A1C_GEN_PYTHON)) {
         include_py = 0;
     }
 
-    fp_c = asn1c_open_file(destdir, filename, ".c", &tmpname_c);
+    fp_c = asn1c_open_file(datadirs->c_datadir, filename, ".c", &tmpname_c);
     if (fp_c == NULL) {
         goto error;
     }
-    fp_h = asn1c_open_file(destdir, filename, ".h", &tmpname_h);
+    fp_h = asn1c_open_file(datadirs->h_datadir, filename, ".h", &tmpname_h);
     if (fp_h == NULL) {
         ASN_CLOSE(fp_c);
         goto error;
     }
     if (include_py) {
-        fp_py_c = asn1c_open_file(destdir, filename, "_Py.c", &tmpname_py_c);
+        fp_py_c = asn1c_open_file(datadirs->py_c_datadir, filename, "_Py.c",
+                                  &tmpname_py_c);
         if (fp_py_c == NULL) {
             ASN_CLOSE(fp_c);
             ASN_CLOSE(fp_h);
             goto error;
         }
-        fp_py_h = asn1c_open_file(destdir, filename, "._Py.h", &tmpname_py_h);
+        fp_py_h = asn1c_open_file(datadirs->py_h_datadir, filename, "._Py.h",
+                                  &tmpname_py_h);
         if (fp_py_h == NULL) {
             ASN_CLOSE(fp_c);
             ASN_CLOSE(fp_h);
@@ -879,7 +897,8 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
     ASN_CLOSE(fp_h);
     ASN_XCLOSE(fp_py_h);
 
-    int ret = snprintf(name_buf, sizeof(name_buf), "%s%s.c", destdir, filename);
+    int ret = snprintf(name_buf, sizeof(name_buf), "%s%s.c",
+                       datadirs->c_datadir, filename);
     assert(ret > 0 && ret < (ssize_t)sizeof(name_buf));
 
     if (identical_files(name_buf, tmpname_c)) {
@@ -893,7 +912,7 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         ASN_CLEAR(tmpname_c);
     }
 
-    sprintf(name_buf, "%s%s.h", destdir, filename);
+    sprintf(name_buf, "%s%s.h", datadirs->h_datadir, filename);
     if (identical_files(name_buf, tmpname_h)) {
         h_retained = " (contents unchanged)";
         unlink(tmpname_h);
@@ -906,7 +925,7 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
     }
 
     if (include_py) {
-        sprintf(name_buf, "%s%s_Py.c", destdir, filename);
+        sprintf(name_buf, "%s%s_Py.c", datadirs->py_c_datadir, filename);
         if (identical_files(name_buf, tmpname_py_c)) {
             py_c_retained = " (contents unchanged)";
             unlink(tmpname_py_c);
@@ -918,7 +937,7 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
             ASN_CLEAR(tmpname_py_c);
         }
 
-        sprintf(name_buf, "%s%s_Py.h", destdir, filename);
+        sprintf(name_buf, "%s%s_Py.h", datadirs->py_h_datadir, filename);
         if (identical_files(name_buf, tmpname_py_h)) {
             py_h_retained = " (contents unchanged)";
             unlink(tmpname_py_h);
@@ -931,13 +950,15 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         }
     }
 
-    safe_fprintf(stderr, "Compiled %s%s.c%s\n", destdir, filename, c_retained);
-    safe_fprintf(stderr, "Compiled %s%s.h%s\n", destdir, filename, h_retained);
+    safe_fprintf(stderr, "Compiled %s%s.c%s\n", datadirs->c_datadir, filename,
+                 c_retained);
+    safe_fprintf(stderr, "Compiled %s%s.h%s\n", datadirs->h_datadir, filename,
+                 h_retained);
     if (include_py) {
-        safe_fprintf(stderr, "Compiled %s%s_Py.h%s\n", destdir, filename,
-                     py_h_retained);
-        safe_fprintf(stderr, "Compiled %s%s_Py.c%s\n", destdir, filename,
-                     py_c_retained);
+        safe_fprintf(stderr, "Compiled %s%s_Py.h%s\n", datadirs->py_c_datadir,
+                     filename, py_h_retained);
+        safe_fprintf(stderr, "Compiled %s%s_Py.c%s\n", datadirs->py_h_datadir,
+                     filename, py_c_retained);
     }
     goto finalize;
 

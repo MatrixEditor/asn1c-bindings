@@ -63,13 +63,36 @@ endfunction()
 #                     (relative to the package root).
 #
 # Input variables (must be set before calling):
-#   - A1C_GENERATED_DIR  : Directory containing generated files.
+#   - A1C_GENERATED_DIR  : Directory containing generated files. (fallback)
 #   - A1C_EXT_BASENAME   : Base name for the module (used for renaming).
 # ---------------------------------------------------------------
 function(asn1c_install_stub DESTINATION_DIR)
+    # priority:
+    if(A1C_EXT_PY_STUB_DIR)
+        set(A1C_STUB_DIR "${A1C_EXT_PY_STUB_DIR}")
+    elseif(DEFINED ENV{A1C_PY_STUB_DIR})
+        set(A1C_STUB_DIR "$ENV{A1C_PY_STUB_DIR}}")
+    elseif(A1C_EXT_PY_SRC_DIR)
+        set(A1C_STUB_DIR "${A1C_EXT_PY_SRC_DIR}")
+    elseif(DEFINED ENV{A1C_PY_SRC_DIR})
+        set(A1C_STUB_DIR "$ENV{A1C_PY_SRC_DIR}}")
+    elseif(A1C_EXT_PY_H_DIR)
+        set(A1C_STUB_DIR "${A1C_EXT_PY_H_DIR}")
+    elseif(DEFINED ENV{A1C_PY_H_DIR})
+        set(A1C_STUB_DIR "$ENV{A1C_PY_H_DIR}}")
+    elseif(A1C_EXT_C_SRC_DIR)
+        set(A1C_STUB_DIR "${A1C_EXT_C_SRC_DIR}")
+    elseif(DEFINED ENV{A1C_C_SRC_DIR})
+        set(A1C_STUB_DIR "$ENV{A1C_C_SRC_DIR}}")
+    elseif(A1C_EXT_C_H_DIR)
+        set(A1C_STUB_DIR "${A1C_EXT_C_H_DIR}")
+    elseif(DEFINED ENV{A1C_C_H_DIR})
+        set(A1C_STUB_DIR "$ENV{A1C_C_H_DIR}}")
+    else()
+        set(A1C_STUB_DIR "${A1C_GENERATED_DIR}")
+    endif()
     install(
-        FILES ${A1C_GENERATED_DIR}/py_module.pyi
+        FILES "${A1C_STUB_DIR}/${A1C_EXT_BASENAME}.pyi"
         DESTINATION ${DESTINATION_DIR}
-        RENAME "${A1C_EXT_BASENAME}.pyi"
     )
 endfunction()

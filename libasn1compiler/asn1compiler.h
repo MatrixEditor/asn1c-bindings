@@ -129,16 +129,57 @@ enum asn1c_flags {
      */
     A1C_GEN_JER = 0x100000000,
     /*
-     * -gen-PY / -no-gen-PY
+     * -gen-python / -no-gen-python
      * Generate Python support code
      */
-    A1C_GEN_PYTHON = 0x200000000
+    A1C_GEN_PYTHON = 0x200000000,
+    /*
+     * -gen-python-stubs / -no-gen-python-stubs
+     * Generate Python stubs file
+     */
+    A1C_GEN_PYTHON_STUBS = 0x400000000,
+    /*
+     * -out-skip-imports
+     * Do not compile external modules
+     */
+    A1C_SKIP_IMPORTS = 0x800000000
 };
+
+typedef struct asn1c_datadirs_s {
+    /*
+     * C Source files data directory
+     */
+    char *c_datadir;
+    /*
+     * Header files data directory
+     */
+    char *h_datadir;
+    /*
+     * Support files data out directory
+     */
+    char *skeleton_out_datadir;
+    /*
+     * Support files data directory
+     */
+    char *skeletons_datadir;
+    /*
+     * Python module (C) data directory
+     */
+    char *py_c_datadir;
+    /*
+     * Python module (headers) data directory
+     */
+    char *py_h_datadir;
+    /*
+     * Python stubs output data directory
+     */
+    char *py_stubs_datadir;
+} asn1c_datadirs_t;
 
 /*
  * Compile the ASN.1 specification.
  */
-int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir,
+int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
                  enum asn1c_flags, int argc, int optc, char **argv,
                  const char *pymodule);
 
