@@ -92,7 +92,8 @@ static int PyCompatRelativeOID_FromUnicode(PyObject *unicode,
         goto error;
     }
 
-    ASN_STRUCT_RESET(asn_DEF_OBJECT_IDENTIFIER, oid);
+    oid->buf = NULL;
+    oid->size = 0;
     result = RELATIVE_OID_set_arcs(oid, arcs, arc_count);
     if (result < 0) goto error;
 end:

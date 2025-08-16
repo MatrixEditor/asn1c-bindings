@@ -272,8 +272,10 @@ static PyObject *PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
 static inline char *_PyCompatUnicode_AsUTF8AndSize(PyObject *pObj,
                                                    Py_ssize_t *size) {
     const char *str = NULL;
-
     str = PyUnicode_AsUTF8AndSize(pObj, size);
+    if (!str) {
+        return NULL;
+    }
     return str ? strdup(str) : NULL;
 }
 
@@ -289,9 +291,13 @@ static inline int _PyCompatUnicode_AsUTF8(PyObject *pObj, char **str,
     PyCompatUnicode_Check(pObj, -1);
     if (*str) {
         PyMem_Free(*str);
+        *str = NULL;
     }
 
-    *str = _PyCompatUnicode_AsUTF8AndSize(pObj, size);
+    *str = (char *)_PyCompatUnicode_AsUTF8AndSize(pObj, size);
+    if (!*str) {
+        return -1;
+    }
     return *str == NULL ? -1 : 0;
 }
 

@@ -229,25 +229,27 @@ end:
 
 #define PY_IMPL_GENERIC_DEALLOC(name) PY_IMPL_DEALLOC(name, asn_DEF_##name)
 
-#define PY_IMPL_DEALLOC(name, type_DEF)                                 \
-    static void PyAsn##name##__dealloc(PyAsn##name##Object* self) {     \
-        if (self->ob_parent) {                                          \
-            if (Py_REFCNT(self->ob_parent) < 1) {                       \
-                PyErr_SetString(PyExc_MemoryError,                      \
-                                "UAF: parent object already deleted!"); \
-                return;                                                 \
-            }                                                           \
-            Py_DECREF(self->ob_parent);                                 \
-            self->ob_value = NULL;                                      \
-        } else {                                                        \
-            if (self->ob_value != NULL) {                               \
-                ASN_STRUCT_RESET((type_DEF), self->ob_value);           \
-                PyMem_RawFree(self->ob_value);                          \
-            }                                                           \
-            self->ob_value = NULL;                                      \
-            self->ob_parent = NULL;                                     \
-        }                                                               \
-        Py_TYPE(self)->tp_free((PyObject*)self);                        \
+#define PY_IMPL_DEALLOC(name, type_DEF)                                   \
+    static void PyAsn##name##__dealloc(PyAsn##name##Object* self) {       \
+        ASN_DEBUG("Freeing " #name " at %p (parent: %p)", self->ob_value, \
+                  self->ob_parent);                                       \
+        if (self->ob_parent != NULL) {                                            \
+            if (Py_REFCNT(self->ob_parent) < 1) {                         \
+                PyErr_SetString(PyExc_MemoryError,                        \
+                                "UAF: parent object already deleted!");   \
+                return;                                                   \
+            }                                                             \
+            Py_DECREF(self->ob_parent);                                   \
+            self->ob_value = NULL;                                        \
+        } else {                                                          \
+            if (self->ob_value != NULL && self->s_valid) {                \
+                ASN_STRUCT_RESET((type_DEF), self->ob_value);             \
+                PyMem_RawFree(self->ob_value);                            \
+            }                                                             \
+            self->ob_value = NULL;                                        \
+            self->ob_parent = NULL;                                       \
+        }                                                                 \
+        Py_TYPE(self)->tp_free((PyObject*)self);                          \
     }
 
 #define PY_IMPL_REPR(name) PY_IMPL_GENERIC_REPR(name, name)
@@ -1123,6 +1125,8 @@ end:
 
 #define PY_IMPL_SEQ_OF_DEALLOC(typeName, EMPTY_FUNC)                        \
     static void PyAsn##typeName##__dealloc(PyAsn##typeName##Object* self) { \
+        ASN_DEBUG("Freeing " #typeName " object (value=%p, parent=%p)",     \
+                  self->ob_value, self->ob_parent);                         \
         if (self->ob_parent) {                                              \
             if (Py_REFCNT(self->ob_parent) < 1) {                           \
                 PyErr_SetString(PyExc_MemoryError,                          \
@@ -1134,6 +1138,10 @@ end:
         } else {                                                            \
             if (self->ob_value != NULL) {                                   \
                 if (self->ob_value->list.count > 0) {                       \
+                    ASN_DEBUG("Freeing elements of " #typeName              \
+                              " (count=%d, list=%p)",                       \
+                              self->ob_value->list.count,                   \
+                              self->ob_value->list.array);                  \
                     EMPTY_FUNC((void*)&self->ob_value->list);               \
                 }                                                           \
                 PyMem_RawFree(self->ob_value);                              \

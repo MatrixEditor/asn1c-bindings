@@ -23,7 +23,7 @@ int asn_set_add(void *asn_set_of_x, void *ptr) {
     if (as->count == as->size) {
         int _newsize = as->size ? (as->size << 1) : 4;
         void *_new_arr;
-        _new_arr = REALLOC(as->array, _newsize * sizeof(as->array[0]));
+        _new_arr = REALLOC(as->array, _newsize * sizeof(void *));
         if (_new_arr) {
             as->array = (void **)_new_arr;
             as->size = _newsize;

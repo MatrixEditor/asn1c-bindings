@@ -6,6 +6,8 @@
 #ifndef _PyConvert_OBJECT_IDENTIFIER_H_
 #define _PyConvert_OBJECT_IDENTIFIER_H_
 
+#include <asn_internal.h>
+
 #include <py_convert.h>
 #include <OBJECT_IDENTIFIER.h>
 
@@ -105,6 +107,7 @@ static int PyCompatOID_FromUnicode(PyObject *unicode,
     PyCompatUnicode_Check(unicode, -1);
     oid_text = PyUnicode_AsUTF8AndSize(unicode, &oid_text_len);
     if (oid_text_len < 0) goto end;
+    ASN_DEBUG("PyCompatOID_FromUnicode: Converting %s to an OID", oid_text);
 
     arc_count = OBJECT_IDENTIFIER_parse_arcs(oid_text, oid_text_len, arcs,
                                              arc_slots, NULL);
@@ -121,11 +124,13 @@ static int PyCompatOID_FromUnicode(PyObject *unicode,
         goto error;
     }
 
-    ASN_STRUCT_RESET(asn_DEF_OBJECT_IDENTIFIER, oid);
+    oid->buf = NULL;
+    oid->size = 0;
     result = OBJECT_IDENTIFIER_set_arcs(oid, arcs, arc_count);
     if (result < 0) goto error;
 end:
     if (arcs != fixed_arcs && arcs) PyMem_RawFree(arcs);
+    ASN_DEBUG("PyCompatOID_FromUnicode: Result: %d", result);
     return result;
 
 error:
