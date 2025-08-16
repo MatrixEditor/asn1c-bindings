@@ -258,7 +258,22 @@
         arg->target = saved_cs;                                   \
     } while (0)
 
-#define PY_GEN_MODULE_ADD_TYPE(typeName)                                      \
+#define PY_GEN_INCLUDE_NONPY 0
+#define PY_GEN_INCLUDE_PY 1
+
+#define PY_GEN_INCLUDE_STD(redirTarget, includeName, addExt)                  \
+    do {                                                                      \
+        int saved_target = arg->target->target;                               \
+        REDIR(redirTarget);                                                   \
+        if ((arg->flags & A1C_INCLUDES_QUOTED)) {                             \
+            OUT("#include \"%s%s.h\"\n", includeName, (addExt) ? "_Py" : ""); \
+        } else {                                                              \
+            OUT("#include <%s%s.h>\n", includeName, (addExt) ? "_Py" : "");   \
+        }                                                                     \
+        REDIR(saved_target);                                                  \
+    } while (0)
+
+#define PY_GEN_MODULE_ADD_TYPE(typeName, includeName)                         \
     PY_OUTER(OT_PY_IMPL_MOD_SETUP_TYPES,                                      \
              INDENTED(OUT("if (PyAsn%s_ModSetupTypes() < 0) return NULL;\n",  \
                           typeName));                                         \
@@ -267,8 +282,8 @@
              REDIR(OT_PY_IMPL_MOD_INIT);                                      \
              INDENTED(OUT("if (PyAsn%s_ModInit(nModule) < 0) return NULL;\n", \
                           typeName));                                         \
-             REDIR(OT_PY_IMPL_MOD_INCLUDES);                                  \
-             OUT("#include \"%s_Py.h\"\n", typeName));
+             PY_GEN_INCLUDE_STD(OT_PY_IMPL_MOD_INCLUDES, includeName,         \
+                                PY_GEN_INCLUDE_PY));
 
 #define PY_GEN_STUBS_BASIC_TYPE(typeName, baseClass)                      \
     PY_OUTER(OT_PY_STUBS,                                                 \

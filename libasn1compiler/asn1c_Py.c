@@ -247,7 +247,9 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
 
     if (!arg->embed) {
         PY_GEN_TYPE_MOD_INIT(type_name);
-        PY_GEN_MODULE_ADD_TYPE(type_name);
+        PY_GEN_MODULE_ADD_TYPE(
+            type_name, asn1c_make_identifier(
+                           AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, NULL));
     }
 
     if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
@@ -452,7 +454,9 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     PY_GEN_MOD_BASIC(type_name);
     if (!arg->embed) {
         PY_GEN_TYPE_MOD_INIT(type_name);
-        PY_GEN_MODULE_ADD_TYPE(type_name);
+        PY_GEN_MODULE_ADD_TYPE(
+            type_name, asn1c_make_identifier(
+                           AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, NULL));
     }
 
     if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
@@ -590,10 +594,11 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
 
                 // we assume every referenced type is defined has a Python
                 // candidate.
-                REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"%s_Py.h\"\n",
+                PY_GEN_INCLUDE_STD(
+                    OT_PY_TYPE_INCLUDES,
                     asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES,
-                                          ref->ref_expr, NULL));
+                                          ref->ref_expr, NULL),
+                    PY_GEN_INCLUDE_PY);
                 break;
             }
 
@@ -657,8 +662,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
             case ASN_BASIC_OCTET_STRING:
             embed_octet_string:
                 // will get their own implementation
-                REDIR(OT_PY_IMPL_INCLUDES);
-                OUT("#include <asn_codecs_prim.h>\n");
+                PY_GEN_INCLUDE_STD(OT_PY_IMPL_INCLUDES, "asn_codecs_prim", 0);
                 REDIR(OT_PY_IMPL_CODE);
                 switch (parent_expr_type) {
                     case ASN_CONSTR_CHOICE:
@@ -764,8 +768,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                         break;
                 };
                 // must include new converter
-                REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"py_convert_OBJECT_IDENTIFIER.h\"\n");
+                PY_GEN_INCLUDE_STD(OT_PY_TYPE_INCLUDES,
+                                   "py_convert_OBJECT_IDENTIFIER",
+                                   PY_GEN_INCLUDE_NONPY);
                 break;
 
             case ASN_BASIC_BIT_STRING:
@@ -821,8 +826,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                         break;
                 };
                 // must include new converter
-                REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"py_convert_RELATIVE_OID.h\"\n");
+                PY_GEN_INCLUDE_STD(OT_PY_TYPE_INCLUDES,
+                                   "py_convert_RELATIVE_OID",
+                                   PY_GEN_INCLUDE_NONPY);
                 break;
 
             /*string types*/
@@ -1022,10 +1028,11 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 PY_GEN_BASIC_CLASS(arg->pymodule_qualname, name);
                 PY_GEN_MOD_BASIC(name);
 
-                REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"%s_Py.h\"\n",
+                PY_GEN_INCLUDE_STD(
+                    OT_PY_TYPE_INCLUDES,
                     asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES,
-                                          ref->ref_expr, NULL));
+                                          ref->ref_expr, NULL),
+                    PY_GEN_INCLUDE_PY);
                 break;
             }
             case ASN_BASIC_INTEGER: {
@@ -1208,8 +1215,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 PY_GEN_MOD_BASIC(name);
 
                 // must include new converter
-                REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"py_convert_OBJECT_IDENTIFIER.h\"\n");
+                PY_GEN_INCLUDE_STD(OT_PY_TYPE_INCLUDES,
+                                   "py_convert_OBJECT_IDENTIFIER",
+                                   PY_GEN_INCLUDE_NONPY);
                 break;
             }
             case ASN_BASIC_RELATIVE_OID: { /* for now, use special converter*/
@@ -1229,8 +1237,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 PY_GEN_MOD_BASIC(name);
 
                 // must include new converter
-                REDIR(OT_PY_TYPE_INCLUDES);
-                OUT("#include \"py_convert_RELATIVE_OID.h\"\n");
+                PY_GEN_INCLUDE_STD(OT_PY_TYPE_INCLUDES,
+                                   "py_convert_RELATIVE_OID",
+                                   PY_GEN_INCLUDE_NONPY);
                 break;
             }
 
@@ -1370,7 +1379,9 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
             }
         }
         PY_GEN_TYPE_MOD_INIT(name);
-        PY_GEN_MODULE_ADD_TYPE(name);
+        PY_GEN_MODULE_ADD_TYPE(
+            name, asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES,
+                                        expr, NULL));
     }
 
     result = asn1c_lang_Py_stubs_SIMPLE_TYPE(arg, parent_expr);
@@ -1541,7 +1552,10 @@ int asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     INDENTED(PY_GEN_MOD_SETUP_SINGLE(list_type_name));
     if (!arg->embed) {
         PY_GEN_TYPE_MOD_INIT(list_type_name);
-        PY_GEN_MODULE_ADD_TYPE(list_type_name);
+        PY_GEN_MODULE_ADD_TYPE(
+            list_type_name,
+            asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr,
+                                  NULL));
     }
 
     PY_GEN_STUBS_BEGIN;
