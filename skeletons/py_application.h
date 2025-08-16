@@ -1,10 +1,14 @@
+/*
+ * Copyright (c) 2025 MatrixEditor @ github
+ * All rights reserved.
+ * Redistribution and modifications are permitted subject to BSD license.
+ */
 #ifndef _PyApplication_H_
 #define _PyApplication_H_
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-
-#include "asn_application.h"
+#include <asn_application.h>
 
 typedef struct {
     PyObject* str__write;
@@ -188,7 +192,7 @@ end:
 
 #define PY_IMPL_FROMPY_COMPAT(typeName, obj, dst)                        \
     do {                                                                 \
-        if (PyObject_TypeCheck((obj), &PyAsn##typeName##_Type)) {      \
+        if (PyObject_TypeCheck((obj), &PyAsn##typeName##_Type)) {        \
             if (asn_copy(&asn_DEF_##typeName, (void**)&dst,              \
                          ((PyCompatAsnObject_t*)(obj))->ob_value) < 0) { \
                 PyErr_BadInternalCall();                                 \
@@ -1079,6 +1083,21 @@ end:
         ASN_SET_MKPRESENT(&self->ob_value->_presence_map,                     \
                           enumTypeName##_PR_##attrName);                      \
         return 0;                                                             \
+    }
+
+#define PY_IMPL_SET_INIT_ATTR(typeName, enumTypeName, attrName)              \
+    if (result == 0) {                                                       \
+        PyCompat_GenericGetAttr(pObj, attrName, tmp);                        \
+        if (tmp) {                                                           \
+            if (PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
+                result = -1;                                                 \
+            } else {                                                         \
+                ASN_SET_MKPRESENT(&pDst->_presence_map,                      \
+                                  enumTypeName##_PR_##attrName);             \
+                Py_CLEAR(tmp);                                               \
+            }                                                                \
+        } else                                                               \
+            PyErr_Clear();                                                   \
     }
 
 /* SEQ OF / SET OF*/

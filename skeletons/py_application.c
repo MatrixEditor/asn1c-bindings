@@ -1,4 +1,9 @@
-#include "py_application.h"
+/*
+ * Copyright (c) 2025 MatrixEditor @ github
+ * All rights reserved.
+ * Redistribution and modifications are permitted subject to BSD license.
+ */
+#include <py_application.h>
 
 /*global state storing extra Python objects*/
 PyCompatTable_t *PyCompatTable = NULL;

@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2025 MatrixEditor @ github
+ * All rights reserved.
+ * Redistribution and modifications are permitted subject to BSD license.
+ */
 #ifndef _PyConvert_RELATIVE_OID_H_
 #define _PyConvert_RELATIVE_OID_H_
 
-#include "py_convert_OBJECT_IDENTIFIER.h"
-
-#include "RELATIVE-OID.h"
+#include <py_convert_OBJECT_IDENTIFIER.h>
+#include <RELATIVE-OID.h>
 
 static PyObject *PyCompatRelativeOID_AsUTF8String(const RELATIVE_OID_t *oid) {
     PyObject *nResult = NULL;

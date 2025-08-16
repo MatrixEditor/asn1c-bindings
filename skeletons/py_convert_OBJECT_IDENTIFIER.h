@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2025 MatrixEditor @ github
+ * All rights reserved.
+ * Redistribution and modifications are permitted subject to BSD license.
+ */
 #ifndef _PyConvert_OBJECT_IDENTIFIER_H_
 #define _PyConvert_OBJECT_IDENTIFIER_H_
 
-#include "py_convert.h"
-
-#include "OBJECT_IDENTIFIER.h"
+#include <py_convert.h>
+#include <OBJECT_IDENTIFIER.h>
 
 static PyObject *PyCompatOID_ArcsAsUTF8String(const asn_oid_arc_t *arcs,
                                               size_t arc_count) {

@@ -7,8 +7,10 @@
     do {                                                                  \
         if ((arg->flags & A1C_INCLUDES_QUOTED)) {                         \
             GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "\"py_application.h\""); \
+            GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "\"py_convert.h\"");     \
         } else {                                                          \
             GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "<py_application.h>");   \
+            GEN_POS_INCLUDE(OT_PY_TYPE_INCLUDES, "<py_convert.h>");       \
         }                                                                 \
     } while (0)
 

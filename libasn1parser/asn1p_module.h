@@ -93,6 +93,7 @@ typedef struct asn1p_module_s {
      */
     enum {
         MT_STANDARD_MODULE = 0x01, /* Module came from standard-modules */
+        MT_FIRST_MODULE = 0x02,    /* First module in the ASN.1 parser */
     } _tags;
 } asn1p_module_t;
 

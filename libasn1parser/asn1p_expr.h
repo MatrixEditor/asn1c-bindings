@@ -206,8 +206,8 @@ typedef struct asn1p_expr_s {
             EM_NOMARK,
             EM_INDIRECT = 0x01,  /* 00001 Represent as pointer */
             EM_OMITABLE = 0x02,  /* 00010 May be absent in encoding */
-            EM_OPTIONAL = 0x04,  /* 00100 Optional member */
-            EM_DEFAULT = 0x08,   /* 01000 default_value */
+            EM_OPTIONAL = 0x07,  /* 00111 Optional member */
+            EM_DEFAULT = 0x0F,   /* 01111 default_value */
             EM_UNRECURSE = 0x10, /* 10000 Use safe naming */
         } flags;
         asn1p_value_t *default_value; /* For EM_DEFAULT case */

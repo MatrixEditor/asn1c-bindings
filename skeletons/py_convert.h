@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2025 MatrixEditor @ github
+ * All rights reserved.
+ * Redistribution and modifications are permitted subject to BSD license.
+ */
 #ifndef _PyConvert_H_
 #define _PyConvert_H_
 
 #include <Python.h>
-#include "py_application.h"
+#include <py_application.h>
 
 #define PyCompat_ArgCheck(obj, ret) \
     if (!obj) {                     \

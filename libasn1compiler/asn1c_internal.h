@@ -44,6 +44,7 @@
 #include "asn1_namespace.h"
 
 struct asn1c_ioc_table_and_objset_s;
+struct asn1c_pyimports_s;
 
 typedef struct arg_s {
     enum asn1c_flags flags;
@@ -66,6 +67,7 @@ typedef struct arg_s {
     const char *pymodule_qualname; /* python module qualname, e.g. "example.mymodule"*/
     const char *pymodule_name;     /* python module name, e.g. "mymodule"*/
     struct compiler_streams *pytarget;
+    struct asn1c_pyimports_s *pyimports;
 } arg_t;
 
 /*

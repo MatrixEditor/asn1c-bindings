@@ -104,8 +104,7 @@ int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
     /*
      * Save or print out the compiled result.
      */
-    if (asn1c_save_compiled_output(arg, datadirs, argc, optc, argv))
-        return -1;
+    if (asn1c_save_compiled_output(arg, datadirs, argc, optc, argv)) return -1;
 
     TQ_FOR (mod, &(asn->modules), mod_next) {
         TQ_FOR (arg->expr, &(mod->members), next) {

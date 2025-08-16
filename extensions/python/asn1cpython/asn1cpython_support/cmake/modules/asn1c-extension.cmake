@@ -53,7 +53,7 @@ function(asn1c_add_extension)
         A1C_EXT # Prefix for parsed arguments
         "SUBMODULE;CUSTOM_OUTPUT" # Boolean options
         "NAME;PY_SRC_DIR;PY_STUB_DIR;PY_H_DIR;C_SRC_DIR;C_H_DIR;SK_OUT_DIR"
-        "ASN_FILES" # Multi-value arguments
+        "ASN_FILES;INCLUDES" # Multi-value arguments
         ${ARGN} # All passed arguments
     )
 
@@ -154,6 +154,7 @@ function(asn1c_add_extension)
         PRIVATE
         ${A1C_GENERATED_DIR} ${A1C_EXT_C_H_DIR} ${A1C_EXT_PY_H_DIR}
         ${A1C_EXT_SK_OUT_DIR} ${A1C_EXT_C_SRC_DIR} ${A1C_EXT_PY_SRC_DIR}
+        ${A1C_EXT_INCLUDES}
     )
 
     if(A1C_EXT_SUBMODULE)

@@ -484,11 +484,13 @@ int main(int ac, char **av) {
          */
         if (asn) {
             asn1p_module_t *mod;
-            while ((mod = TQ_REMOVE(&(new_asn->modules), mod_next)))
+            while ((mod = TQ_REMOVE(&(new_asn->modules), mod_next))) {
                 TQ_ADD(&(asn->modules), mod, mod_next);
+            }
             asn1p_delete(new_asn);
         } else {
             asn = new_asn;
+            TQ_FIRST(&asn->modules)->_tags |= MT_FIRST_MODULE;
         }
     }
 

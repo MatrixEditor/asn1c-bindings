@@ -30,6 +30,11 @@
 #define TYPE_IS_INDIRECT(expr) \
     ((expr) && (expr->marker.flags & EM_INDIRECT) == EM_INDIRECT)
 
+#define TYPE_IS_IMPORTED(arg, expr)                   \
+    ((arg)->flags & A1C_SKIP_IMPORTS &&               \
+     !((expr)->module->_tags & MT_STANDARD_MODULE) && \
+     !((expr)->module->_tags & MT_FIRST_MODULE))
+
 #define ASN1C_MAX_INT_WIDTH 20
 
 enum {
@@ -191,7 +196,12 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     INDENT(+1);
     TQ_FOR (v, &(expr->members), next) {
         if (v->expr_type == A1TC_EXTENSIBLE) continue;
-        OUT("PY_IMPL_SEQ_INIT_ATTR(%s, %s);\n", type_name, MKID_safe(v));
+        if (expr->expr_type == ASN_CONSTR_SET) {
+            OUT("PY_IMPL_SET_INIT_ATTR(%s, %s, %s);\n", type_name,
+                constr_member_name, MKID_safe(v));
+        } else {
+            OUT("PY_IMPL_SEQ_INIT_ATTR(%s, %s);\n", type_name, MKID_safe(v));
+        }
     }
     INDENT(-1);
     OUT(");\n");
@@ -252,11 +262,13 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
                            AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, NULL));
     }
 
-    if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
-    PY_GEN_STUBS_BEGIN;
-    PY_GEN_LF;
-    PY_GEN_STUBS_EMBED_CONSTR(constr_member_name, expr);
-    PY_GEN_STUBS_END;
+    if (!TYPE_IS_IMPORTED(arg, arg->expr)) {
+        if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
+        PY_GEN_STUBS_BEGIN;
+        PY_GEN_LF;
+        PY_GEN_STUBS_EMBED_CONSTR(constr_member_name, expr);
+        PY_GEN_STUBS_END;
+    }
 
     ASN_XFREE(type_name);
     ASN_XFREE(constr_struct_name);
@@ -453,11 +465,13 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
                            AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, NULL));
     }
 
-    if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
-    PY_GEN_STUBS_BEGIN;
-    PY_GEN_LF;
-    PY_GEN_STUBS_EMBED_CONSTR(constr_member_name, expr);
-    PY_GEN_STUBS_END;
+    if (!TYPE_IS_IMPORTED(arg, arg->expr)) {
+        if (asn1c_lang_Py_stubs_generate_init(arg) < 0) return -1;
+        PY_GEN_STUBS_BEGIN;
+        PY_GEN_LF;
+        PY_GEN_STUBS_EMBED_CONSTR(constr_member_name, expr);
+        PY_GEN_STUBS_END;
+    }
 
     ASN_XFREE(type_name);
     ASN_XFREE(constr_struct_name);
@@ -1042,7 +1056,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("PyCompatLong_Check(pObj, -1);\n");
                 if (asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN) {
-                    OUT("*pDst = (%s)PyCompatLong_AsSize_t(pObj);\n", name);
+                    OUT("*pDst = (%s_t)PyCompatLong_AsSize_t(pObj);\n", name);
                 } else {
                     OUT("*pDst = (%s_t)PyCompatLong_AsSsize_t(pObj);\n", name);
                 }
@@ -1549,16 +1563,18 @@ int asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
                                   NULL));
     }
 
-    PY_GEN_STUBS_BEGIN;
-    INDENT_LEVEL = arg->embed;
-    INDENT(+1);
-    OUT("def clear(self) -> None: ...\n");
-    OUT("def __len__(self) -> int: ...\n");
-    OUT("def __delitem__(self, index: int) -> None: ...\n");
-    INDENT(-1);
-    PY_GEN_LF;
-    PY_GEN_STUBS_EMBED_CONSTR(list_member_name, expr);
-    PY_GEN_STUBS_END;
+    if (!TYPE_IS_IMPORTED(arg, arg->expr)) {
+        PY_GEN_STUBS_BEGIN;
+        INDENT_LEVEL = arg->embed;
+        INDENT(+1);
+        OUT("def clear(self) -> None: ...\n");
+        OUT("def __len__(self) -> int: ...\n");
+        OUT("def __delitem__(self, index: int) -> None: ...\n");
+        INDENT(-1);
+        PY_GEN_LF;
+        PY_GEN_STUBS_EMBED_CONSTR(list_member_name, expr);
+        PY_GEN_STUBS_END;
+    }
 
     INDENT_LEVEL = saved_indent;
     REDIR(saved_target);
@@ -1632,17 +1648,30 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
     optional = (expr->marker.flags & EM_OPTIONAL) ||
                (TYPE_IS_UNION(expr->parent_expr));
 
-    PY_GEN_STUBS_BEGIN;
-    INDENT_LEVEL = arg->embed;
-
     if (expr->expr_type == A1TC_REFERENCE) {
         py_conv_type = c_expr_name(arg, expr->reference->ref_expr).as_member;
         ref = expr->reference;
         ref_expr = asn1c_get_REFERENCE(arg, expr);
         if (ref_expr) {
             py_conv_type = PY_TYPE_MAP[ASN_TYPE_ANY];
+        } else {
+            /* add an import statement and skip stubs */
+            if (TYPE_IS_IMPORTED(arg, expr->reference->ref_expr)) {
+                PY_OUTER(
+                    OT_PY_STUBS_IMPORTS,
+                    OUT("from asn1_external_mod import %s\n", py_conv_type););
+                return 0;
+            }
         }
     }
+
+    if (arg->embed && TYPE_IS_IMPORTED(arg, arg->expr->parent_expr) ||
+        TYPE_IS_IMPORTED(arg, expr)) {
+        return 0;
+    }
+
+    PY_GEN_STUBS_BEGIN;
+    INDENT_LEVEL = arg->embed;
 
     if (!el_count || expr->expr_type == A1TC_REFERENCE) {
         if (!py_conv_type) {
@@ -1738,6 +1767,12 @@ int asn1c_lang_Py_stubs_SEQUENCE(arg_t *arg) {
     type_name = strdup(cn.as_member);
     saved_indent = INDENT_LEVEL;
 
+    if (TYPE_IS_IMPORTED(arg, arg->expr)) {
+        PY_OUTER(OT_PY_STUBS_IMPORTS,
+                 OUT("from asn1_external_mod import %s\n", type_name););
+        return 0;
+    }
+
     PY_GEN_STUBS_BEGIN;
     INDENT_LEVEL = arg->embed;
     if (arg->embed) {
@@ -1772,6 +1807,12 @@ int asn1c_lang_Py_stubs_CHOICE(arg_t *arg) {
     type_name = strdup(cn.as_member);
     saved_indent = INDENT_LEVEL;
     presence_value = 0;
+
+    if (TYPE_IS_IMPORTED(arg, arg->expr)) {
+        PY_OUTER(OT_PY_STUBS_IMPORTS,
+                 OUT("from asn1_external_mod import %s\n", type_name););
+        return 0;
+    }
 
     PY_GEN_STUBS_BEGIN;
     INDENT_LEVEL = arg->embed;
@@ -1821,6 +1862,12 @@ int asn1c_lang_Py_stubs_SEQ_OF(arg_t *arg) {
     saved_indent = INDENT_LEVEL;
     saved_target = arg->target->target;
     type_name = strdup(cn.as_member);
+
+    if (TYPE_IS_IMPORTED(arg, arg->expr)) {
+        PY_OUTER(OT_PY_STUBS_IMPORTS,
+                 OUT("from asn1_external_mod import %s\n", type_name););
+        return 0;
+    }
 
     PY_GEN_STUBS_BEGIN;
     INDENT_LEVEL = arg->embed;

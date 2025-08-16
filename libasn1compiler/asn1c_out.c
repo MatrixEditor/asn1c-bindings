@@ -97,7 +97,8 @@ int asn1c_compiled_output(arg_t *arg, const char *source, int lineno,
         arg->target->target == OT_POST_INCLUDE ||
         arg->target->target == OT_PY_TYPE_INCLUDES ||
         arg->target->target == OT_PY_IMPL_INCLUDES ||
-        arg->target->target == OT_PY_IMPL_MOD_INCLUDES) {
+        arg->target->target == OT_PY_IMPL_MOD_INCLUDES ||
+        arg->target->target == OT_PY_STUBS_IMPORTS) {
         out_chunk_t *v;
         TQ_FOR (v, &dst->chunks, next) {
             if (m->len == v->len && !memcmp(m->buf, v->buf, m->len)) break;
