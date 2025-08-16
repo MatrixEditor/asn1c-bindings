@@ -371,7 +371,7 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     INDENT(+1);
     TQ_FOR (v, &(expr->members), next) {
         if (v->expr_type == A1TC_EXTENSIBLE) continue;
-        OUT("PY_IMPL_SEQ_INIT_ATTR(%s, %s);\n", type_name, MKID_safe(v));
+        OUT("PY_IMPL_CHOICE_INIT_ATTR(%s, %s, %s);\n", type_name, constr_struct_name, MKID_safe(v));
     }
     INDENT(-1);
     OUT(");\n");
@@ -1761,11 +1761,13 @@ int asn1c_lang_Py_stubs_SEQUENCE(arg_t *arg) {
 
     int saved_target;
     int saved_indent;
+    int is_set;
 
     saved_target = arg->target->target;
     cn = c_name(arg);
     type_name = strdup(cn.as_member);
     saved_indent = INDENT_LEVEL;
+    is_set = TYPE_IS_SET(arg->expr);
 
     if (TYPE_IS_IMPORTED(arg, arg->expr)) {
         PY_OUTER(OT_PY_STUBS_IMPORTS,
@@ -1777,9 +1779,10 @@ int asn1c_lang_Py_stubs_SEQUENCE(arg_t *arg) {
     INDENT_LEVEL = arg->embed;
     if (arg->embed) {
         PY_GEN_LF;
-        OUT("class %s_TYPE(_Asn1Type):\n", type_name);
+        OUT("class %s_TYPE(_Asn1Type): # %s\n", type_name,
+            is_set ? "SET" : "SEQUENCE");
     } else {
-        OUT("class %s(_Asn1Type):\n", type_name);
+        OUT("class %s(_Asn1Type): # %s\n", type_name, is_set ? "SET" : "SEQUENCE");
     }
     PY_GEN_STUBS_END;
 
@@ -1818,9 +1821,9 @@ int asn1c_lang_Py_stubs_CHOICE(arg_t *arg) {
     INDENT_LEVEL = arg->embed;
     if (arg->embed) {
         PY_GEN_LF;
-        OUT("class %s_TYPE(_Asn1Type):\n", type_name);
+        OUT("class %s_TYPE(_Asn1Type): # CHOICE\n", type_name);
     } else {
-        OUT("class %s(_Asn1Type):\n", type_name);
+        OUT("class %s(_Asn1Type): # CHOICE\n", type_name);
     }
     INDENT(+1);
     OUT("class PRESENT(EXT_IntEnum):\n");

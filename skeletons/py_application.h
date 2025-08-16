@@ -231,9 +231,7 @@ end:
 
 #define PY_IMPL_DEALLOC(name, type_DEF)                                   \
     static void PyAsn##name##__dealloc(PyAsn##name##Object* self) {       \
-        ASN_DEBUG("Freeing " #name " at %p (parent: %p)", self->ob_value, \
-                  self->ob_parent);                                       \
-        if (self->ob_parent != NULL) {                                            \
+        if (self->ob_parent != NULL) {                                    \
             if (Py_REFCNT(self->ob_parent) < 1) {                         \
                 PyErr_SetString(PyExc_MemoryError,                        \
                                 "UAF: parent object already deleted!");   \
@@ -672,16 +670,21 @@ end:
         Py_XDECREF(tmp);                                                   \
         return result;
 
-#define PY_IMPL_CHOICE_INIT_ATTR(typeName, attrName, srcObj, tmpValue)      \
-    PyCompat_GenericGetAttr((srcObj), attrName, (tmpValue));                \
-    if ((tmpValue)) {                                                       \
-        if (PyAsn##typeName##__##attrName##_FromPython((tmpValue), (dst)) < \
-            0) {                                                            \
-            Py_DECREF((tmpValue));                                          \
-            return -1;                                                      \
-        }                                                                   \
-    } else                                                                  \
-        PyErr_Clear();
+#define PY_IMPL_CHOICE_INIT_ATTR(typeName, enumTypeName, attrName)           \
+    if (result == 0) {                                                       \
+        PyCompat_GenericGetAttr(pObj, attrName, tmp);                        \
+        if (tmp != NULL) {                                                   \
+            if (PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
+                result = -1;                                                 \
+            } else {                                                         \
+                pDst->present = enumTypeName##_PR_##attrName;                \
+                Py_CLEAR(tmp);                                               \
+                return 0;                                                    \
+            }                                                                \
+        } else {                                                             \
+            PyErr_Clear();                                                   \
+        }                                                                    \
+    }
 
 #define PY_IMPL_CHOICE_INIT(typeName) \
     PY_IMPL_CHOICE_INIT_GENERIC(typeName, typeName)
@@ -1125,8 +1128,6 @@ end:
 
 #define PY_IMPL_SEQ_OF_DEALLOC(typeName, EMPTY_FUNC)                        \
     static void PyAsn##typeName##__dealloc(PyAsn##typeName##Object* self) { \
-        ASN_DEBUG("Freeing " #typeName " object (value=%p, parent=%p)",     \
-                  self->ob_value, self->ob_parent);                         \
         if (self->ob_parent) {                                              \
             if (Py_REFCNT(self->ob_parent) < 1) {                           \
                 PyErr_SetString(PyExc_MemoryError,                          \
@@ -1138,10 +1139,6 @@ end:
         } else {                                                            \
             if (self->ob_value != NULL) {                                   \
                 if (self->ob_value->list.count > 0) {                       \
-                    ASN_DEBUG("Freeing elements of " #typeName              \
-                              " (count=%d, list=%p)",                       \
-                              self->ob_value->list.count,                   \
-                              self->ob_value->list.array);                  \
                     EMPTY_FUNC((void*)&self->ob_value->list);               \
                 }                                                           \
                 PyMem_RawFree(self->ob_value);                              \
@@ -1171,6 +1168,7 @@ end:
             if (item_value == NULL) {                                        \
                 goto end;                                                    \
             }                                                                \
+            memset(item_value, 0, sizeof(memberTypeName));                   \
             if (PyAsn##typeName##__component_FromPython(item, item_value) <  \
                 0) {                                                         \
                 goto end;                                                    \

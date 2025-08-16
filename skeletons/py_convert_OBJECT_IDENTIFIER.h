@@ -107,7 +107,6 @@ static int PyCompatOID_FromUnicode(PyObject *unicode,
     PyCompatUnicode_Check(unicode, -1);
     oid_text = PyUnicode_AsUTF8AndSize(unicode, &oid_text_len);
     if (oid_text_len < 0) goto end;
-    ASN_DEBUG("PyCompatOID_FromUnicode: Converting %s to an OID", oid_text);
 
     arc_count = OBJECT_IDENTIFIER_parse_arcs(oid_text, oid_text_len, arcs,
                                              arc_slots, NULL);
@@ -130,7 +129,6 @@ static int PyCompatOID_FromUnicode(PyObject *unicode,
     if (result < 0) goto error;
 end:
     if (arcs != fixed_arcs && arcs) PyMem_RawFree(arcs);
-    ASN_DEBUG("PyCompatOID_FromUnicode: Result: %d", result);
     return result;
 
 error:
