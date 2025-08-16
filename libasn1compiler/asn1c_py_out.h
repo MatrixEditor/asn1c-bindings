@@ -302,6 +302,17 @@
     }                       \
     while (0)
 
+#define PY_GEN_STUBS_EMBED_CONSTR(memberName, expr)                   \
+    if (arg->embed) {                                                 \
+        INDENT_LEVEL = arg->embed;                                    \
+        if (!TYPE_IS_SEQ_OF_LIKE(expr->parent_expr->expr_type)) {     \
+            OUT("%s: %s_TYPE%s\n", memberName, memberName,            \
+                (expr->marker.flags & EM_OPTIONAL) ? " | None" : ""); \
+        } else {                                                      \
+            PY_GEN_STUBS_SEQ_OF(memberName, "_TYPE");                 \
+        }                                                             \
+    }
+
 #define PY_GEN_STUBS_ENUM_PROPERTY(typeName, optional)                        \
     OUT("@property\n");                                                       \
     OUT("def value(self) -> %s.VALUES%s: ...\n", typeName,                    \
