@@ -292,6 +292,13 @@ extension module target.</p>
 <span class="w">    </span><span class="no">NAME</span><span class="w"> </span><span class="nv">&lt;module_name&gt;</span>
 <span class="w">    </span><span class="no">ASN_FILES</span><span class="w"> </span><span class="nv">&lt;asn_file1&gt;</span><span class="w"> </span><span class="p">[</span><span class="nv">&lt;asn_file2&gt;</span><span class="w"> </span><span class="p">...]</span>
 <span class="w">    </span><span class="p">[</span><span class="no">SUBMODULE</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">CUSTOM_OUTPUT</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">PY_SRC_DIR</span><span class="w"> </span><span class="nv">&lt;dir&gt;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">PY_STUB_DIR</span><span class="w"> </span><span class="nv">&lt;dir&gt;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">PY_H_DIR</span><span class="w"> </span><span class="nv">&lt;dir&gt;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">C_SRC_DIR</span><span class="w"> </span><span class="nv">&lt;dir&gt;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">C_H_DIR</span><span class="w"> </span><span class="nv">&lt;dir&gt;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">[</span><span class="no">SK_OUT_DIR</span><span class="w"> </span><span class="nv">&lt;dir&gt;</span><span class="p">]</span>
 <span class="nf">)</span>
 </pre></div>
 </div>
@@ -315,6 +322,57 @@ to be set additionally.</p>
 package.</p>
 </dd>
 </dl>
+<p><strong>Output Control Options</strong></p>
+<p>These options provide <strong>granular control</strong> over where generated files are
+placed. If omitted, files are written under
+<code class="docutils literal notranslate"><span class="pre">${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${NAME}</span></code> by default.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you specify a custom output directory other than <code class="docutils literal notranslate"><span class="pre">SK_OUT_DIR</span></code>, you
+<strong>MUST</strong> specify <code class="docutils literal notranslate"><span class="pre">CUSTOM_OUTPUT</span></code> to disable creation of the above
+mentioned directory.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Param PY_SRC_DIR<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Directory for generated <strong>Python C source files</strong>.
+Passed to <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> as <code class="docutils literal notranslate"><span class="pre">-out-py-src</span></code>.</p>
+</dd>
+<dt class="field-even">Param PY_STUB_DIR<span class="colon">:</span></dt>
+<dd class="field-even"><p>Directory for generated <strong>Python stub files</strong> (<code class="docutils literal notranslate"><span class="pre">.pyi</span></code>).
+Passed to <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> as <code class="docutils literal notranslate"><span class="pre">-out-py-stub</span></code>.</p>
+</dd>
+<dt class="field-odd">Param PY_H_DIR<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Directory for generated <strong>Python-specific C headers</strong>.
+Passed to <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> as <code class="docutils literal notranslate"><span class="pre">-out-py-h</span></code>.</p>
+</dd>
+<dt class="field-even">Param C_SRC_DIR<span class="colon">:</span></dt>
+<dd class="field-even"><p>Directory for generated <strong>plain C source files</strong>.
+Passed to <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> as <code class="docutils literal notranslate"><span class="pre">-out-c-src</span></code>.</p>
+</dd>
+<dt class="field-odd">Param C_H_DIR<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Directory for generated <strong>plain C headers</strong>.
+Passed to <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> as <code class="docutils literal notranslate"><span class="pre">-out-c-h</span></code>.</p>
+</dd>
+<dt class="field-even">Param SK_OUT_DIR<span class="colon">:</span></dt>
+<dd class="field-even"><p>Directory for skeleton files.
+Passed to <code class="docutils literal notranslate"><span class="pre">asn1c</span></code> as <code class="docutils literal notranslate"><span class="pre">-out-skeletons</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default, a combined <code class="docutils literal notranslate"><span class="pre">A1C_GENERATED_DIR</span></code> is created under
+<code class="docutils literal notranslate"><span class="pre">src/generated/${NAME}</span></code>. All generated sources are placed here unless
+more specific directories are supplied.</p>
+<p>If you want to fully control output placement, define:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nf">set(</span><span class="no">A1C_EXT_CUSTOM_OUTPUT</span><span class="w"> </span><span class="no">ON</span><span class="nf">)</span>
+</pre></div>
+</div>
+<p>or pass <code class="docutils literal notranslate"><span class="pre">-DA1C_EXT_CUSTOM_OUTPUT=ON</span></code> to CMake, ot just set
+<code class="docutils literal notranslate"><span class="pre">CUSTOM_OUTPUT</span></code> when calling this function.
+In this mode, <code class="docutils literal notranslate"><span class="pre">asn1c_add_extension</span></code> will <strong>not</strong> create or manage
+<code class="docutils literal notranslate"><span class="pre">A1C_GENERATED_DIR</span></code> and expects explicit directory options instead.</p>
+</div>
+<p><strong>Behavior</strong></p>
 <p>In its core, this function:</p>
 <ul class="simple">
 <li><p>Runs the ASN.1 compiler (<code class="docutils literal notranslate"><span class="pre">asn1c</span></code>) at <strong>CMake configure time</strong>,
@@ -328,15 +386,32 @@ directory.</p></li>
 submodule namespaces (dots in module names converted to subdirectories).</p></li>
 </ul>
 <p>Example:</p>
-<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nf">asn1c_add_extension(</span>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Simple Module</span>
+<span class="c"># - saved to: ${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${A1C_EXT_NAME}</span>
+<span class="nf">asn1c_add_extension(</span>
 <span class="w">    </span><span class="no">NAME</span><span class="w"> </span><span class="nb">_example_mod</span>
 <span class="w">    </span><span class="no">ASN_FILES</span><span class="w"> </span><span class="s">&quot;${CMAKE_CURRENT_SOURCE_DIR}/example.asn&quot;</span>
 <span class="nf">)</span>
 
+<span class="c"># Simple Submodule</span>
+<span class="c"># - saved to: ${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${A1C_EXT_NAME}</span>
 <span class="nf">asn1c_add_extension(</span>
 <span class="w">    </span><span class="no">NAME</span><span class="w"> </span><span class="nb">submodule._example_mod</span>
 <span class="w">    </span><span class="no">ASN_FILES</span><span class="w"> </span><span class="s">&quot;${CMAKE_CURRENT_SOURCE_DIR}/example_submodule.asn&quot;</span>
 <span class="w">    </span><span class="no">SUBMODULE</span>
+<span class="nf">)</span>
+
+<span class="c"># Simple Module with custom output directories</span>
+<span class="c"># - skeletons saved_to: ${CMAKE_CURRENT_SOURCE_DIR}/skeletons</span>
+<span class="c"># - sources saved_to: ${CMAKE_CURRENT_SOURCE_DIR}/sources</span>
+<span class="c"># - pyi saved_to: ${CMAKE_CURRENT_SOURCE_DIR}/sources</span>
+<span class="nf">asn1c_add_extension(</span>
+<span class="w">  </span><span class="no">NAME</span><span class="w"> </span><span class="nb">_example_mod</span>
+<span class="w">  </span><span class="no">PY_SRC_DIR</span><span class="w"> </span><span class="o">${</span><span class="nt">CMAKE_CURRENT_SOURCE_DIR</span><span class="o">}</span><span class="na">/sources</span>
+<span class="w">  </span><span class="no">PY_STUB_DIR</span><span class="w"> </span><span class="o">${</span><span class="nt">CMAKE_CURRENT_SOURCE_DIR</span><span class="o">}</span><span class="na">/sources</span>
+<span class="w">  </span><span class="no">SK_OUT_DIR</span><span class="w"> </span><span class="o">${</span><span class="nt">CMAKE_CURRENT_SOURCE_DIR</span><span class="o">}</span><span class="na">/skeletons</span>
+<span class="w">  </span><span class="no">CUSTOM_OUTPUT</span>
+<span class="w">  </span><span class="no">ASN_FILES</span><span class="w"> </span><span class="o">${</span><span class="nt">CMAKE_CURRENT_SOURCE_DIR</span><span class="o">}</span><span class="na">/example.asn</span>
 <span class="nf">)</span>
 </pre></div>
 </div>

@@ -19,6 +19,13 @@ source generation, compilation, stub handling, and installation details.
             NAME <module_name>
             ASN_FILES <asn_file1> [<asn_file2> ...]
             [SUBMODULE]
+            [CUSTOM_OUTPUT]
+            [PY_SRC_DIR <dir>]
+            [PY_STUB_DIR <dir>]
+            [PY_H_DIR <dir>]
+            [C_SRC_DIR <dir>]
+            [C_H_DIR <dir>]
+            [SK_OUT_DIR <dir>]
         )
 
     :param NAME:
@@ -39,6 +46,62 @@ source generation, compilation, stub handling, and installation details.
         Indicates the extension is placed in a submodule within project's
         package.
 
+    **Output Control Options**
+
+    These options provide **granular control** over where generated files are
+    placed. If omitted, files are written under
+    ``${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${NAME}`` by default.
+
+    .. important::
+
+      If you specify a custom output directory other than ``SK_OUT_DIR``, you
+      **MUST** specify ``CUSTOM_OUTPUT`` to disable creation of the above
+      mentioned directory.
+
+
+    :param PY_SRC_DIR:
+      Directory for generated **Python C source files**.
+      Passed to ``asn1c`` as ``-out-py-src``.
+
+    :param PY_STUB_DIR:
+      Directory for generated **Python stub files** (``.pyi``).
+      Passed to ``asn1c`` as ``-out-py-stub``.
+
+    :param PY_H_DIR:
+      Directory for generated **Python-specific C headers**.
+      Passed to ``asn1c`` as ``-out-py-h``.
+
+    :param C_SRC_DIR:
+      Directory for generated **plain C source files**.
+      Passed to ``asn1c`` as ``-out-c-src``.
+
+    :param C_H_DIR:
+      Directory for generated **plain C headers**.
+      Passed to ``asn1c`` as ``-out-c-h``.
+
+    :param SK_OUT_DIR:
+      Directory for skeleton files.
+      Passed to ``asn1c`` as ``-out-skeletons``.
+
+
+    .. note::
+
+      By default, a combined ``A1C_GENERATED_DIR`` is created under
+      ``src/generated/${NAME}``. All generated sources are placed here unless
+      more specific directories are supplied.
+
+      If you want to fully control output placement, define:
+
+      .. code-block:: cmake
+
+          set(A1C_EXT_CUSTOM_OUTPUT ON)
+
+      or pass ``-DA1C_EXT_CUSTOM_OUTPUT=ON`` to CMake, ot just set
+      ``CUSTOM_OUTPUT`` when calling this function.
+      In this mode, ``asn1c_add_extension`` will **not** create or manage
+      ``A1C_GENERATED_DIR`` and expects explicit directory options instead.
+
+    **Behavior**
 
     In its core, this function:
 
@@ -56,16 +119,34 @@ source generation, compilation, stub handling, and installation details.
 
     .. code-block:: cmake
 
+        # Simple Module
+        # - saved to: ${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${A1C_EXT_NAME}
         asn1c_add_extension(
             NAME _example_mod
             ASN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/example.asn"
         )
 
+        # Simple Submodule
+        # - saved to: ${CMAKE_CURRENT_SOURCE_DIR}/src/generated/${A1C_EXT_NAME}
         asn1c_add_extension(
             NAME submodule._example_mod
             ASN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/example_submodule.asn"
             SUBMODULE
         )
+
+        # Simple Module with custom output directories
+        # - skeletons saved_to: ${CMAKE_CURRENT_SOURCE_DIR}/skeletons
+        # - sources saved_to: ${CMAKE_CURRENT_SOURCE_DIR}/sources
+        # - pyi saved_to: ${CMAKE_CURRENT_SOURCE_DIR}/sources
+        asn1c_add_extension(
+          NAME _example_mod
+          PY_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sources
+          PY_STUB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sources
+          SK_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/skeletons
+          CUSTOM_OUTPUT
+          ASN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/example.asn
+        )
+
 
 .. cmake:command:: asn1c_generate
 

@@ -426,19 +426,6 @@ hatch<span class="w"> </span>build
 </pre></div>
 </div>
 </section>
-<section id="stub-files-and-installation">
-<h2>Stub Files and Installation<a class="headerlink" href="#stub-files-and-installation" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">asn1c-bindings</span></code> CMake functions also handle type stub installation:</p>
-<ul class="simple">
-<li><p>The ASN.1C compiler generates a generic stub file named <code class="docutils literal notranslate"><span class="pre">py_module.pyi</span></code>.</p></li>
-<li><p>During installation, this file is renamed to match your module name
-(e.g. <code class="docutils literal notranslate"><span class="pre">_example_mod.pyi</span></code>).</p></li>
-<li><p>The renamed file is installed alongside the compiled extension,
-respecting any submodule hierarchy.</p></li>
-</ul>
-<p><strong>This means type hints will work automatically in your IDE without any
-additional configuration.</strong></p>
-</section>
 </section>
 
         </article>
@@ -506,7 +493,6 @@ additional configuration.</strong></p>
 </ul>
 </li>
 <li><a class="reference internal" href="#python-packaging-integration">Python Packaging Integration</a></li>
-<li><a class="reference internal" href="#stub-files-and-installation">Stub Files and Installation</a></li>
 </ul>
 </li>
 </ul>
