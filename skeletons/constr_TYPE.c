@@ -81,6 +81,7 @@ static int _print2fp(const void *buffer, size_t size, void *app_key) {
 int asn_struct_init(const struct asn_TYPE_descriptor_s *type_descriptor,
                     void *struct_ptr) {
     const asn_TYPE_member_t *memb;
+    void *value = NULL;
 
     if (type_descriptor == NULL || struct_ptr == NULL) {
         errno = EINVAL;
@@ -98,7 +99,8 @@ int asn_struct_init(const struct asn_TYPE_descriptor_s *type_descriptor,
          */
         memb = &type_descriptor->elements[index];
         if (memb->default_value_set != NULL) {
-            if (memb->default_value_set((struct_ptr + memb->memb_offset)) < 0) {
+            value = struct_ptr + memb->memb_offset;
+            if (memb->default_value_set(&value) < 0) {
                 return -1;
             }
         } else if (memb->type != NULL) {

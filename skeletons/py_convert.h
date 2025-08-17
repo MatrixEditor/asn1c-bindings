@@ -59,8 +59,10 @@ static inline PyObject *PyCompatLong_AsObject(void *val, int is_signed) {
 #define PyCompatBool_AsLong(obj) (PyObject_IsTrue(obj))
 
 static inline int PyCompatBool_FromObject(PyObject *pObj, unsigned *val) {
-    *val = PyObject_IsTrue(pObj);
-    return *val == -1 ? -1 : 0;
+    int tmp = PyObject_IsTrue(pObj);
+    if (tmp < 0) return -1;
+    *val = (unsigned)tmp;
+    return 0;
 }
 
 #define PyCompatNull_AsLong(obj) (0)
@@ -140,6 +142,7 @@ static inline int _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str,
 
     if (*str) {
         PyMem_Free(*str);
+        *str = NULL;
     }
     *size = view.len;
     *str = (char *)PyMem_RawMalloc(view.len);
@@ -228,7 +231,7 @@ static int PyCompatBitArray_FromObject(PyObject *pObj, char **str,
     int result = -1;
 
     if (PyObject_IsInstance(pObj, PyCompatTable->PyBitArray_Type)) {
-        result = _PyCompatBitArray_ToStringAndSize(nBitArray, str, size);
+        result = _PyCompatBitArray_ToStringAndSize(pObj, str, size);
     } else {
         // the object MUST be an integer
         if ((nValue = PyObject_CallOneArg((PyObject *)(&PyLong_Type), pObj)) ==
@@ -271,12 +274,16 @@ static PyObject *PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
 
 static inline char *_PyCompatUnicode_AsUTF8AndSize(PyObject *pObj,
                                                    Py_ssize_t *size) {
-    const char *str = NULL;
-    str = PyUnicode_AsUTF8AndSize(pObj, size);
-    if (!str) {
-        return NULL;
+    const char *tmp = NULL;
+    char *str = NULL;
+    tmp = PyUnicode_AsUTF8AndSize(pObj, size);
+    if (tmp != NULL) {
+        str = (char *)PyMem_RawMalloc(*size);
+        if (str != NULL) {
+            memcpy(str, tmp, *size);
+        }
     }
-    return str ? strdup(str) : NULL;
+    return str;
 }
 
 #define PyCompatUnicode_FromStringAndSize(str, size) \
@@ -304,6 +311,8 @@ static inline int _PyCompatUnicode_AsUTF8(PyObject *pObj, char **str,
 static inline PyObject *PyCompatEnum_FromSsize_t(PyObject *pEnumType,
                                                  Py_ssize_t value) {
     PyObject *nValue = NULL, *nResult = NULL;
+    PyCompat_ArgCheck(pEnumType, NULL);
+
     if ((nValue = PyLong_FromSsize_t(value)) == NULL) {
         goto end;
     }
@@ -337,8 +346,10 @@ static inline Py_ssize_t PyCompatEnum_AsSsize_t(PyObject *pObj) {
         Py_XDECREF(nValue);
         return result;
     }
-    PyErr_Clear();
-    PyErr_SetString(PyExc_ValueError, "Invalid enum value");
+    if (PyErr_ExceptionMatches(PyExc_AttributeError)) {
+        PyErr_Clear();
+        PyErr_SetString(PyExc_ValueError, "Invalid enum value");
+    }
     return -1;
 }
 
@@ -354,8 +365,10 @@ static inline size_t PyCompatEnum_AsSize_t(PyObject *pObj) {
         Py_XDECREF(nValue);
         return result;
     }
-    PyErr_Clear();
-    PyErr_SetString(PyExc_ValueError, "Invalid enum value");
+    if (PyErr_ExceptionMatches(PyExc_AttributeError)) {
+        PyErr_Clear();
+        PyErr_SetString(PyExc_ValueError, "Invalid enum value");
+    }
     return -1;
 }
 
@@ -386,6 +399,12 @@ static inline PyObject *_PyCompatFlag_AsObject(PyObject *pEnumType,
                                                const char *str,
                                                Py_ssize_t size) {
     PyObject *nValue = NULL, *nResult = NULL;
+    PyCompat_ArgCheck(pEnumType, NULL);
+    if ((size > 0) && (str == NULL)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Flag2Obj: NULL buffer with positive size");
+    }
+
     if ((nValue = PyCompatBitArray_AsLong(str, size)) != NULL) {
         nResult = PyObject_CallOneArg(pEnumType, nValue);
     }
@@ -395,32 +414,6 @@ static inline PyObject *_PyCompatFlag_AsObject(PyObject *pEnumType,
 
 #define PyCompatFlag_FromObject(value, str, size) \
     PyCompatBitArray_FromObject((value), (char **)(str), (Py_ssize_t *)(size))
-
-#define PyCompat_SeqItem_Get(obj, attrName, ...)                            \
-    do {                                                                    \
-        if ((value = PyDict_GetItemString(obj, #attrName)) != NULL) {       \
-            __VA_ARGS__;                                                    \
-        } else {                                                            \
-            PyErr_Clear();                                                  \
-            if ((value = PyObject_GetAttrString(obj, #attrName)) != NULL) { \
-                __VA_ARGS__;                                                \
-                Py_DECREF(value);                                           \
-            } else                                                          \
-                PyErr_Clear();                                              \
-        }                                                                   \
-    } while (0)
-
-#define PyCompat_SeqItem_Set(obj, attrName, ...)                   \
-    do {                                                           \
-        if ((value = (__VA_ARGS__)) != NULL) {                     \
-            if (PyDict_SetItemString(obj, #attrName, value) < 0) { \
-                goto error;                                        \
-            }                                                      \
-            Py_DECREF(value);                                      \
-        } else {                                                   \
-            goto error;                                            \
-        }                                                          \
-    } while (0)
 
 #define PyCompat_GenericGetAttr(obj, attrName, value)                   \
     do {                                                                \

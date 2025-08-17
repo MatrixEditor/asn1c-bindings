@@ -5,6 +5,8 @@
  */
 #include <py_application.h>
 
+#include <asn_SET_OF.h>
+
 /*global state storing extra Python objects*/
 PyCompatTable_t *PyCompatTable = NULL;
 

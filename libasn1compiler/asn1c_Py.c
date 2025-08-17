@@ -371,7 +371,8 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     INDENT(+1);
     TQ_FOR (v, &(expr->members), next) {
         if (v->expr_type == A1TC_EXTENSIBLE) continue;
-        OUT("PY_IMPL_CHOICE_INIT_ATTR(%s, %s, %s);\n", type_name, constr_struct_name, MKID_safe(v));
+        OUT("PY_IMPL_CHOICE_INIT_ATTR(%s, %s, %s);\n", type_name,
+            constr_struct_name, MKID_safe(v));
     }
     INDENT(-1);
     OUT(");\n");
@@ -1024,6 +1025,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
+                OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyAsn%s_FromPython(pObj, pDst);\n", ref_type_name);
                 PY_GEN_END_FUNC();
 
@@ -1203,11 +1205,11 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                                                    converter*/
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
                 OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
-                OUT("return PyCompatOID_FromUnicode(pObj, pDst);");
+                OUT("return PyCompatOID_FromUnicode(pObj, pDst);\n");
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_TOPY_INLINE(name);
-                OUT("return PyCompatOID_AsUTF8String(pSrc);");
+                OUT("return PyCompatOID_AsUTF8String(pSrc);\n");
                 PY_GEN_END_FUNC();
 
                 /*default generic implementation*/
@@ -1225,11 +1227,11 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
             case ASN_BASIC_RELATIVE_OID: { /* for now, use special converter*/
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
                 OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
-                OUT("return PyCompatRelativeOID_FromUnicode(pObj, pDst);");
+                OUT("return PyCompatRelativeOID_FromUnicode(pObj, pDst);\n");
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_TOPY_INLINE(name);
-                OUT("return PyCompatRelativeOID_AsUTF8String(pSrc);");
+                OUT("return PyCompatRelativeOID_AsUTF8String(pSrc);\n");
                 PY_GEN_END_FUNC();
 
                 /*default generic implementation*/
@@ -1251,12 +1253,12 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 PY_GEN_ASNTYPE_FROMPY_INLINE(name);
                 OUT("PY_IMPL_FROMPY_COMPAT(%s, pObj, pDst);\n", name);
                 OUT("return PyCompatBytes_ToStringAndSize(pObj, &pDst->buf, "
-                    "&pDst->size);");
+                    "&pDst->size);\n");
                 PY_GEN_END_FUNC();
 
                 PY_GEN_ASNTYPE_TOPY_INLINE(name);
                 OUT("return PyCompatBytes_FromStringAndSize(pSrc->buf, "
-                    "pSrc->size);");
+                    "pSrc->size);\n");
                 PY_GEN_END_FUNC();
 
                 /*implementation*/
@@ -1538,7 +1540,7 @@ int asn1c_lang_Py_type_SEQ_OF(arg_t *arg) {
     } else {
         PY_GEN_CLASS_DOC("ASN.1 %s type", ns.as_member);
     }
-    OUT(".tp_as_sequence = &PyAsn%s_seq_methods\n", list_type_name);
+    OUT(".tp_as_sequence = &PyAsn%s_seq_methods,\n", list_type_name);
     PY_GEN_CLASS_END();
 
     REDIR(OT_PY_IMPL_CODE_MOD_INIT);
@@ -1782,7 +1784,8 @@ int asn1c_lang_Py_stubs_SEQUENCE(arg_t *arg) {
         OUT("class %s_TYPE(_Asn1Type): # %s\n", type_name,
             is_set ? "SET" : "SEQUENCE");
     } else {
-        OUT("class %s(_Asn1Type): # %s\n", type_name, is_set ? "SET" : "SEQUENCE");
+        OUT("class %s(_Asn1Type): # %s\n", type_name,
+            is_set ? "SET" : "SEQUENCE");
     }
     PY_GEN_STUBS_END;
 

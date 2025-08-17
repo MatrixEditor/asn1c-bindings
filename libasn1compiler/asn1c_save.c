@@ -595,14 +595,19 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
         }
         /* imports */
         safe_fprintf(py_stubs,
-                     "from enum import IntEnum as EXT_IntEnum\n"
-                     "from enum import IntFlag as EXT_IntFlag\n");
+                     "from enum import (\n"
+                     "\tIntEnum as EXT_IntEnum,\n"
+                     "\tIntFlag as EXT_IntFlag,\n"
+                     ")\n");
         safe_fprintf(py_stubs,
-                     "from typing import Generic as EXT_Generic\n"
-                     "from typing import override as EXT_override\n"
-                     "from typing import TypeVar as EXT_TypeVar\n"
-                     "from typing import Iterable as EXT_Iterable\n"
-                     "from typing import Any as EXT_Any\n");
+                     "from typing import (\n"
+                     "\tGeneric as EXT_Generic,\n"
+                     "\toverride as EXT_override,\n"
+                     "\tTypeVar as EXT_TypeVar,\n"
+                     "\tIterable as EXT_Iterable,\n"
+                     "\tAny as EXT_Any,\n"
+                     "\ttype_check_only as EXT_type_check_only,\n"
+                     ")\n");
 
         safe_fprintf(py_stubs,
                      "\nfrom bitarray import bitarray as EXT_bitarray\n\n");
@@ -619,6 +624,7 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
 
         /* base type */
         safe_fprintf(py_stubs,
+                     "@EXT_type_check_only\n"
                      "class _Asn1Type:\n"
                      "\t@EXT_override\n"
                      "\tdef __repr__(self) -> str: ...\n"
@@ -659,7 +665,8 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
 #undef PY_GEN_STUB_PARSERS
 
         safe_fprintf(py_stubs,
-                     "\nclass _Asn1BasicType(EXT_Generic[_PY_T], _Asn1Type):\n"
+                     "\n@EXT_type_check_only\n"
+                     "class _Asn1BasicType(EXT_Generic[_PY_T], _Asn1Type):\n"
                      "\tdef __init__(self, value: _PY_T = ...) -> None: ...\n"
                      "\t@property\n"
                      "\tdef value(self) -> _PY_T: ...\n"

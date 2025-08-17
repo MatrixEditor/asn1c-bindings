@@ -62,10 +62,14 @@ typedef unsigned int uint32_t;
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <float.h>
+#ifndef isnan
 #define isnan _isnan
+#endif
 #define finite _finite
 #define copysign _copysign
+#ifndef ilogb
 #define ilogb _logb
+#endif
 #else /* !_MSC_VER */
 #include <stdint.h>
 #endif /* _MSC_VER */
@@ -94,6 +98,12 @@ typedef unsigned int uint32_t;
 #endif /* defined(__vxworks) */
 
 #endif /* _WIN32 */
+
+#if defined(__GNUC__) || defined(__clang__)
+#define CC_UNUSED(name) name __attribute__((unused))
+#else
+#define CC_UNUSED(name)
+#endif
 
 #if __GNUC__ >= 3 || defined(__clang__)
 #define CC_ATTRIBUTE(attr) __attribute__((attr))
@@ -171,7 +181,7 @@ typedef unsigned int uint32_t;
 #define ASN_PRIu64 PRIu64
 #define ASN_PRId64 PRId64
 #else
-#define ASN_PRI_SIZE "lu"
+#define ASN_PRI_SIZE "zu"
 #define ASN_PRI_SSIZE "ld"
 #define ASN_PRIu64 "llu"
 #define ASN_PRId64 "lld"

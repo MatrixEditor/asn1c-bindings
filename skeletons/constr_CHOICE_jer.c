@@ -85,7 +85,7 @@ asn_dec_rval_t CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
             asn_dec_rval_t tmprval;
             void *memb_ptr;   /* Pointer to the member */
             void **memb_ptr2; /* Pointer to that pointer */
-            unsigned old_present __attribute__((unused));
+            unsigned CC_UNUSED(old_present);
 
             elm = &td->elements[edx];
 
