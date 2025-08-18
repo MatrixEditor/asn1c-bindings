@@ -26,10 +26,24 @@ static char *res_kwd[] = {
     "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private",
     "protected", "public", "reinterpret_cast", "static_assert", "static_cast",
     "template", "this", "thread_local", "throw", "true", "try", "typeid",
-    "typename", "using", "virtual", "wchar_t", "xor", "xor_eq"};
+    "typename", "using", "virtual", "wchar_t", "xor", "xor_eq",
+    /*Python*/
+    "and", "as", "assert", "break", "class", "continue", "def", "del", "elif",
+    "else", "except", "exec", "finally", "for", "from", "global", "if",
+    "import", "in", "is", "lambda", "not", "or", "pass", "print", "raise",
+    "return", "try", "while", "with", "yield", "match", "case"};
+
 static int reserved_keyword(const char *str) {
     size_t i;
-    for (i = 0; i < sizeof(res_kwd) / sizeof(res_kwd[0]); i++) {
+    for (i = 0; i < 85; i++) {
+        if (strcmp(str, res_kwd[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+static int reserved_py_keyword(const char *str) {
+    size_t i;
+    for (i = 86; i < 118; i++) {
         if (strcmp(str, res_kwd[i]) == 0) return 1;
     }
     return 0;
@@ -71,6 +85,7 @@ const char *asn1c_make_identifier(enum ami_flags_e flags, asn1p_expr_t *expr,
     const char *prefix = NULL;
     char *sptr[4], **psptr = &sptr[0];
     int sptr_cnt = 0;
+    int check_res = 0;
 
     if (flags & AMI_USE_PREFIX) prefix = asn1c_prefix_get();
 
@@ -117,6 +132,7 @@ const char *asn1c_make_identifier(enum ami_flags_e flags, asn1p_expr_t *expr,
     if (size == -1) return NULL;
 
     if (prefix) size += 1 + strlen(prefix);
+    if (flags & AMI_CHECK_PY_RESERVED) size += 1;
     /*
      * Make sure we have the required amount of storage.
      */
@@ -171,12 +187,12 @@ const char *asn1c_make_identifier(enum ami_flags_e flags, asn1p_expr_t *expr,
          * If it is a single argument, check that it does not clash
          * with C/C++ language keywords.
          */
+        check_res = str == first && !nextstr && reserved_py_keyword(str);
         if ((flags & AMI_CHECK_RESERVED) && str == first && !nextstr &&
             reserved_keyword(str)) {
             *p++ = toupper(*str++);
             /* Fall through */
         }
-
         for (; *str; str++) {
             if (isalnum(*str)) {
                 *p++ = *str;
@@ -188,6 +204,10 @@ const char *asn1c_make_identifier(enum ami_flags_e flags, asn1p_expr_t *expr,
                     *p++ = '_';
                 }
             }
+        }
+        if ((flags & AMI_CHECK_PY_RESERVED) && check_res) {
+            *p++ = '_';
+            /* Fall through */
         }
     }
     va_end(ap);
@@ -369,10 +389,10 @@ const char *asn1c_type_name(arg_t *arg, asn1p_expr_t *expr,
         case TNF_INCLUDE:
             return asn1c_make_identifier(
                 AMI_MASK_ONLY_SPACES | AMI_NODELIMITER, 0,
-                ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED)) ? "\"" : "<"),
+                ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED)) ? "<" : "<"),
                 prefix, MODULE_NAME_OF(exprid),
                 exprid ? exprid->Identifier : typename,
-                ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED)) ? ".h\""
+                ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED)) ? ".h>"
                                                                   : ".h>"),
                 (char *)0);
         case TNF_SAFE:

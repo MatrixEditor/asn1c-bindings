@@ -144,8 +144,9 @@
 #define PY_GEN_TYPE_ATTR(typeName, attrName) \
     OUT(("PY_IMPL_GETSET_ITEM(%s, " #attrName "),\n"), typeName)
 
-#define PY_GEN_TYPE_ATTRSTR(typeName, attrName) \
-    OUT(("PY_IMPL_GETSET_ITEM(%s, %s),\n"), typeName, attrName)
+#define PY_GEN_TYPE_ATTRSTR(typeName, pyname, attrName)                    \
+    OUT(("PY_IMPL_GETSET_ITEM_INTERNAL(%s, %s, %s),\n"), typeName, pyname, \
+        attrName)
 
 #define PY_GEN_TYPE_PARSERS(typeName)                                  \
     if (arg->flags & A1C_GEN_BER) {                                    \
@@ -338,149 +339,171 @@
 
 #define PY_GEN_LF OUT("\n")
 
-#define PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName,          \
-                             type_def_path)                                   \
-    OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s);\n", (typeName),                  \
-        (targetEnumTypeName), (attrName));                                    \
-    if (arg->embed > 1) {                                                     \
-        OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, *%s);\n", (typeName), \
-            (targetEnumTypeName), (attrName), (type_def_path));               \
-    } else {                                                                  \
-        OUT("PY_IMPL_CHOICE_SETATTR(%s, %s, %s);\n", (typeName),              \
-            (targetEnumTypeName), (attrName));                                \
+#define PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName, \
+                             type_def_path)                                    \
+    OUT("PY_IMPL_CHOICE_GETATTR(%s, %s, %s, %s);\n", (typeName),               \
+        (targetEnumTypeName), (safeName), (attrName));                         \
+    if (arg->embed > 1) {                                                      \
+        OUT("PY_IMPL_CHOICE_GENERIC_SETATTR(%s, %s, %s, %s, *%s);\n",          \
+            (typeName), (targetEnumTypeName), (safeName), (attrName),          \
+            (type_def_path));                                                  \
+    } else {                                                                   \
+        OUT("PY_IMPL_CHOICE_SETATTR(%s, %s, %s, %s);\n", (typeName),           \
+            (targetEnumTypeName), (safeName), (attrName));                     \
     }
 
-#define PY_GEN_CHOICE_TYPEREF_GETSET(                                      \
-    typeName, targetTypeName, targetEnumTypeName, attrName, type_def_path) \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                          \
-        "PyAsn%s_FromPython(value, &dst->choice.%s));\n",                  \
-        (typeName), (targetEnumTypeName), (attrName), (targetTypeName),    \
-        (attrName));                                                       \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                \
-        "PyCompatAsnType_FromParent(&PyAsn%s_Type, parent,  (void "        \
-        "*)&src->choice.%s));\n",                                          \
-        (typeName), (attrName), (targetTypeName), (attrName));             \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_TYPEREF_GETSET(typeName, targetTypeName,               \
+                                     targetEnumTypeName, safeName, attrName, \
+                                     type_def_path, indirect)                \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                         \
+        "PyAsn%s_FromPython(value, %sdst->choice.%s));\n",                   \
+        (typeName), (targetEnumTypeName), safeName, (attrName),              \
+        (targetTypeName), (indirect) ? "" : "&", (safeName));                \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                  \
+        "PyCompatAsnType_FromParent(&PyAsn%s_Type, parent,  (void "          \
+        "*)%ssrc->choice.%s));\n",                                           \
+        (typeName), (safeName), (targetTypeName), (indirect) ? "" : "&",     \
+        (safeName));                                                         \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,   \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_INTEGER_GETSET(typeName, targetEnumTypeName, attrName,   \
-                                     isSigned, type_def_path)                  \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                              \
-        "PyCompatLong_FromObject(value, (void *)&dst->choice.%s, %d));\n",     \
-        (typeName), (targetEnumTypeName), (attrName), (attrName), (isSigned)); \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
-        "PyCompatLong_AsObject((void *)&src->choice.%s, %d));\n",              \
-        (typeName), (attrName), (attrName), (isSigned));                       \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_INTEGER_GETSET(typeName, targetEnumTypeName, safeName, \
+                                     attrName, isSigned, type_def_path)      \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s, "                        \
+        "PyCompatLong_FromObject(value, (void *)&dst->choice.%s, %d));\n",   \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName),  \
+        (isSigned));                                                         \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                  \
+        "PyCompatLong_AsObject((void *)&src->choice.%s, %d));\n",            \
+        (typeName), (safeName), (safeName), (isSigned));                     \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,   \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_BOOLEAN_GETSET(typeName, targetEnumTypeName, attrName, \
-                                     type_def_path)                          \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s,"                             \
+#define PY_GEN_CHOICE_BOOLEAN_GETSET(typeName, targetEnumTypeName, safeName, \
+                                     attrName, type_def_path)                \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                         \
         "PyCompatBool_FromObject(value, &dst->choice.%s));\n",               \
-        (typeName), (targetEnumTypeName), (attrName), (attrName));           \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName)); \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                  \
         "PyCompatBool_FromLong(src->choice.%s));\n",                         \
-        (typeName), (attrName), (attrName));                                 \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+        (typeName), (safeName), (safeName));                                 \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,   \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_BYTES_GETSET(typeName, targetEnumTypeName, attrName,     \
-                                   type_def_path)                              \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                              \
-        "PyCompatBytes_ToStringAndSize(value, &dst->choice.%s.buf, "           \
-        "&dst->choice.%s.size));\n",                                           \
-        (typeName), (targetEnumTypeName), (attrName), (attrName), (attrName)); \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
-        "PyCompatBytes_FromStringAndSize(src->choice.%s.buf, "                 \
-        "src->choice.%s.size));\n",                                            \
-        (typeName), (attrName), (attrName), (attrName));                       \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_BYTES_GETSET(typeName, targetEnumTypeName, safeName,  \
+                                   attrName, type_def_path)                 \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s, "                       \
+        "PyCompatBytes_ToStringAndSize(value, &dst->choice.%s.buf, "        \
+        "&dst->choice.%s.size));\n",                                        \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName), \
+        (safeName));                                                        \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                 \
+        "PyCompatBytes_FromStringAndSize(src->choice.%s.buf, "              \
+        "src->choice.%s.size));\n",                                         \
+        (typeName), (safeName), (safeName), (safeName));                    \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,  \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_REAL_GETSET(typeName, targetEnumTypeName, attrName,   \
-                                  is_float32, type_def_path)                \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                           \
+#define PY_GEN_CHOICE_REAL_GETSET(typeName, targetEnumTypeName, safeName,   \
+                                  attrName, is_float32, type_def_path)      \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s, "                       \
         "PyCompatFloat_FromObject(value, (void *)&dst->choice.%s, %d));\n", \
-        (typeName), (targetEnumTypeName), (attrName), (attrName),           \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName), \
         (is_float32));                                                      \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                 \
         "PyCompatFloat_AsObject((void *)&src->choice.%s, %d));\n",          \
-        (typeName), (attrName), (attrName), (is_float32));                  \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+        (typeName), (safeName), (safeName), (is_float32));                  \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,  \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_NULL_GETSET(typeName, targetEnumTypeName, attrName, \
-                                  type_def_path)                          \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                         \
-        "PyCompatNull_FromObject(value, &dst->choice.%s));\n",            \
-        (typeName), (targetEnumTypeName), (attrName), (attrName));        \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, Py_None);\n", (typeName),       \
-        (attrName));                                                      \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_NULL_GETSET(typeName, targetEnumTypeName, safeName,    \
+                                  attrName, type_def_path)                   \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s, "                        \
+        "PyCompatNull_FromObject(value, &dst->choice.%s));\n",               \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName)); \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, Py_None);\n", (typeName),          \
+        (safeName));                                                         \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,   \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_BITSTRING_GETSET(typeName, targetEnumTypeName, attrName, \
-                                       type_def_path)                          \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                              \
+#define PY_GEN_CHOICE_BITSTRING_GETSET(typeName, targetEnumTypeName, safeName, \
+                                       attrName, type_def_path)                \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s, "                          \
         "PyCompatBitArray_ToStringAndSize(value, &dst->choice.%s.buf, "        \
         "&dst->choice.%s.size));\n",                                           \
-        (typeName), (targetEnumTypeName), (attrName), (attrName), (attrName)); \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName),    \
+        (safeName));                                                           \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
         "PyCompatBitArray_FromStringAndSize(src->choice.%s.buf, "              \
         "src->choice.%s.size));\n",                                            \
-        (typeName), (attrName), (attrName), (attrName));                       \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+        (typeName), (safeName), (safeName), (safeName));                       \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,     \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_NAMED_BITSTRING_GETSET(                                  \
-    typeName, targetEnumTypeName, attrName, enumTypeName, type_def_path)       \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                              \
+#define PY_GEN_CHOICE_NAMED_BITSTRING_GETSET(typeName, targetEnumTypeName,     \
+                                             safeName, attrName, enumTypeName, \
+                                             type_def_path)                    \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                           \
         "PyCompatFlag_FromObject(value, &dst->choice.%s.buf, "                 \
         "&dst->choice.%s.size));\n",                                           \
-        (typeName), (targetEnumTypeName), (attrName), (attrName), (attrName)); \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName),    \
+        (safeName));                                                           \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
         "PyCompatFlag_AsObject(PyAsnEnum%s_Type, src->choice.%s.buf, "         \
         "src->choice.%s.size));\n",                                            \
-        (typeName), (attrName), (enumTypeName), (attrName), (attrName));       \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+        (typeName), (safeName), (enumTypeName), (safeName), (safeName));       \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,     \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_OID_GETSET(typeName, targetEnumTypeName, attrName, \
-                                 type_def_path)                          \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                        \
-        "PyCompatOID_FromUnicode(value, &dst->choice.%s));\n",           \
-        (typeName), (targetEnumTypeName), (attrName), (attrName));       \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                              \
-        "PyCompatOID_AsUTF8String(&src->choice.%s));\n",                 \
-        (typeName), (attrName), (attrName));                             \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_OID_GETSET(typeName, targetEnumTypeName, safeName,     \
+                                 attrName, type_def_path)                    \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                         \
+        "PyCompatOID_FromUnicode(value, &dst->choice.%s));\n",               \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName)); \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                  \
+        "PyCompatOID_AsUTF8String(&src->choice.%s));\n",                     \
+        (typeName), (safeName), (safeName));                                 \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,   \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_RELATIVE_OID_GETSET(typeName, targetEnumTypeName, \
-                                          attrName, type_def_path)      \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s,"                        \
-        "PyCompatRelativeOID_FromUnicode(value, &dst->choice.%s));\n",  \
-        (typeName), (targetEnumTypeName), (attrName), (attrName));      \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                             \
-        "PyCompatRelativeOID_AsUTF8String(&src->choice.%s));\n",        \
-        (typeName), (attrName), (attrName));                            \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_RELATIVE_OID_GETSET(typeName, targetEnumTypeName,      \
+                                          safeName, attrName, type_def_path) \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                         \
+        "PyCompatRelativeOID_FromUnicode(value, &dst->choice.%s));\n",       \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName)); \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                  \
+        "PyCompatRelativeOID_AsUTF8String(&src->choice.%s));\n",             \
+        (typeName), (safeName), (safeName));                                 \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,   \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_STRING_GETSET(typeName, targetEnumTypeName, attrName,    \
-                                    type_def_path)                             \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s,%s, "                               \
-        "PyCompatUnicode_AsUTF8(value, &dst->choice.%s.buf, "                  \
-        "&dst->choice.%s.size));\n",                                           \
-        (typeName), (targetEnumTypeName), (attrName), (attrName), (attrName)); \
-    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
-        "PyCompatUnicode_FromStringAndSize(src->choice.%s.buf, "               \
-        "src->choice.%s.size));\n",                                            \
-        (typeName), (attrName), (attrName), (attrName));                       \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+#define PY_GEN_CHOICE_STRING_GETSET(typeName, targetEnumTypeName, safeName, \
+                                    attrName, type_def_path)                \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                        \
+        "PyCompatUnicode_AsUTF8(value, &dst->choice.%s.buf, "               \
+        "&dst->choice.%s.size));\n",                                        \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName), \
+        (safeName));                                                        \
+    OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                 \
+        "PyCompatUnicode_FromStringAndSize(src->choice.%s.buf, "            \
+        "src->choice.%s.size));\n",                                         \
+        (typeName), (safeName), (safeName), (safeName));                    \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,  \
+                         type_def_path)
 
-#define PY_GEN_CHOICE_ENUM_GETSET(typeName, targetEnumTypeName, attrName,      \
-                                  enumName, isSigned, type_def_path)           \
-    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, "                              \
+#define PY_GEN_CHOICE_ENUM_GETSET(typeName, targetEnumTypeName, safeName,      \
+                                  attrName, enumName, isSigned, type_def_path) \
+    OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                           \
         "PyCompatEnum_FromObject(value, "                                      \
         "(void *)&dst->choice.%s, %d));\n",                                    \
-        (typeName), (targetEnumTypeName), (attrName), (attrName), (isSigned)); \
+        (typeName), (targetEnumTypeName), safeName, (attrName), (safeName),    \
+        (isSigned));                                                           \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
         "PyCompatEnum_AsObject(PyAsnEnum%s_Type, (void *)&src->choice.%s, "    \
         "%d));\n",                                                             \
-        (typeName), (attrName), (enumName), (attrName), (isSigned));           \
-    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, attrName, type_def_path)
+        (typeName), (safeName), (enumName), (safeName), (isSigned));           \
+    PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,     \
+                         type_def_path)
 
 /* SEQUENCE */
 #define PY_GEN_SEQ_GETSET(typeName, attrName, optional)               \
@@ -808,6 +831,16 @@
         "PyCompatBytes_FromStringAndSize(src->buf, src->size));\n", \
         (seqTypeName));                                             \
     PY_GEN_SEQ_OF_BASICSTR(seqTypeName, OCTET_STRING_t, constrParentPath)
+
+#define PY_GEN_SEQ_OF_ANY_GETSET(seqTypeName, constrParentPath)     \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, ANY_t, "                    \
+        "PyCompatBytes_ToStringAndSize(value, &target->buf, "       \
+        "&target->size));\n",                                       \
+        (seqTypeName));                                             \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, ANY_t, "                      \
+        "PyCompatBytes_FromStringAndSize(src->buf, src->size));\n", \
+        (seqTypeName));                                             \
+    PY_GEN_SEQ_OF_BASICSTR(seqTypeName, ANY_t, constrParentPath)
 
 #define PY_GEN_SEQ_OF_REAL_GETSET(seqTypeName, is_float32, constrParentPath) \
     OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, %s, "                                \

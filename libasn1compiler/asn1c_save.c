@@ -515,7 +515,7 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
     } while (0);
 
     // save collected python types to module file
-    if (arg->flags & A1C_GEN_PYTHON) {
+    if (arg->flags & A1C_GEN_PYTHON && !(arg->flags & A1C_OMIT_SUPPORT_CODE)) {
         fp_pymod_c =
             asn1c_open_file(datadirs->py_c_datadir, "py_module", ".c", NULL);
         if (!fp_pymod_c) {
@@ -740,6 +740,7 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
                *py_h_retained = "";
     char *filename = NULL;
     int result = 0, include_py = 1;
+    int is_std = expr->module->_tags & MT_STANDARD_MODULE;
 
     if (cs == NULL) {
         safe_fprintf(stderr, "Cannot compile %s at line %d\n", expr->Identifier,
@@ -753,25 +754,31 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         include_py = 0;
     }
 
-    fp_c = asn1c_open_file(datadirs->c_datadir, filename, ".c", &tmpname_c);
+    fp_c = asn1c_open_file(
+        is_std ? datadirs->skeleton_out_datadir : datadirs->c_datadir, filename,
+        ".c", &tmpname_c);
     if (fp_c == NULL) {
         goto error;
     }
-    fp_h = asn1c_open_file(datadirs->h_datadir, filename, ".h", &tmpname_h);
+    fp_h = asn1c_open_file(
+        is_std ? datadirs->skeleton_out_datadir : datadirs->h_datadir, filename,
+        ".h", &tmpname_h);
     if (fp_h == NULL) {
         ASN_CLOSE(fp_c);
         goto error;
     }
     if (include_py) {
-        fp_py_c = asn1c_open_file(datadirs->py_c_datadir, filename, "_Py.c",
-                                  &tmpname_py_c);
+        fp_py_c = asn1c_open_file(
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_c_datadir,
+            filename, "_Py.c", &tmpname_py_c);
         if (fp_py_c == NULL) {
             ASN_CLOSE(fp_c);
             ASN_CLOSE(fp_h);
             goto error;
         }
-        fp_py_h = asn1c_open_file(datadirs->py_h_datadir, filename, "._Py.h",
-                                  &tmpname_py_h);
+        fp_py_h = asn1c_open_file(
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_h_datadir,
+            filename, "._Py.h", &tmpname_py_h);
         if (fp_py_h == NULL) {
             ASN_CLOSE(fp_c);
             ASN_CLOSE(fp_h);
@@ -853,8 +860,12 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
          ? safe_fprintf((fp_c), "#include \"%s.h\"\n", filename)
          : safe_fprintf((fp_c), "#include <%s.h>\n", filename));
     SAVE_STREAM(fp_py_h, OT_PY_IMPL_MOD_INCLUDES, "Including dependencies", 1);
+
     if (arg->flags & A1C_NO_INCLUDE_DEPS)
         SAVE_STREAM(fp_c, OT_POST_INCLUDE, "", 1);
+
+    TQ_FOR (ot, &(cs->destination[OT_SRC_INCLUDES].chunks), next)
+        safe_fwrite(ot->buf, ot->len, 1, fp_c);
     TQ_FOR (ot, &(cs->destination[OT_IOC_TABLES].chunks), next)
         safe_fwrite(ot->buf, ot->len, 1, fp_c);
     TQ_FOR (ot, &(cs->destination[OT_CTABLES].chunks), next)
@@ -915,8 +926,10 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
     ASN_CLOSE(fp_h);
     ASN_XCLOSE(fp_py_h);
 
-    int ret = snprintf(name_buf, sizeof(name_buf), "%s%s.c",
-                       datadirs->c_datadir, filename);
+    int ret =
+        snprintf(name_buf, sizeof(name_buf), "%s%s.c",
+                 is_std ? datadirs->skeleton_out_datadir : datadirs->c_datadir,
+                 filename);
     assert(ret > 0 && ret < (ssize_t)sizeof(name_buf));
 
     if (identical_files(name_buf, tmpname_c)) {
@@ -930,7 +943,9 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         ASN_CLEAR(tmpname_c);
     }
 
-    sprintf(name_buf, "%s%s.h", datadirs->h_datadir, filename);
+    sprintf(name_buf, "%s%s.h",
+            is_std ? datadirs->skeleton_out_datadir : datadirs->h_datadir,
+            filename);
     if (identical_files(name_buf, tmpname_h)) {
         h_retained = " (contents unchanged)";
         unlink(tmpname_h);
@@ -943,7 +958,10 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
     }
 
     if (include_py) {
-        sprintf(name_buf, "%s%s_Py.c", datadirs->py_c_datadir, filename);
+        sprintf(
+            name_buf, "%s%s_Py.c",
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_c_datadir,
+            filename);
         if (identical_files(name_buf, tmpname_py_c)) {
             py_c_retained = " (contents unchanged)";
             unlink(tmpname_py_c);
@@ -955,7 +973,10 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
             ASN_CLEAR(tmpname_py_c);
         }
 
-        sprintf(name_buf, "%s%s_Py.h", datadirs->py_h_datadir, filename);
+        sprintf(
+            name_buf, "%s%s_Py.h",
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_h_datadir,
+            filename);
         if (identical_files(name_buf, tmpname_py_h)) {
             py_h_retained = " (contents unchanged)";
             unlink(tmpname_py_h);
@@ -968,15 +989,21 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         }
     }
 
-    safe_fprintf(stderr, "Compiled %s%s.c%s\n", datadirs->c_datadir, filename,
-                 c_retained);
-    safe_fprintf(stderr, "Compiled %s%s.h%s\n", datadirs->h_datadir, filename,
-                 h_retained);
+    safe_fprintf(stderr, "Compiled %s%s.c%s (%s)\n",
+                 is_std ? datadirs->skeleton_out_datadir : datadirs->c_datadir,
+                 filename, c_retained, is_std ? "STD" : "C");
+    safe_fprintf(stderr, "Compiled %s%s.h%s\n",
+                 is_std ? datadirs->skeleton_out_datadir : datadirs->h_datadir,
+                 filename, h_retained);
     if (include_py) {
-        safe_fprintf(stderr, "Compiled %s%s_Py.h%s\n", datadirs->py_c_datadir,
-                     filename, py_h_retained);
-        safe_fprintf(stderr, "Compiled %s%s_Py.c%s\n", datadirs->py_h_datadir,
-                     filename, py_c_retained);
+        safe_fprintf(
+            stderr, "Compiled %s%s_Py.h%s\n",
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_c_datadir,
+            filename, py_h_retained);
+        safe_fprintf(
+            stderr, "Compiled %s%s_Py.c%s\n",
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_h_datadir,
+            filename, py_c_retained);
     }
     goto finalize;
 

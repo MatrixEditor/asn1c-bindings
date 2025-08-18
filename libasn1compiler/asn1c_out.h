@@ -21,6 +21,7 @@ typedef struct compiler_streams {
     enum {
         OT_IGNORE,                  /* Ignore this output */
         OT_INCLUDES,                /* #include files */
+        OT_SRC_INCLUDES,            /* #include for .c files */
         OT_DEPS,                    /* Dependencies (other than #includes) */
         OT_FWD_DECLS,               /* Forward declarations */
         OT_FWD_DEFS,                /* Forward definitions */
@@ -59,6 +60,7 @@ typedef struct compiler_streams {
 static char *_compiler_stream2str[] __attribute__((unused)) = {
     "IGNORE",
     "INCLUDES",
+    "SRC_INCLUDES",
     "DEPS",
     "FWD-DECLS",
     "FWD-DEFS",
@@ -134,6 +136,12 @@ int asn1c_compiled_output(arg_t *arg, const char *file, int lineno,
                arg->target->target == OT_FWD_DEFS);                 \
     } while (0)
 
+#define TYPE_IS_IMPORTED(arg, expr)                   \
+    ((arg)->flags & A1C_SKIP_IMPORTS &&               \
+     !((expr)->module->_tags & MT_STANDARD_MODULE) && \
+     !((expr)->module->_tags & MT_FIRST_MODULE))
+#define HIDE_INNER_DEFS (arg->embed && !(arg->flags & A1C_ALL_DEFS_GLOBAL))
+
 /* Output a piece of text into a default stream */
 #define OUT(fmt, args...) \
     asn1c_compiled_output(arg, __FILE__, __LINE__, __func__, fmt, ##args)
@@ -189,7 +197,7 @@ int asn1c_compiled_output(arg_t *arg, const char *file, int lineno,
             "extern asn_TYPE_descriptor_t "                       \
             "asn_DEF_%s;\n",                                      \
             MKID(expr));                                          \
-        if (expr->_type_referenced) {                             \
+        if ((expr->_type_referenced)) {                          \
             OUT_NOINDENT(                                         \
                 "extern asn_%s_specifics_t "                      \
                 "asn_SPC_%s_specs_%d;\n",                         \

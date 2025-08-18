@@ -540,9 +540,12 @@ end:
 #define PY_IMPL_METHODDEF_ITEM(typeName, name, flags) \
     {#name, (PyCFunction)PyAsn##typeName##__##name, (flags), NULL}
 
-#define PY_IMPL_GETSET_ITEM(typeName, itemName)            \
-    {#itemName, (getter)PyAsn##typeName##__get_##itemName, \
-     (setter)PyAsn##typeName##__set_##itemName, NULL, NULL}
+#define PY_IMPL_GETSET_ITEM(typeName, itemName) \
+    PY_IMPL_GETSET_ITEM_INTERNAL(typeName, itemName, itemName)
+
+#define PY_IMPL_GETSET_ITEM_INTERNAL(typeName, pyItemName, attrName) \
+    {#pyItemName, (getter)PyAsn##typeName##__get_##attrName,         \
+     (setter)PyAsn##typeName##__set_##attrName, NULL, NULL}
 
 #define PY_IMPL_GENERIC_INIT(typeName)                                      \
     static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,       \
@@ -630,25 +633,26 @@ end:
         return -1;                                                             \
     }
 
-#define PY_IMPL_CHOICE_ATTR_FROMPY(typeName, enumTypeName, attrName, ...) \
-    static inline int PyAsn##typeName##__##attrName##_FromPython(         \
-        PyObject* value, typeName##_t* dst) {                             \
-        if (!value || Py_IsNone(value)) {                                 \
-            dst->present = enumTypeName##_PR_NOTHING;                     \
-            return 0;                                                     \
-        }                                                                 \
-        if ((__VA_ARGS__) < 0) return -1;                                 \
-        dst->present = enumTypeName##_PR_##attrName;                      \
-        return 0;                                                         \
+#define PY_IMPL_CHOICE_ATTR_FROMPY(typeName, enumTypeName, safeName, attrName, \
+                                   ...)                                        \
+    static inline int PyAsn##typeName##__##safeName##_FromPython(              \
+        PyObject* value, typeName##_t* dst) {                                  \
+        if (!value || Py_IsNone(value)) {                                      \
+            dst->present = enumTypeName##_PR_NOTHING;                          \
+            return 0;                                                          \
+        }                                                                      \
+        if ((__VA_ARGS__) < 0) return -1;                                      \
+        dst->present = enumTypeName##_PR_##attrName;                           \
+        return 0;                                                              \
     }
 
-#define PY_IMPL_CHOICE_SETATTR(typeName, enumTypeName, attrName)     \
-    PY_IMPL_CHOICE_GENERIC_SETATTR(typeName, enumTypeName, attrName, \
+#define PY_IMPL_CHOICE_SETATTR(typeName, enumTypeName, safeName, attrName)     \
+    PY_IMPL_CHOICE_GENERIC_SETATTR(typeName, enumTypeName, safeName, attrName, \
                                    asn_DEF_##typeName)
 
-#define PY_IMPL_CHOICE_GENERIC_SETATTR(typeName, enumTypeName, attrName, \
-                                       type_DEF)                         \
-    static int PyAsn##typeName##__set_##attrName(                        \
+#define PY_IMPL_CHOICE_GENERIC_SETATTR(typeName, enumTypeName, safeName, \
+                                       attrName, type_DEF)               \
+    static int PyAsn##typeName##__set_##safeName(                        \
         PyAsn##typeName##Object* self, PyObject* value,                  \
         void* Py_UNUSED(arg)) {                                          \
         int result = 0;                                                  \
@@ -659,7 +663,7 @@ end:
         ASN_STRUCT_RESET((type_DEF), self->ob_value);                    \
         self->ob_value->present = enumTypeName##_PR_NOTHING;             \
         if (!Py_IsNone(value)) {                                         \
-            result = PyAsn##typeName##__##attrName##_FromPython(         \
+            result = PyAsn##typeName##__##safeName##_FromPython(         \
                 value, self->ob_value);                                  \
         }                                                                \
         self->s_valid = result != -1;                                    \
@@ -676,13 +680,13 @@ end:
         return (topyfunc);                                            \
     }
 
-#define PY_IMPL_CHOICE_GETATTR(typeName, enumTypeName, attrName)          \
-    static PyObject* PyAsn##typeName##__get_##attrName(                   \
-        PyAsn##typeName##Object* self, void* Py_UNUSED(arg)) {            \
-        if (self->ob_value->present != enumTypeName##_PR_##attrName)      \
-            Py_RETURN_NONE;                                               \
-        return PyAsn##typeName##__##attrName##_ToPython(self->ob_value,   \
-                                                        (PyObject*)self); \
+#define PY_IMPL_CHOICE_GETATTR(typeName, enumTypeName, safeName, attrName) \
+    static PyObject* PyAsn##typeName##__get_##safeName(                    \
+        PyAsn##typeName##Object* self, void* Py_UNUSED(arg)) {             \
+        if (self->ob_value->present != enumTypeName##_PR_##attrName)       \
+            Py_RETURN_NONE;                                                \
+        return PyAsn##typeName##__##safeName##_ToPython(self->ob_value,    \
+                                                        (PyObject*)self);  \
     }
 
 #define PY_IMPL_INIT_KWONLY(typeName, args, kwargs)                       \
@@ -703,22 +707,23 @@ end:
         Py_XDECREF(tmp);                                                   \
         return result;
 
-#define PY_IMPL_CHOICE_INIT_ATTR(typeName, enumTypeName, attrName)           \
-    if (result == 0) {                                                       \
-        PyCompat_GenericGetAttr(pObj, attrName, tmp);                        \
-        if (tmp != NULL && tmp != Py_None) {                                 \
-            if (PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
-                ASN_DEBUG("Failed to set " #attrName " attribute");          \
-                result = -1;                                                 \
-            } else {                                                         \
-                pDst->present = enumTypeName##_PR_##attrName;                \
-                Py_CLEAR(tmp);                                               \
-                return 0;                                                    \
-            }                                                                \
-        } else {                                                             \
-            PyErr_Clear();                                                   \
-        }                                                                    \
-        Py_XDECREF(tmp);                                                     \
+#define PY_IMPL_CHOICE_INIT_ATTR(typeName, enumTypeName, pyAttrName, safeName, \
+                                 attrName)                                     \
+    if (result == 0) {                                                         \
+        PyCompat_GenericGetAttr(pObj, pyAttrName, tmp);                        \
+        if (tmp != NULL && tmp != Py_None) {                                   \
+            if (PyAsn##typeName##__##safeName##_FromPython(tmp, pDst) < 0) {   \
+                ASN_DEBUG("Failed to set " #attrName " attribute");            \
+                result = -1;                                                   \
+            } else {                                                           \
+                pDst->present = enumTypeName##_PR_##attrName;                  \
+                Py_CLEAR(tmp);                                                 \
+                return 0;                                                      \
+            }                                                                  \
+        } else {                                                               \
+            PyErr_Clear();                                                     \
+        }                                                                      \
+        Py_XDECREF(tmp);                                                       \
     }
 
 #define PY_IMPL_CHOICE_INIT(typeName) \
@@ -909,12 +914,12 @@ end:
         return (PyObject*)self;                                           \
     }
 
-#define PY_IMPL_SEQ_INIT_ATTR(typeName, attrName)                            \
+#define PY_IMPL_SEQ_INIT_ATTR(typeName, pyAttrName, attrName)                \
     if (result == 0) {                                                       \
-        PyCompat_GenericGetAttr(pObj, attrName, tmp);                        \
+        PyCompat_GenericGetAttr(pObj, pyAttrName, tmp);                      \
         if (tmp != NULL && tmp != Py_None) {                                 \
             if (PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
-                ASN_DEBUG("Failed to set " #attrName " attribute");          \
+                ASN_DEBUG("Failed to set " #pyAttrName " attribute");        \
                 result = -1;                                                 \
             } else {                                                         \
                 Py_CLEAR(tmp);                                               \
@@ -1139,9 +1144,9 @@ end:
         return 0;                                                             \
     }
 
-#define PY_IMPL_SET_INIT_ATTR(typeName, enumTypeName, attrName)              \
+#define PY_IMPL_SET_INIT_ATTR(typeName, enumTypeName, pyAttrName, attrName)  \
     if (result == 0) {                                                       \
-        PyCompat_GenericGetAttr(pObj, attrName, tmp);                        \
+        PyCompat_GenericGetAttr(pObj, pyAttrName, tmp);                      \
         if (tmp && tmp != Py_None) {                                         \
             if (PyAsn##typeName##__##attrName##_FromPython(tmp, pDst) < 0) { \
                 result = -1;                                                 \

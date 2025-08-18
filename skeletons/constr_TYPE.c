@@ -99,16 +99,15 @@ int asn_struct_init(const struct asn_TYPE_descriptor_s *type_descriptor,
          */
         memb = &type_descriptor->elements[index];
         if (memb->default_value_set != NULL) {
-            value = struct_ptr + memb->memb_offset;
-            if (memb->default_value_set(&value) < 0) {
-                return -1;
+            if (!(memb->flags & ATF_POINTER)) {
+                value = struct_ptr + memb->memb_offset;
+                if (memb->default_value_set(&value) < 0) {
+                    return -1;
+                }
             }
-        } else if (memb->type != NULL) {
-            if (asn_struct_init(memb->type, struct_ptr + memb->memb_offset) <
-                0) {
-                return -1;
-            }
+            /* fall through */
         }
+        /* only first-level members are supported for now */
     }
     return 0;
 }
