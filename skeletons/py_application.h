@@ -633,7 +633,7 @@ end:
                 nTmpValue = PyLong_FromSize_t((size_t)1);                     \
                 if (nTmpValue != NULL) {                                      \
                     nTmpShift = PyLong_FromSize_t(                            \
-                        (size_t)((nBitPos >= 0) ? nBitPos - 1 : 0));          \
+                        (size_t)((bitPos >= 0) ? bitPos - 1 : 0));            \
                     if (nTmpShift != NULL) {                                  \
                         nTmpBitValue = PyNumber_Lshift(nTmpValue, nTmpShift); \
                         if (nTmpBitValue != NULL) {                           \
