@@ -255,7 +255,8 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
 
     /* type spec */
     REDIR(OT_PY_IMPL_CLASS);
-    PY_GEN_CLASS_BEGIN_INTERNAL(TYPE_MODULE_NAME(arg, expr), type_name, py_class_name);
+    PY_GEN_CLASS_BEGIN_INTERNAL(TYPE_MODULE_NAME(arg, expr), type_name,
+                                py_class_name);
     if (arg->embed) {
         PY_GEN_CLASS_DOC(
             "ASN.1 anonymous type %s_TYPE "
@@ -334,6 +335,7 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     int saved_target;
     int saved_indent;
     size_t presence_value = 0;
+    size_t bitstr_bitpos = 0;
 
     ns = c_name(arg);
     type_name = py_type_name(arg, expr, PYTNF_CONSTR);
@@ -1114,15 +1116,14 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                     switch (v->expr_type) {
                         case A1TC_UNIVERVAL:
                             tmp_name = c_member_name(arg, v);
-                            OUT("PY_IMPL_"
-                                "ENUM_"
-                                "VALUE(V_%"
-                                "s, %s, "
-                                "%s);\n",
-                                c_expr_name(arg, v).as_member, tmp_name,
-                                asn1p_itoa(
-                                    is_bitstr ? (1 << v->value->value.v_integer)
-                                              : v->value->value.v_integer));
+                            if (is_bitstr) {
+                                OUT("PY_IMPL_FLAG_VALUE(V_%s, %s);\n",
+                                    c_expr_name(arg, v).as_member, tmp_name);
+                            } else {
+                                OUT("PY_IMPL_ENUM_VALUE(V_%s, %s, %s);\n",
+                                    c_expr_name(arg, v).as_member, tmp_name,
+                                    asn1p_itoa(v->value->value.v_integer));
+                            }
                             break;
                         case A1TC_EXTENSIBLE:
                             OUT("/*\n");
@@ -1400,26 +1401,12 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                         switch (v->expr_type) {
                             case A1TC_UNIVERVAL:
                                 tmp_name = c_member_name(arg, v);
-                                OUT("PY_"
-                                    "IMPL_"
-                                    "ENUM_"
-                                    "VALUE("
-                                    "V_%s, "
-                                    "%s, "
-                                    "%s);"
-                                    "\n",
-                                    c_expr_name(arg, v).as_member, tmp_name,
-                                    asn1p_itoa(1 << v->value->value.v_integer));
+                                OUT("PY_IMPL_FLAG_VALUE(V_%s, %s);\n",
+                                    c_expr_name(arg, v).as_member, tmp_name);
                                 break;
                             case A1TC_EXTENSIBLE:
                                 OUT("/*\n");
-                                OUT(" * "
-                                    "Enumer"
-                                    "ation "
-                                    "is "
-                                    "extens"
-                                    "ible"
-                                    "\n");
+                                OUT(" * Enumeration is extensible\n");
                                 OUT(" */"
                                     "\n");
                                 break;
@@ -1429,9 +1416,7 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                     };
                     INDENT(-1);
                     OUT(");\n");
-                    OUT("PY_IMPL_ASSIGN_"
-                        "ENUM(%s);\n",
-                        MKID(expr));
+                    OUT("PY_IMPL_ASSIGN_ENUM(%s);\n", MKID(expr));
                     INDENT(-1);
                 }
 

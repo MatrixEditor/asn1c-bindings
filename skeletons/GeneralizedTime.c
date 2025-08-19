@@ -50,6 +50,24 @@ static struct tm *gmtime_r(const time_t *tloc, struct tm *result) {
 
 #endif /* _WIN32 */
 
+#ifdef _WIN32
+#ifndef HAVE_SETENV
+int setenv(const char *name, const char *value, int overwrite) {
+    int errcode = 0;
+    if (!overwrite) {
+        size_t envsize = 0;
+        errcode = getenv_s(&envsize, NULL, 0, name);
+        if (errcode || envsize) return errcode;
+    }
+    return _putenv_s(name, value);
+}
+#endif
+
+#ifndef HAVE_UNSETENV
+static inline int unsetenv(const char *name) { return _putenv_s(name, ""); }
+#endif
+#endif /* _WIN32 */
+
 #if defined(sun) || defined(__sun) || defined(__solaris__)
 #define _EMULATE_TIMEGM
 #endif

@@ -488,8 +488,7 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
 
         if (ret) break;
 
-        ret = asn1c__save_asn_config(arg, datadirs->skeleton_out_datadir,
-                                     cfgfile_name);
+        ret = asn1c__save_asn_config(arg, datadirs->h_datadir, cfgfile_name);
         if (ret) break;
 
         ret =

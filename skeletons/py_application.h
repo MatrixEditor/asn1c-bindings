@@ -624,6 +624,32 @@ end:
         Py_CLEAR(nTmpValue);                                               \
     } while (0)
 
+#define PY_IMPL_FLAG_VALUE(name, bitPos)                                      \
+    do {                                                                      \
+        PyObject *nTmpShift = NULL, *nTmpBitValue = NULL;                     \
+        if (result >= 0) {                                                    \
+            result = -1;                                                      \
+            if ((nTmpName = PyUnicode_FromString(#name)) != NULL) {           \
+                nTmpValue = PyLong_FromSize_t((size_t)1);                     \
+                if (nTmpValue != NULL) {                                      \
+                    nTmpShift = PyLong_FromSize_t(                            \
+                        (size_t)((nBitPos >= 0) ? nBitPos - 1 : 0));          \
+                    if (nTmpShift != NULL) {                                  \
+                        nTmpBitValue = PyNumber_Lshift(nTmpValue, nTmpShift); \
+                        if (nTmpBitValue != NULL) {                           \
+                            result = PyObject_SetItem(nNamespace, nTmpName,   \
+                                                      nTmpBitValue);          \
+                        }                                                     \
+                    }                                                         \
+                }                                                             \
+            }                                                                 \
+        }                                                                     \
+        Py_CLEAR(nTmpName);                                                   \
+        Py_CLEAR(nTmpValue);                                                  \
+        Py_CLEAR(nTmpShift);                                                  \
+        Py_CLEAR(nTmpBitValue);                                               \
+    } while (0)
+
 #define PY_IMPL_ASSIGN_ENUM(typeName) \
     PY_IMPL_ASSIGN_ENUM_DIRECT(typeName, typeName, VALUES)
 

@@ -12,14 +12,7 @@
 #include "config.h"
 #endif
 
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE 1
-#endif
-
-#ifndef _BSD_SOURCE
-#define _BSD_SOURCE /* for snprintf() on some linux systems  */
-#endif
-
+/* Standard headers */
 #include <stdio.h>     /* For snprintf(3) */
 #include <stdlib.h>    /* For *alloc(3) */
 #include <string.h>    /* For memcpy(3) */
@@ -29,116 +22,129 @@
 #include <stddef.h>    /* for offsetof and ptrdiff_t */
 #include <inttypes.h>  /* for PRIdMAX */
 
+/* --------------------------- Windows branch ----------------------------- */
 #ifdef _WIN32
 
-#include <malloc.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <math.h>
+#include <float.h>
+
+/*
+ * MSVC CRT notes:
+ * - VS 2015+ (MSVC >= 1900) provides C99 functions like snprintf, ilogb,
+ *   copysign, isnan, isfinite, etc. Do NOT remap these.
+ * - For very old MSVC, provide minimal, local fallbacks guarded by version.
+ */
+#if defined(_MSC_VER) && _MSC_VER < 1900
+/* Fallbacks for pre-UCRT toolchains ONLY */
 #ifndef __MINGW32__
 #define snprintf _snprintf
 #define vsnprintf _vsnprintf
 #endif
 
-/* To avoid linking with ws2_32.lib, here's the definition of ntohl() */
-#define sys_ntohl(l)                                        \
-    ((((l) << 24) & 0xff000000) | (((l) << 8) & 0xff0000) | \
-     (((l) >> 8) & 0xff00) | ((l >> 24) & 0xff))
-
-#ifdef _MSC_VER /* MSVS.Net */
-#ifndef __cplusplus
-#define inline __inline
-#endif
-#ifndef ASSUMESTDTYPES /* Standard types have been defined elsewhere */
-#define ssize_t SSIZE_T
-#if _MSC_VER < 1600
-typedef char int8_t;
-typedef short int16_t;
-typedef int int32_t;
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-#else /* _MSC_VER >= 1600 */
-#include <stdint.h>
-#endif /* _MSC_VER < 1600 */
-#endif /* ASSUMESTDTYPES */
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <float.h>
+/* isnan/isfinite/copysign fallbacks */
 #ifndef isnan
 #define isnan _isnan
 #endif
-#define finite _finite
-#define copysign _copysign
-#ifndef ilogb
-#define ilogb _logb
-#endif
-#else /* !_MSC_VER */
-#include <stdint.h>
-#endif /* _MSC_VER */
 
-#else /* !_WIN32 */
+#ifndef isfinite
+static inline int asn_isfinite_double(double x) { return _finite(x); }
+#define isfinite asn_isfinite_double
+#endif
+
+#ifndef copysign
+#define copysign _copysign
+#endif
+
+/* Minimal ilogb fallback*/
+#ifndef ilogb
+static inline int asn_ilogb(double x) { return (int)_logb(x); }
+#define ilogb asn_ilogb
+#endif
+
+#endif /* _MSC_VER < 1900 */
+
+/* Define ssize_t portably on Windows if missing */
+#ifndef HAVE_SSIZE_T
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#define HAVE_SSIZE_T 1
+#endif
+
+/* To avoid linking with ws2_32.lib, here's the definition of ntohl() */
+#ifndef sys_ntohl
+#define sys_ntohl(l)                                          \
+    ((((l) << 24) & 0xff000000) | (((l) << 8) & 0x00ff0000) | \
+     (((l) >> 8) & 0x0000ff00) | (((l) >> 24) & 0x000000ff))
+#endif
+
+#else
+/* ------------------------- POSIX / others -------------------------- */
 
 #if defined(__vxworks)
 #include <types/vxTypes.h>
-#else /* !defined(__vxworks) */
+#endif
 
-#include <inttypes.h> /* C99 specifies this file */
 #ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h> /* for ntohl() */
+#include <arpa/inet.h>
 #define sys_ntohl(foo) ntohl(foo)
-#else /* !_HAVE_ARPA_INET_H */
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h> /* for ntohl() */
+#elif defined(HAVE_NETINET_IN_H)
+#include <netinet/in.h>
 #define sys_ntohl(foo) ntohl(foo)
-#else /* !_HAVE_NETINET_IN_H */
-/* Here's the definition of ntohl() */
-#define sys_ntohl(l)                                        \
-    ((((l) << 24) & 0xff000000) | (((l) << 8) & 0xff0000) | \
-     (((l) >> 8) & 0xff00) | ((l >> 24) & 0xff))
-#endif /* HAVE_NETINET_IN_H */
+#else
+#ifndef sys_ntohl
+#define sys_ntohl(l)                                          \
+    ((((l) << 24) & 0xff000000) | (((l) << 8) & 0x00ff0000) | \
+     (((l) >> 8) & 0x0000ff00) | (((l) >> 24) & 0x000000ff))
+#endif
 #endif /* HAVE_ARPA_INET_H */
-#endif /* defined(__vxworks) */
 
 #endif /* _WIN32 */
 
+/* ---------------------------- Attributes -------------------------------- */
 #if defined(__GNUC__) || defined(__clang__)
 #define CC_UNUSED(name) name __attribute__((unused))
 #else
-#define CC_UNUSED(name)
+#define CC_UNUSED(name) name
 #endif
 
-#if __GNUC__ >= 3 || defined(__clang__)
+#if defined(__GNUC__) || defined(__clang__)
 #define CC_ATTRIBUTE(attr) __attribute__((attr))
 #else
 #define CC_ATTRIBUTE(attr)
 #endif
-#if defined(__GNUC__) && \
-    ((__GNUC__ == 4 && __GNUC_MINOR__ >= 4) || __GNUC__ > 4)
+
+#if defined(__GNUC__)
+#if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
 #define CC_PRINTFLIKE(fmt, var) CC_ATTRIBUTE(format(gnu_printf, fmt, var))
-#elif defined(__GNUC__)
+#else
 #if defined(ANDROID)
 #define CC_PRINTFLIKE(fmt, var) CC_ATTRIBUTE(__format__(__printf__, fmt, var))
 #else
 #define CC_PRINTFLIKE(fmt, var) CC_ATTRIBUTE(format(printf, fmt, var))
 #endif
+#endif
 #else
 #define CC_PRINTFLIKE(fmt, var)
 #endif
+
 #define CC_NOTUSED CC_ATTRIBUTE(unused)
+
 #ifndef CC_ATTR_NO_SANITIZE
-#if __GNUC__ < 8
-#define CC_ATTR_NO_SANITIZE(what)
+#if defined(__GNUC__) && (__GNUC__ >= 8)
+#define CC_ATTR_NO_SANITIZE(what) CC_ATTRIBUTE((no_sanitize(what)))
 #else
-#define CC_ATTR_NO_SANITIZE(what) CC_ATTRIBUTE(no_sanitize(what))
+#define CC_ATTR_NO_SANITIZE(what)
 #endif
 #endif
 
-/* Figure out if thread safety is requested */
+/* Thread-safety flag */
 #if !defined(ASN_THREAD_SAFE) && (defined(THREAD_SAFE) || defined(_REENTRANT))
-#define ASN_THREAD_SAFE
-#endif /* Thread safety */
-
-#ifndef offsetof /* If not defined by <stddef.h> */
-#define offsetof(s, m) ((ptrdiff_t)&(((s *)0)->m) - (ptrdiff_t)((s *)0))
-#endif /* offsetof */
+#define ASN_THREAD_SAFE 1
+#endif
 
 #ifndef MIN /* Suitable for comparing primitive types (integers) */
 #if defined(__GNUC__)
@@ -153,27 +159,19 @@ typedef unsigned int uint32_t;
 #endif                                    /* __GNUC__ */
 #endif                                    /* MIN */
 
-#if __STDC_VERSION__ >= 199901L
 #ifndef SIZE_MAX
-#define SIZE_MAX ((~((size_t)0)) >> 1)
+#define SIZE_MAX ((size_t)~(size_t)0)
+#endif
+#ifndef RSIZE_MAX /* C11 Annex K recommendation is implementation-defined; \
+                     keep conservative */
+#define RSIZE_MAX (SIZE_MAX / 2u)
+#endif
+#ifndef RSSIZE_MAX
+#define RSSIZE_MAX ((ssize_t)(RSIZE_MAX / 2u))
 #endif
 
-#ifndef RSIZE_MAX /* C11, Annex K */
-#define RSIZE_MAX (SIZE_MAX >> 1)
-#endif
-#ifndef RSSIZE_MAX /* Halve signed size even further than unsigned */
-#define RSSIZE_MAX ((ssize_t)(RSIZE_MAX >> 1))
-#endif
-#else /* Old compiler */
-#undef SIZE_MAX
-#undef RSIZE_MAX
-#undef RSSIZE_MAX
-#define SIZE_MAX ((~((size_t)0)) >> 1)
-#define RSIZE_MAX (SIZE_MAX >> 1)
-#define RSSIZE_MAX ((ssize_t)(RSIZE_MAX >> 1))
-#endif
-
-#if __STDC_VERSION__ >= 199901L
+/* printf-style width macros */
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #define ASN_PRI_SIZE "zu"
 #define ASN_PRI_SSIZE "zd"
 #define ASN_PRIuMAX PRIuMAX

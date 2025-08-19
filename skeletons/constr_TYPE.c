@@ -100,7 +100,7 @@ int asn_struct_init(const struct asn_TYPE_descriptor_s *type_descriptor,
         memb = &type_descriptor->elements[index];
         if (memb->default_value_set != NULL) {
             if (!(memb->flags & ATF_POINTER)) {
-                value = struct_ptr + memb->memb_offset;
+                value = (void *)(((char *)struct_ptr) + memb->memb_offset);
                 if (memb->default_value_set(&value) < 0) {
                     return -1;
                 }
