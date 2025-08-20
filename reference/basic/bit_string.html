@@ -282,7 +282,7 @@
 <span id="reference-basic-bitstring"></span><h1>BIT STRING<a class="headerlink" href="#bit-string" title="Link to this heading">¶</a></h1>
 <p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> type represents an arbitrary-length sequence of bits.
 It is used to model flags, bitmasks, and other bit-level data. These types store
-their bit data internally as a little endian encoded byte array.</p>
+their bit data internally as a little-endian encoded byte array.</p>
 <p>Named BIT STRING types are special variants where each bit is assigned a
 meaningful name, represented as members of an <code class="docutils literal notranslate"><span class="pre">enum.IntFlag</span></code> class called
 <code class="docutils literal notranslate"><span class="pre">VALUES</span></code> in the generated Python class.</p>
@@ -302,9 +302,9 @@ meaningful name, represented as members of an <code class="docutils literal notr
 
 <span class="k">class</span><span class="w"> </span><span class="nc">MyFlags</span><span class="p">(</span><span class="n">_BasicAsn1FlagType</span><span class="p">):</span>
     <span class="k">class</span><span class="w"> </span><span class="nc">VALUES</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntFlag</span><span class="p">):</span>
-        <span class="n">V_flag1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span>
-        <span class="n">V_flag2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span>
-        <span class="n">V_flag3</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span>
+        <span class="n">V_flag1</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">V_flag2</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">V_flag3</span> <span class="o">=</span> <span class="mi">2</span>
 </pre></div>
 </div>
 <section id="conceptual-representation">
@@ -328,17 +328,19 @@ meaningful name, represented as members of an <code class="docutils literal notr
 <dl class="py property">
 <dt class="sig sig-object py">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span></em></dt>
-<dd><p>Gets or sets the bit string value.</p>
+<dd><p>Gets or sets the bit string value in <strong>little-endian</strong> form.</p>
 <p>When setting, you can assign:</p>
 <ul class="simple">
 <li><p>a bytes object, which will be converted into a bit array,</p></li>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code> object directly.</p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Direct mutation of the returned bitarray will NOT update the
-internal stored value unless reassigned explicitly.</p>
-</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value_BE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span></em></dt>
+<dd><p>Gets or sets the bit string value in <strong>big-endian</strong> form.</p>
+<p>Supported for <strong>all top-level and named BIT STRING types</strong>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -348,21 +350,45 @@ internal stored value unless reassigned explicitly.</p>
 <section id="usage-notes">
 <h2>Usage Notes<a class="headerlink" href="#usage-notes" title="Link to this heading">¶</a></h2>
 <ul>
-<li><p>Bit order within the underlying bit array is <strong>LITTLE ENDIAN</strong> aligned,
-meaning bit 0 corresponds to the least significant bit of the first byte.</p></li>
+<li><p>Bit order within the underlying bit array is <strong>little-endian</strong> aligned by
+default, meaning bit 0 corresponds to the least significant bit of the
+first byte.</p></li>
 <li><p>Named bit strings allow intuitive usage of individual flags:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">flags</span> <span class="o">=</span> <span class="n">MyFlags</span><span class="p">()</span>
-<span class="n">flags</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag1</span> <span class="o">|</span> <span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag3</span>  <span class="c1"># Set flag1 and flag3</span>
-<span class="k">if</span> <span class="n">flags</span><span class="o">.</span><span class="n">value</span> <span class="o">&amp;</span> <span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag2</span><span class="p">:</span>
+<span class="c1"># Keep in mind that in-place operations are not possible</span>
+<span class="n">flags_value</span> <span class="o">=</span> <span class="n">flags</span><span class="o">.</span><span class="n">value</span>
+<span class="n">flags_value</span><span class="p">[</span><span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">flags</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">flags_value</span>
+<span class="k">if</span> <span class="n">flags</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag2</span><span class="p">]:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Flag 2 is set&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">value</span></code> property allows seamless conversion between raw bits
 and named flags.</p></li>
-<li><p>Direct modifications to the <code class="docutils literal notranslate"><span class="pre">bitarray</span></code> returned by <code class="docutils literal notranslate"><span class="pre">value</span></code> do not
+<li><p>Direct modifications to the <code class="docutils literal notranslate"><span class="pre">bitarray</span></code> returned by <code class="docutils literal notranslate"><span class="pre">value</span></code> or <code class="docutils literal notranslate"><span class="pre">value_BE</span></code> do not
 affect the stored value unless reassigned.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Endian conversion rules:</p>
+<ul class="simple">
+<li><p><strong>Top-level and named BIT STRING types</strong> support both <code class="code docutils literal notranslate"><span class="pre">.value</span></code>
+(little-endian) and <code class="code docutils literal notranslate"><span class="pre">.value_BE</span></code> (big-endian).</p></li>
+<li><p><strong>Embedded unnamed BIT STRINGs</strong> (e.g., inline fields inside <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>
+or <code class="docutils literal notranslate"><span class="pre">SET</span></code> without a type alias) only support little-endian access via
+<code class="code docutils literal notranslate"><span class="pre">.value</span></code>.</p></li>
+</ul>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyFlags</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">read</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="nv">write</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+
+<span class="n n-Type">MySeq</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">f1</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="p">,</span><span class="w">         </span><span class="c1">-- only little-endian</span>
+<span class="w">    </span><span class="nv">f2</span><span class="w"> </span><span class="n n-Type">MyFlags</span><span class="w">             </span><span class="c1">-- supports little-endian and big-endian</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </section>
 </section>
 
