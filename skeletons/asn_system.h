@@ -135,7 +135,7 @@ typedef SSIZE_T ssize_t;
 
 #ifndef CC_ATTR_NO_SANITIZE
 #if defined(__GNUC__) && (__GNUC__ >= 8)
-#define CC_ATTR_NO_SANITIZE(what) CC_ATTRIBUTE((no_sanitize(what)))
+#define CC_ATTR_NO_SANITIZE(what) CC_ATTRIBUTE(no_sanitize(what))
 #else
 #define CC_ATTR_NO_SANITIZE(what)
 #endif

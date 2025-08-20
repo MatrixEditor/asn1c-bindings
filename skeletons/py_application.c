@@ -37,6 +37,7 @@ void PyCompat_Clear(void) {
     Py_CLEAR(PyCompatTable->str__endian);
     Py_CLEAR(PyCompatTable->str__little);
     Py_CLEAR(PyCompatTable->str__to_bytes);
+    Py_CLEAR(PyCompatTable->str__big);
     PyMem_RawFree(PyCompatTable);
     PyCompatTable = NULL;
 }
@@ -62,6 +63,7 @@ int PyCompat_Init(void) {
     _CACHED_STRING(PyCompatTable, str__oid_sep, ".", error);
     _CACHED_STRING(PyCompatTable, str__endian, "endian", error);
     _CACHED_STRING(PyCompatTable, str__little, "little", error);
+    _CACHED_STRING(PyCompatTable, str__big, "big", error);
     _CACHED_STRING(PyCompatTable, str__to_bytes, "tobytes", error);
 
     nTmpModule = PyImport_ImportModule("io");

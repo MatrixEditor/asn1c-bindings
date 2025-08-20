@@ -1,6 +1,6 @@
 import pytest
 
-from bitarray import bitarray
+from bitarray.util import ba2int
 from example_mod._example_mod import ExampleNamedBitString
 
 
@@ -12,23 +12,23 @@ def test_named_BIT_STRING_accepts_integer_and_is_valid():
     obj = ExampleNamedBitString()
     obj.value = 1
     assert obj.is_valid()
-    assert obj.value == 1
+    assert ba2int(obj.value) == 1
 
 
 def test_named_BIT_STRING_returns_same_integer_value():
     obj = ExampleNamedBitString()
     obj.value = 1
     # conversion must return the same value
-    assert obj.value == 1
-    # Although, the object is returned as an instance of enum.IntFlag,
-    # the value is still an integer.
-    assert isinstance(obj.value, int)
+    assert ba2int(obj.value) == 1
+    assert not isinstance(obj.value, int)
 
 
 def test_named_BIT_STRING_decodes_correctly_from_der():
     raw_data = b"\x03\x02\x00\x01"
     parsed = ExampleNamedBitString.ber_decode(raw_data)
-    assert parsed.value == 1
+    assert ba2int(parsed.value) == 1
+    # the first bit (bit 0) is set
+    assert bool(parsed.value[ExampleNamedBitString.VALUES.V_zero])
 
 
 def test_named_BIT_STRING_encodes_correctly_to_der():
@@ -43,7 +43,7 @@ def test_named_BIT_STRING_invalid_integer_value():
     obj = ExampleNamedBitString()
     obj.value = 999
     assert obj.is_valid()
-    assert obj.value == 999
+    assert ba2int(obj.value) == 999
 
 
 def test_named_BIT_STRING_rejects_unsupported_type():

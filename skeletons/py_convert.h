@@ -157,7 +157,10 @@ end:
     return result;
 }
 
-static inline PyObject *PyCompatBitArray_New(PyObject *pBytesObj) {
+#define PyCompatBitArray_LITTLE_ENDIAN 1
+#define PyCompatBitArray_BIG_ENDIAN 0
+
+static inline PyObject *PyCompatBitArray_New(PyObject *pBytesObj, int little) {
     PyObject *nArgs = NULL, *nKwargs = NULL, *nResult = NULL;
 
     if ((nArgs = PyTuple_New(pBytesObj ? 1 : 0)) && (nKwargs = PyDict_New())) {
@@ -168,7 +171,8 @@ static inline PyObject *PyCompatBitArray_New(PyObject *pBytesObj) {
         if (!pBytesObj ||
             PyTuple_SetItem(nArgs, 0, Py_NewRef(pBytesObj)) == 0) {
             if (PyDict_SetItem(nKwargs, PyCompatTable->str__endian,
-                               PyCompatTable->str__little) == 0) {
+                               little ? PyCompatTable->str__little
+                                      : PyCompatTable->str__big) == 0) {
                 nResult = PyObject_Call(
                     (PyObject *)PyCompatTable->PyBitArray_Type, nArgs, nKwargs);
             }
@@ -180,16 +184,21 @@ static inline PyObject *PyCompatBitArray_New(PyObject *pBytesObj) {
 }
 
 #define PyCompatBitArray_FromStringAndSize(str, size) \
-    _PyCompatBitArray_FromStringAndSize((const char *)(str), (Py_ssize_t)(size))
+    PyCompatBitArray_FromStringAndSize_Endian(str, size, 1)
+
+#define PyCompatBitArray_FromStringAndSize_Endian(str, size, littleEndian) \
+    _PyCompatBitArray_FromStringAndSize((const char *)(str),               \
+                                        (Py_ssize_t)(size), (littleEndian))
 
 static PyObject *_PyCompatBitArray_FromStringAndSize(const char *str,
-                                                     Py_ssize_t size) {
+                                                     Py_ssize_t size,
+                                                     int littleEndian) {
     PyObject *nResult = NULL, *nTmpBytes = NULL;
     if ((nTmpBytes = PyBytes_FromStringAndSize(str, size)) == NULL) {
         goto end;
     }
 
-    nResult = PyCompatBitArray_New(nTmpBytes);
+    nResult = PyCompatBitArray_New(nTmpBytes, littleEndian);
 end:
     Py_XDECREF(nTmpBytes);
     return nResult;
@@ -225,12 +234,17 @@ end:
     return result;
 }
 
-static int PyCompatBitArray_FromObject(PyObject *pObj, char **str,
-                                       Py_ssize_t *size) {
+#define PyCompatBitArray_FromObject(obj, str, size, little) \
+    _PyCompatBitArray_FromObject(obj, (char **)(str), (Py_ssize_t *)(size), \
+                                 (little))
+
+static int _PyCompatBitArray_FromObject(PyObject *pObj, char **str,
+                                       Py_ssize_t *size, int little) {
     PyObject *nValue = NULL, *nBitArray = NULL, *nArgs = NULL, *nKwargs = NULL;
     int result = -1;
 
-    if (PyObject_IsInstance(pObj, PyCompatTable->PyBitArray_Type)) {
+    if (PyObject_IsInstance(pObj, PyCompatTable->PyBitArray_Type) ||
+        PyObject_CheckBuffer(pObj)) {
         result = _PyCompatBitArray_ToStringAndSize(pObj, str, size);
     } else {
         // the object MUST be an integer
@@ -241,7 +255,8 @@ static int PyCompatBitArray_FromObject(PyObject *pObj, char **str,
 
         if ((nArgs = Py_BuildValue("(O)", nValue)) &&
             (nKwargs = Py_BuildValue("{OO}", PyCompatTable->str__endian,
-                                     PyCompatTable->str__little))) {
+                                     little ? PyCompatTable->str__little
+                                            : PyCompatTable->str__big))) {
             nBitArray = PyObject_Call(PyCompatTable->PyBitArray_FromLong, nArgs,
                                       nKwargs);
             if (nBitArray) {
@@ -258,10 +273,12 @@ static int PyCompatBitArray_FromObject(PyObject *pObj, char **str,
     return result;
 }
 
-static PyObject *PyCompatBitArray_AsLong(const char *str, Py_ssize_t size) {
+static PyObject *PyCompatBitArray_AsLong(const char *str, Py_ssize_t size,
+                                         int little) {
     PyObject *nResult = NULL, *nBitArray = NULL;
 
-    if ((nBitArray = _PyCompatBitArray_FromStringAndSize(str, size)) != NULL) {
+    if ((nBitArray = _PyCompatBitArray_FromStringAndSize(str, size, little)) !=
+        NULL) {
         nResult =
             PyObject_CallOneArg(PyCompatTable->PyBitArray_AsLong, nBitArray);
     }
@@ -391,13 +408,13 @@ static inline PyObject *PyCompatEnum_AsObject(PyObject *pEnumType, void *src,
     }
 }
 
-#define PyCompatFlag_AsObject(pEnumType, str, size)                      \
+#define PyCompatFlag_AsObject(pEnumType, str, size, littleEndian)        \
     _PyCompatFlag_AsObject((PyObject *)(pEnumType), (const char *)(str), \
-                           (Py_ssize_t)(size))
+                           (Py_ssize_t)(size), (littleEndian))
 
 static inline PyObject *_PyCompatFlag_AsObject(PyObject *pEnumType,
-                                               const char *str,
-                                               Py_ssize_t size) {
+                                               const char *str, Py_ssize_t size,
+                                               int little) {
     PyObject *nValue = NULL, *nResult = NULL;
     PyCompat_ArgCheck(pEnumType, NULL);
     if ((size > 0) && (str == NULL)) {
@@ -405,15 +422,16 @@ static inline PyObject *_PyCompatFlag_AsObject(PyObject *pEnumType,
                         "Flag2Obj: NULL buffer with positive size");
     }
 
-    if ((nValue = PyCompatBitArray_AsLong(str, size)) != NULL) {
+    if ((nValue = PyCompatBitArray_AsLong(str, size, little)) != NULL) {
         nResult = PyObject_CallOneArg(pEnumType, nValue);
     }
     Py_XDECREF(nValue);
     return nResult;
 }
 
-#define PyCompatFlag_FromObject(value, str, size) \
-    PyCompatBitArray_FromObject((value), (char **)(str), (Py_ssize_t *)(size))
+#define PyCompatFlag_FromObject(value, str, size, littleEndian)                \
+    PyCompatBitArray_FromObject((value), (char **)(str), (Py_ssize_t *)(size), \
+                                (littleEndian))
 
 #define PyCompat_GenericGetAttr(obj, attrName, value)                   \
     do {                                                                \

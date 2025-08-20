@@ -429,8 +429,8 @@
 #define PY_GEN_CHOICE_BITSTRING_GETSET(typeName, targetEnumTypeName, safeName, \
                                        attrName, type_def_path)                \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s, "                          \
-        "PyCompatBitArray_ToStringAndSize(value, &dst->choice.%s.buf, "        \
-        "&dst->choice.%s.size));\n",                                           \
+        "PyCompatBitArray_FromObject(value, &dst->choice.%s.buf, "             \
+        "&dst->choice.%s.size, PyCompatBitArray_LITTLE_ENDIAN));\n",           \
         (typeName), (targetEnumTypeName), safeName, (attrName), (safeName),    \
         (safeName));                                                           \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
@@ -445,13 +445,13 @@
                                              type_def_path)                    \
     OUT("PY_IMPL_CHOICE_ATTR_FROMPY(%s, %s, %s, %s,"                           \
         "PyCompatFlag_FromObject(value, &dst->choice.%s.buf, "                 \
-        "&dst->choice.%s.size));\n",                                           \
+        "&dst->choice.%s.size, PyCompatBitArray_LITTLE_ENDIAN));\n",           \
         (typeName), (targetEnumTypeName), safeName, (attrName), (safeName),    \
         (safeName));                                                           \
     OUT("PY_IMPL_CHOICE_ATTR_TOPY(%s, %s, "                                    \
-        "PyCompatFlag_AsObject(PyAsnEnum%s_Type, src->choice.%s.buf, "         \
+        "PyCompatBitArray_FromStringAndSize(src->choice.%s.buf, "              \
         "src->choice.%s.size));\n",                                            \
-        (typeName), (safeName), (enumTypeName), (safeName), (safeName));       \
+        (typeName), (safeName), (safeName), (safeName));                       \
     PY_GEN_CHOICE_GETSET(typeName, targetEnumTypeName, safeName, attrName,     \
                          type_def_path)
 
@@ -655,8 +655,9 @@
 
 #define PY_GEN_SEQ_BITSTR_CONV(typeName, attrName, optional, indirect)       \
     OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
-        "PyCompatBitArray_ToStringAndSize(value, &((BIT_STRING_t "           \
-        "*)target)->buf, &((BIT_STRING_t *)target)->size));\n",              \
+        "PyCompatBitArray_FromObject(value, &((BIT_STRING_t "                \
+        "*)target)->buf, &((BIT_STRING_t *)target)->size, "                  \
+        "PyCompatBitArray_LITTLE_ENDIAN));\n",                               \
         (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
     OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                   \
         "PyCompatBitArray_FromStringAndSize(((BIT_STRING_t *)target)->buf, " \
@@ -667,18 +668,17 @@
     PY_GEN_SEQ_BITSTR_CONV(typeName, attrName, optional, indirect);      \
     PY_GEN_SEQ_GETSET(typeName, attrName, optional)
 
-#define PY_GEN_SEQ_NAMED_BITSTR_CONV(typeName, attrName, enumTypeName,      \
-                                     optional, indirect)                    \
-    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                \
-        "PyCompatFlag_FromObject(value, &((BIT_STRING_t "                   \
-        "*)target)->buf, &((BIT_STRING_t *)target)->size));\n",             \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName)); \
-    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                  \
-        "PyCompatFlag_AsObject(PyAsnEnum%s_Type, ((BIT_STRING_t "           \
-        "*)target)->buf, "                                                  \
-        "((BIT_STRING_t *)target)->size));\n",                              \
-        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName),  \
-        (enumTypeName));
+#define PY_GEN_SEQ_NAMED_BITSTR_CONV(typeName, attrName, enumTypeName,       \
+                                     optional, indirect)                     \
+    OUT("PY_IMPL_SEQ_ATTR%s_FROMPY(%s, %s, "                                 \
+        "PyCompatFlag_FromObject(value, &((BIT_STRING_t "                    \
+        "*)target)->buf, &((BIT_STRING_t *)target)->size, "                  \
+        "PyCompatBitArray_LITTLE_ENDIAN));\n",                               \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));  \
+    OUT("PY_IMPL_SEQ_ATTR%s_TOPY(%s, %s, "                                   \
+        "PyCompatBitArray_FromStringAndSize(((BIT_STRING_t *)target)->buf, " \
+        "((BIT_STRING_t *)target)->size));\n",                               \
+        (optional || indirect ? "_INDIRECT" : ""), (typeName), (attrName));
 
 #define PY_GEN_SEQ_NAMED_BITSTR_GETSET(typeName, attrName, enumTypeName,     \
                                        optional, indirect)                   \
@@ -879,8 +879,8 @@
 
 #define PY_GEN_SEQ_OF_BITSTRING_GETSET(seqTypeName, constrParentPath)  \
     OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, BIT_STRING_t, "                \
-        "PyCompatBitArray_ToStringAndSize(value, &target->buf, "       \
-        "&target->size));\n",                                          \
+        "PyCompatBitArray_FromObject(value, &target->buf, "            \
+        "&target->size, PyCompatBitArray_LITTLE_ENDIAN));\n",          \
         (seqTypeName));                                                \
     OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, BIT_STRING_t, "                  \
         "PyCompatBitArray_FromStringAndSize(src->buf, src->size));\n", \
@@ -909,15 +909,15 @@
                         (is_signed ? "Py_ssize_t" : "unsigned long"),          \
                         constrParentPath)
 
-#define PY_GEN_SEQ_OF_NAMED_BITSTR_GETSET(seqTypeName, enumTypeName,        \
-                                          constrParentPath)                 \
-    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, BIT_STRING_t, "                     \
-        "PyCompatFlag_FromObject(value, &target->buf, "                     \
-        "&target->size));\n",                                               \
-        (seqTypeName));                                                     \
-    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, BIT_STRING_t, "                       \
-        "PyCompatFlag_AsObject(PyAsnEnum%s_Type, src->buf, src->size));\n", \
-        (seqTypeName), enumTypeName);                                       \
+#define PY_GEN_SEQ_OF_NAMED_BITSTR_GETSET(seqTypeName, enumTypeName,   \
+                                          constrParentPath)            \
+    OUT("PY_IMPL_SEQ_OF_ITEM_FROMPY(%s, BIT_STRING_t, "                \
+        "PyCompatFlag_FromObject(value, &target->buf, "                \
+        "&target->size, PyCompatBitArray_LITTLE_ENDIAN));\n",          \
+        (seqTypeName));                                                \
+    OUT("PY_IMPL_SEQ_OF_ITEM_TOPY(%s, BIT_STRING_t, "                  \
+        "PyCompatBitArray_FromStringAndSize(src->buf, src->size));\n", \
+        (seqTypeName));                                                \
     PY_GEN_SEQ_OF_BASICSTR(seqTypeName, BIT_STRING_t, constrParentPath)
 
 #endif

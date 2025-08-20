@@ -17,6 +17,7 @@ typedef struct {
     PyObject* str__oid_sep;
     PyObject* str__endian;
     PyObject* str__little;
+    PyObject* str__big;
     PyObject* str__to_bytes;
 
     PyObject* PyBytesIO_Type;
@@ -633,7 +634,7 @@ end:
                 nTmpValue = PyLong_FromSize_t((size_t)1);                     \
                 if (nTmpValue != NULL) {                                      \
                     nTmpShift = PyLong_FromSize_t(                            \
-                        (size_t)((bitPos >= 0) ? bitPos - 1 : 0));            \
+                        (size_t)((bitPos > 0) ? bitPos - 1 : 0));             \
                     if (nTmpShift != NULL) {                                  \
                         nTmpBitValue = PyNumber_Lshift(nTmpValue, nTmpShift); \
                         if (nTmpBitValue != NULL) {                           \

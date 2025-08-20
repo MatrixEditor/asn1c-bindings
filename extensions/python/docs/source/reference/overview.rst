@@ -440,13 +440,21 @@ The ASN.1 ``BIT STRING`` type can be defined with named bit positions, often
 used to represent a set of boolean flags. In the generated Python bindings,
 these named ``BIT STRING`` types are represented by classes that:
 
-- Contain an embedded ``VALUES`` enumeration (a subclass of ``enum.IntFlag``).
-- Store their current value as a ``VALUES`` member, allowing multiple flags
-  to be combined using bitwise operators.
-- Internally represent their value using a **little-endian aligned**
-  :py:mod:`bitarray.bitarray`.
+- Contain an embedded ``VALUES`` enumeration (a subclass of :class:`enum.IntEnum`).
+- Store their current value internally as a :py:mod:`bitarray.bitarray`.
+- Use **little-endian alignment by default**, while exposing a ``value_BE`` property
+  to query or assign the *big-endian* aligned variant.
 
-For example:
+.. note::
+    Both ``value`` and ``value_BE`` return the raw :class:`bitarray.bitarray`
+    instance rather than an integer mask or enumeration.
+
+.. warning::
+   Big-endian representation is only available via ``value_BE``. The internal
+   storage is always little-endian. *Big-endian* representation is **not** supported
+   for anonymous inner named ``BIT STRING`` types.
+
+**Example:**
 
 .. code-block:: asn1
 
@@ -462,15 +470,21 @@ will generate a Python class:
 
     class MyFlags(_BasicAsn1FlagType):
         class VALUES(enum.IntFlag):
-            V_read = 1 << 0
-            V_write = 1 << 1
-            V_execute = 1 << 2
+            V_read      = 0
+            V_write     = 1
+            V_execute   = 2
 
-.. note::
-    ``IntFlag`` members behave like integers and support bitwise operations.
-    This allows intuitive manipulation of multiple flag values. Be aware that
-    inplace bitwise operations **will not** change the underlying value unless
-    explicitly assigned afterwards.
+Because the generated ``VALUES`` enumeration now stores the **bit position**
+directly (rather than the full mask), checking whether a flag is set is done
+by indexing into the underlying ``bitarray``:
+
+.. code-block:: python
+
+    obj = MyFlags()
+
+    # Check if the 'read' flag is set
+    bool(obj.value[MyFlags.VALUES.V_read])  # True or False
+
 
 All generated Python named BIT STRING classes conform to the following conceptual API:
 
@@ -487,27 +501,37 @@ All generated Python named BIT STRING classes conform to the following conceptua
         Inner enumeration containing **all** named flag values defined in the
         ASN.1 type. Each member is prefixed with ``V_`` to avoid name clashes.
 
-        Each flag's value is a power-of-two integer corresponding to its
-        bit position in the BIT STRING.
+        Each flag's value is the **bit index** in the underlying ``bitarray``.
 
     .. py:property:: value
-        :type: _BasicAsn1FlagType.VALUES
+        :type: bitarray.bitarray
 
         :text-req:`Required.`
 
-        Holds the current set of active flags as a ``VALUES`` member.
+        Holds the current flag state as a **little-endian** :class:`bitarray.bitarray`.
 
         This property accepts assignment using:
 
-        - A ``VALUES`` member or a bitwise combination of members
-        - An integer bitmask corresponding to the flags
-        - A :class:`bytes` object containing the encoded BIT STRING
         - A :class:`bitarray.bitarray` object (must be little-endian aligned)
+        - A :class:`bytes` object containing the encoded ``BIT STRING``
+
+        Accessing individual flags is done by indexing with a ``VALUES`` member.
 
         .. warning::
             Assigning a value containing bits that are not defined in
             ``VALUES`` will not raise an error, but those bits will be preserved
             and treated as *unnamed* flags.
+
+    .. py:property:: value_BE
+        :type: bitarray.bitarray
+
+        :text-req:`Required.`
+
+        Holds the current flag state as a **big-endian** :class:`bitarray.bitarray`.
+
+        Similar to ``value``, but the bit ordering is reversed. Assigning or
+        querying this property transparently handles the endian conversion.
+
 
     .. py:method:: __init__(self, value: _BasicAsn1FlagType.VALUES | int | bytes | bitarray.bitarray | None = None) -> None
 

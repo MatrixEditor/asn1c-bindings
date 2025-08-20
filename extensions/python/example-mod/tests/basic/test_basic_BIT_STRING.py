@@ -27,9 +27,7 @@ def test_BIT_STRING_rejects_non_convertible_types():
     obj = ExampleBitString()
     with pytest.raises(ValueError):
         obj.value = "not a bitarray"
-    with pytest.raises(ValueError):
-        obj.value = 12345  # plain int
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         obj.value = {"a": 1}  # dict
 
 
