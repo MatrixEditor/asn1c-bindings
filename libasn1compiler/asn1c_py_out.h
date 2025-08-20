@@ -324,6 +324,30 @@
     OUT("def value(self, value: %s.VALUES | int%s) -> None: ...\n", typeName, \
         (optional) ? " | None" : "");
 
+#define PY_GEN_STUBS_PROPERTY(valueName, typeName, optional, extraConvTypes) \
+    do {                                                                     \
+        if ((extraConvTypes != NULL)) {                                      \
+            OUT("@property\n");                                              \
+            OUT("def %s(self) -> %s%s: ...\n", valueName, typeName,          \
+                (optional) ? " | None" : "");                                \
+            OUT("@%s.setter\n", valueName);                                  \
+            OUT("def %s(self, value: %s | %s%s) -> None: ...\n", valueName,  \
+                typeName, (extraConvTypes != NULL) ? extraConvTypes : "",    \
+                (optional) ? " | None" : "");                                \
+        } else {                                                             \
+            OUT("%s: %s%s\n", valueName, typeName,                           \
+                (optional) ? " | None" : "");                                \
+        }                                                                    \
+    } while (0)
+
+#define PY_GEN_STUBS_BITSTRING_PROPERTY(valueName, optional)                \
+    OUT("@property\n");                                                     \
+    OUT("def %s(self) -> EXT_bitarray%s: ...\n", valueName,   \
+        (optional) ? " | None" : "");                                       \
+    OUT("@%s.setter\n", valueName);                                         \
+    OUT("def %s(self, value: EXT_bitarray | int | bytes%s) -> None: ...\n", \
+        valueName, (optional) ? " | None" : "");
+
 #define PY_GEN_STUBS_SEQ_OF(memberTypeName, extra_type_args)                \
     OUT("def __init__(self, values: EXT_Iterable[%s%s] | None = ...) -> "   \
         "None: ...\n",                                                      \

@@ -49,7 +49,7 @@ enum {
 static const char *PY_TYPE_MAP[] = {
     [ASN_TYPE_ANY] = "bytes",
     [ASN_BASIC_INTEGER] = "int",
-    [ASN_BASIC_BIT_STRING] = "EXT_bitarray",
+    [ASN_BASIC_BIT_STRING] = "EXT_bitarray | int | bytes",
     [ASN_BASIC_OCTET_STRING] = "bytes",
     [ASN_BASIC_NULL] = "None",
     [ASN_BASIC_BOOLEAN] = "bool",
@@ -1806,6 +1806,7 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
 
     const char *py_conv_type;
     char *memb_name;
+    const char *py_ref_conv_type;
 
     int saved_target;
     int is_bitstr;
@@ -1823,6 +1824,7 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
     ref_expr = NULL;
     indent_level = INDENT_LEVEL;
     py_conv_type = PY_TYPE_MAP[expr->expr_type];
+    py_ref_conv_type = NULL;
     memb_name = strdup(MKID_pysafe(expr));
     parent_is_seq =
         parent_expr ? TYPE_IS_SEQ_OF_LIKE(parent_expr->expr_type) : 0;
@@ -1836,14 +1838,18 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
         if (ref_expr) {
             py_conv_type = PY_TYPE_MAP[ASN_TYPE_ANY];
         } else {
-            /* add an import statement and
-             * skip stubs */
+            /* add an import statement and skip stubs */
             if (TYPE_IS_IMPORTED(arg, expr->reference->ref_expr)) {
-                PY_OUTER(OT_PY_STUBS_IMPORTS, OUT("from "
-                                                  "asn1_external_mod "
-                                                  "import %s\n",
-                                                  py_conv_type););
+                PY_OUTER(
+                    OT_PY_STUBS_IMPORTS,
+                    OUT("from asn1_external_mod import %s\n", py_conv_type););
                 if (arg->embed) return 0;
+            } else {
+                /* try to resolve a simple type */
+                py_ref_conv_type = PY_TYPE_MAP[expr->reference->ref_expr->expr_type];
+                if (TYPE_IS_SEQ_OF_LIKE(expr->reference->ref_expr->expr_type)) {
+                    py_ref_conv_type = "list";
+                }
             }
         }
     }
@@ -1863,17 +1869,18 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
 
     if (!el_count || expr->expr_type == A1TC_REFERENCE) {
         if (!py_conv_type) {
-            WARNING(
-                "SIMPLE TYPE %#x - no "
-                "python type found!",
-                expr->expr_type);
+            WARNING("SIMPLE TYPE %#x - no python type found!", expr->expr_type);
             py_conv_type = "EXT_Any";
         }
 
         if (arg->embed) {
             if (!parent_is_seq) {
-                OUT("%s: %s%s\n", memb_name, py_conv_type,
-                    (optional) ? " | None" : "");
+                if (is_bitstr) {
+                    PY_GEN_STUBS_BITSTRING_PROPERTY(memb_name, optional);
+                } else {
+                    PY_GEN_STUBS_PROPERTY(memb_name, py_conv_type, optional,
+                                          py_ref_conv_type);
+                }
             } else {
                 PY_GEN_STUBS_SEQ_OF(py_conv_type, "");
             }
@@ -1918,15 +1925,15 @@ int asn1c_lang_Py_stubs_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
                 if (arg->embed) {
                     if (!parent_is_seq) {
                         if (is_bitstr) {
-                            OUT("%s: EXT_bitarray%s\n", memb_name,
-                                (optional) ? " | None" : "");
+                            PY_GEN_STUBS_BITSTRING_PROPERTY(memb_name,
+                                                            optional);
                         } else {
                             OUT("%s: %s_VALUES%s\n", memb_name, memb_name,
                                 (optional) ? " | None" : "");
                         }
                     } else {
                         if (is_bitstr) {
-                            PY_GEN_STUBS_SEQ_OF("EXT_bitarray", "");
+                            PY_GEN_STUBS_SEQ_OF(py_conv_type, "");
                         } else {
                             PY_GEN_STUBS_SEQ_OF(memb_name, "_VALUES");
                         }
