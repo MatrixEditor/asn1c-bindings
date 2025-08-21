@@ -667,7 +667,7 @@ end:
                                    ...)                                        \
     static inline int PyAsn##typeName##__##safeName##_FromPython(              \
         PyObject* value, typeName##_t* dst) {                                  \
-        if (!value || Py_IsNone(value)) {                                      \
+        if (value == NULL) {                                                   \
             dst->present = enumTypeName##_PR_NOTHING;                          \
             return 0;                                                          \
         }                                                                      \
@@ -692,9 +692,12 @@ end:
         }                                                                \
         ASN_STRUCT_RESET((type_DEF), self->ob_value);                    \
         self->ob_value->present = enumTypeName##_PR_NOTHING;             \
-        if (!Py_IsNone(value)) {                                         \
+        if (value != NULL) {                                             \
             result = PyAsn##typeName##__##safeName##_FromPython(         \
                 value, self->ob_value);                                  \
+        } else {                                                         \
+            self->s_valid = 0;                                           \
+            return 0;                                                    \
         }                                                                \
         self->s_valid = result != -1;                                    \
         if (result < 0) {                                                \
@@ -729,10 +732,11 @@ end:
         return 0;                                                         \
     }
 
-#define PY_IMPL_CHOICE_FROMPY(typeName, ...)                               \
+#define PY_IMPL_CHOICE_FROMPY(typeName, type_DEF, ...)                     \
     int PyAsn##typeName##_FromPython(PyObject* value, typeName##_t* dst) { \
         PyObject* tmp = NULL;                                              \
         int result = 0;                                                    \
+        PY_IMPL_FROMPY_COMPAT_INTERNAL(typeName, value, dst, type_DEF);    \
         __VA_ARGS__;                                                       \
         Py_XDECREF(tmp);                                                   \
         return result;
@@ -958,15 +962,16 @@ end:
             PyErr_Clear();                                                   \
     }
 
-#define PY_IMPL_SEQ_FROMPY(typeName, ...)                                  \
-    int PyAsn##typeName##_FromPython(PyObject* pObj, typeName##_t* pDst) { \
-        PyObject* tmp = NULL;                                              \
-        int result = 0;                                                    \
-        if (pObj != NULL) {                                                \
-            __VA_ARGS__;                                                   \
-        }                                                                  \
-        Py_XDECREF(tmp);                                                   \
-        return result;                                                     \
+#define PY_IMPL_SEQ_FROMPY(typeName, type_DEF, ...)                         \
+    int PyAsn##typeName##_FromPython(PyObject* pObj, typeName##_t* pDst) {  \
+        PyObject* tmp = NULL;                                               \
+        int result = 0;                                                     \
+        if (pObj != NULL) {                                                 \
+            PY_IMPL_FROMPY_COMPAT_INTERNAL(typeName, pObj, pDst, type_DEF); \
+            __VA_ARGS__;                                                    \
+        }                                                                   \
+        Py_XDECREF(tmp);                                                    \
+        return result;                                                      \
     }
 
 #define PY_IMPL_SEQ_INIT(typeName)                                         \
@@ -1010,6 +1015,7 @@ end:
 #define PY_IMPL_SEQ_INNER_GETATTR(typeName, attrName, attr, innerTypeName) \
     static PyObject* PyAsn##typeName##__get_##attrName(                    \
         PyAsn##typeName##Object* self, void* Py_UNUSED(closure)) {         \
+        if ((attr) == NULL) Py_RETURN_NONE;                                \
         return PyAsn##innerTypeName##_ToPython((attr), (PyObject*)self);   \
     }
 
@@ -1300,7 +1306,8 @@ end:
     static PyObject* PyAsn##typeName##__getitem(PyAsn##typeName##Object* self, \
                                                 Py_ssize_t index) {            \
         if (!self || !self->ob_value) {                                        \
-            PyErr_SetString(PyExc_ValueError, "object has no value");          \
+            PyErr_SetString(PyExc_ValueError,                                  \
+                            #typeName ": object has no value");                \
             return NULL;                                                       \
         }                                                                      \
         if (index < 0) index += (Py_ssize_t)self->ob_value->list.count;        \

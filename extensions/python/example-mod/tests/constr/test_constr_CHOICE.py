@@ -1,6 +1,6 @@
 import pytest
 
-from example_mod._example_mod import ExampleChoice
+from example_mod._example_mod import ExampleChoice, ExampleSequence
 
 
 # -- CHOICE
@@ -65,3 +65,15 @@ def test_constr_choice_inner_enum():
     assert obj.cEnum == ExampleChoice.cEnum_VALUES.V_ceA
 
 
+# ------------------------------------------------------------------------------
+# EDGE CASES
+# ------------------------------------------------------------------------------
+def test_constr_choice_null_copy():
+    obj = ExampleChoice()
+    obj.cNull = None
+    assert obj.present == ExampleChoice.PRESENT.PR_cNull
+
+    # Make sure copying the CHOICE also copies the "present" value
+    seq = ExampleSequence()
+    seq.sRefChoice = obj
+    assert seq.sRefChoice.present == ExampleChoice.PRESENT.PR_cNull

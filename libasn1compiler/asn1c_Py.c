@@ -206,7 +206,12 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     PY_GEN_TYPE_NEW(type_name, !arg->embed);
     PY_GEN_TYPE_REPR(type_name);
     PY_GEN_TYPE_IS_VALID(type_name);
-    OUT("PY_IMPL_SEQ_FROMPY(%s,\n", type_name);
+    if (arg->embed) {
+        OUT("PY_IMPL_SEQ_FROMPY(%s, %s,\n", type_name, constr_path);
+    } else {
+        OUT("PY_IMPL_SEQ_FROMPY(%s, &asn_DEF_%s,\n", type_name, type_name);
+    }
+
     INDENT(+1);
     TQ_FOR (v, &(expr->members), next) {
         if (v->expr_type == A1TC_EXTENSIBLE) continue;
@@ -412,7 +417,11 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     PY_GEN_TYPE_IS_VALID(type_name);
     /* Conversion from a generic Python
      * object for CHOICE */
-    OUT("PY_IMPL_SEQ_FROMPY(%s,\n", type_name);
+    if (arg->embed) {
+        OUT("PY_IMPL_SEQ_FROMPY(%s, %s,\n", type_name, constr_path);
+    } else {
+        OUT("PY_IMPL_SEQ_FROMPY(%s, &asn_DEF_%s,\n", type_name, type_name);
+    }
     INDENT(+1);
     TQ_FOR (v, &(expr->members), next) {
         if (v->expr_type == A1TC_EXTENSIBLE) continue;
