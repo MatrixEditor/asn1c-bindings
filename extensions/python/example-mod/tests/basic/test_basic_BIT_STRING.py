@@ -27,14 +27,14 @@ def test_BIT_STRING_rejects_non_convertible_types():
     obj = ExampleBitString()
     with pytest.raises(ValueError):
         obj.value = "not a bitarray"
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         obj.value = {"a": 1}  # dict
 
 
 def test_BIT_STRING_returns_equivalent_bitarray():
     # - Returns a bitarray equivalent to the one assigned.
     # - The equality check works even if it's a new object instance internally.
-    bit_data = bitarray(b"\x01\x02\x03", endian="little")
+    bit_data = bitarray(b"\x01\x02\x03")
     obj = ExampleBitString()
     obj.value = bit_data
     assert obj.value == bit_data
@@ -42,14 +42,14 @@ def test_BIT_STRING_returns_equivalent_bitarray():
 
 
 def test_BIT_STRING_decodes_correctly():
-    bit_data = bitarray(b"\x01\x02\x03", endian="little")
+    bit_data = bitarray(b"\x01\x02\x03")
     raw_data = b"\x03\x04\x00\x01\x02\x03"
     parsed = ExampleBitString.ber_decode(raw_data)
     assert parsed.value == bit_data
 
 
 def test_BIT_STRING_encodes_correctly():
-    bit_data = bitarray(b"\x01\x02\x03", endian="little")
+    bit_data = bitarray(b"\x01\x02\x03")
     raw_data = b"\x03\x04\x00\x01\x02\x03"
     obj = ExampleBitString()
     obj.value = bit_data

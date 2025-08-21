@@ -157,135 +157,6 @@ end:
     return result;
 }
 
-#define PyCompatBitArray_LITTLE_ENDIAN 1
-#define PyCompatBitArray_BIG_ENDIAN 0
-
-static inline PyObject *PyCompatBitArray_New(PyObject *pBytesObj, int little) {
-    PyObject *nArgs = NULL, *nKwargs = NULL, *nResult = NULL;
-
-    if ((nArgs = PyTuple_New(pBytesObj ? 1 : 0)) && (nKwargs = PyDict_New())) {
-        /* PyTuple_SetItem:
-         * This function “steals” a reference to o and discards a reference to
-         * an item already in the tuple at the affected position.
-         */
-        if (!pBytesObj ||
-            PyTuple_SetItem(nArgs, 0, Py_NewRef(pBytesObj)) == 0) {
-            if (PyDict_SetItem(nKwargs, PyCompatTable->str__endian,
-                               little ? PyCompatTable->str__little
-                                      : PyCompatTable->str__big) == 0) {
-                nResult = PyObject_Call(
-                    (PyObject *)PyCompatTable->PyBitArray_Type, nArgs, nKwargs);
-            }
-        }
-    }
-    Py_XDECREF(nArgs);
-    Py_XDECREF(nKwargs);
-    return nResult;
-}
-
-#define PyCompatBitArray_FromStringAndSize(str, size) \
-    PyCompatBitArray_FromStringAndSize_Endian(str, size, 1)
-
-#define PyCompatBitArray_FromStringAndSize_Endian(str, size, littleEndian) \
-    _PyCompatBitArray_FromStringAndSize((const char *)(str),               \
-                                        (Py_ssize_t)(size), (littleEndian))
-
-static PyObject *_PyCompatBitArray_FromStringAndSize(const char *str,
-                                                     Py_ssize_t size,
-                                                     int littleEndian) {
-    PyObject *nResult = NULL, *nTmpBytes = NULL;
-    if ((nTmpBytes = PyBytes_FromStringAndSize(str, size)) == NULL) {
-        goto end;
-    }
-
-    nResult = PyCompatBitArray_New(nTmpBytes, littleEndian);
-end:
-    Py_XDECREF(nTmpBytes);
-    return nResult;
-}
-
-#define PyCompatBitArray_ToStringAndSize(obj, str, size) \
-    _PyCompatBitArray_ToStringAndSize(obj, (char **)(str), (Py_ssize_t *)(size))
-
-static int _PyCompatBitArray_ToStringAndSize(PyObject *pObj, char **str,
-                                             Py_ssize_t *size) {
-    PyObject *nTmpBytes = NULL;
-    int result = 0;
-    if (PyObject_TypeCheck(pObj,
-                           (PyTypeObject *)PyCompatTable->PyBitArray_Type)) {
-        if ((nTmpBytes = PyObject_CallMethodNoArgs(
-                 pObj, PyCompatTable->str__to_bytes)) == NULL) {
-            PyErr_Clear();
-            PyErr_SetString(PyExc_ValueError,
-                            "Expected a bytes or bitarray object!");
-            goto error;
-        }
-    } else {
-        nTmpBytes = Py_NewRef(pObj);
-    }
-    result = PyCompatBytes_ToStringAndSize(nTmpBytes, str, size);
-    goto end;
-
-error:
-    result = -1;
-
-end:
-    Py_XDECREF(nTmpBytes);
-    return result;
-}
-
-#define PyCompatBitArray_FromObject(obj, str, size, little) \
-    _PyCompatBitArray_FromObject(obj, (char **)(str), (Py_ssize_t *)(size), \
-                                 (little))
-
-static int _PyCompatBitArray_FromObject(PyObject *pObj, char **str,
-                                       Py_ssize_t *size, int little) {
-    PyObject *nValue = NULL, *nBitArray = NULL, *nArgs = NULL, *nKwargs = NULL;
-    int result = -1;
-
-    if (PyObject_IsInstance(pObj, PyCompatTable->PyBitArray_Type) ||
-        PyObject_CheckBuffer(pObj)) {
-        result = _PyCompatBitArray_ToStringAndSize(pObj, str, size);
-    } else {
-        // the object MUST be an integer
-        if ((nValue = PyObject_CallOneArg((PyObject *)(&PyLong_Type), pObj)) ==
-            NULL) {
-            return -1;
-        }
-
-        if ((nArgs = Py_BuildValue("(O)", nValue)) &&
-            (nKwargs = Py_BuildValue("{OO}", PyCompatTable->str__endian,
-                                     little ? PyCompatTable->str__little
-                                            : PyCompatTable->str__big))) {
-            nBitArray = PyObject_Call(PyCompatTable->PyBitArray_FromLong, nArgs,
-                                      nKwargs);
-            if (nBitArray) {
-                result =
-                    _PyCompatBitArray_ToStringAndSize(nBitArray, str, size);
-            }
-        }
-    }
-
-    Py_XDECREF(nArgs);
-    Py_XDECREF(nKwargs);
-    Py_XDECREF(nValue);
-    Py_XDECREF(nBitArray);
-    return result;
-}
-
-static PyObject *PyCompatBitArray_AsLong(const char *str, Py_ssize_t size,
-                                         int little) {
-    PyObject *nResult = NULL, *nBitArray = NULL;
-
-    if ((nBitArray = _PyCompatBitArray_FromStringAndSize(str, size, little)) !=
-        NULL) {
-        nResult =
-            PyObject_CallOneArg(PyCompatTable->PyBitArray_AsLong, nBitArray);
-    }
-    Py_XDECREF(nBitArray);
-    return nResult;
-}
-
 #define PyCompatUnicode_AsUTF8AndSize(obj, size) \
     _PyCompatUnicode_AsUTF8AndSize(obj, (Py_ssize_t *)(size))
 
@@ -408,31 +279,6 @@ static inline PyObject *PyCompatEnum_AsObject(PyObject *pEnumType, void *src,
     }
 }
 
-#define PyCompatFlag_AsObject(pEnumType, str, size, littleEndian)        \
-    _PyCompatFlag_AsObject((PyObject *)(pEnumType), (const char *)(str), \
-                           (Py_ssize_t)(size), (littleEndian))
-
-static inline PyObject *_PyCompatFlag_AsObject(PyObject *pEnumType,
-                                               const char *str, Py_ssize_t size,
-                                               int little) {
-    PyObject *nValue = NULL, *nResult = NULL;
-    PyCompat_ArgCheck(pEnumType, NULL);
-    if ((size > 0) && (str == NULL)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Flag2Obj: NULL buffer with positive size");
-    }
-
-    if ((nValue = PyCompatBitArray_AsLong(str, size, little)) != NULL) {
-        nResult = PyObject_CallOneArg(pEnumType, nValue);
-    }
-    Py_XDECREF(nValue);
-    return nResult;
-}
-
-#define PyCompatFlag_FromObject(value, str, size, littleEndian)                \
-    PyCompatBitArray_FromObject((value), (char **)(str), (Py_ssize_t *)(size), \
-                                (littleEndian))
-
 #define PyCompat_GenericGetAttr(obj, attrName, value)                   \
     do {                                                                \
         if ((value = PyObject_GetAttrString(obj, #attrName)) == NULL) { \
@@ -466,4 +312,5 @@ static inline PyObject *PyCompatAsnType_FromParent(PyTypeObject *type,
     obj->s_valid = 1;
     return (PyObject *)obj;
 }
+
 #endif

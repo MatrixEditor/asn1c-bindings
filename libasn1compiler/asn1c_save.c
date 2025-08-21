@@ -672,6 +672,21 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
                      "\t@value.setter\n"
                      "\tdef value(self, value: _PY_T) -> None: ...\n\n");
 
+        safe_fprintf(
+            py_stubs,
+            "\n@EXT_type_check_only\n"
+            "class _Asn1BitStrType(_Asn1Type):\n"
+            "\tdef __init__(self, size: int = ...) -> None: ...\n"
+            "\t@property\n"
+            "\tdef value(self) -> EXT_bitarray | bytes: ...\n"
+            "\t@value.setter\n"
+            "\tdef value(self, value: EXT_bitarray | bytes) -> None: ...\n"
+            "\tdef clear(self) -> None: ...\n"
+            "\tdef set(self, bit: int, flag: bool) -> None: ...\n"
+            "\tdef get(self, bit: int) -> bool: ...\n"
+            "\tdef size(self) -> int: ...\n"
+            "\tdef resize(self, size: int) -> None: ...\n\n");
+
         safe_fprintf(py_stubs, "### BEGIN GENERATED CODE ###\n");
         TQ_FOR (ot, &(cs->destination[OT_PY_STUBS].chunks), next) {
             safe_fwrite(ot->buf, ot->len, 1, py_stubs);

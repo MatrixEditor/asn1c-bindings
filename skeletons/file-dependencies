@@ -61,6 +61,7 @@ py_application.h py_application.c
 py_convert.h
 py_convert_OBJECT_IDENTIFIER.h
 py_convert_RELATIVE_OID.h
+py_convert_BIT_STRING.h
 
 CONVERTER:			# THIS IS A SPECIAL SECTION
 converter-example.c		# A default name for the example transcoder

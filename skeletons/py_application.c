@@ -74,19 +74,23 @@ int PyCompat_Init(void) {
     Py_CLEAR(nTmpModule);
 
     nTmpModule = PyImport_ImportModule("bitarray");
-    if (!nTmpModule) {
-        goto error;
-    }
-    _IMPORT_ATTR(nTmpModule, "bitarray", PyCompatTable->PyBitArray_Type);
-    Py_CLEAR(nTmpModule);
+    if (nTmpModule != NULL) {
+        _IMPORT_ATTR(nTmpModule, "bitarray", PyCompatTable->PyBitArray_Type);
+        Py_CLEAR(nTmpModule);
 
-    nTmpModule = PyImport_ImportModule("bitarray.util");
-    if (!nTmpModule) {
-        goto error;
+        nTmpModule = PyImport_ImportModule("bitarray.util");
+        if (!nTmpModule) {
+            goto error;
+        }
+        _IMPORT_ATTR(nTmpModule, "ba2int", PyCompatTable->PyBitArray_AsLong);
+        _IMPORT_ATTR(nTmpModule, "int2ba", PyCompatTable->PyBitArray_FromLong);
+        Py_CLEAR(nTmpModule);
+    } else {
+        PyCompatTable->PyBitArray_AsLong = NULL;
+        PyCompatTable->PyBitArray_FromLong = NULL;
+        PyCompatTable->PyBitArray_Type = NULL;
+        PyErr_Clear();
     }
-    _IMPORT_ATTR(nTmpModule, "ba2int", PyCompatTable->PyBitArray_AsLong);
-    _IMPORT_ATTR(nTmpModule, "int2ba", PyCompatTable->PyBitArray_FromLong);
-    Py_CLEAR(nTmpModule);
 
     nTmpModule = PyImport_ImportModule("enum");
     if (!nTmpModule) {

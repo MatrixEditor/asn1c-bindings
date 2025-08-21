@@ -26,8 +26,8 @@ def test_constr_seq_init():
 
 def test_constr_seq_parse():
     obj = ExampleSequence()
-    obj.sBitStr = b"2"
-    obj.snBitStr = 2
+    obj.sBitStr = bitarray("01001100")
+    obj.snBitStr.V_namedA = True
     obj.sOid = "1.2.3.4"
     obj.sRelOid = "1.2.3.4.5"
     obj.sChoice.sicInt = 1
@@ -38,5 +38,6 @@ def test_constr_seq_parse():
 
     parsed = ExampleSequence.ber_decode(raw_data)
     assert parsed.is_valid()
-    assert parsed.sBitStr == bitarray("01001100")
+    assert parsed.sBitStr.value == bitarray("01001100")
     assert parsed.ber_encode() == raw_data
+    assert parsed.snBitStr.V_namedA is True

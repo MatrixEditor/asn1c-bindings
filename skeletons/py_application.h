@@ -221,10 +221,13 @@ end:
         }                        \
     } while (0)
 
-#define PY_IMPL_FROMPY_COMPAT(typeName, obj, dst)                        \
+#define PY_IMPL_FROMPY_COMPAT(typeName, obj, dst) \
+    PY_IMPL_FROMPY_COMPAT_INTERNAL(typeName, obj, dst, &asn_DEF_##typeName)
+
+#define PY_IMPL_FROMPY_COMPAT_INTERNAL(typeName, obj, dst, type_DEF)     \
     do {                                                                 \
         if (PyObject_TypeCheck((obj), &PyAsn##typeName##_Type)) {        \
-            if (asn_copy(&asn_DEF_##typeName, (void**)&dst,              \
+            if (asn_copy((type_DEF), (void**)&dst,                       \
                          ((PyCompatAsnObject_t*)(obj))->ob_value) < 0) { \
                 PyErr_BadInternalCall();                                 \
                 return -1;                                               \
@@ -1430,6 +1433,127 @@ end:
 
 #define PY_IMPL_MODULE_INIT_END \
     return nModule;             \
+    }
+
+/* BIT STRING */
+#define PY_IMPL_BIT_STRING_RESIZE(typeName)                                  \
+    static PyObject* PyAsn##typeName##__resize(                              \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) {   \
+        static char* kwlist[] = {"size", NULL};                              \
+        Py_ssize_t target_size = 0, old_size = 0;                            \
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "n", kwlist,          \
+                                         &target_size))                      \
+            return NULL;                                                     \
+        if (target_size <= 0) {                                              \
+            PyErr_SetString(PyExc_ValueError,                                \
+                            "size must be non-negative and non-zero");       \
+            return NULL;                                                     \
+        }                                                                    \
+        if (target_size <= self->ob_value->size) {                           \
+            PyErr_SetString(PyExc_ValueError,                                \
+                            "size must be greater than current size");       \
+            return NULL;                                                     \
+        }                                                                    \
+        if (PyCompatBITSTRING_Resize(self->ob_value, (size_t)target_size) == \
+            -1)                                                              \
+            return NULL;                                                     \
+        Py_RETURN_NONE;                                                      \
+    }
+
+#define PY_IMPL_BIT_STRING_CLEAR(typeName)                                     \
+    static PyObject* PyAsn##typeName##__clear(PyAsn##typeName##Object* self) { \
+        if (self->ob_value != NULL && self->ob_value->buf != NULL)             \
+            memset(self->ob_value->buf, 0, (size_t)self->ob_value->size);      \
+        Py_RETURN_NONE;                                                        \
+    }
+
+#define PY_IMPL_BIT_STRING_INIT(typeName)                                   \
+    static int PyAsn##typeName##__init(PyAsn##typeName##Object* self,       \
+                                       PyObject* args, PyObject* kwds) {    \
+        static char* kwlist[] = {"size", NULL};                             \
+        Py_ssize_t target_size = PyAsn##typeName##_MAX_SIZE;                \
+        int res = 0;                                                        \
+        if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist,          \
+                                         &target_size))                     \
+            return -1;                                                      \
+        if (target_size < 0) {                                              \
+            PyErr_SetString(PyExc_ValueError, "size must be non-negative"); \
+            return -1;                                                      \
+        }                                                                   \
+        res = PyCompatBITSTRING_New(self->ob_value, (size_t)target_size);   \
+        self->s_valid = res != -1;                                          \
+        return 0;                                                           \
+    }
+
+#define PY_IMPL_BIT_STRING_GETATTR(typeName, attrName, attrValue)       \
+    static PyObject* PyAsn##typeName##__get_##attrName(                 \
+        PyAsn##typeName##Object* self, void* closure) {                 \
+        return PyCompatBITSTRING_GetFlag(self->ob_value, (attrValue),   \
+                                         (PyAsn##typeName##_MAX_SIZE)); \
+    }
+
+#define PY_IMPL_BIT_STRING_SETATTR(typeName, attrName, attrValue)            \
+    static int PyAsn##typeName##__set_##attrName(                            \
+        PyAsn##typeName##Object* self, PyObject* value, void* closure) {     \
+        return PyCompatBITSTRING_SetFlag(self->ob_value, (attrValue), value, \
+                                         (PyAsn##typeName##_MAX_SIZE));      \
+    }
+
+#define PY_IMPL_BIT_STRING_SIZE(typeName)                                     \
+    static PyObject* PyAsn##typeName##__size(PyAsn##typeName##Object* self) { \
+        return PyLong_FromSize_t(self->ob_value->size);                       \
+    }
+
+#define PY_IMPL_BIT_STRING_SET(typeName)                                   \
+    static PyObject* PyAsn##typeName##__set(                               \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) { \
+        static char* kwlist[] = {"bit", "flag", NULL};                     \
+        PyObject* obj = NULL;                                              \
+        Py_ssize_t bit = -1;                                               \
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "nO", kwlist, &bit, \
+                                         &obj))                            \
+            return NULL;                                                   \
+        if (bit < 0 || PyCompatBITSTRING_index((size_t)bit, uint8_t) >=    \
+                           self->ob_value->size) {                         \
+            PyErr_SetString(PyExc_IndexError, "bit index out of range");   \
+            return NULL;                                                   \
+        }                                                                  \
+        PyCompatBITSTRING_SetFlag(self->ob_value, (size_t)bit, obj,        \
+                                  PyAsn##typeName##_MAX_SIZE);             \
+        Py_RETURN_NONE;                                                    \
+    }
+
+#define PY_IMPL_BIT_STRING_GET(typeName)                                   \
+    static PyObject* PyAsn##typeName##__get(                               \
+        PyAsn##typeName##Object* self, PyObject* args, PyObject* kwargs) { \
+        static char* kwlist[] = {"bit", NULL};                             \
+        Py_ssize_t bit = -1;                                               \
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "n", kwlist, &bit)) \
+            return NULL;                                                   \
+        if (bit < 0 || PyCompatBITSTRING_index((size_t)bit, uint8_t) >=    \
+                           self->ob_value->size) {                         \
+            PyErr_SetString(PyExc_IndexError, "bit index out of range");   \
+            return NULL;                                                   \
+        }                                                                  \
+        return PyCompatBITSTRING_GetFlag(self->ob_value, (size_t)bit,      \
+                                         PyAsn##typeName##_MAX_SIZE);      \
+    }
+
+#define PY_IMPL_BIT_STRING_NEW(name)                                        \
+    static PyObject* PyAsn##name##__new(PyTypeObject* type, PyObject* args, \
+                                        PyObject* kwds) {                   \
+        PyAsn##name##Object* self =                                         \
+            (PyAsn##name##Object*)type->tp_alloc(type, 0);                  \
+        if (self) {                                                         \
+            self->ob_value = NULL;                                          \
+            self->s_valid = 0;                                              \
+            self->ob_parent = NULL;                                         \
+            PY_IMPL_SAFE_MALLOC(self->ob_value, BIT_STRING_t);              \
+            if (self->ob_value == NULL) {                                   \
+                Py_CLEAR(self);                                             \
+            }                                                               \
+        }                                                                   \
+        return (PyObject*)self;                                             \
     }
 
 #endif

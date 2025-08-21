@@ -1,63 +1,59 @@
+import bitarray
 import pytest
 
-from bitarray.util import ba2int
 from example_mod._example_mod import ExampleNamedBitString
 
 
-def test_named_BIT_STRING_accepts_integer_and_is_valid():
+def test_named_BIT_STRING_set_single_bit():
     # ASN.1 BIT STRING type that can be represented by:
     #     - An integer value
     #     - A NamedBitString.VALUES enum member
     #     - Any object convertible to bytes (internally stored as bitarray)
     obj = ExampleNamedBitString()
-    obj.value = 1
+    obj.set(1, True)
     assert obj.is_valid()
-    assert ba2int(obj.value) == 1
+    assert obj.get(1) is True
 
 
-def test_named_BIT_STRING_returns_same_integer_value():
+def test_named_BIT_STRING_set_single_bit_by_attr():
     obj = ExampleNamedBitString()
-    obj.value = 1
+    assert obj.V_zero is False
+    obj.V_zero = True
     # conversion must return the same value
-    assert ba2int(obj.value) == 1
-    assert not isinstance(obj.value, int)
+    assert obj.V_zero is True
 
 
 def test_named_BIT_STRING_decodes_correctly_from_der():
-    raw_data = b"\x03\x02\x00\x01"
+    raw_data = b"\x03\x02\x00@"
     parsed = ExampleNamedBitString.ber_decode(raw_data)
-    assert ba2int(parsed.value) == 1
     # the first bit (bit 0) is set
-    assert bool(parsed.value[ExampleNamedBitString.VALUES.V_zero])
+    assert parsed.V_one is True
+    assert parsed.get(1) is True
+    # even if the underlying bitarray stores more data, the index position will
+    # be adjusted automatically
+    assert parsed.value == bitarray.bitarray("0000000001000000")
 
 
 def test_named_BIT_STRING_encodes_correctly_to_der():
     obj = ExampleNamedBitString()
-    obj.value = 1
-    assert obj.ber_encode() == b"\x03\x02\x00\x01"
-
-
-def test_named_BIT_STRING_invalid_integer_value():
-    # Assigning an integer not mapped to any NamedBitString.VALUES WILL NOT raise an
-    # exception. The enum.IntFlag instance will only store the integer value.
-    obj = ExampleNamedBitString()
-    obj.value = 999
-    assert obj.is_valid()
-    assert ba2int(obj.value) == 999
+    obj.V_zero = 1
+    assert obj.ber_encode() == b"\x03\x02\x00\x80"
 
 
 def test_named_BIT_STRING_rejects_unsupported_type():
     obj = ExampleNamedBitString()
     with pytest.raises(ValueError):
         obj.value = "invalid"
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
+        obj.value = 123
+    with pytest.raises(ValueError):
         obj.value = {"key": "value"}
 
 
 def test_named_BIT_STRING_encoding_fails_without_valid_value():
     obj = ExampleNamedBitString()
-    with pytest.raises(ValueError):
-        obj.ber_encode()
+    # BIT STRING objects are always valid (if no size constraint is set)
+    obj.ber_encode()
 
 
 def test_named_BIT_STRING_decoding_fails_with_malformed_data():
