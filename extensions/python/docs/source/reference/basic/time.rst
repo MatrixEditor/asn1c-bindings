@@ -1,4 +1,4 @@
-.. _reference_basic_time_types:
+.. _reference_basic_time:
 
 TIME
 ====

@@ -593,11 +593,7 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
             return -1;
         }
         /* imports */
-        safe_fprintf(py_stubs,
-                     "from enum import (\n"
-                     "\tIntEnum as EXT_IntEnum,\n"
-                     "\tIntFlag as EXT_IntFlag,\n"
-                     ")\n");
+        safe_fprintf(py_stubs, "from enum import IntEnum as EXT_IntEnum\n");
         safe_fprintf(py_stubs,
                      "from typing import (\n"
                      "\tGeneric as EXT_Generic,\n"
