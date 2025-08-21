@@ -1771,9 +1771,12 @@ static int asn1c_lang_Py_BITSTRING(arg_t *arg, const char *type_name,
                     max_bit = (size_t)v->value->value.v_integer;
             }
         };
+        if (max_bit == 0) {
+            max_bit = 1;  // make default size at least one byte
+        }
     }
     REDIR(OT_PY_TYPE_DECLS);
-    if (max_bit == 0) {
+    if (max_bit == 0 && !el_count) {
         OUT("#define PyAsn%s_MAX_SIZE 0\n", type_name);
     } else {
         OUT("#define PyAsn%s_MAX_SIZE PyCompatBITSTRING_maxLength(%zu, "

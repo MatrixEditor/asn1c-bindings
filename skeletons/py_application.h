@@ -1473,7 +1473,7 @@ end:
         static char* kwlist[] = {"size", NULL};                             \
         Py_ssize_t target_size = PyAsn##typeName##_MAX_SIZE;                \
         int res = 0;                                                        \
-        if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist,          \
+        if (!PyArg_ParseTupleAndKeywords(args, kwds, "|n", kwlist,          \
                                          &target_size))                     \
             return -1;                                                      \
         if (target_size < 0) {                                              \
@@ -1482,7 +1482,7 @@ end:
         }                                                                   \
         res = PyCompatBITSTRING_New(self->ob_value, (size_t)target_size);   \
         self->s_valid = res != -1;                                          \
-        return 0;                                                           \
+        return res;                                                         \
     }
 
 #define PY_IMPL_BIT_STRING_GETATTR(typeName, attrName, attrValue)       \
