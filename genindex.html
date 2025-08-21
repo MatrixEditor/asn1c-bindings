@@ -273,7 +273,7 @@
           
 <section class="genindex-section">
   <h1 id="index">Index</h1>
-  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#J"><strong>J</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#X"><strong>X</strong></a></div>
+  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#J"><strong>J</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#X"><strong>X</strong></a></div>
 </section>
 <section id="_" class="genindex-section">
   <h2>_</h2>
@@ -286,11 +286,11 @@
         <li><a href="reference/overview.html#Asn1BasicType.__init__">__init__() (_Asn1BasicType method)</a>
 
         <ul>
+          <li><a href="reference/basic/bit_string.html#Asn1BitStrType.__init__">(_Asn1BitStrType method)</a>
+</li>
           <li><a href="reference/overview.html#Asn1ChoiceType.__init__">(_Asn1ChoiceType method)</a>
 </li>
           <li><a href="reference/overview.html#Asn1EnumType.__init__">(_Asn1EnumType method)</a>
-</li>
-          <li><a href="reference/overview.html#Asn1FlagType.__init__">(_Asn1FlagType method)</a>
 </li>
           <li><a href="reference/overview.html#Asn1ListType.__init__">(_Asn1ListType method)</a>
 </li>
@@ -299,13 +299,15 @@
 </li>
         <li><a href="reference/overview.html#Asn1Type.__repr__">__repr__() (_Asn1Type method)</a>
 </li>
-        <li><a href="reference/overview.html#Asn1ListType.__setitem__">__setitem__() (_Asn1ListType method)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/overview.html#Asn1ListType.__setitem__">__setitem__() (_Asn1ListType method)</a>
+</li>
         <li><a href="reference/overview.html#Asn1Type.__str__">__str__() (_Asn1Type method)</a>
 </li>
         <li><a href="reference/overview.html#Asn1BasicType">_Asn1BasicType (built-in class)</a>
+</li>
+        <li><a href="reference/basic/bit_string.html#Asn1BitStrType">_Asn1BitStrType (built-in class)</a>
 </li>
         <li><a href="reference/overview.html#Asn1ChoiceType">_Asn1ChoiceType (built-in class)</a>
 </li>
@@ -314,10 +316,6 @@
         <li><a href="reference/overview.html#Asn1EnumType">_Asn1EnumType (built-in class)</a>
 </li>
         <li><a href="reference/overview.html#Asn1EnumType.VALUES">_Asn1EnumType.VALUES (built-in class)</a>
-</li>
-        <li><a href="reference/overview.html#Asn1FlagType">_Asn1FlagType (built-in class)</a>
-</li>
-        <li><a href="reference/overview.html#Asn1FlagType.VALUES">_Asn1FlagType.VALUES (built-in class)</a>
 </li>
         <li><a href="reference/overview.html#Asn1ListType">_Asn1ListType (built-in class)</a>
 </li>
@@ -514,10 +512,14 @@
 </li>
         <li><a href="reference/overview.html#Asn1Type.check_constraints">check_constraints() (_Asn1Type method)</a>
 </li>
+        <li><a href="reference/basic/bit_string.html#Asn1BitStrType.clear">clear() (_Asn1BitStrType method)</a>
+
+        <ul>
+          <li><a href="reference/overview.html#Asn1ListType.clear">(_Asn1ListType method)</a>
+</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="reference/overview.html#Asn1ListType.clear">clear() (_Asn1ListType method)</a>
-</li>
         <li>
     command
 
@@ -564,6 +566,16 @@
         <li><a href="reference/constr/external.html#EXTERNAL">EXTERNAL (built-in class)</a>
 </li>
         <li><a href="reference/constr/external.html#EXTERNAL.encoding_TYPE">EXTERNAL.encoding_TYPE (built-in class)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/basic/bit_string.html#Asn1BitStrType.get">get() (_Asn1BitStrType method)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -631,14 +643,28 @@
   </tr></table>
 </section>
 
+<section id="R" class="genindex-section">
+  <h2>R</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/basic/bit_string.html#Asn1BitStrType.resize">resize() (_Asn1BitStrType method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
 <section id="S" class="genindex-section">
   <h2>S</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/basic/bit_string.html#Asn1BitStrType.set">set() (_Asn1BitStrType method)</a>
+</li>
         <li><a href="reference/constr/external.html#EXTERNAL.encoding_TYPE.single_ASN1_type">single_ASN1_type (EXTERNAL.encoding_TYPE property)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/basic/bit_string.html#Asn1BitStrType.size">size() (_Asn1BitStrType method)</a>
+</li>
         <li><a href="reference/constr/character_string.html#CHARACTER_STRING.string_value">string_value (CHARACTER_STRING property)</a>
 </li>
     </ul></td>
@@ -662,13 +688,11 @@
         <li><a href="reference/overview.html#Asn1BasicType.value">value (_Asn1BasicType property)</a>
 
         <ul>
+          <li><a href="reference/basic/bit_string.html#Asn1BitStrType.value">(_Asn1BitStrType property)</a>
+</li>
           <li><a href="reference/overview.html#Asn1EnumType.value">(_Asn1EnumType property)</a>
 </li>
-          <li><a href="reference/overview.html#Asn1FlagType.value">(_Asn1FlagType property)</a>
-</li>
         </ul></li>
-        <li><a href="reference/overview.html#Asn1FlagType.value_BE">value_BE (_Asn1FlagType property)</a>
-</li>
         <li>
     variable
 

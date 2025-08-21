@@ -17,8 +17,7 @@ value is converted **on-demand** to the corresponding Python object, for example
 - ASN.1 ``INTEGER`` converts to a Python ``int``
 - ASN.1 ``BOOLEAN`` converts to a Python ``bool``
 - ASN.1 ``OCTET STRING`` converts to Python ``bytes``
-- ASN.1 named ``BIT STRING`` converts to an ``enum.IntFlag`` or
-  :class:`bitarray.bitarray`, depending on the type
+- ASN.1 ``BIT STRING`` always generates a new class optionally with named members
 
 This conversion produces a **new** Python object representing the current state.
 

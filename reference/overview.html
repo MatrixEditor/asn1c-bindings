@@ -300,9 +300,8 @@ variants of the more general encodings (e.g., BER).</p>
 <li><p><a class="reference internal" href="#asn-1-base-type" id="id1">ASN.1 Base Type</a></p></li>
 <li><p><a class="reference internal" href="#asn-1-conceptual-basic-type" id="id2">ASN.1 Conceptual BASIC Type</a></p></li>
 <li><p><a class="reference internal" href="#asn-1-conceptual-enumerated-type" id="id3">ASN.1 Conceptual Enumerated Type</a></p></li>
-<li><p><a class="reference internal" href="#asn-1-conceptual-named-bit-string-type" id="id4">ASN.1 Conceptual Named BIT STRING Type</a></p></li>
-<li><p><a class="reference internal" href="#asn-1-conceptual-choice-type" id="id5">ASN.1 Conceptual CHOICE Type</a></p></li>
-<li><p><a class="reference internal" href="#asn-1-conceptual-list-type" id="id6">ASN.1 Conceptual List Type</a></p></li>
+<li><p><a class="reference internal" href="#asn-1-conceptual-choice-type" id="id4">ASN.1 Conceptual CHOICE Type</a></p></li>
+<li><p><a class="reference internal" href="#asn-1-conceptual-list-type" id="id5">ASN.1 Conceptual List Type</a></p></li>
 </ul>
 </nav>
 <section id="asn-1-base-type">
@@ -708,109 +707,8 @@ If <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd></dl>
 
 </section>
-<section id="asn-1-conceptual-named-bit-string-type">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">ASN.1 Conceptual Named BIT STRING Type</a><a class="headerlink" href="#asn-1-conceptual-named-bit-string-type" title="Link to this heading">¶</a></h2>
-<p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> type can be defined with named bit positions, often
-used to represent a set of boolean flags. In the generated Python bindings,
-these named <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types are represented by classes that:</p>
-<ul class="simple">
-<li><p>Contain an embedded <code class="docutils literal notranslate"><span class="pre">VALUES</span></code> enumeration (a subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code>).</p></li>
-<li><p>Store their current value internally as a <code class="xref py py-mod docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>.</p></li>
-<li><p>Use <strong>little-endian alignment by default</strong>, while exposing a <code class="docutils literal notranslate"><span class="pre">value_BE</span></code> property
-to query or assign the <em>big-endian</em> aligned variant.</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Both <code class="docutils literal notranslate"><span class="pre">value</span></code> and <code class="docutils literal notranslate"><span class="pre">value_BE</span></code> return the raw <code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>
-instance rather than an integer mask or enumeration.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Big-endian representation is only available via <code class="docutils literal notranslate"><span class="pre">value_BE</span></code>. The internal
-storage is always little-endian. <em>Big-endian</em> representation is <strong>not</strong> supported
-for anonymous inner named <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types.</p>
-</div>
-<p><strong>Example:</strong></p>
-<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyFlags</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nv">read</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-<span class="w">    </span><span class="nv">write</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-<span class="w">    </span><span class="nv">execute</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>will generate a Python class:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyFlags</span><span class="p">(</span><span class="n">_BasicAsn1FlagType</span><span class="p">):</span>
-    <span class="k">class</span><span class="w"> </span><span class="nc">VALUES</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntFlag</span><span class="p">):</span>
-        <span class="n">V_read</span>      <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">V_write</span>     <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">V_execute</span>   <span class="o">=</span> <span class="mi">2</span>
-</pre></div>
-</div>
-<p>Because the generated <code class="docutils literal notranslate"><span class="pre">VALUES</span></code> enumeration now stores the <strong>bit position</strong>
-directly (rather than the full mask), checking whether a flag is set is done
-by indexing into the underlying <code class="docutils literal notranslate"><span class="pre">bitarray</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyFlags</span><span class="p">()</span>
-
-<span class="c1"># Check if the &#39;read&#39; flag is set</span>
-<span class="nb">bool</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">MyFlags</span><span class="o">.</span><span class="n">VALUES</span><span class="o">.</span><span class="n">V_read</span><span class="p">])</span>  <span class="c1"># True or False</span>
-</pre></div>
-</div>
-<p>All generated Python named BIT STRING classes conform to the following conceptual API:</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="Asn1FlagType">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_Asn1FlagType</span></span><a class="headerlink" href="#Asn1FlagType" title="Link to this definition">¶</a></dt>
-<dd><p><em>Inherits from</em> <a class="reference internal" href="#Asn1Type" title="_Asn1Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1Type</span></code></a>.</p>
-<p>Conceptual base class for all ASN.1 named <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="Asn1FlagType.VALUES">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VALUES</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enum.IntFlag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Asn1FlagType.VALUES" title="Link to this definition">¶</a></dt>
-<dd><p><span class="text-req">Required.</span></p>
-<p>Inner enumeration containing <strong>all</strong> named flag values defined in the
-ASN.1 type. Each member is prefixed with <code class="docutils literal notranslate"><span class="pre">V_</span></code> to avoid name clashes.</p>
-<p>Each flag’s value is the <strong>bit index</strong> in the underlying <code class="docutils literal notranslate"><span class="pre">bitarray</span></code>.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="Asn1FlagType.value">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span></em><a class="headerlink" href="#Asn1FlagType.value" title="Link to this definition">¶</a></dt>
-<dd><p><span class="text-req">Required.</span></p>
-<p>Holds the current flag state as a <strong>little-endian</strong> <code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>.</p>
-<p>This property accepts assignment using:</p>
-<ul class="simple">
-<li><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code> object (must be little-endian aligned)</p></li>
-<li><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code> object containing the encoded <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code></p></li>
-</ul>
-<p>Accessing individual flags is done by indexing with a <code class="docutils literal notranslate"><span class="pre">VALUES</span></code> member.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Assigning a value containing bits that are not defined in
-<code class="docutils literal notranslate"><span class="pre">VALUES</span></code> will not raise an error, but those bits will be preserved
-and treated as <em>unnamed</em> flags.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="Asn1FlagType.value_BE">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value_BE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span></em><a class="headerlink" href="#Asn1FlagType.value_BE" title="Link to this definition">¶</a></dt>
-<dd><p><span class="text-req">Required.</span></p>
-<p>Holds the current flag state as a <strong>big-endian</strong> <code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>.</p>
-<p>Similar to <code class="docutils literal notranslate"><span class="pre">value</span></code>, but the bit ordering is reversed. Assigning or
-querying this property transparently handles the endian conversion.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="Asn1FlagType.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_BasicAsn1FlagType.VALUES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Asn1FlagType.__init__" title="Link to this definition">¶</a></dt>
-<dd><p><span class="text-req">Required.</span></p>
-<p>Initializes a new BIT STRING instance with the given value.
-If <code class="docutils literal notranslate"><span class="pre">None</span></code> is provided, the instance is created in an <em>unset</em> state.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
 <section id="asn-1-conceptual-choice-type">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">ASN.1 Conceptual CHOICE Type</a><a class="headerlink" href="#asn-1-conceptual-choice-type" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">ASN.1 Conceptual CHOICE Type</a><a class="headerlink" href="#asn-1-conceptual-choice-type" title="Link to this heading">¶</a></h2>
 <p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">CHOICE</span></code> type represents a union-like structure where <strong>only one</strong> of
 several possible fields can be set at any given time. This constraint is enforced
 in the generated Python classes to ensure data integrity and correct encoding.</p>
@@ -863,7 +761,7 @@ safety checks and clear state tracking.</p></li>
 </div>
 </section>
 <section id="asn-1-conceptual-list-type">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">ASN.1 Conceptual List Type</a><a class="headerlink" href="#asn-1-conceptual-list-type" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">ASN.1 Conceptual List Type</a><a class="headerlink" href="#asn-1-conceptual-list-type" title="Link to this heading">¶</a></h2>
 <p>The <a class="reference internal" href="#Asn1ListType" title="_Asn1ListType"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1ListType</span></code></a> class is the conceptual base for all generated Python
 classes that represent ASN.1 <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span> <span class="pre">OF</span></code> and <code class="docutils literal notranslate"><span class="pre">SET</span> <span class="pre">OF</span></code> types.</p>
 <p>These ASN.1 types hold an ordered or unordered collection of elements of the
@@ -1057,16 +955,6 @@ of type <code class="docutils literal notranslate"><span class="pre">_PY_T</span
 <li><a class="reference internal" href="#Asn1EnumType.VALUES"><code class="docutils literal notranslate"><span class="pre">_Asn1EnumType.VALUES</span></code></a></li>
 <li><a class="reference internal" href="#Asn1EnumType.value"><code class="docutils literal notranslate"><span class="pre">_Asn1EnumType.value</span></code></a></li>
 <li><a class="reference internal" href="#Asn1EnumType.__init__"><code class="docutils literal notranslate"><span class="pre">_Asn1EnumType.__init__()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#asn-1-conceptual-named-bit-string-type">ASN.1 Conceptual Named BIT STRING Type</a><ul>
-<li><a class="reference internal" href="#Asn1FlagType"><code class="docutils literal notranslate"><span class="pre">_Asn1FlagType</span></code></a><ul>
-<li><a class="reference internal" href="#Asn1FlagType.VALUES"><code class="docutils literal notranslate"><span class="pre">_Asn1FlagType.VALUES</span></code></a></li>
-<li><a class="reference internal" href="#Asn1FlagType.value"><code class="docutils literal notranslate"><span class="pre">_Asn1FlagType.value</span></code></a></li>
-<li><a class="reference internal" href="#Asn1FlagType.value_BE"><code class="docutils literal notranslate"><span class="pre">_Asn1FlagType.value_BE</span></code></a></li>
-<li><a class="reference internal" href="#Asn1FlagType.__init__"><code class="docutils literal notranslate"><span class="pre">_Asn1FlagType.__init__()</span></code></a></li>
 </ul>
 </li>
 </ul>

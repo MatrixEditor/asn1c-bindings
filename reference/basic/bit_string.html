@@ -281,114 +281,111 @@
           <section id="bit-string">
 <span id="reference-basic-bitstring"></span><h1>BIT STRING<a class="headerlink" href="#bit-string" title="Link to this heading">¶</a></h1>
 <p>The ASN.1 <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> type represents an arbitrary-length sequence of bits.
-It is used to model flags, bitmasks, and other bit-level data. These types store
-their bit data internally as a little-endian encoded byte array.</p>
-<p>Named BIT STRING types are special variants where each bit is assigned a
-meaningful name, represented as members of an <code class="docutils literal notranslate"><span class="pre">enum.IntFlag</span></code> class called
-<code class="docutils literal notranslate"><span class="pre">VALUES</span></code> in the generated Python class.</p>
+It is used to model flags, bitmasks, and other bit-level data. In the generated
+Python bindings, <strong>all</strong> <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types implement type behavior described
+in <a class="reference internal" href="#Asn1BitStrType" title="_Asn1BitStrType"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1BitStrType</span></code></a>.</p>
+<p>Named <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types additionally expose named boolean attributes for
+convenient flag access.</p>
 <p>Example ASN.1 definitions:</p>
-<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyBitString</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span>
+<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">ExampleBitString</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span>
 
-<span class="n n-Type">MyFlags</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nv">flag1</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-<span class="w">    </span><span class="nv">flag2</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-<span class="w">    </span><span class="nv">flag3</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n n-Type">ExampleNamedBitString</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">zero</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="nv">one</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+<span class="w">    </span><span class="nv">two</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>These generate Python classes similar to:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyBitString</span><span class="p">(</span><span class="n">_Asn1BasicType</span><span class="p">[</span><span class="n">bitarray</span><span class="o">.</span><span class="n">bitarray</span><span class="p">]):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ExampleBitString</span><span class="p">(</span><span class="n">_Asn1BitStrType</span><span class="p">):</span>
     <span class="k">pass</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">MyFlags</span><span class="p">(</span><span class="n">_BasicAsn1FlagType</span><span class="p">):</span>
-    <span class="k">class</span><span class="w"> </span><span class="nc">VALUES</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntFlag</span><span class="p">):</span>
-        <span class="n">V_flag1</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">V_flag2</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">V_flag3</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleNamedBitString</span><span class="p">(</span><span class="n">_Asn1BitStrType</span><span class="p">):</span>
+    <span class="n">V_zero</span><span class="p">:</span> <span class="nb">bool</span>  <span class="c1"># bit 0</span>
+    <span class="n">V_one</span><span class="p">:</span> <span class="nb">bool</span>   <span class="c1"># bit 1</span>
+    <span class="n">V_two</span><span class="p">:</span> <span class="nb">bool</span>   <span class="c1"># bit 2</span>
 </pre></div>
 </div>
 <section id="conceptual-representation">
 <h2>Conceptual Representation<a class="headerlink" href="#conceptual-representation" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_Asn1BasicType</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">bitarray</span></span></em><span class="sig-paren">]</span></dt>
-<dd><p>Represents a basic ASN.1 BIT STRING.</p>
+<dt class="sig sig-object py" id="Asn1BitStrType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_Asn1BitStrType</span></span><a class="headerlink" href="#Asn1BitStrType" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for all ASN.1 <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types.</p>
 <dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
-<dd><p>Initializes the BIT STRING instance with optional initial bits.</p>
-<p>The value can be:</p>
-<ul class="simple">
-<li><p>a bytes object representing the raw bits,</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code> instance,</p></li>
-<li><p>or <code class="docutils literal notranslate"><span class="pre">None</span></code> to initialize an empty BIT STRING.</p></li>
-</ul>
+<dt class="sig sig-object py" id="Asn1BitStrType.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Asn1BitStrType.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes a <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> with the given number of <strong>bytes</strong>.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span></em></dt>
-<dd><p>Gets or sets the bit string value in <strong>little-endian</strong> form.</p>
-<p>When setting, you can assign:</p>
+<dt class="sig sig-object py" id="Asn1BitStrType.value">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#Asn1BitStrType.value" title="Link to this definition">¶</a></dt>
+<dd><p>Gets or sets the raw value of the <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code>.</p>
 <ul class="simple">
-<li><p>a bytes object, which will be converted into a bit array,</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code> object directly.</p></li>
+<li><p>Assignment accepts either a <code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code> object or a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>.</p></li>
+<li><p>The returned object can be modified directly, but must be reassigned
+to take effect.</p></li>
 </ul>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value_BE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bitarray.bitarray</span></em></dt>
-<dd><p>Gets or sets the bit string value in <strong>big-endian</strong> form.</p>
-<p>Supported for <strong>all top-level and named BIT STRING types</strong>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="Asn1BitStrType.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Asn1BitStrType.clear" title="Link to this definition">¶</a></dt>
+<dd><p>Clears all bits (sets them to <code class="docutils literal notranslate"><span class="pre">0</span></code>).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Asn1BitStrType.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Asn1BitStrType.set" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the given <code class="docutils literal notranslate"><span class="pre">bit</span></code> position to <code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Asn1BitStrType.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#Asn1BitStrType.get" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the boolean state of the given <code class="docutils literal notranslate"><span class="pre">bit</span></code> position.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Asn1BitStrType.size">
+<span class="sig-name descname"><span class="pre">size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#Asn1BitStrType.size" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the current number of <strong>bytes</strong> in the <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Asn1BitStrType.resize">
+<span class="sig-name descname"><span class="pre">resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#Asn1BitStrType.resize" title="Link to this definition">¶</a></dt>
+<dd><p>Adjusts the number of <strong>bits</strong> in the <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
 
-<p>Named BIT STRING types will be represented by <a class="reference internal" href="../overview.html#Asn1FlagType" title="_Asn1FlagType"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Asn1FlagType</span></code></a>.</p>
 </section>
 <section id="usage-notes">
 <h2>Usage Notes<a class="headerlink" href="#usage-notes" title="Link to this heading">¶</a></h2>
 <ul>
-<li><p>Bit order within the underlying bit array is <strong>little-endian</strong> aligned by
-default, meaning bit 0 corresponds to the least significant bit of the
-first byte.</p></li>
-<li><p>Named bit strings allow intuitive usage of individual flags:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">flags</span> <span class="o">=</span> <span class="n">MyFlags</span><span class="p">()</span>
-<span class="c1"># Keep in mind that in-place operations are not possible</span>
-<span class="n">flags_value</span> <span class="o">=</span> <span class="n">flags</span><span class="o">.</span><span class="n">value</span>
-<span class="n">flags_value</span><span class="p">[</span><span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-
-<span class="n">flags</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">flags_value</span>
-<span class="k">if</span> <span class="n">flags</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">MyFlags</span><span class="o">.</span><span class="n">V_flag2</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Flag 2 is set&quot;</span><span class="p">)</span>
+<li><p>Unlike integer masks, bits can be manipulated directly using
+<a class="reference internal" href="#Asn1BitStrType.set" title="_Asn1BitStrType.set"><code class="xref py py-func docutils literal notranslate"><span class="pre">_Asn1BitStrType.set()</span></code></a> and <a class="reference internal" href="#Asn1BitStrType.get" title="_Asn1BitStrType.get"><code class="xref py py-func docutils literal notranslate"><span class="pre">_Asn1BitStrType.get()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bs</span> <span class="o">=</span> <span class="n">ExampleBitString</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">bs</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>   <span class="c1"># set bit 3</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>  <span class="c1"># True</span>
 </pre></div>
 </div>
 </li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">value</span></code> property allows seamless conversion between raw bits
-and named flags.</p></li>
-<li><p>Direct modifications to the <code class="docutils literal notranslate"><span class="pre">bitarray</span></code> returned by <code class="docutils literal notranslate"><span class="pre">value</span></code> or <code class="docutils literal notranslate"><span class="pre">value_BE</span></code> do not
-affect the stored value unless reassigned.</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Endian conversion rules:</p>
-<ul class="simple">
-<li><p><strong>Top-level and named BIT STRING types</strong> support both <code class="code docutils literal notranslate"><span class="pre">.value</span></code>
-(little-endian) and <code class="code docutils literal notranslate"><span class="pre">.value_BE</span></code> (big-endian).</p></li>
-<li><p><strong>Embedded unnamed BIT STRINGs</strong> (e.g., inline fields inside <code class="docutils literal notranslate"><span class="pre">SEQUENCE</span></code>
-or <code class="docutils literal notranslate"><span class="pre">SET</span></code> without a type alias) only support little-endian access via
-<code class="code docutils literal notranslate"><span class="pre">.value</span></code>.</p></li>
-</ul>
-<div class="highlight-asn1 notranslate"><div class="highlight"><pre><span></span><span class="n n-Type">MyFlags</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">read</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="nv">write</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-
-<span class="n n-Type">MySeq</span><span class="w"> </span><span class="o">::=</span><span class="w"> </span><span class="kd">SEQUENCE</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nv">f1</span><span class="w"> </span><span class="kt">BIT STRING</span><span class="p">,</span><span class="w">         </span><span class="c1">-- only little-endian</span>
-<span class="w">    </span><span class="nv">f2</span><span class="w"> </span><span class="n n-Type">MyFlags</span><span class="w">             </span><span class="c1">-- supports little-endian and big-endian</span>
-<span class="p">}</span>
+<li><p>Named <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types provide boolean attributes for each flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">flags</span> <span class="o">=</span> <span class="n">ExampleNamedBitString</span><span class="p">()</span>
+<span class="n">flags</span><span class="o">.</span><span class="n">V_one</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">flags</span><span class="o">.</span><span class="n">V_one</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Flag &#39;one&#39; is set&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
+</li>
+<li><p>For very small <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> types (≤ 1 byte):
+If they are encoded using two bytes of space, the queried bit will always be
+positioned on the <strong>last octet internally</strong>.</p></li>
+</ul>
 </section>
 </section>
 
@@ -448,7 +445,19 @@ or <code class="docutils literal notranslate"><span class="pre">SET</span></code
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">BIT STRING</a><ul>
-<li><a class="reference internal" href="#conceptual-representation">Conceptual Representation</a></li>
+<li><a class="reference internal" href="#conceptual-representation">Conceptual Representation</a><ul>
+<li><a class="reference internal" href="#Asn1BitStrType"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType</span></code></a><ul>
+<li><a class="reference internal" href="#Asn1BitStrType.__init__"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#Asn1BitStrType.value"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.value</span></code></a></li>
+<li><a class="reference internal" href="#Asn1BitStrType.clear"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.clear()</span></code></a></li>
+<li><a class="reference internal" href="#Asn1BitStrType.set"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.set()</span></code></a></li>
+<li><a class="reference internal" href="#Asn1BitStrType.get"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.get()</span></code></a></li>
+<li><a class="reference internal" href="#Asn1BitStrType.size"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.size()</span></code></a></li>
+<li><a class="reference internal" href="#Asn1BitStrType.resize"><code class="docutils literal notranslate"><span class="pre">_Asn1BitStrType.resize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#usage-notes">Usage Notes</a></li>
 </ul>
 </li>

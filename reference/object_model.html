@@ -292,8 +292,7 @@ value is converted <strong>on-demand</strong> to the corresponding Python object
 <li><p>ASN.1 <code class="docutils literal notranslate"><span class="pre">INTEGER</span></code> converts to a Python <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
 <li><p>ASN.1 <code class="docutils literal notranslate"><span class="pre">BOOLEAN</span></code> converts to a Python <code class="docutils literal notranslate"><span class="pre">bool</span></code></p></li>
 <li><p>ASN.1 <code class="docutils literal notranslate"><span class="pre">OCTET</span> <span class="pre">STRING</span></code> converts to Python <code class="docutils literal notranslate"><span class="pre">bytes</span></code></p></li>
-<li><p>ASN.1 named <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> converts to an <code class="docutils literal notranslate"><span class="pre">enum.IntFlag</span></code> or
-<code class="xref py py-class docutils literal notranslate"><span class="pre">bitarray.bitarray</span></code>, depending on the type</p></li>
+<li><p>ASN.1 <code class="docutils literal notranslate"><span class="pre">BIT</span> <span class="pre">STRING</span></code> always generates a new class optionally with named members</p></li>
 </ul>
 <p>This conversion produces a <strong>new</strong> Python object representing the current state.</p>
 </section>
