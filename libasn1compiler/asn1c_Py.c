@@ -420,9 +420,9 @@ int asn1c_lang_Py_type_CHOICE(arg_t *arg) {
     /* Conversion from a generic Python
      * object for CHOICE */
     if (arg->embed) {
-        OUT("PY_IMPL_SEQ_FROMPY(%s, %s,\n", type_name, constr_path);
+        OUT("PY_IMPL_CHOICE_FROMPY(%s, %s,\n", type_name, constr_path);
     } else {
-        OUT("PY_IMPL_SEQ_FROMPY(%s, &asn_DEF_%s,\n", type_name, type_name);
+        OUT("PY_IMPL_CHOICE_FROMPY(%s, &asn_DEF_%s,\n", type_name, type_name);
     }
     INDENT(+1);
     TQ_FOR (v, &(expr->members), next) {

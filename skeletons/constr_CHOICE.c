@@ -342,6 +342,7 @@ int CHOICE_copy(const asn_TYPE_descriptor_t *td, void **aptr,
     present = _fetch_present_idx(bptr, specs->pres_offset, specs->pres_size);
 
     if (present <= 0 && (unsigned)present > td->elements_count) return -1;
+    if (present == 0) return 0; /* make sure we don't copy garbage */
     --present;
 
     elm = &td->elements[present];

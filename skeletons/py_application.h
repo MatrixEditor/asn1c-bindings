@@ -733,13 +733,24 @@ end:
     }
 
 #define PY_IMPL_CHOICE_FROMPY(typeName, type_DEF, ...)                     \
-    int PyAsn##typeName##_FromPython(PyObject* value, typeName##_t* dst) { \
+    int PyAsn##typeName##_FromPython(PyObject* pObj, typeName##_t* pDst) { \
         PyObject* tmp = NULL;                                              \
         int result = 0;                                                    \
-        PY_IMPL_FROMPY_COMPAT_INTERNAL(typeName, value, dst, type_DEF);    \
+        void* src = NULL;                                                  \
+        if (PyObject_TypeCheck((pObj), &PyAsn##typeName##_Type)) {         \
+            src = ((PyCompatAsnObject_t*)(pObj))->ob_value;                \
+            if (src != NULL && ((typeName##_t*)src)->present != 0) {       \
+                if (asn_copy((type_DEF), (void**)&pDst, src) < 0) {        \
+                    PyErr_BadInternalCall();                               \
+                    return -1;                                             \
+                }                                                          \
+            }                                                              \
+            return 0;                                                      \
+        }                                                                  \
         __VA_ARGS__;                                                       \
         Py_XDECREF(tmp);                                                   \
-        return result;
+        return result;                                                     \
+    }
 
 #define PY_IMPL_CHOICE_INIT_ATTR(typeName, enumTypeName, pyAttrName, safeName, \
                                  attrName)                                     \
