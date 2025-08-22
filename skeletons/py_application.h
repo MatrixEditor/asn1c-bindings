@@ -1061,6 +1061,17 @@ end:
     }
 
 /* SET */
+#define PY_IMPL_SET_FROMPY(typeName, type_DEF, ...)                        \
+    int PyAsn##typeName##_FromPython(PyObject* pObj, typeName##_t* pDst) { \
+        PyObject* tmp = NULL;                                              \
+        int result = 0;                                                    \
+        if (pObj != NULL) {                                                \
+            __VA_ARGS__;                                                   \
+        }                                                                  \
+        Py_XDECREF(tmp);                                                   \
+        return result;                                                     \
+    }
+
 #define PY_IMPL_SET_INNER_SETATTR(typeName, enumTypeName, attrName, attr,    \
                                   innerTypeName)                             \
     static int PyAsn##typeName##__set_##attrName(                            \

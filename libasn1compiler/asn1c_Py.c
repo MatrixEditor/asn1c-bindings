@@ -207,9 +207,11 @@ int asn1c_lang_Py_type_SEQUENCE(arg_t *arg) {
     PY_GEN_TYPE_REPR(type_name);
     PY_GEN_TYPE_IS_VALID(type_name);
     if (arg->embed) {
-        OUT("PY_IMPL_SEQ_FROMPY(%s, %s,\n", type_name, constr_path);
+        OUT("PY_IMPL_SE%c_FROMPY(%s, %s,\n", TYPE_IS_SET(expr) ? 'T' : 'Q',
+            type_name, constr_path);
     } else {
-        OUT("PY_IMPL_SEQ_FROMPY(%s, &asn_DEF_%s,\n", type_name, type_name);
+        OUT("PY_IMPL_SE%c_FROMPY(%s, &asn_DEF_%s,\n",
+            TYPE_IS_SET(expr) ? 'T' : 'Q', type_name, type_name);
     }
 
     INDENT(+1);

@@ -1,6 +1,7 @@
 import pytest
 
-from example_mod._example_mod import ExampleSet
+from example_mod._example_mod import ExampleSet, ExampleSequence
+
 
 # -- SET
 # A set will be a combination of a SEQUENCE and CHOICE in the C extension.
@@ -14,10 +15,11 @@ def _make_setobj(s_int=42, si_bool=True):
     return obj
 
 
-def test_SET_initial_attr():
+def test_constr_set_initial_attr():
     obj = ExampleSet()
     assert obj.sInt is None
     assert obj.setSeq is None
+
 
 @pytest.mark.parametrize(
     "encode,decode,is_defined",
@@ -30,7 +32,7 @@ def test_SET_initial_attr():
         ("jer_encode", "jer_decode", True),
     ],
 )
-def test_SET_encode_decode(encode, decode, is_defined):
+def test_constr_set_encode_decode(encode, decode, is_defined):
     original = _make_setobj(123, False)
     encode_func = getattr(original, encode)
     if is_defined:
@@ -48,20 +50,30 @@ def test_SET_encode_decode(encode, decode, is_defined):
             encode_func()
 
 
-def test_SET_independent_instances():
+def test_constr_set_independent_instances():
     obj1 = _make_setobj(1, True)
     obj2 = _make_setobj(2, False)
     assert obj1.sInt != obj2.sInt
     assert obj1.setSeq.siBool != obj2.setSeq.siBool
 
 
-def test_SET_field_types():
+def test_constr_set_field_types():
     obj = _make_setobj()
     assert isinstance(obj.sInt, int)
     assert isinstance(obj.setSeq.siBool, bool)
 
 
 @pytest.mark.parametrize("value", [0, -1, 99999])
-def test_SET_integer_values(value):
+def test_constr_set_integer_values(value):
     obj = _make_setobj(s_int=value)
     assert obj.sInt == value
+
+
+def test_constr_set_copy():
+    set_obj = ExampleSet()
+    set_obj.sInt = 42
+    assert set_obj.sInt == 42
+
+    seq_obj = ExampleSequence()
+    seq_obj.sSet = set_obj
+    assert seq_obj.sSet.sInt == 42

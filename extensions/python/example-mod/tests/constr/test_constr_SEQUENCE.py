@@ -1,7 +1,7 @@
 import pytest
 from bitarray import bitarray
 
-from example_mod._example_mod import ExampleChoice, ExampleSequence
+from example_mod._example_mod import ExampleChoice, ExampleSequence, ExampleSet
 
 
 # -- SEQUENCE
@@ -31,6 +31,7 @@ def test_constr_seq_parse():
     obj.sOid = "1.2.3.4"
     obj.sRelOid = "1.2.3.4.5"
     obj.sChoice.sicInt = 1
+    obj.sRefChoice.cBoolean = True
     # NOTE: we can also set the value directly here
     # obj.sOctetStr = b"\x01\x02\x03"
     obj.sOctetStr.value = b"\x01\x02\x03"

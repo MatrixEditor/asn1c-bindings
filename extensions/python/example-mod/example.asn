@@ -107,7 +107,8 @@ ExampleSequence ::= SEQUENCE {
     sChoice         CHOICE {
         sicInt          INTEGER
     },
-    sRefChoice  ExampleChoice
+    sRefChoice  ExampleChoice,
+    sSet ExampleSet
 }
 
 ExampleSet ::= SET {
