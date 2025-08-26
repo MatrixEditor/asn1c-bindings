@@ -636,6 +636,24 @@ int asn1c_lang_Py_type_SIMPLE_TYPE(arg_t *arg, asn1p_expr_t *parent_expr) {
         }
     }
 
+    if (el_count) {
+        int negative = 0;
+        TQ_FOR (v, &(expr->members), next) {
+            if (v->expr_type != A1TC_UNIVERVAL) {
+                OUT("/* Unexpected element: %s */\n", v->Identifier);
+                continue;
+            }
+            if (v->value->value.v_integer < 0) {
+                negative = 1;
+                break;
+            }
+        }
+        if (!negative) {
+            /* special case: only positive values, so we can use size_t */
+            is_signed = 0;
+        }
+    }
+
     if (arg->embed) {
         name = strdup(asn1c_type_name(arg, arg->expr, TNF_CTYPE));
         el_member_name = strdup(MKID_safe(expr));
