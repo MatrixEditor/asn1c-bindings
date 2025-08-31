@@ -143,8 +143,8 @@ static inline int _PyCompatBytes_ToStringAndSize(PyObject *pObj, char **str,
 
     if (PyObject_GetBuffer(pObj, &view, PyBUF_FULL_RO) < 0) return -1;
 
-    if (*str) {
-        PyMem_Free(*str);
+    if ((*str) != NULL) {
+        PY_IMPL_FREE(*str);
         *str = NULL;
     }
     *size = view.len;
@@ -188,14 +188,11 @@ static inline int _PyCompatUnicode_AsUTF8(PyObject *pObj, char **str,
                                           Py_ssize_t *size) {
     PyCompatUnicode_Check(pObj, -1);
     if (*str) {
-        PyMem_Free(*str);
+        PY_IMPL_FREE(*str);
         *str = NULL;
     }
 
     *str = (char *)_PyCompatUnicode_AsUTF8AndSize(pObj, size);
-    if (!*str) {
-        return -1;
-    }
     return *str == NULL ? -1 : 0;
 }
 
@@ -310,6 +307,11 @@ static inline PyObject *PyCompatAsnType_FromParent(PyTypeObject *type,
         return NULL;
     }
 
+    if (obj->ob_value != NULL) {
+        /* the value is uninitialized here, we can simply free it*/
+        PY_IMPL_FREE(obj->ob_value);
+        obj->ob_value = NULL;
+    }
     obj->ob_value = value;
     obj->ob_parent = Py_NewRef(parent);
     obj->s_valid = 1;
