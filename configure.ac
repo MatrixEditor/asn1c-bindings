@@ -1,7 +1,22 @@
-AC_INIT([asn1c], \
-  m4_esyscmd([echo -n `git describe --long --always --dirty`-`git log -1 --format=%ad --date=short`]), \
-  m4_esyscmd([git remote get-url origin|sed s/.git$//]))
+dnl Compute version string safely: use git if available, else fallback
+m4_define([ASN1C_VERSION], m4_esyscmd([
+  if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo -n "$(git describe --long --always --dirty)-$(git log -1 --format=%ad --date=short)"
+  else
+    echo -n "unknown"
+  fi
+]))
 
+dnl Compute bug report URL safely: use git if available, else fallback
+m4_define([ASN1C_BUGURL], m4_esyscmd([
+  if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git remote get-url origin 2>/dev/null | sed 's/.git$//'
+  else
+    echo -n "https://github.com/vlm/asn1c/issues"
+  fi
+]))
+
+AC_INIT([asn1c], ASN1C_VERSION, ASN1C_BUGURL)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign tar-pax])
