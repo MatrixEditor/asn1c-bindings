@@ -267,6 +267,8 @@ static asn1p_module_t *currentModule;
 %token			TOK_TwoDots		".."
 %token			TOK_ThreeDots	"..."
 
+%token			TOK_SUCCESSORS
+%token			TOK_DESCENDANTS
 
 /*
  * Types defined herein.
@@ -286,6 +288,8 @@ static asn1p_module_t *currentModule;
 %type	<a_module>		optImportsBundleSet
 %type	<a_module>		ImportsBundleSet
 %type	<a_xports>		ImportsBundle
+%type	<a_xports>		ImportsBundleInt
+%type	<a_int>			ImportSelectionOption
 %type	<a_xports>		ImportsList
 %type	<a_xports>		ExportsDefinition
 %type	<a_xports>		ExportsBody
@@ -711,11 +715,19 @@ AssignedIdentifier:
 	| ObjectIdentifier { $$.oid = $1; };
 	/* | DefinedValue { $$.value = $1; }; // Handled through saved_aid */
 
-ImportsBundle:
+ImportsBundle: 
+    ImportsBundleInt ImportSelectionOption {
+      $$ = $1;
+      $$->option = $2;
+    }
+    | ImportsBundleInt ;
+
+ImportsBundleInt:
 	ImportsList TOK_FROM TypeRefName AssignedIdentifier {
 		$$ = $1;
 		$$->fromModuleName = $3;
 		$$->identifier = $4;
+		$$->option = 0;
 		/* This stupid thing is used for look-back hack. */
 		saved_aid = $$->identifier.oid ? 0 : &($$->identifier);
 		checkmem($$);
@@ -755,6 +767,14 @@ ImportsElement:
 	}
 	;
 
+ImportSelectionOption:
+	TOK_WITH TOK_SUCCESSORS {
+		$$ = XPT_WITH_SUCCESSORS;
+	}
+	| TOK_WITH TOK_DESCENDANTS {
+		$$ = XPT_WITH_DESCENDANTS;
+	}
+	;
 
 optExports:
 	{ $$ = 0; }
@@ -1077,10 +1097,8 @@ AlternativeTypeLists:
 	}
 	| AlternativeTypeLists ',' TOK_VBracketLeft AlternativeTypeLists TOK_VBracketRight {
 		$$ = $1;
-		$4->meta_type = AMT_TYPE;
-		$4->expr_type = ASN_CONSTR_SEQUENCE;
-		$4->marker.flags |= EM_OPTIONAL;
-		asn1p_expr_add($$, $4);
+		asn1p_expr_add_many($$, $4);
+		asn1p_expr_free($4);
 	}
 	;
 
@@ -1815,7 +1833,9 @@ optManyConstraints:
 optSizeOrConstraint:
 	{ $$ = 0; }
 	| Constraint
-	| SizeConstraint
+	| SizeConstraint {
+		CONSTRAINT_INSERT($$, ACT_CA_SET, $1, 0);
+    }
 	;
 
 Constraint:

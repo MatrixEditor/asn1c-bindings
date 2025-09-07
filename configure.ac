@@ -278,6 +278,7 @@ AC_SUBST(SKELETONS_CFLAGS)
 AC_SUBST(ASAN_ENV_FLAGS)
 
 dnl Checks for header files.
+
 AC_HEADER_STDC
 
 AC_CHECK_HEADERS(sys/param.h)

@@ -381,7 +381,8 @@ UTF8String		{
 VideotexString		return TOK_VideotexString;
 VisibleString		return TOK_VisibleString;
 WITH			return TOK_WITH;
-
+SUCCESSORS		return TOK_SUCCESSORS;
+DESCENDANTS		return TOK_DESCENDANTS;
 
 <INITIAL,with_syntax>&[A-Z][A-Za-z0-9]*([-][A-Za-z0-9]+)*	{
 		asn1p_lval.tv_str = strdup(yytext);
@@ -539,7 +540,7 @@ WITH			return TOK_WITH;
 
 [(){},;:|!.&@\[\]^]	return yytext[0];
 
-[^A-Za-z0-9:=,{}<.@()[]'\"|&^*;!-] {
+[^A-Za-z0-9:=,{}<.@()[]'\\\"|&^*;!-] {
 		if(TYPE_LIFETIME(1994, 0))
 			fprintf(stderr, "ERROR: ");
 		fprintf(stderr,
