@@ -122,7 +122,9 @@ asn1f_fix_constr_ext(arg_t *arg) {
 			switch(ext_count) {
 			case 1: cur_list = (void *)&ext_list; break;
 			case 2:
-				cur_list = (void *)&root_list;
+				/* Second extension marker: continue with extensions,
+				 * do not switch back to root_list */
+				cur_list = (void *)&ext_list;
 				if(v->value) {
 					FATAL("Optional extension marker "
 						"must not contain "
