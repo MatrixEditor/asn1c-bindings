@@ -2137,8 +2137,8 @@ asn_TYPE_descriptor_t asn_DEF_VisibleIdentifier = {
 #include "Int4.h"
 #include <BOOLEAN.h>
 #include <ENUMERATED.h>
-#include <NULL.h>
 #include "Int5.h"
+#include <NULL.h>
 #include <constr_SEQUENCE.h>
 
 /*** <<< DEPS [Sequence] >>> ***/
@@ -2160,12 +2160,12 @@ typedef struct Sequence {
 	Int4_t	 int4_c;
 	BOOLEAN_t	*Bool;	/* DEFAULT 1 */
 	ENUMERATED_t	 enum_c;
-	NULL_t	*null;	/* OPTIONAL */
 	/*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
 	Int5_t	*int5_c;	/* OPTIONAL */
+	NULL_t	*null;	/* OPTIONAL */
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -2480,27 +2480,7 @@ asn_TYPE_member_t asn_MBR_Sequence_1[] = {
 		0, 0, /* No default value */
 		.name = "enum-c"
 		},
-	{ ATF_POINTER, 2, offsetof(struct Sequence, null),
-		.tag = (ASN_TAG_CLASS_UNIVERSAL | (5 << 2)),
-		.tag_mode = 0,
-		.type = &asn_DEF_NULL,
-		.type_selector = 0,
-		{
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = 0,
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = 0,
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_JER_SUPPORT)
-                    .jer_constraints = 0,
-#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-			.general_constraints = 0
-		},
-		0, 0, /* No default value */
-		.name = "null"
-		},
-	{ ATF_POINTER, 1, offsetof(struct Sequence, int5_c),
+	{ ATF_POINTER, 2, offsetof(struct Sequence, int5_c),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
 		.type = &asn_DEF_Int5,
@@ -2520,6 +2500,26 @@ asn_TYPE_member_t asn_MBR_Sequence_1[] = {
 		0, 0, /* No default value */
 		.name = "int5-c"
 		},
+	{ ATF_POINTER, 1, offsetof(struct Sequence, null),
+		.tag = (ASN_TAG_CLASS_UNIVERSAL | (5 << 2)),
+		.tag_mode = 0,
+		.type = &asn_DEF_NULL,
+		.type_selector = 0,
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			.oer_constraints = 0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			.per_constraints = 0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+                    .jer_constraints = 0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+			.general_constraints = 0
+		},
+		0, 0, /* No default value */
+		.name = "null"
+		},
 };
 static const ber_tlv_tag_t asn_DEF_Sequence_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -2528,8 +2528,8 @@ static const asn_TYPE_tag2member_t asn_MAP_Sequence_tag2el_1[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (1 << 2)), 3, 0, 0 }, /* bool */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* int1-c */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 2, -1, 1 }, /* int4-c */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 6, -2, 0 }, /* int5-c */
-    { (ASN_TAG_CLASS_UNIVERSAL | (5 << 2)), 5, 0, 0 }, /* null */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 5, -2, 0 }, /* int5-c */
+    { (ASN_TAG_CLASS_UNIVERSAL | (5 << 2)), 6, 0, 0 }, /* null */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 4, 0, 0 }, /* enum-c */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 1, 0, 0 } /* int4 */
 };
@@ -2539,7 +2539,7 @@ asn_SEQUENCE_specifics_t asn_SPC_Sequence_specs_1 = {
 	.tag2el = asn_MAP_Sequence_tag2el_1,
 	.tag2el_count = 7,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
-	6,	/* First extension addition */
+	5,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_Sequence = {
 	"Sequence",
