@@ -26,5 +26,5 @@ clean:
 regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
-	./asn1c/asn1c test_identified.asn
+	./asn1c/asn1c ./test_identified3.asn
 
