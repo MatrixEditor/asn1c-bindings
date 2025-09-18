@@ -1,9 +1,21 @@
 ASN_MODULE_SRCS=	\
-	TestMessage.c	\
+	Uint8.c	\
+	RaAcaCertRequest.c	\
+	AcaRaCertResponse.c	\
+	AcaRaInterfacePdu.c	\
+	ScmsPdu.c	\
+	ScmsPdu-Scoped.c	\
+	ScopedCertificateRequest.c	\
 	EXTERNAL.c
 
 ASN_MODULE_HDRS=	\
-	TestMessage.h	\
+	Uint8.h	\
+	RaAcaCertRequest.h	\
+	AcaRaCertResponse.h	\
+	AcaRaInterfacePdu.h	\
+	ScmsPdu.h	\
+	ScmsPdu-Scoped.h	\
+	ScopedCertificateRequest.h	\
 	EXTERNAL.h
 
 ASN_MODULE_HDRS+=ANY.h
