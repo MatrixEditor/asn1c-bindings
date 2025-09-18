@@ -1,9 +1,7 @@
 ASN_MODULE_SRCS=	\
-	TestMessage.c	\
 	EXTERNAL.c
 
 ASN_MODULE_HDRS=	\
-	TestMessage.h	\
 	EXTERNAL.h
 
 ASN_MODULE_HDRS+=ANY.h
