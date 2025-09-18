@@ -26,4 +26,5 @@ clean:
 regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
-	./asn1c/asn1c ./test_issue_125_fix.asn
+	./asn1c/asn1c tests/tests-asn1c-compiler/test_issue_125_fix.asn
+
