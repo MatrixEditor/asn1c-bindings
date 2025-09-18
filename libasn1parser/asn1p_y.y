@@ -212,6 +212,7 @@ static asn1p_module_t *currentModule;
 %token			TOK_GeneralString
 %token			TOK_GraphicString
 %token			TOK_IA5String
+%token			TOK_IDENTIFIED
 %token			TOK_IDENTIFIER
 %token			TOK_IMPLICIT
 %token			TOK_IMPLIED
@@ -1233,6 +1234,18 @@ ClassField:
 		$$->meta_type = AMT_OBJECTFIELD;
 		$$->expr_type = A1TC_CLASSFIELD_OSFS;
 		$$->marker = $3;
+	}
+
+	/* IDENTIFIED BY &field construct */
+	| TOK_IDENTIFIED TOK_BY PrimitiveFieldReference {
+		$$ = NEW_EXPR();
+		checkmem($$);
+		$$->Identifier = strdup("IDENTIFIED-BY");
+		$$->meta_type = AMT_OBJECTFIELD;
+		$$->expr_type = A1TC_CLASSFIELD_FTVFS;  /* Treat as fixed type value field */
+		$$->reference = asn1p_ref_new(yylineno, currentModule);
+		asn1p_ref_add_component($$->reference, $3.name, $3.lex_type);
+		free($3.name);
 	}
 	;
 

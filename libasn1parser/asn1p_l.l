@@ -327,6 +327,7 @@ GeneralizedTime		return TOK_GeneralizedTime;
 GeneralString		return TOK_GeneralString;
 GraphicString		return TOK_GraphicString;
 IA5String		return TOK_IA5String;
+IDENTIFIED		return TOK_IDENTIFIED;
 IDENTIFIER		return TOK_IDENTIFIER;
 IMPLICIT		return TOK_IMPLICIT;
 IMPLIED			return TOK_IMPLIED;
