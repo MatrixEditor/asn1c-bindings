@@ -755,13 +755,9 @@ native_long_sign(arg_t *arg, asn1cnst_range_t *r) {
 	&& r->left.value >= 0
 	&& r->right.type == ARE_VALUE
 	&& r->right.value > 2147483647
-	&& r->right.value <= (asn1c_integer_t)(4294967295UL)) {
-		if(r->el_count == 0
-		&& r->left.value == 0
-		&& r->right.value == 4294967295UL)
-			return 0;
-		else
-			return 1;
+	&& r->right.value <= (asn1c_integer_t)(ULONG_MAX)) {
+		/* For ranges that fit in unsigned long but exceed signed long */
+		return 1;  /* Use unsigned long, but still need constraints */
 	} else {
 		return -1;
 	}
