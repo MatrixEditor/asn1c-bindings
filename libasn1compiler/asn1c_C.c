@@ -199,6 +199,9 @@ asn1c_lang_C_type_common_INTEGER(arg_t *arg) {
 		if(map_extensions)
 			OUT("\t/* This list is extensible */\n");
 		OUT("};\n");
+		
+		/* Only generate custom validation for NativeEnumerated types */
+		if(expr->expr_type == ASN_BASIC_ENUMERATED && asn1c_type_fits_long(arg, expr)) {
                 OUT("static int asn_validate_%s(const asn_TYPE_descriptor_t *td,\n", MKID(expr));
                 OUT("                       const void *sptr,\n");
                 OUT("                       asn_app_constraint_failed_f *ctfailcb,\n");
@@ -214,6 +217,7 @@ asn1c_lang_C_type_common_INTEGER(arg_t *arg) {
                 OUT("    return -1;\n");
                 OUT("}\n");
                 arg->param.localvalidation = 1;
+                }
 
 		OUT("static const unsigned int asn_MAP_%s_enum2value_%d[] = {\n",
 			MKID(expr), expr->_type_unique_index);
