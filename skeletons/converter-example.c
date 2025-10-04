@@ -889,6 +889,8 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
     rval.code = RC_WMORE;
     rval.consumed = 0;
 
+    int partial_printed = 0;  /* Track if we already printed partial results */
+    
     for(tolerate_eof = 1;    /* Allow EOF first time buffer is non-empty */
         (rd = fread(fbuf, 1, fbuf_size, file))
         || feof(file) == 0
@@ -950,10 +952,12 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
         }
         if(rval.code == RC_WMORE && !restartability_supported(isyntax)) {
             /* PER does not support restartability */
-            if(opt_partial && structure) {
+            /* Only print partial results if we've hit EOF (rd == 0) and haven't printed yet */
+            if(opt_partial && structure && rd == 0 && !partial_printed) {
                 fprintf(stderr, "\n=== Partial Decoding Results (RC_WMORE) ===\n");
                 asn_fprint(stderr, pduType, structure);
                 fprintf(stderr, "=== End of Partial Results ===\n\n");
+                partial_printed = 1;  /* Mark that we've printed partial results */
             }
             ASN_STRUCT_FREE(*pduType, structure);
             structure = 0;
@@ -1014,8 +1018,8 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
 
     DEBUG("Clean up partially decoded %s", pduType->name);
     
-    /* If partial decoding option is enabled, print what we decoded so far */
-    if(opt_partial && structure) {
+    /* If partial decoding option is enabled and we haven't already printed, print what we decoded so far */
+    if(opt_partial && structure && !partial_printed) {
         fprintf(stderr, "\n=== Partial Decoding Results ===\n");
         asn_fprint(stderr, pduType, structure);
         fprintf(stderr, "=== End of Partial Results ===\n\n");
