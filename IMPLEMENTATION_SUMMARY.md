@@ -98,10 +98,35 @@ The `preserve_partial_decoding` flag in `asn_codec_ctx_t` can be used to:
 4. Add documentation
 5. Fix compilation error (variable scope)
 
+## Bug Fixes
+
+### Issue: False Positives and Duplicates in Partial Decoding
+
+**Problem**: Two issues were identified after initial implementation:
+1. Large messages (>20KB) with default buffer size (8KB) triggered false positive partial results
+2. Truncated messages showed partial results twice (duplicate output)
+
+**Root Cause**:
+- RC_WMORE handler printed partial results whenever PER decoding needed more data
+- This occurred both during normal multi-chunk reading AND at EOF
+- No mechanism to prevent duplicate printing
+
+**Solution** (October 2024):
+- Added `partial_printed` flag to track if results were already displayed
+- Modified RC_WMORE handler to only print when `rd == 0` (EOF reached) AND `!partial_printed`
+- Modified cleanup section to check `!partial_printed` before printing
+- Ensures partial results shown exactly once, only when truly needed
+
+**File**: `skeletons/converter-example.c`
+- Lines ~892: Added `partial_printed` flag
+- Lines ~956: Check `rd == 0 && !partial_printed` in RC_WMORE handler
+- Lines ~1022: Check `!partial_printed` in cleanup section
+
 ## Status
 
 ✅ **Complete and Tested**
 - All changes committed
+- Bug fixes applied
 - Tests passing
 - Documentation complete
 - Ready for review

@@ -88,6 +88,17 @@ This shows:
 - This is expected behavior - if the structure allocation fails, there's nothing to print
 - BER/DER encodings generally provide better partial results than PER/UPER for truncated messages
 
+### Buffer Size Considerations
+
+For large messages (e.g., >20KB), the default I/O buffer size (8192 bytes) may require multiple reads. The partial decoding feature correctly handles this:
+
+- Partial results are only displayed when EOF is reached, not during normal multi-chunk reading
+- Large valid messages decode successfully without triggering false positive partial results
+- To process very large messages more efficiently, consider using the `-b` option to increase buffer size:
+  ```bash
+  ./converter-example -iber -P -b 262144 large-message.ber
+  ```
+
 ## Comparison with Wireshark
 
 Similar to Wireshark's RRC decoder which prints all decoded fields followed by:
