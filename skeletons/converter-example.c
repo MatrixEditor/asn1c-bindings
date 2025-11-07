@@ -60,6 +60,7 @@ static int opt_check;   /* -c (constraints checking) */
 static int opt_stack;   /* -s (maximum stack size) */
 static int opt_nopad;   /* -per-nopad (PER input is not padded between msgs) */
 static int opt_onepdu;  /* -1 (decode single PDU) */
+static int opt_partial; /* -P (print partial decoding results on failure) */
 
 #ifdef    JUNKTEST        /* Enable -J <probability> */
 #define JUNKOPT "J:"
@@ -249,7 +250,7 @@ main(int ac, char *av[]) {
     /*
      * Process the command-line arguments.
      */
-    while((ch = getopt(ac, av, "i:o:1b:cdn:p:hs:" JUNKOPT RANDOPT)) != -1)
+    while((ch = getopt(ac, av, "i:o:1b:cdn:p:Phs:" JUNKOPT RANDOPT)) != -1)
     switch(ch) {
     case 'i':
         sel = ats_by_name(optarg, anyPduType, input_encodings);
@@ -289,6 +290,9 @@ main(int ac, char *av[]) {
         break;
     case 'd':
         opt_debug++;    /* Double -dd means ASN.1 debug */
+        break;
+    case 'P':
+        opt_partial = 1;
         break;
     case 'n':
         number_of_iterations = atoi(optarg);
@@ -405,6 +409,7 @@ main(int ac, char *av[]) {
         "  -c           Check ASN.1 constraints after decoding\n"
         "  -d           Enable debugging (-dd is even better)\n"
         "  -n <num>     Process files <num> times\n"
+        "  -P           Print partial decoding results on failure\n"
         "  -s <size>    Set the stack usage limit (default is %d)\n"
 #ifdef    JUNKTEST
         "  -J <prob>    Set random junk test bit garbaging probability\n"
@@ -827,12 +832,65 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
         DynamicBuffer.nreallocs = 0;
     }
 
+    /*
+     * Special handling for JER (JSON Encoding Rules):
+     * JER parsing requires complete JSON tokens and doesn't handle 
+     * partial tokens across read boundaries well. For large JSON files,
+     * read the entire file into memory before parsing to avoid failures
+     * when the default buffer size (8192 bytes) is smaller than the JSON.
+     */
+    if((isyntax == ATS_JER || isyntax == ATS_JER_MINIFIED) && on_first_pdu) {
+        long file_size;
+        size_t total_read = 0;
+        
+        /* Get file size */
+        if(fseek(file, 0, SEEK_END) == 0) {
+            file_size = ftell(file);
+            fseek(file, 0, SEEK_SET);
+            
+            if(file_size > 0 && file_size > suggested_bufsize) {
+                /* File is larger than suggested buffer, read it all */
+                DEBUG("JER: File size %" ASN_PRI_SIZE " bytes, reading entire file", (size_t)file_size);
+                
+                /* Reallocate buffer to fit entire file */
+                fbuf = (uint8_t *)REALLOC(fbuf, file_size + 1);
+                if(!fbuf) {
+                    perror("realloc() for JER file");
+                    exit(EX_OSERR);
+                }
+                fbuf_size = file_size + 1;
+                
+                /* Read entire file */
+                total_read = fread(fbuf, 1, file_size, file);
+                if(total_read == (size_t)file_size) {
+                    fbuf[total_read] = '\0';  /* Null terminate for safety */
+                    
+                    /* Decode the entire file at once */
+                    DEBUG("JER: Decoding entire file (%" ASN_PRI_SIZE " bytes)", total_read);
+                    rval = asn_decode(opt_codec_ctx, isyntax, pduType,
+                                      (void **)&structure, fbuf, total_read);
+                    
+                    DEBUG("JER: Decode result: code=%d, consumed=%" ASN_PRI_SIZE,
+                          rval.code, rval.consumed);
+                    
+                    /* Return the structure directly, bypassing the chunk-based loop */
+                    return structure;
+                } else {
+                    DEBUG("JER: Failed to read entire file, falling back to chunked reading");
+                    fseek(file, 0, SEEK_SET);  /* Reset file position */
+                }
+            }
+        }
+    }
+
     old_offset = DynamicBuffer.bytes_shifted + DynamicBuffer.offset;
 
     /* Pretend immediate EOF */
     rval.code = RC_WMORE;
     rval.consumed = 0;
 
+    int partial_printed = 0;  /* Track if we already printed partial results */
+    
     for(tolerate_eof = 1;    /* Allow EOF first time buffer is non-empty */
         (rd = fread(fbuf, 1, fbuf_size, file))
         || feof(file) == 0
@@ -894,6 +952,13 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
         }
         if(rval.code == RC_WMORE && !restartability_supported(isyntax)) {
             /* PER does not support restartability */
+            /* Only print partial results if we've hit EOF (rd == 0) and haven't printed yet */
+            if(opt_partial && structure && rd == 0 && !partial_printed) {
+                fprintf(stderr, "\n=== Partial Decoding Results (RC_WMORE) ===\n");
+                asn_fprint(stderr, pduType, structure);
+                fprintf(stderr, "=== End of Partial Results ===\n\n");
+                partial_printed = 1;  /* Mark that we've printed partial results */
+            }
             ASN_STRUCT_FREE(*pduType, structure);
             structure = 0;
             rval.consumed = 0;
@@ -952,6 +1017,14 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
     }
 
     DEBUG("Clean up partially decoded %s", pduType->name);
+    
+    /* If partial decoding option is enabled and we haven't already printed, print what we decoded so far */
+    if(opt_partial && structure && !partial_printed) {
+        fprintf(stderr, "\n=== Partial Decoding Results ===\n");
+        asn_fprint(stderr, pduType, structure);
+        fprintf(stderr, "=== End of Partial Results ===\n\n");
+    }
+    
     ASN_STRUCT_FREE(*pduType, structure);
 
     new_offset = DynamicBuffer.bytes_shifted + DynamicBuffer.offset;
@@ -980,12 +1053,24 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
         DEBUG("ofp %d, no=%ld, oo=%ld, dbl=%ld",
             on_first_pdu, (long)new_offset, (long)old_offset,
             (long)DynamicBuffer.length);
-        fprintf(stderr, "%s: "
-            "Decode failed past byte %ld: %s\n",
-            name, (long)new_offset,
-            (rval.code == RC_WMORE)
-                ? "Unexpected end of input"
-                : "Input processing error");
+        
+        /* Provide detailed error information */
+        if(rval.consumed > 0) {
+            /* We have position information about where the failure occurred */
+            fprintf(stderr, "%s: "
+                "Decode failed at byte %ld: %s\n",
+                name, (long)(new_offset + rval.consumed),
+                (rval.code == RC_WMORE)
+                    ? "Unexpected end of input"
+                    : "Input processing error");
+        } else {
+            fprintf(stderr, "%s: "
+                "Decode failed past byte %ld: %s\n",
+                name, (long)new_offset,
+                (rval.code == RC_WMORE)
+                    ? "Unexpected end of input"
+                    : "Input processing error");
+        }
 #ifndef    ENOMSG
 #define    ENOMSG EINVAL
 #endif

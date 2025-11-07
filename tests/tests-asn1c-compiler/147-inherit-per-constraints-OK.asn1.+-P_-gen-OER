@@ -9,6 +9,7 @@ typedef long	 Short_t;
 
 /*** <<< FUNC-DECLS [Short] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_Short_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Short;
 asn_struct_free_f Short_free;
 asn_struct_print_f Short_print;
@@ -55,7 +56,7 @@ Short_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [Short] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Short_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Short_constr_1 CC_NOTUSED = {
 	{ 2, 1 }	/* (0..65535) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -102,6 +103,7 @@ typedef Short_t	 Alias_t;
 
 /*** <<< FUNC-DECLS [Alias] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_Alias_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Alias;
 asn_struct_free_f Alias_free;
 asn_struct_print_f Alias_print;
@@ -148,7 +150,7 @@ Alias_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [Alias] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Alias_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Alias_constr_1 CC_NOTUSED = {
 	{ 2, 1 }	/* (0..65535) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

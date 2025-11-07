@@ -162,6 +162,7 @@ typedef UnconstrainedREAL_t	 Indirect_IEEE_binary32_t;
 
 /*** <<< FUNC-DECLS [Indirect-IEEE-binary32] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_Indirect_IEEE_binary32_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Indirect_IEEE_binary32;
 extern const asn_NativeReal_specifics_t asn_SPC_Indirect_IEEE_binary32_specs_1;
 asn_struct_free_f Indirect_IEEE_binary32_free;
@@ -208,7 +209,7 @@ Indirect_IEEE_binary32_constraint(const asn_TYPE_descriptor_t *td, const void *s
 /*** <<< CTDEFS [Indirect-IEEE-binary32] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Indirect_IEEE_binary32_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Indirect_IEEE_binary32_constr_1 CC_NOTUSED = {
 	{ sizeof(float), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -258,6 +259,7 @@ typedef float	 IEEE_binary32_w_t;
 
 /*** <<< FUNC-DECLS [IEEE-binary32-w] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_IEEE_binary32_w_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IEEE_binary32_w;
 extern const asn_NativeReal_specifics_t asn_SPC_IEEE_binary32_w_specs_1;
 asn_struct_free_f IEEE_binary32_w_free;
@@ -304,7 +306,7 @@ IEEE_binary32_w_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [IEEE-binary32-w] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IEEE_binary32_w_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_IEEE_binary32_w_constr_1 CC_NOTUSED = {
 	{ sizeof(float), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -354,6 +356,7 @@ typedef float	 IEEE_binary32_0w_t;
 
 /*** <<< FUNC-DECLS [IEEE-binary32-0w] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_IEEE_binary32_0w_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IEEE_binary32_0w;
 extern const asn_NativeReal_specifics_t asn_SPC_IEEE_binary32_0w_specs_1;
 asn_struct_free_f IEEE_binary32_0w_free;
@@ -400,7 +403,7 @@ IEEE_binary32_0w_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [IEEE-binary32-0w] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IEEE_binary32_0w_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_IEEE_binary32_0w_constr_1 CC_NOTUSED = {
 	{ sizeof(float), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -450,6 +453,7 @@ typedef float	 IEEE_binary32_w0_t;
 
 /*** <<< FUNC-DECLS [IEEE-binary32-w0] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_IEEE_binary32_w0_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IEEE_binary32_w0;
 extern const asn_NativeReal_specifics_t asn_SPC_IEEE_binary32_w0_specs_1;
 asn_struct_free_f IEEE_binary32_w0_free;
@@ -496,7 +500,7 @@ IEEE_binary32_w0_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [IEEE-binary32-w0] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IEEE_binary32_w0_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_IEEE_binary32_w0_constr_1 CC_NOTUSED = {
 	{ sizeof(float), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -546,6 +550,7 @@ typedef double	 IEEE_binary64_w_t;
 
 /*** <<< FUNC-DECLS [IEEE-binary64-w] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_IEEE_binary64_w_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IEEE_binary64_w;
 asn_struct_free_f IEEE_binary64_w_free;
 asn_struct_print_f IEEE_binary64_w_print;
@@ -591,7 +596,7 @@ IEEE_binary64_w_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [IEEE-binary64-w] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IEEE_binary64_w_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_IEEE_binary64_w_constr_1 CC_NOTUSED = {
 	{ sizeof(double), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -638,6 +643,7 @@ typedef double	 IEEE_binary64_0w_t;
 
 /*** <<< FUNC-DECLS [IEEE-binary64-0w] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_IEEE_binary64_0w_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IEEE_binary64_0w;
 asn_struct_free_f IEEE_binary64_0w_free;
 asn_struct_print_f IEEE_binary64_0w_print;
@@ -683,7 +689,7 @@ IEEE_binary64_0w_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [IEEE-binary64-0w] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IEEE_binary64_0w_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_IEEE_binary64_0w_constr_1 CC_NOTUSED = {
 	{ sizeof(double), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -730,6 +736,7 @@ typedef double	 IEEE_binary64_w0_t;
 
 /*** <<< FUNC-DECLS [IEEE-binary64-w0] >>> ***/
 
+extern asn_oer_constraints_t asn_OER_type_IEEE_binary64_w0_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IEEE_binary64_w0;
 asn_struct_free_f IEEE_binary64_w0_free;
 asn_struct_print_f IEEE_binary64_w0_print;
@@ -775,7 +782,7 @@ IEEE_binary64_w0_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 /*** <<< CTDEFS [IEEE-binary64-w0] >>> ***/
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IEEE_binary64_w0_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_IEEE_binary64_w0_constr_1 CC_NOTUSED = {
 	{ sizeof(double), 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

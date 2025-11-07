@@ -212,6 +212,7 @@ static asn1p_module_t *currentModule;
 %token			TOK_GeneralString
 %token			TOK_GraphicString
 %token			TOK_IA5String
+%token			TOK_IDENTIFIED
 %token			TOK_IDENTIFIER
 %token			TOK_IMPLICIT
 %token			TOK_IMPLIED
@@ -1057,6 +1058,13 @@ ComponentTypeLists:
 		$4->marker.flags |= EM_OPTIONAL;
 		asn1p_expr_add($$, $4);
 	}
+	| ComponentTypeLists TOK_VBracketLeft ComponentTypeLists TOK_VBracketRight {
+		$$ = $1;
+		$3->meta_type = AMT_TYPE;
+		$3->expr_type = ASN_CONSTR_SEQUENCE;
+		$3->marker.flags |= EM_OPTIONAL;
+		asn1p_expr_add($$, $3);
+	}
 	;
 
 ComponentType:
@@ -1099,6 +1107,11 @@ AlternativeTypeLists:
 		$$ = $1;
 		asn1p_expr_add_many($$, $4);
 		asn1p_expr_free($4);
+	}
+	| AlternativeTypeLists TOK_VBracketLeft AlternativeTypeLists TOK_VBracketRight {
+		$$ = $1;
+		asn1p_expr_add_many($$, $3);
+		asn1p_expr_free($3);
 	}
 	;
 
@@ -1221,6 +1234,18 @@ ClassField:
 		$$->meta_type = AMT_OBJECTFIELD;
 		$$->expr_type = A1TC_CLASSFIELD_OSFS;
 		$$->marker = $3;
+	}
+
+	/* IDENTIFIED BY &field construct */
+	| TOK_IDENTIFIED TOK_BY PrimitiveFieldReference {
+		$$ = NEW_EXPR();
+		checkmem($$);
+		$$->Identifier = strdup("IDENTIFIED-BY");
+		$$->meta_type = AMT_OBJECTFIELD;
+		$$->expr_type = A1TC_CLASSFIELD_FTVFS;  /* Treat as fixed type value field */
+		$$->reference = asn1p_ref_new(yylineno, currentModule);
+		asn1p_ref_add_component($$->reference, $3.name, $3.lex_type);
+		free($3.name);
 	}
 	;
 
