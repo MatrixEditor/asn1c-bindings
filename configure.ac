@@ -1,10 +1,6 @@
 dnl Compute version string safely: use git if available, else fallback
-m4_define([ASN1C_VERSION], m4_esyscmd([
-  if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo -n "$(git describe --long --always --dirty)-$(git log -1 --format=%ad --date=short)"
-  else
-    echo -n "unknown"
-  fi
+m4_define([ASN1C_VERSION], m4_esyscmd_s([
+  git describe --long --always --dirty --date=short || echo NOGIT                    
 ]))
 
 dnl Compute bug report URL safely: use git if available, else fallback
