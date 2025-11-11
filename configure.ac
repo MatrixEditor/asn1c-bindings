@@ -26,7 +26,6 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_YACC
 AM_PROG_LEX
-AC_EXEEXT
 dnl locate ar using standard macro (old automake 1.11 does not know about AM_PROG_AR)
 m4_ifdef([AM_PROG_AR],
          [AM_PROG_AR],
@@ -275,8 +274,6 @@ AC_SUBST(SKELETONS_CFLAGS)
 AC_SUBST(ASAN_ENV_FLAGS)
 
 dnl Checks for header files.
-
-AC_HEADER_STDC
 
 AC_CHECK_HEADERS(sys/param.h)
 AC_CHECK_HEADERS(netinet/in.h)
