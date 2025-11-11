@@ -1,6 +1,6 @@
 dnl Compute version string safely: use git if available, else fallback
 m4_define([ASN1C_VERSION], m4_esyscmd_s([
-  git describe --long --always --dirty --date=short || echo NOGIT                    
+  git describe --long --always --dirty || echo NOGIT                    
 ]))
 
 dnl Compute bug report URL safely: use git if available, else fallback
