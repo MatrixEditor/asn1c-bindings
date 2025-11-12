@@ -6,6 +6,21 @@
 #include <asn_internal.h>
 #include <constr_SET_OF.h>
 
+/*
+ * Generic placeholder descriptor for anonymous SET OF.
+ * NOTE: not a concrete "OF T" — used only to satisfy references.
+ */
+asn_TYPE_descriptor_t asn_DEF_SET_OF = {
+    "SET OF",
+    "SET OF",
+    &asn_OP_SET_OF,
+    0, 0,
+    0, 0,
+    0,              /* No constraints */
+    0, 0,           /* No members */
+    0               /* No specifics */
+};
+
 asn_TYPE_operation_t asn_OP_SET_OF = {
     SET_OF_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
