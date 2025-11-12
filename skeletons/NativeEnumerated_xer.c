@@ -79,3 +79,4 @@ NativeEnumerated_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &st);
     return rval;
 }
+

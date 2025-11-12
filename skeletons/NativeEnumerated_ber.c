@@ -147,3 +147,4 @@ NativeEnumerated_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
     }
     return erval;
 }
+
