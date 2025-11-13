@@ -194,7 +194,7 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
                 return -1;
             }
         case ATV_UNPARSED:
-            OUT("\"not supported\", 0 };\n");
+            OUT("(const uint8_t *) \"not supported\", 0 };\n");
             FATAL("Inappropriate value %s for type %s",
                   asn1f_printable_value(expr_value->value), MKID(cell->value));
             return 0;   /* TEMPORARY FIXME FIXME */
