@@ -165,6 +165,8 @@ parse_unparsed_oid(const char *buf, int len, uint64_t arcs[], int max_arcs) {
     return n;
 }
 
+/* NOTE: For RELATIVE-OID, all arcs are encoded individually (no 40*arc0+arc1). */
+
 /*
  * Emit content for a value cell.
  * FIX: when the primitive type is OBJECT IDENTIFIER and the value is ATV_UNPARSED,
@@ -253,16 +255,19 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
             }
 
         case ATV_UNPARSED:
-            if(prim_type && strcmp(prim_type, "OBJECT_IDENTIFIER_t") == 0
-               && expr_value->value->value.string.buf && expr_value->value->value.string.size > 0) {
+            if(prim_type 
+               && expr_value->value->value.string.buf 
+               && expr_value->value->value.string.size > 0) {
                 /* Parse textual OID and emit BER-encoded bytes */
                 const char *buf = (const char *)expr_value->value->value.string.buf;
                 int len = expr_value->value->value.string.size;
                 uint64_t arcs[64];
-                int n = parse_unparsed_oid(buf, len, arcs, (int)(sizeof(arcs)/sizeof(arcs[0])));
-                if(n >= 2) {
-                    unsigned char bytes[256];
-                    size_t off = 0;
+  				int n = parse_unparsed_oid(buf, len, arcs,
+                                           (int)(sizeof(arcs)/sizeof(arcs[0])));
+
+                if(strcmp(prim_type, "OBJECT_IDENTIFIER_t") == 0 && n >= 2) {
+                    /* OID: first two arcs are folded as (40*arc0 + arc1) */
+                    unsigned char bytes[256]; size_t off = 0;
                     uint64_t arc0 = arcs[0];
                     uint64_t arc1 = arcs[1];
                     uint64_t first = arc0 * 40 + arc1;
@@ -271,6 +276,21 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
                         off += oid_arc_encode(arcs[i], bytes + off);
                         if(off >= sizeof(bytes)) {
                             FATAL("OID too long for emission: %s",
+                                  asn1f_printable_value(expr_value->value));
+                            return -1;
+                        }
+                    }
+                    OUT("(uint8_t[]){");
+                    for(size_t i = 0; i < off; i++) OUT("%s%u", (i ? ", " : " "), bytes[i]);
+                    OUT("}, %zu", off);
+                    break;
+            	} else if(strcmp(prim_type, "RELATIVE_OID_t") == 0 && n >= 1) {
+                    /* RELATIVE-OID: encode each arc independently */
+                    unsigned char bytes[256]; size_t off = 0;
+                    for(int i = 0; i < n; i++) {
+                        off += oid_arc_encode(arcs[i], bytes + off);
+                        if(off >= sizeof(bytes)) {
+                            FATAL("RELATIVE-OID too long for emission: %s",
                                   asn1f_printable_value(expr_value->value));
                             return -1;
                         }
