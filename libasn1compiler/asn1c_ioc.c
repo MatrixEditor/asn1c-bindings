@@ -119,48 +119,27 @@ asn1c_get_ioc_table(arg_t *arg) {
 
 /* ===== helpers to encode OBJECT IDENTIFIER as BER arcs (base-128) ===== */
 
-static int
-oid_arc_encode(uint64_t arc, unsigned char *tmp) {
-    unsigned char buf[10];
-    int i = 0;
+static int oid_arc_encode(uint64_t arc, unsigned char *tmp) {
+    unsigned char buf[10]; int i = 0;
     if(arc == 0) { tmp[0] = 0; return 1; }
     while(arc) { buf[i++] = (unsigned char)(arc & 0x7F); arc >>= 7; }
-    for(int j = i - 1, k = 0; j >= 0; j--, k++) {
-        tmp[k] = buf[j] | (j ? 0x80 : 0);
-    }
+    for(int j = i - 1, k = 0; j >= 0; j--, k++) tmp[k] = buf[j] | (j ? 0x80 : 0);
     return i;
 }
-
-/* Parse an OID textual form from an ATV_UNPARSED buffer.
- * Accepts dotted ("1.2.3"), spaced ("1 2 3"), or brace-delimited ("{ 1 2 3 }").
- * Returns number of arcs written to arcs[], or -1 on failure. */
-static int
-parse_unparsed_oid(const char *buf, int len, uint64_t arcs[], int max_arcs) {
-    int n = 0;
-    int i = 0;
+/* Parse textual OID: "1.2.3", "1 2 3", or "{ 1 2 3 }" */
+static int parse_unparsed_oid(const char *buf, int len, uint64_t arcs[], int max_arcs) {
+    int n = 0, i = 0;
     while(i < len && isspace((unsigned char)buf[i])) i++;
-    if(i < len && buf[i] == '{') { i++; } /* optional leading brace */
-
+    if(i < len && buf[i] == '{') i++;
     while(i < len) {
         while(i < len && isspace((unsigned char)buf[i])) i++;
         if(i < len && buf[i] == '}') { i++; break; }
-
         if(n >= max_arcs) return -1;
-
-        if(i >= len || !isdigit((unsigned char)buf[i])) {
-            /* allow '.' separators too */
-            if(buf[i] == '.') { i++; continue; }
-            return -1;
-        }
-        uint64_t v = 0;
-        while(i < len && isdigit((unsigned char)buf[i])) {
-            v = v * 10 + (uint64_t)(buf[i] - '0');
-            i++;
-        }
+        if(i < len && buf[i] == '.') { i++; continue; }
+        if(i >= len || !isdigit((unsigned char)buf[i])) return -1;
+        uint64_t v = 0; while(i < len && isdigit((unsigned char)buf[i])) v =
+		   v*10 + (uint64_t)(buf[i++] - '0');
         arcs[n++] = v;
-
-        while(i < len && (isspace((unsigned char)buf[i]) || buf[i]=='.')) i++;
-        if(i < len && buf[i] == '}') { i++; break; }
     }
     return n;
 }
@@ -254,38 +233,29 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
 
         case ATV_UNPARSED:
             if(prim_type && strcmp(prim_type, "OBJECT_IDENTIFIER_t") == 0
-               && expr_value->value->value.string.buf && expr_value->value->value.string.size > 0) {
-                /* Parse textual OID and emit BER-encoded bytes */
+               && expr_value->value->value.string.buf
+               && expr_value->value->value.string.size > 0) {
                 const char *buf = (const char *)expr_value->value->value.string.buf;
                 int len = expr_value->value->value.string.size;
                 uint64_t arcs[64];
                 int n = parse_unparsed_oid(buf, len, arcs, (int)(sizeof(arcs)/sizeof(arcs[0])));
                 if(n >= 2) {
-                    unsigned char bytes[256];
-                    size_t off = 0;
-                    uint64_t arc0 = arcs[0];
-                    uint64_t arc1 = arcs[1];
-                    uint64_t first = arc0 * 40 + arc1;
-                    off += oid_arc_encode(first, bytes + off);
+                    unsigned char bytes[256]; size_t off = 0;
+                    off += oid_arc_encode(arcs[0]*40 + arcs[1], bytes + off);
                     for(int i = 2; i < n; i++) {
                         off += oid_arc_encode(arcs[i], bytes + off);
-                        if(off >= sizeof(bytes)) {
-                            FATAL("OID too long for emission: %s",
-                                  asn1f_printable_value(expr_value->value));
-                            return -1;
-                        }
+                        if(off >= sizeof(bytes)) { FATAL("OID too long"); return -1; }
                     }
                     OUT("(uint8_t[]){");
-                    for(size_t i = 0; i < off; i++) OUT("%s%u", (i ? ", " : " "), bytes[i]);
+                    for(size_t i = 0; i < off; i++)
+	                    OUT("%s%u", (i ? ", " : " "), bytes[i]);
                     OUT("}, %zu", off);
                     break;
                 }
-                /* Fall through to legacy placeholder if parsing failed */
             }
-            OUT("(const uint8_t *) \"not supported\", 0 };\n");
-            FATAL("Inappropriate value %s for type %s",
+            FATAL("Inappropriate or unparsable value %s for type %s",
                   asn1f_printable_value(expr_value->value), MKID(cell->value));
-            return 0;   /* TEMPORARY FIXME FIXME */
+            return -1;
 
         default:
             FATAL("Inappropriate value %s for type %s",
@@ -318,21 +288,25 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
         /* Ignore */
     } else if(cell->value->meta_type == AMT_VALUE) {
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
+        /* Use terminal type for the descriptor; pick resolved (suffixed) symbol */
+        asn1p_expr_t *vt = asn1f_find_terminal_type_ex(arg->asn, arg->ns, cell->value);
+        if(!vt) return -1;
+        GEN_INCLUDE(asn1c_type_name(arg, vt, TNF_INCLUDE));
         OUT("aioc__value, ");
-        OUT("&asn_DEF_%s, ", asn1c_type_name(arg, cell->value, TNF_SAFE));
-        OUT("&asn_VAL_%d_%s", cell->value->_type_unique_index,
-            MKID(cell->value));
+        OUT("&asn_DEF_%s, ", asn1c_type_name(arg, vt, TNF_RSAFE));
+        OUT("&asn_VAL_%d_%s", cell->value->_type_unique_index, MKID(cell->value));
+
     } else if(cell->value->meta_type == AMT_TYPEREF) {
-        /* Named type reference: original behavior is correct */
-        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        OUT("aioc__type, &asn_DEF_%s", MKID(cell->value));
-    } else if(cell->value->meta_type == AMT_TYPE) {
-        /* Anonymous / constructed types (e.g., SEQUENCE OF …): use TNF_SAFE
-         * so we reference the concrete descriptor name generated in this TU,
-         * e.g., asn_DEF_SEQUENCE_OF_CommTxPDU_1 */
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
         OUT("aioc__type, &asn_DEF_%s",
-            asn1c_type_name(arg, cell->value, TNF_SAFE));
+            asn1c_type_name(arg, cell->value, TNF_RSAFE));
+    } else if(cell->value->meta_type == AMT_TYPE) {
+        /* Anonymous / constructed types (e.g., SEQUENCE OF ...):
+         * use RSAFE to reference the concrete descriptor in this TU,
+         * e.g. &asn_DEF_SEQUENCE_OF_CommTxPDU_1 */
+        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
+        OUT("aioc__type, &asn_DEF_%s",
+            asn1c_type_name(arg, cell->value, TNF_RSAFE));
     } else {
         return -1;
     }

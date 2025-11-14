@@ -18,9 +18,9 @@ asn_TYPE_descriptor_t asn_DEF_SEQUENCE_OF = {
     &asn_OP_SEQUENCE_OF,
     0, 0,
     0, 0,
-    0,              /* No constraints */
-    0, 0,           /* No members */
-    0               /* No specifics */
+    { 0 },              /* No constraints */
+    { 0, 0 },           /* No members */
+    { 0 }               /* No specifics */
 };
 
 asn_TYPE_operation_t asn_OP_SEQUENCE_OF = {

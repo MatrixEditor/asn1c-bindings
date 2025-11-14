@@ -2,6 +2,14 @@
  * Don't look into this file. First, because it's a mess, and second, because
  * it's a brain of the compiler, and you don't wanna mess with brains do you? ;)
  */
+
+/* NOTE: Replace any emission of &asn_DEF_%s for nested/inlined types to use TNF_RSAFE */
+/* Open Type alternatives array */
+// - OUT("&asn_DEF_%s", asn1c_type_name(arg, alt_type_expr, TNF_SAFE));
+// + OUT("&asn_DEF_%s", asn1c_type_name(arg, alt_type_expr, TNF_RSAFE));
+/* Parent member that points at the OPEN TYPE wrapper */
+// - OUT("&asn_DEF_%s", asn1c_type_name(arg, open_type_wrapper_expr, TNF_SAFE));
+
 #include "asn1c_internal.h"
 #include "asn1c_C.h"
 #include "asn1c_constraint.h"
@@ -2954,7 +2962,8 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
     REDIR(OT_CODE);
     OUT("static asn_type_selector_result_t\n");
     OUT("select_%s_", c_name(arg).compound_name);
-    OUT("%s_type(const asn_TYPE_descriptor_t *parent_type, const void *parent_sptr) {\n", MKID(expr));
+    OUT("%s_type(const asn_TYPE_descriptor_t *parent_type, const void *parent_sptr) {\n",
+        MKID(expr));
     INDENT(+1);
 
     OUT("asn_type_selector_result_t result = {0, 0};\n");
@@ -3569,7 +3578,7 @@ emit_include_dependencies(arg_t *arg) {
 				if(saved_target != OT_FWD_DECLS) {
 					REDIR(OT_FWD_DECLS);
 					OUT("%s;\n",
-						asn1c_type_name(arg, memb, TNF_RSAFE));
+						asn1c_type_name(arg, memb, TNF_SAFE));
 				}
 				REDIR(saved_target);
 			}
