@@ -806,11 +806,43 @@ asn1c_lang_C_type_SET_def(arg_t *arg) {
 	return 0;
 } /* _SET_def() */
 
+/* Compute IoS for a member that is an OPEN TYPE (&Type ...) */
+static int
+compute_member_ioc(arg_t *arg, asn1p_expr_t *m,
+                   asn1c_ioc_table_and_objset_t *out_ioc) {
+    memset(out_ioc, 0, sizeof(*out_ioc));
+    const asn1p_constraint_t *crc =
+        asn1p_get_component_relation_constraint(m->constraints);
+    asn1p_ref_t *objset_ref =
+        asn1c_get_information_object_set_reference_from_constraint(arg, crc);
+    if(!objset_ref) return 0; /* no IoS on this member */
+
+    asn1p_expr_t *objset = WITH_MODULE_NAMESPACE(
+        m->module, expr_ns,
+        asn1f_lookup_symbol_ex(arg->asn, expr_ns, m, objset_ref));
+    if(!objset) {
+        FATAL("Cannot resolve object set %s", asn1p_ref_string(objset_ref));
+        return -1;
+    }
+
+    /* Instead of:
+     *   *out_ioc = asn1c_get_ioc_table_from_objset(arg, objset_ref, objset);
+     */
+    out_ioc->ioct = objset->ioc_table;   /* may be NULL (empty set), that's OK */
+    out_ioc->objset = objset;
+    out_ioc->fatal_error = 0;
+    
+    return 0;
+}
+
 int
 asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 	asn1p_expr_t *expr = arg->expr;
 	asn1p_expr_t *memb = TQ_FIRST(&expr->members);
 	int saved_target = arg->target->target;
+
+	asn1c_ioc_table_and_objset_t memb_ioc = {0,0,0};
+	(void)compute_member_ioc(arg, memb, &memb_ioc);  /* best effort */
 
 	DEPENDENCIES;
 
@@ -825,74 +857,68 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 	}
 
 	INDENT(+1);
-	OUT("A_%s_OF(",
-		(arg->expr->expr_type == ASN_CONSTR_SET_OF)
-			? "SET" : "SEQUENCE");
+	OUT("A_%s_OF(", (arg->expr->expr_type == ASN_CONSTR_SET_OF) ? "SET" : "SEQUENCE");
 
-	/*
-	 * README README
-	 * The implementation of the A_SET_OF() macro is already indirect.
-	 */
+	/* README README: A_SET/SEQUENCE_OF macro implementation is already indirect. */
 	memb->marker.flags |= EM_INDIRECT;
 
-	if(memb->expr_type & ASN_CONSTR_MASK
-	|| ((memb->expr_type == ASN_BASIC_ENUMERATED
-		|| (0 /* -- prohibited by X.693:8.3.4 */
-			&& memb->expr_type == ASN_BASIC_INTEGER))
-	    	&& expr_elements_count(arg, memb))) {
-		arg_t tmp;
-		asn1p_expr_t *tmp_memb = memb;
+	if(
+	   /* Constructed/enum-with-map OR Open Type with IoS */
+	   (memb->expr_type & ASN_CONSTR_MASK)
+	   || (memb->expr_type == ASN_BASIC_ENUMERATED && expr_elements_count(arg, memb))
+	   || (memb_ioc.ioct && is_open_type(arg, memb, &memb_ioc))
+	   ) {
+		arg_t tmp = *arg;
 		enum asn1p_expr_marker_e flags = memb->marker.flags;
+
 		arg->embed++;
-			tmp = *arg;
-			tmp.expr = tmp_memb;
-			tmp_memb->marker.flags &= ~EM_INDIRECT;
-			tmp_memb->_anonymous_type = 1;
-			if(tmp_memb->Identifier == 0) {
-				tmp_memb->Identifier = strdup("Member");
-				if(0)
-				tmp_memb->Identifier = strdup(
-					asn1c_make_identifier(0,
-						expr, "Member", 0));
-				assert(tmp_memb->Identifier);
-			}
+		tmp.expr = memb;
+		memb->marker.flags &= ~EM_INDIRECT;
+		memb->_anonymous_type = 1;
+		if(memb->Identifier == 0) {
+			memb->Identifier = strdup("Member");
+			assert(memb->Identifier);
+		}
+
+		if(memb_ioc.ioct && is_open_type(&tmp, memb, &memb_ioc)) {
+			/* Materialize CHOICE-of-alternatives for the OPEN TYPE */
+			const char *column_name = memb->reference->components[1].name; /* e.g. "Type" */
+			INDENT(+1);
+			if(asn1c_lang_C_OpenType(&tmp, &memb_ioc, column_name)) return -1;
+			INDENT(-1);
+		} else {
 			tmp.default_cb(&tmp, NULL);
-			tmp_memb->marker.flags = flags;
+		}
+
+		memb->marker.flags = flags;
 		arg->embed--;
-		assert(arg->target->target == OT_TYPE_DECLS ||
-				arg->target->target == OT_FWD_DEFS);
+		assert(arg->target->target == OT_TYPE_DECLS
+		       || arg->target->target == OT_FWD_DEFS);
 	} else {
 		OUT("%s", asn1c_type_name(arg, memb,
-			(memb->marker.flags & EM_UNRECURSE)
-				? TNF_RSAFE : TNF_CTYPE));
+		          (memb->marker.flags & EM_UNRECURSE) ? TNF_RSAFE : TNF_CTYPE));
 	}
-	/* README README (above) */
-	if(0 && (memb->marker.flags & EM_INDIRECT))
-		OUT(" *");
+
 	OUT(") list;\n");
 	INDENT(-1);
 
 	PCTX_DEF;
 
 	if (arg->embed && expr->_anonymous_type) {
-		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"",
-			c_name(arg).base_name);
-
+		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"", c_name(arg).base_name);
 		REDIR(saved_target);
-
-		OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
-			c_name(arg).base_name);
+		OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"", c_name(arg).base_name);
 	} else {
 		OUT("} %s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
-			arg->embed ? c_name(arg).as_member : c_name(arg).short_name);
+		    arg->embed ? c_name(arg).as_member : c_name(arg).short_name);
 		if(!expr->_anonymous_type) OUT(";\n");
 	}
-
+    
 	/*
-	 * SET OF/SEQUENCE OF definition
+	 * Now emit the DEF for SET OF/SEQUENCE OF
 	 */
 	return asn1c_lang_C_type_SEx_OF_def(arg,
-		(arg->expr->expr_type == ASN_CONSTR_SEQUENCE_OF));
+	        (arg->expr->expr_type == ASN_CONSTR_SEQUENCE_OF));
 }
 
 static int
@@ -922,19 +948,26 @@ asn1c_lang_C_type_SEx_OF_def(arg_t *arg, int seq_of) {
 	 */
 	if(!(expr->_type_referenced)) OUT("static ");
 	OUT("asn_TYPE_member_t asn_MBR_%s_%d[] = {\n",
-		c_name(arg).part_name, expr->_type_unique_index);
+	    c_name(arg).part_name, expr->_type_unique_index);
 	INDENT(+1);
-		v = TQ_FIRST(&(expr->members));
-		if(!v->Identifier) {
-			v->Identifier = strdup("Member");
-			assert(v->Identifier);
-		}
-		v->_anonymous_type = 1;
-		arg->embed++;
-		emit_member_table(arg, v, NULL);
-		arg->embed--;
-		free(v->Identifier);
-		v->Identifier = (char *)NULL;
+	v = TQ_FIRST(&(expr->members));
+	if(!v->Identifier) {
+		v->Identifier = strdup("Member");
+		assert(v->Identifier);
+	}
+	v->_anonymous_type = 1;
+	arg->embed++;
+
+	/* NEW: compute IoS for the element */
+	asn1c_ioc_table_and_objset_t el_ioc = {0,0,0};
+	(void)compute_member_ioc(arg, v, &el_ioc);
+		
+	emit_member_table(arg, v, el_ioc.ioct ? &el_ioc : NULL);
+	
+	arg->embed--;
+	free(v->Identifier);
+	v->Identifier = (char *)NULL;
+
 	INDENT(-1);
 	OUT("};\n");
 
@@ -945,24 +978,24 @@ asn1c_lang_C_type_SEx_OF_def(arg_t *arg, int seq_of) {
 
 	if(!(expr->_type_referenced)) OUT("static ");
 	OUT("asn_SET_OF_specifics_t asn_SPC_%s_specs_%d = {\n",
-		MKID(expr), expr->_type_unique_index);
+	    MKID(expr), expr->_type_unique_index);
 	INDENTED(
-		OUT("sizeof(%s),\n", c_name(arg).full_name);
-		OUT("offsetof(%s, _asn_ctx),\n", c_name(arg).full_name);
-		{
-		int as_xvl = expr_as_xmlvaluelist(arg, v);
-		OUT("%d,\t/* XER encoding is %s */\n",
-			as_xvl,
-			as_xvl ? "XMLValueList" : "XMLDelimitedItemList");
-		}
-	);
+	         OUT("sizeof(%s),\n", c_name(arg).full_name);
+	         OUT("offsetof(%s, _asn_ctx),\n", c_name(arg).full_name);
+	         {
+		         int as_xvl = expr_as_xmlvaluelist(arg, v);
+		         OUT("%d,\t/* XER encoding is %s */\n",
+		             as_xvl,
+		             as_xvl ? "XMLValueList" : "XMLDelimitedItemList");
+	         }
+	         );
 	OUT("};\n");
 
 	/*
 	 * Emit asn_DEF_xxx table.
 	 */
 	emit_type_DEF(arg, expr, tv_mode, tags_count, all_tags_count, 1,
-			ETD_HAS_SPECIFICS);
+	              ETD_HAS_SPECIFICS);
 
 	REDIR(saved_target);
 
