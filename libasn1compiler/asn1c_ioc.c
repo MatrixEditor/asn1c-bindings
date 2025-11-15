@@ -287,26 +287,28 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
     if(!cell->value) {
         /* Ignore */
     } else if(cell->value->meta_type == AMT_VALUE) {
-        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        /* Use terminal type for the descriptor; pick resolved (suffixed) symbol */
-        asn1p_expr_t *vt = asn1f_find_terminal_type_ex(arg->asn, arg->ns, cell->value);
+        /* For value cells (e.g., &id): take the VALUE's terminal type and
+         * use the built-in descriptor (no _t / no RSAFE here). */
+        asn1p_expr_t *vt =
+            asn1f_find_terminal_type_ex(arg->asn, arg->ns, cell->value);
         if(!vt) return -1;
         GEN_INCLUDE(asn1c_type_name(arg, vt, TNF_INCLUDE));
-        OUT("aioc__value, ");
-        OUT("&asn_DEF_%s, ", asn1c_type_name(arg, vt, TNF_RSAFE));
+        OUT("aioc__value, &asn_DEF_%s, ", asn1c_type_name(arg, vt, TNF_SAFE));
         OUT("&asn_VAL_%d_%s", cell->value->_type_unique_index, MKID(cell->value));
 
-    } else if(cell->value->meta_type == AMT_TYPEREF) {
-        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        OUT("aioc__type, &asn_DEF_%s",
-            asn1c_type_name(arg, cell->value, TNF_RSAFE));
     } else if(cell->value->meta_type == AMT_TYPE) {
-        /* Anonymous / constructed types (e.g., SEQUENCE OF ...):
-         * use RSAFE to reference the concrete descriptor in this TU,
-         * e.g. &asn_DEF_SEQUENCE_OF_CommTxPDU_1 */
+        /* Anonymous / constructed type (e.g., SEQUENCE OF CommTxPDU):
+         * reference the concrete, suffixed descriptor defined in this TU. */
+        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
+        OUT("aioc__type, &asn_DEF_%s_%d",
+            MKID(cell->value), cell->value->_type_unique_index);
+
+    } else if(cell->value->meta_type == AMT_TYPEREF) {
+        /* Named type reference: use SAFE so we get the proper (usually
+         * unsuffixed) descriptor symbol defined in its own TU. */
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
         OUT("aioc__type, &asn_DEF_%s",
-            asn1c_type_name(arg, cell->value, TNF_RSAFE));
+            asn1c_type_name(arg, cell->value, TNF_SAFE));
     } else {
         return -1;
     }
@@ -345,6 +347,21 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
 
     if(ioc_tao.ioct->rows == 0)
         return 0;
+
+    /* Forward-declare concrete descriptors referenced by TYPE cells so they
+     * are visible when used in the rows emitted below (definitions come later). */
+    for(size_t rn = 0; rn < ioc_tao.ioct->rows; rn++) {
+        asn1p_ioc_row_t *row = ioc_tao.ioct->row[rn];
+        for(size_t cn = 0; cn < row->columns; cn++) {
+            struct asn1p_ioc_cell_s *cell = &row->column[cn];
+            if(cell->value && cell->value->meta_type == AMT_TYPE) {
+                OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
+                    MKID(cell->value), cell->value->_type_unique_index);
+            }
+        }
+    }
+    OUT("\n");
+
 
     /* Emit the Information Object Set */
     OUT("static const asn_ioc_cell_t asn_IOS_%s_%d_rows[] = {\n",

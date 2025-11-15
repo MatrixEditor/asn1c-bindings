@@ -3,13 +3,6 @@
  * it's a brain of the compiler, and you don't wanna mess with brains do you? ;)
  */
 
-/* NOTE: Replace any emission of &asn_DEF_%s for nested/inlined types to use TNF_RSAFE */
-/* Open Type alternatives array */
-// - OUT("&asn_DEF_%s", asn1c_type_name(arg, alt_type_expr, TNF_SAFE));
-// + OUT("&asn_DEF_%s", asn1c_type_name(arg, alt_type_expr, TNF_RSAFE));
-/* Parent member that points at the OPEN TYPE wrapper */
-// - OUT("&asn_DEF_%s", asn1c_type_name(arg, open_type_wrapper_expr, TNF_SAFE));
-
 #include "asn1c_internal.h"
 #include "asn1c_C.h"
 #include "asn1c_constraint.h"
@@ -3117,17 +3110,22 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 			&& expr_elements_count(arg, expr))
 		|| (expr->expr_type == ASN_BASIC_INTEGER
 			&& asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN);
-	if(C99_MODE) OUT(".type = ");
 
-    OUT("&asn_DEF_");
+	if(C99_MODE) OUT(".type = ");
+    /*
+     * For constructed/anonymous members (including an OPEN TYPE wrapper),
+     * reference the concrete, suffixed descriptor symbol with the same
+     * suffix policy as emit_type_DEF(). For primitives, keep SAFE.
+     */
     if(complex_contents) {
-        OUT("%s", MKID(expr));
-        if(!(arg->flags & A1C_ALL_DEFS_GLOBAL))
+        OUT("&asn_DEF_%s", MKID(expr));
+        if(HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL)) {
             OUT("_%d", expr->_type_unique_index);
+        }
+        OUT(",\n");
     } else {
-        OUT("%s", asn1c_type_name(arg, expr, TNF_SAFE));
+        OUT("&asn_DEF_%s,\n", asn1c_type_name(arg, expr, TNF_SAFE));
     }
-    OUT(",\n");
 
 
     if(C99_MODE) OUT(".type_selector = ");
@@ -3428,81 +3426,141 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
         free(expr_id);
         expr_id = NULL;
 
-		if(elements_count ||
-			((expr->expr_type == A1TC_REFERENCE) &&
-				(terminal->expr_type & ASN_CONSTR_MASK) &&
-				expr_elements_count(arg, terminal))) {
+        if(elements_count ||
+           ((expr->expr_type == A1TC_REFERENCE) &&
+            (terminal->expr_type & ASN_CONSTR_MASK) &&
+            expr_elements_count(arg, terminal))) {
 
-			if (expr->expr_type == A1TC_REFERENCE) {
-				OUT("asn_MBR_%s_%d,\n", MKID(terminal), terminal->_type_unique_index);
+	        if (expr->expr_type == A1TC_REFERENCE) {
+		        OUT("asn_MBR_%s_%d,\n", MKID(terminal), terminal->_type_unique_index);
 
-				if(terminal->expr_type == ASN_CONSTR_SEQUENCE_OF
-				|| terminal->expr_type == ASN_CONSTR_SET_OF) {
-					OUT("%d,\t/* Single element */\n",
-						expr_elements_count(arg, terminal));
-					assert(expr_elements_count(arg, terminal) == 1);
-				} else {
-					OUT("%d,\t/* Elements count */\n",
-						expr_elements_count(arg, terminal));
-				}
-			} else {
-                OUT("asn_MBR_%s_%d,\n", c_name(arg).part_name,
-                    expr->_type_unique_index);
+		        if(terminal->expr_type == ASN_CONSTR_SEQUENCE_OF
+		           || terminal->expr_type == ASN_CONSTR_SET_OF) {
+			        OUT("%d,\t/* Single element */\n",
+			            expr_elements_count(arg, terminal));
+			        assert(expr_elements_count(arg, terminal) == 1);
+		        } else {
+			        OUT("%d,\t/* Elements count */\n",
+			            expr_elements_count(arg, terminal));
+		        }
+	        } else {
+		        OUT("asn_MBR_%s_%d,\n", c_name(arg).part_name,
+		            expr->_type_unique_index);
 
-                if(expr->expr_type == ASN_CONSTR_SEQUENCE_OF
-				|| expr->expr_type == ASN_CONSTR_SET_OF) {
-					OUT("%d,\t/* Single element */\n",
-						elements_count);
-					assert(elements_count == 1);
-				} else {
-					OUT("%d,\t/* Elements count */\n",
-						elements_count);
-				}
-			}
-		} else {
-			if(expr_elements_count(arg, expr))
-				OUT("0, 0,\t/* Defined elsewhere */\n");
-			else
-				OUT("0, 0,\t/* No members */\n");
-		}
+		        if(expr->expr_type == ASN_CONSTR_SEQUENCE_OF
+		           || expr->expr_type == ASN_CONSTR_SET_OF) {
+			        OUT("%d,\t/* Single element */\n",
+			            elements_count);
+			        assert(elements_count == 1);
+		        } else {
+			        OUT("%d,\t/* Elements count */\n",
+			            elements_count);
+		        }
+	        }
+        } else {
+	        if(expr_elements_count(arg, expr))
+		        OUT("0, 0,\t/* Defined elsewhere */\n");
+	        else
+		        OUT("0, 0,\t/* No members */\n");
+        }
 
-		switch(spec) {
-		case ETD_NO_SPECIFICS:
-			if ((expr->expr_type == A1TC_REFERENCE) &&
-				((terminal->expr_type & ASN_CONSTR_MASK) ||
-				(terminal->expr_type == ASN_BASIC_ENUMERATED) ||
-				((terminal->expr_type == ASN_BASIC_INTEGER) &&
-				(asn1c_type_fits_long(arg, terminal) == FL_FITS_UNSIGN)))) {
-                OUT("&asn_SPC_%s_specs_%d\t/* Additional specs */\n",
-                    c_expr_name(arg, terminal).part_name,
-                    terminal->_type_unique_index);
-            } else if ((expr->expr_type == ASN_TYPE_ANY) ||
-					(expr->expr_type == ASN_BASIC_BIT_STRING) ||
-					(expr->expr_type == ASN_STRING_BMPString) ||
-					(expr->expr_type == ASN_BASIC_OCTET_STRING) ||
-					(expr->expr_type == ASN_STRING_UniversalString)) {
-                OUT("&asn_SPC_%s_specs\t/* Additional specs */\n",
-                    c_name(arg).type.part_name);
-            } else if ((expr->expr_type == A1TC_REFERENCE) &&
-					((terminal->expr_type == ASN_TYPE_ANY) ||
-					(terminal->expr_type == ASN_BASIC_BIT_STRING) ||
-					(terminal->expr_type == ASN_STRING_BMPString) ||
-					(terminal->expr_type == ASN_BASIC_OCTET_STRING) ||
-					(terminal->expr_type == ASN_STRING_UniversalString))) {
-                OUT("&asn_SPC_%s_specs\t/* Additional specs */\n",
-                    c_expr_name(arg, terminal).type.part_name);
-            } else {
-				OUT("0\t/* No specifics */\n");
-			}
-			break;
-		case ETD_HAS_SPECIFICS:
-			OUT("&asn_SPC_%s_specs_%d\t/* Additional specs */\n",
-				c_name(arg).part_name, expr->_type_unique_index);
-		}
+        switch(spec) {
+        case ETD_NO_SPECIFICS:
+	        if ((expr->expr_type == A1TC_REFERENCE) &&
+	            ((terminal->expr_type & ASN_CONSTR_MASK) ||
+	             (terminal->expr_type == ASN_BASIC_ENUMERATED) ||
+	             ((terminal->expr_type == ASN_BASIC_INTEGER) &&
+	              (asn1c_type_fits_long(arg, terminal) == FL_FITS_UNSIGN)))) {
+		        OUT("&asn_SPC_%s_specs_%d\t/* Additional specs */\n",
+		            c_expr_name(arg, terminal).part_name,
+		            terminal->_type_unique_index);
+	        } else if ((expr->expr_type == ASN_TYPE_ANY) ||
+	                   (expr->expr_type == ASN_BASIC_BIT_STRING) ||
+	                   (expr->expr_type == ASN_STRING_BMPString) ||
+	                   (expr->expr_type == ASN_BASIC_OCTET_STRING) ||
+	                   (expr->expr_type == ASN_STRING_UniversalString)) {
+		        OUT("&asn_SPC_%s_specs\t/* Additional specs */\n",
+		            c_name(arg).type.part_name);
+	        } else if ((expr->expr_type == A1TC_REFERENCE) &&
+	                   ((terminal->expr_type == ASN_TYPE_ANY) ||
+	                    (terminal->expr_type == ASN_BASIC_BIT_STRING) ||
+	                    (terminal->expr_type == ASN_STRING_BMPString) ||
+	                    (terminal->expr_type == ASN_BASIC_OCTET_STRING) ||
+	                    (terminal->expr_type == ASN_STRING_UniversalString))) {
+		        OUT("&asn_SPC_%s_specs\t/* Additional specs */\n",
+		            c_expr_name(arg, terminal).type.part_name);
+	        } else {
+		        OUT("0\t/* No specifics */\n");
+	        }
+	        break;
+        case ETD_HAS_SPECIFICS:
+	        OUT("&asn_SPC_%s_specs_%d\t/* Additional specs */\n",
+	            c_name(arg).part_name, expr->_type_unique_index);
+        }
 	INDENT(-1);
 	OUT("};\n");
 	OUT("\n");
 
+	/*
+	 * Back-compat for -DPDU=<TypeName> and old headers that declare
+	 *   extern asn_TYPE_descriptor_t asn_DEF_<TypeName>;
+	 * If the resolved descriptor symbol is suffixed (TNF_RSAFE) and differs
+	 * from the plain name (TNF_SAFE), also provide the unsuffixed definition.
+	 *
+	 * ELF:     use a zero-cost alias.
+	 * Mach-O:  define a second object and copy it in a constructor.
+	 */
+	/* { */
+	/* 	char *plain    = strdup(asn1c_type_name(arg, expr, TNF_SAFE)); */
+	/* 	char *resolved = strdup(asn1c_type_name(arg, expr, TNF_RSAFE)); */
+
+	/* 	if(plain && resolved && strcmp(plain, resolved) != 0) { */
+	/* 		OUT("/\* alias: asn_DEF_%s -> asn_DEF_%s *\/\n", plain, resolved); */
+	/* 		OUT("#ifndef ASN1C_NO_UNSUFFIXED_PDU_ALIAS\n"); */
+	/* 		OUT("#if defined(__ELF__) && (defined(__GNUC__) || defined(__clang__))\n"); */
+	/* 		OUT("extern asn_TYPE_descriptor_t asn_DEF_%s;\n", resolved); */
+	/* 		OUT("asn_TYPE_descriptor_t asn_DEF_%s __attribute__((alias(\"asn_DEF_%s\")));\n", */
+	/* 		    plain, resolved); */
+	/* 		OUT("#else\n"); */
+	/* 		OUT("asn_TYPE_descriptor_t asn_DEF_%s;\n", plain); */
+	/* 		OUT("__attribute__((constructor)) static void asn_DEF_%s_init(void) {\n", plain); */
+	/* 		OUT("    asn_DEF_%s = asn_DEF_%s;\n", plain, resolved); */
+	/* 		OUT("}\n"); */
+	/* 		OUT("#endif\n"); */
+	/* 		OUT("#endif ASN1C_NO_UNSUFFIXED_PDU_ALIAS\n"); */
+	/* 	} */
+
+	/* 	if(plain) free(plain); */
+	/* 	if(resolved) free(resolved); */
+	/* } */
+
+	/*
+	 * Provide an unsuffixed descriptor symbol (asn_DEF_<UserType>)
+	 * that aliases the concrete symbol we just defined in this TU
+	 * (asn_DEF_<UserType>_<index>) when inner defs are hidden.
+	 * Only for named (non-anonymous) types.
+	 */
+	if(!expr->_anonymous_type && (HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL))) {
+		int saved_target2 = arg->target->target;
+		REDIR(OT_CODE);
+
+		OUT("#ifndef ASN1C_NO_UNSUFFIXED_PDU_ALIAS\n");
+		OUT("#if defined(__ELF__) && (defined(__GNUC__) || defined(__clang__))\n");
+		OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n", MKID(expr), expr->_type_unique_index);
+		OUT("asn_TYPE_descriptor_t asn_DEF_%s __attribute__((alias(\"asn_DEF_%s_%d\")));\n",
+		    MKID(expr), MKID(expr), expr->_type_unique_index);
+		OUT("#else\n");
+		OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n", MKID(expr), expr->_type_unique_index);
+		OUT("asn_TYPE_descriptor_t asn_DEF_%s;\n", MKID(expr));
+		OUT("__attribute__((constructor)) static void asn_DEF_%s_alias_init(void) {\n", MKID(expr));
+		OUT("\tasn_DEF_%s = asn_DEF_%s_%d;\n", MKID(expr), MKID(expr), expr->_type_unique_index);
+		OUT("}\n");
+		OUT("#endif\n");
+		OUT("#endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */\n");
+
+		REDIR(saved_target2);
+	}
+	
 	return 0;
 }
 
@@ -3577,8 +3635,19 @@ emit_include_dependencies(arg_t *arg) {
 				int saved_target = arg->target->target;
 				if(saved_target != OT_FWD_DECLS) {
 					REDIR(OT_FWD_DECLS);
-					OUT("%s;\n",
-						asn1c_type_name(arg, memb, TNF_SAFE));
+					do {
+						char *tn = strdup(asn1c_type_name(arg, memb, TNF_SAFE));
+						if(tn) {
+							/* Ensure it's a real forward declaration */
+							if(strncmp(tn, "struct ", 7) == 0) {
+								OUT("%s;\n", tn);
+							} else {
+								OUT("struct %s;\n", tn);
+							}
+							free(tn);
+						}
+					} while(0);
+
 				}
 				REDIR(saved_target);
 			}
