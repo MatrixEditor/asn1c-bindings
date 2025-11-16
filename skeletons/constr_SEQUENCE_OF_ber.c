@@ -11,11 +11,11 @@
  * The DER encoder of the SEQUENCE OF type.
  */
 asn_enc_rval_t
-SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr,
+SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
                        int tag_mode, ber_tlv_tag_t tag,
                        asn_app_consume_bytes_f *cb, void *app_key) {
     asn_TYPE_member_t *elm = td->elements;
-    const asn_anonymous_sequence_ *list = _A_CSEQUENCE_FROM_VOID(ptr);
+    const asn_anonymous_sequence_ *list = _A_CSEQUENCE_FROM_VOID(sptr);
     size_t computed_size = 0;
     ssize_t encoding_size = 0;
     asn_enc_rval_t erval = {0,0,0};
@@ -26,15 +26,36 @@ SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr,
     /*
      * Gather the length of the underlying members sequence.
      */
+    if(!list) {
+	    ASN_DEBUG("SEQUENCE OF list is null");
+	    ASN__ENCODE_FAILED;
+    }
+
+    if(!list->array) {
+	    ASN_DEBUG("SEQUENCE OF list->array is null");
+	    ASN__ENCODE_FAILED;
+    }
+
+    if(list->count > 1000000) { // Arbitrary sanity check for count
+	    ASN_DEBUG("SEQUENCE OF list->array (list->count) is invalid or count is nonsensical");
+	    ASN__ENCODE_FAILED;
+    }
+
+    ASN_DEBUG("SEQUENCE OF list pointer: %p, array pointer: %p, count: %d",
+              list, list->array, list->count);
+
     for(edx = 0; edx < list->count; edx++) {
-        void *memb_ptr = list->array[edx];
-        if(!memb_ptr) continue;
-        erval = elm->type->op->der_encoder(elm->type, memb_ptr,
-                                           elm->tag_mode, elm->tag,
-                                           0, 0);
-        if(erval.encoded == -1)
-            return erval;
-        computed_size += erval.encoded;
+	    void *memb_ptr = list->array[edx];
+	    if(!memb_ptr) {
+		    ASN_DEBUG("SEQUENCE OF member pointer is null at index %d", edx);
+		    continue;
+	    }
+	    erval = elm->type->op->der_encoder(elm->type, memb_ptr,
+	                                       elm->tag_mode, elm->tag,
+	                                       cb, app_key);
+	    if(erval.encoded == -1)
+		    return erval;
+	    computed_size += erval.encoded;
     }
 
     /*
@@ -45,7 +66,7 @@ SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr,
     if(encoding_size == -1) {
         erval.encoded = -1;
         erval.failed_type = td;
-        erval.structure_ptr = ptr;
+        erval.structure_ptr = sptr;
         return erval;
     }
 
@@ -77,7 +98,7 @@ SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr,
          */
         erval.encoded = -1;
         erval.failed_type = td;
-        erval.structure_ptr = ptr;
+        erval.structure_ptr = sptr;
     } else {
         erval.encoded = computed_size;
         erval.structure_ptr = 0;

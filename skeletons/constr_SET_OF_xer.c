@@ -27,6 +27,96 @@
     } while(0)
 
 /*
+ * Extract the (opening) tag name from a PXER_TAG token.
+ * Returns 1 if it equals `name`, 0 otherwise.
+ * Comparison is case-sensitive and stops at first whitespace, '/', or '>'.
+ */
+static int
+xer_token_name_equals(const void *buf, ssize_t len, const char *name) {
+    const char *p = (const char *)buf;
+    const char *q = name;
+    ssize_t i;
+
+    if(!buf || len < 3 || !name || !*name) return 0;
+    if(p[0] != '<') return 0;
+
+    /* Skip optional '/' for closing tags */
+    i = 1;
+    if(p[i] == '/') {
+        i++;
+        /* We only match opening/both here */
+        return 0;
+    }
+
+    /* Compare character-by-character with name */
+    for(; i < len && *q; i++, q++) {
+        char c = p[i];
+        if(c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '/' || c == '>')
+            return 0; /* token shorter than name */
+        if(c != *q) return 0;
+    }
+
+    if(*q) return 0; /* name longer than token head */
+
+    /* Ensure token boundary at this point */
+    if(i < len) {
+        char c = p[i];
+        if(!(c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '/' || c == '>'))
+            return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * Compare XML tag name, allowing "SEQUENCE OF X" to match "<SEQUENCE-OF-X>" or "</SEQUENCE-OF-X>".
+ * XER encoding rules replace spaces in type names with hyphens.
+ */
+static int
+xer_token_name_equals_normalized(const void *buf, ssize_t len, const char *name) {
+    const char *p = (const char *)buf;
+    const char *q = name;
+    ssize_t i;
+
+    if(!buf || len < 3 || !name || !*name) return 0;
+    if(p[0] != '<') return 0;
+
+    /* Skip optional '/' for closing tags */
+    i = 1;
+    if(p[i] == '/') {
+        i++;
+        /* Continue - we DO want to match closing tags */
+    }
+
+    /* Compare character-by-character, treating space in name as hyphen in token */
+    for(; i < len && *q; i++, q++) {
+        char c = p[i];
+        char expected = *q;
+        
+        /* End of token name? */
+        if(c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '/' || c == '>')
+            break;
+        
+        /* Normalize: space in name matches hyphen in XML */
+        if(expected == ' ') expected = '-';
+        
+        if(c != expected) return 0;
+    }
+
+    /* Name must be fully consumed */
+    if(*q) return 0;
+
+    /* Ensure we're at token boundary */
+    if(i < len) {
+        char c = p[i];
+        if(!(c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '/' || c == '>'))
+            return 0;
+    }
+
+    return 1;
+}
+
+/*
  * Decode the XER (XML) data.
  */
 asn_dec_rval_t
@@ -86,7 +176,7 @@ SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
          * Go inside the inner member of a set.
          */
         if(ctx->phase == 2) {
-            asn_dec_rval_t tmprval = {RC_OK, 0};
+            asn_dec_rval_t tmprval = (asn_dec_rval_t){RC_OK, 0};
 
             /* Invoke the inner type decoder, m.b. multiple times */
             ASN_DEBUG("XER/SET OF element [%s]", elm_tag);
@@ -129,6 +219,20 @@ SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
             }
         }
 
+		/* Check if this is our closing tag (normalized comparison for tags with spaces) */
+		if(xml_tag && ctx->phase == 1) {
+		    /* Check for closing tag like </SEQUENCE-OF-X> matching "SEQUENCE OF X" */
+		    const char *p = (const char *)buf_ptr;
+		    if(ch_size > 2 && p[0] == '<' && p[1] == '/') {
+		        if(xer_token_name_equals_normalized(buf_ptr, ch_size, xml_tag)) {
+        		    /* This is our closing tag */
+		            XER_ADVANCE(ch_size);
+		            ctx->phase = 3;  /* Phase out successfully */
+		            RETURN(RC_OK);
+        		}
+		    }
+		}
+		
         tcv = xer_check_tag(buf_ptr, ch_size, xml_tag);
         ASN_DEBUG("XER/SET OF: tcv = %d, ph=%d t=%s",
                   tcv, ctx->phase, xml_tag);
@@ -156,13 +260,40 @@ SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
         case XCT_UNKNOWN_BO:
 
             ASN_DEBUG("XER/SET OF: tcv=%d, ph=%d", tcv, ctx->phase);
-            if(ctx->phase == 1) {
-                /*
-                 * Process a single possible member.
-                 */
-                ctx->phase = 2;
-                continue;
-            }
+            /* Robust handling in phase 0... */
+ 			if(ctx->phase == 0) {
+			    int is_container = (xml_tag && xer_token_name_equals_normalized(buf_ptr, ch_size, xml_tag));
+			    int is_item = (element->type->xml_tag
+            	       && xer_token_name_equals(buf_ptr, ch_size, element->type->xml_tag));
+
+			    ASN_DEBUG("XER/SET OF phase 0: is_container=%d, is_item=%d, xml_tag='%s'", 
+            			  is_container, is_item, xml_tag ? xml_tag : "(null)");
+
+			    if(is_container) {
+			        ASN_DEBUG("XER/SET OF: found container <%s>, consume and enter body", xml_tag);
+			        XER_ADVANCE(ch_size);
+        			ctx->phase = 1;
+		    	    continue;
+			    }	
+		    	if(is_item) {
+    		    	ASN_DEBUG("XER/SET OF: found item <%s> without container, decode element",
+        	        	  element->type->xml_tag);
+		        	ctx->phase = 2;
+		    	    continue;
+		    	}
+			    ASN_DEBUG("XER/SET OF phase 0: neither container nor item matched, falling to fallback");
+			}
+
+			/* Accept item tag without explicit container presence as a
+			 * last-resort fallback (value-list tolerance) */
+			ASN_DEBUG("XER/SET OF: checking fallback, phase=%d", ctx->phase);
+			if(ctx->phase == 1 || ctx->phase == 0) {
+			    ASN_DEBUG("XER/SET OF: accept item tag without container (phase=%d)", ctx->phase);
+			    ctx->phase = 2;
+			    continue;
+			}
+			ASN_DEBUG("XER/SET OF: fallback condition failed, phase=%d", ctx->phase);
+			
             /* Fall through */
         default:
             break;

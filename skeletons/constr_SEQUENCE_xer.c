@@ -107,6 +107,16 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
 
             if(elm->flags & ATF_OPEN_TYPE) {
                 tmprval = OPEN_TYPE_xer_get(opt_codec_ctx, td, st, elm, ptr, size);
+                /* Debug: Check if CHOICE present field was set */
+                if(tmprval.code == RC_OK) {
+	                void *choice_ptr = (elm->flags & ATF_POINTER) 
+		                ? *(void**)((char*)st + elm->memb_offset)
+		                : (void*)((char*)st + elm->memb_offset);
+	                if(choice_ptr) {
+		                unsigned int *present = (unsigned int*)choice_ptr;
+		                ASN_DEBUG("OPEN_TYPE decoded: present=%u", *present);
+	                }
+                }
             } else {
                 /* Invoke the inner type decoder, m.b. multiple times */
                 tmprval = elm->type->op->xer_decoder(opt_codec_ctx,
@@ -214,6 +224,11 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                 for(n = edx; n < edx_end; n++) {
                     elm = &td->elements[n];
                     tcv = xer_check_tag(ptr, ch_size, elm->name);
+                    
+                    ASN_DEBUG("XER/SEQUENCE: Checking member n=%zu, name='%s', tcv=%d, tag='%.*s'",
+                              n, elm->name ? elm->name : "(null)", tcv, 
+                              (int)(ch_size < 50 ? ch_size : 50), (const char*)ptr);
+                        
                     switch(tcv) {
                     case XCT_BOTH:
                     case XCT_OPENING:

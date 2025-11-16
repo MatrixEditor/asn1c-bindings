@@ -296,19 +296,30 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
         OUT("aioc__value, &asn_DEF_%s, ", asn1c_type_name(arg, vt, TNF_SAFE));
         OUT("&asn_VAL_%d_%s", cell->value->_type_unique_index, MKID(cell->value));
 
-    } else if(cell->value->meta_type == AMT_TYPE) {
-        /* Anonymous / constructed type (e.g., SEQUENCE OF CommTxPDU):
-         * reference the concrete, suffixed descriptor defined in this TU. */
-        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        OUT("aioc__type, &asn_DEF_%s_%d",
-            MKID(cell->value), cell->value->_type_unique_index);
+    /* } else if(cell->value->meta_type == AMT_TYPE) { */
+    /*     /\* Anonymous / constructed type (e.g., SEQUENCE OF CommTxPDU): */
+    /*      * reference the concrete, suffixed descriptor defined in this TU. *\/ */
+    /*     GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE)); */
+    /*     OUT("aioc__type, &asn_DEF_%s_%d", */
+    /*         MKID(cell->value), cell->value->_type_unique_index); */
+
+    /* } else if(cell->value->meta_type == AMT_TYPEREF) { */
+    /*     /\* Named type reference: use SAFE so we get the proper (usually */
+    /*      * unsuffixed) descriptor symbol defined in its own TU. *\/ */
+    /*     GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE)); */
+    /*     OUT("aioc__type, &asn_DEF_%s", */
+    /*         asn1c_type_name(arg, cell->value, TNF_SAFE)); */
 
     } else if(cell->value->meta_type == AMT_TYPEREF) {
-        /* Named type reference: use SAFE so we get the proper (usually
-         * unsuffixed) descriptor symbol defined in its own TU. */
+        /* Named type reference: use SAFE for the standard descriptor name */
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        OUT("aioc__type, &asn_DEF_%s",
-            asn1c_type_name(arg, cell->value, TNF_SAFE));
+        OUT("aioc__type, &asn_DEF_%s", asn1c_type_name(arg, cell->value, TNF_SAFE));
+    } else if(cell->value->meta_type == AMT_TYPE) {
+        /* Anonymous/constructed type: reference the suffixed descriptor */
+        GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
+        OUT("aioc__type, &asn_DEF_%s_%d", 
+            MKID(cell->value), cell->value->_type_unique_index);
+        
     } else {
         return -1;
     }
@@ -344,6 +355,8 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
             }
         }
     }
+
+    
 
     if(ioc_tao.ioct->rows == 0)
         return 0;

@@ -1103,6 +1103,19 @@ find_column_index(arg_t *arg, asn1c_ioc_table_and_objset_t *opt_ioc, const char 
 }
 
 static int
+emit_xer_open_type_finder(arg_t *arg, asn1p_expr_t *expr, 
+                          asn1c_ioc_table_and_objset_t *opt_ioc,
+                          const char *column_name) {
+    // Similar to EndApplicationMessage_msg__op_finder in EndApplicationMessage.c
+    // but generated properly from the IOC table
+    
+    OUT("static asn_TYPE_descriptor_t *\n");
+    OUT("%s_xer_op_finder(const void *sptr) {\n", c_name(arg).compound_name);
+    // ... emit logic to use type selector and return proper descriptor
+    OUT("}\n");
+}
+
+static int
 asn1c_lang_C_OpenType(arg_t *arg, asn1c_ioc_table_and_objset_t *opt_ioc,
                       const char *column_name) {
     arg_t tmp_arg = *arg;
@@ -3145,29 +3158,29 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 			&& asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN);
 
 	if(C99_MODE) OUT(".type = ");
-    /*
-     * For constructed/anonymous members (including an OPEN TYPE wrapper),
-     * reference the concrete, suffixed descriptor symbol with the same
-     * suffix policy as emit_type_DEF(). For primitives, keep SAFE.
-     */
-    if(complex_contents) {
-        OUT("&asn_DEF_%s", MKID(expr));
-        if(HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL)) {
-            OUT("_%d", expr->_type_unique_index);
-        }
-        OUT(",\n");
-    } else {
-        OUT("&asn_DEF_%s,\n", asn1c_type_name(arg, expr, TNF_SAFE));
-    }
+	/*
+	 * For constructed/anonymous members (including an OPEN TYPE wrapper),
+	 * reference the concrete, suffixed descriptor symbol with the same
+	 * suffix policy as emit_type_DEF(). For primitives, keep SAFE.
+	 */
+	if(complex_contents) {
+		OUT("&asn_DEF_%s", MKID(expr));
+		if(HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL)) {
+			OUT("_%d", expr->_type_unique_index);
+		}
+		OUT(",\n");
+	} else {
+		OUT("&asn_DEF_%s,\n", asn1c_type_name(arg, expr, TNF_SAFE));
+	}
 
 
-    if(C99_MODE) OUT(".type_selector = ");
-    if(opt_ioc) {
-        if(emit_member_type_selector(arg, expr, opt_ioc) < 0)
-            return -1;
-    } else {
-        OUT("0");
-    }
+	if(C99_MODE) OUT(".type_selector = ");
+	if(opt_ioc) {
+		if(emit_member_type_selector(arg, expr, opt_ioc) < 0)
+			return -1;
+	} else {
+		OUT("0");
+	}
 	OUT(",\n");
 
     OUT("{\n");

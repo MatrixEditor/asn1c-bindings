@@ -408,10 +408,25 @@ SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
             if(elements[edx].flags & ATF_OPEN_TYPE) {
                 rval = OPEN_TYPE_ber_get(opt_codec_ctx, td, st, &elements[edx], ptr, LEFT);
             } else {
-                rval = elements[edx].type->op->ber_decoder(opt_codec_ctx,
-                                                           elements[edx].type,
-                                                           memb_ptr2, ptr, LEFT,
-                                                           elements[edx].tag_mode);
+	            if(elements[edx].flags & ATF_OPEN_TYPE) {
+		            const asn_TYPE_descriptor_t *type_descriptor = NULL;
+		            asn_type_selector_result_t selector_result =
+			            elements[edx].type_selector(td, st);
+
+		            if(!selector_result.type_descriptor) {
+			            ASN_DEBUG("Failed to resolve OPEN TYPE descriptor for %s", elements[edx].name);
+			            RETURN(RC_FAIL);
+		            }
+
+		            type_descriptor = selector_result.type_descriptor;
+		            rval = type_descriptor->op->ber_decoder(opt_codec_ctx, type_descriptor,
+		                                                    memb_ptr2, ptr, LEFT,
+		                                                    elements[edx].tag_mode);
+	            } else {
+		            rval = elements[edx].type->op->ber_decoder(opt_codec_ctx, elements[edx].type,
+		                                                       memb_ptr2, ptr, LEFT,
+		                                                       elements[edx].tag_mode);
+	            }
             }
             ASN_DEBUG("In %s SEQUENCE decoded %" ASN_PRI_SIZE " %s of %d "
                       "in %d bytes rval.code %d, size=%d",
@@ -550,9 +565,39 @@ SEQUENCE_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
         if(elm->default_value_cmp && elm->default_value_cmp(*memb_ptr2) == 0)
             continue;
 
-        erval = elm->type->op->der_encoder(elm->type, *memb_ptr2,
-                                           elm->tag_mode, elm->tag,
-                                           0, 0);
+        if(elm->flags & ATF_OPEN_TYPE) {
+	        const asn_TYPE_descriptor_t *type_descriptor = NULL;
+	        asn_type_selector_result_t selector_result =
+		        elm->type_selector(td, sptr);
+
+	        if(!selector_result.type_descriptor || !selector_result.presence_index) {
+		        ASN_DEBUG("Failed to resolve OPEN TYPE descriptor or presence index for %s", elm->name);
+		        ASN__ENCODE_FAILED;
+	        }
+
+	        ASN_DEBUG("Resolved OPEN TYPE descriptor: %s, presence index: %zu",
+	                  selector_result.type_descriptor->name, selector_result.presence_index);
+	        
+	        type_descriptor = selector_result.type_descriptor;
+
+	        if(!*memb_ptr2) {
+		        ASN_DEBUG("Resolved OPEN TYPE descriptor: %s, but sptr is null for %s",
+		                  type_descriptor->name, elm->name);
+		        ASN__ENCODE_FAILED;
+	        }
+
+	        ASN_DEBUG("Resolved OPEN TYPE descriptor: %s, presence index: %zu",
+	                  type_descriptor->name, selector_result.presence_index);
+ 
+	        erval = type_descriptor->op->der_encoder(type_descriptor, *memb_ptr2,
+	                                                 elm->tag_mode, elm->tag,
+	                                                 cb, app_key);
+        } else {
+	        erval = elm->type->op->der_encoder(elm->type, *memb_ptr2,
+	                                           elm->tag_mode, elm->tag,
+	                                           cb, app_key);
+        }
+        
         if(erval.encoded == -1)
             return erval;
         computed_size += erval.encoded;
