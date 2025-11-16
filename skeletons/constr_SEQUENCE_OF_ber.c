@@ -52,7 +52,7 @@ SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
 	    }
 	    erval = elm->type->op->der_encoder(elm->type, memb_ptr,
 	                                       elm->tag_mode, elm->tag,
-	                                       cb, app_key);
+	                                       0, 0);
 	    if(erval.encoded == -1)
 		    return erval;
 	    computed_size += erval.encoded;
