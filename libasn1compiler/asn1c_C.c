@@ -3548,39 +3548,6 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 	OUT("\n");
 
 	/*
-	 * Back-compat for -DPDU=<TypeName> and old headers that declare
-	 *   extern asn_TYPE_descriptor_t asn_DEF_<TypeName>;
-	 * If the resolved descriptor symbol is suffixed (TNF_RSAFE) and differs
-	 * from the plain name (TNF_SAFE), also provide the unsuffixed definition.
-	 *
-	 * ELF:     use a zero-cost alias.
-	 * Mach-O:  define a second object and copy it in a constructor.
-	 */
-	/* { */
-	/* 	char *plain    = strdup(asn1c_type_name(arg, expr, TNF_SAFE)); */
-	/* 	char *resolved = strdup(asn1c_type_name(arg, expr, TNF_RSAFE)); */
-
-	/* 	if(plain && resolved && strcmp(plain, resolved) != 0) { */
-	/* 		OUT("/\* alias: asn_DEF_%s -> asn_DEF_%s *\/\n", plain, resolved); */
-	/* 		OUT("#ifndef ASN1C_NO_UNSUFFIXED_PDU_ALIAS\n"); */
-	/* 		OUT("#if defined(__ELF__) && (defined(__GNUC__) || defined(__clang__))\n"); */
-	/* 		OUT("extern asn_TYPE_descriptor_t asn_DEF_%s;\n", resolved); */
-	/* 		OUT("asn_TYPE_descriptor_t asn_DEF_%s __attribute__((alias(\"asn_DEF_%s\")));\n", */
-	/* 		    plain, resolved); */
-	/* 		OUT("#else\n"); */
-	/* 		OUT("asn_TYPE_descriptor_t asn_DEF_%s;\n", plain); */
-	/* 		OUT("__attribute__((constructor)) static void asn_DEF_%s_init(void) {\n", plain); */
-	/* 		OUT("    asn_DEF_%s = asn_DEF_%s;\n", plain, resolved); */
-	/* 		OUT("}\n"); */
-	/* 		OUT("#endif\n"); */
-	/* 		OUT("#endif ASN1C_NO_UNSUFFIXED_PDU_ALIAS\n"); */
-	/* 	} */
-
-	/* 	if(plain) free(plain); */
-	/* 	if(resolved) free(resolved); */
-	/* } */
-
-	/*
 	 * Provide an unsuffixed descriptor symbol (asn_DEF_<UserType>)
 	 * that aliases the concrete symbol we just defined in this TU
 	 * (asn_DEF_<UserType>_<index>) when inner defs are hidden.
@@ -3592,13 +3559,28 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 
 		OUT("#ifndef ASN1C_NO_UNSUFFIXED_PDU_ALIAS\n");
 		OUT("#if defined(__ELF__) && (defined(__GNUC__) || defined(__clang__))\n");
-		OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n", MKID(expr), expr->_type_unique_index);
+		/* Only use extern if the type was NOT defined as static */
+		if(!HIDE_INNER_DEFS) {
+			OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
+			    MKID(expr), expr->_type_unique_index);
+		}
+		
 		OUT("asn_TYPE_descriptor_t asn_DEF_%s __attribute__((alias(\"asn_DEF_%s_%d\")));\n",
 		    MKID(expr), MKID(expr), expr->_type_unique_index);
 		OUT("#else\n");
-		OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n", MKID(expr), expr->_type_unique_index);
+		
+		/* Forward declaration must match the storage class of the actual definition */
+		if(HIDE_INNER_DEFS) {
+			OUT("static asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
+			    MKID(expr), expr->_type_unique_index);
+		} else {
+			OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
+			    MKID(expr), expr->_type_unique_index);
+		}
+				
 		OUT("asn_TYPE_descriptor_t asn_DEF_%s;\n", MKID(expr));
-		OUT("__attribute__((constructor)) static void asn_DEF_%s_alias_init(void) {\n", MKID(expr));
+		OUT("__attribute__((constructor)) static void asn_DEF_%s_alias_init(void) {\n",
+		    MKID(expr));
 		OUT("\tasn_DEF_%s = asn_DEF_%s_%d;\n", MKID(expr), MKID(expr), expr->_type_unique_index);
 		OUT("}\n");
 		OUT("#endif\n");

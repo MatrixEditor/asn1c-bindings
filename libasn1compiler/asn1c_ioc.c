@@ -332,6 +332,23 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
 /*
  * Refer to skeletons/asn_ioc.h
  */
+/* ============================================================================
+ * COMPLETE FIX - Replace emit_ioc_table() in asn1c_ioc.c
+ * 
+ * The Problem: Forward declarations were always using "extern" but definitions
+ * could be "static", causing a storage class mismatch.
+ * 
+ * The Solution: Forward declarations must match the storage class that will be
+ * used in the actual definition. This depends on:
+ * - A1C_ALL_DEFS_GLOBAL flag: if set, all defs are non-static (extern)
+ * - Otherwise, anonymous/constructed types are static
+ * ============================================================================ */
+
+/* ============================================================================
+ * PART 1: Fix in asn1c_ioc.c - emit_ioc_table()
+ * This fixes the IOC table type forward declarations
+ * ============================================================================ */
+
 int
 emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t ioc_tao) {
     size_t columns = 0;
@@ -356,25 +373,37 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
         }
     }
 
-    
-
     if(ioc_tao.ioct->rows == 0)
         return 0;
 
-    /* Forward-declare concrete descriptors referenced by TYPE cells so they
-     * are visible when used in the rows emitted below (definitions come later). */
+    /* Forward-declare concrete descriptors referenced by TYPE cells.
+     * 
+     * IOC table types are ALWAYS embedded (anonymous members), so:
+     * - They're static UNLESS A1C_ALL_DEFS_GLOBAL is set
+     */
+    
     for(size_t rn = 0; rn < ioc_tao.ioct->rows; rn++) {
         asn1p_ioc_row_t *row = ioc_tao.ioct->row[rn];
         for(size_t cn = 0; cn < row->columns; cn++) {
             struct asn1p_ioc_cell_s *cell = &row->column[cn];
+            
             if(cell->value && cell->value->meta_type == AMT_TYPE) {
-                OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
-                    MKID(cell->value), cell->value->_type_unique_index);
+                /* Anonymous/constructed type - will be static unless A1C_ALL_DEFS_GLOBAL */
+                if(arg->flags & A1C_ALL_DEFS_GLOBAL) {
+                    OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
+                        MKID(cell->value), cell->value->_type_unique_index);
+                } else {
+                    OUT("static asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
+                        MKID(cell->value), cell->value->_type_unique_index);
+                }
+            } else if(cell->value && cell->value->meta_type == AMT_TYPEREF) {
+                /* Named type reference - defined elsewhere, always extern */
+                OUT("extern asn_TYPE_descriptor_t asn_DEF_%s;\n",
+                    MKID(cell->value));
             }
         }
     }
     OUT("\n");
-
 
     /* Emit the Information Object Set */
     OUT("static const asn_ioc_cell_t asn_IOS_%s_%d_rows[] = {\n",
@@ -409,4 +438,3 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
 
     return 0;
 }
-

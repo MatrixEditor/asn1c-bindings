@@ -33,7 +33,7 @@ verify() {
     rm -rf "test-${type}"
     mkdir "test-${type}"
     cd "test-${type}"
-    asncmd="../${top_builddir}/asn1c/asn1c -Wdebug-compiler -flink-skeletons -S ../${top_srcdir}/skeletons $flags test.asn"
+    asncmd="../${top_builddir}/asn1c/asn1c -fall-defs-global -Wdebug-compiler -flink-skeletons -S ../${top_srcdir}/skeletons $flags test.asn"
 
     {
     echo "$asncmd"
