@@ -4,7 +4,7 @@ m4_define([ASN1C_VERSION], m4_esyscmd_s([
 ]))
 
 dnl Compute bug report URL safely: use git if available, else fallback
-m4_define([ASN1C_BUGURL], m4_esyscmd([
+m4_define([ASN1C_BUGURL], m4_esyscmd_s([
   if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     git remote get-url origin 2>/dev/null | sed 's/.git$//'
   else

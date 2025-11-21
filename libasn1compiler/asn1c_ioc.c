@@ -119,27 +119,48 @@ asn1c_get_ioc_table(arg_t *arg) {
 
 /* ===== helpers to encode OBJECT IDENTIFIER as BER arcs (base-128) ===== */
 
-static int oid_arc_encode(uint64_t arc, unsigned char *tmp) {
-    unsigned char buf[10]; int i = 0;
+static int
+oid_arc_encode(uint64_t arc, unsigned char *tmp) {
+    unsigned char buf[10];
+    int i = 0;
     if(arc == 0) { tmp[0] = 0; return 1; }
     while(arc) { buf[i++] = (unsigned char)(arc & 0x7F); arc >>= 7; }
-    for(int j = i - 1, k = 0; j >= 0; j--, k++) tmp[k] = buf[j] | (j ? 0x80 : 0);
+    for(int j = i - 1, k = 0; j >= 0; j--, k++) {
+        tmp[k] = buf[j] | (j ? 0x80 : 0);
+    }
     return i;
 }
-/* Parse textual OID: "1.2.3", "1 2 3", or "{ 1 2 3 }" */
-static int parse_unparsed_oid(const char *buf, int len, uint64_t arcs[], int max_arcs) {
-    int n = 0, i = 0;
+
+/* Parse an OID textual form from an ATV_UNPARSED buffer.
+ * Accepts dotted ("1.2.3"), spaced ("1 2 3"), or brace-delimited ("{ 1 2 3 }").
+ * Returns number of arcs written to arcs[], or -1 on failure. */
+static int
+parse_unparsed_oid(const char *buf, int len, uint64_t arcs[], int max_arcs) {
+    int n = 0;
+    int i = 0;
     while(i < len && isspace((unsigned char)buf[i])) i++;
-    if(i < len && buf[i] == '{') i++;
+    if(i < len && buf[i] == '{') { i++; } /* optional leading brace */
+
     while(i < len) {
         while(i < len && isspace((unsigned char)buf[i])) i++;
         if(i < len && buf[i] == '}') { i++; break; }
+
         if(n >= max_arcs) return -1;
-        if(i < len && buf[i] == '.') { i++; continue; }
-        if(i >= len || !isdigit((unsigned char)buf[i])) return -1;
-        uint64_t v = 0; while(i < len && isdigit((unsigned char)buf[i])) v =
-		   v*10 + (uint64_t)(buf[i++] - '0');
+
+        if(i >= len || !isdigit((unsigned char)buf[i])) {
+            /* allow '.' separators too */
+            if(buf[i] == '.') { i++; continue; }
+            return -1;
+        }
+        uint64_t v = 0;
+        while(i < len && isdigit((unsigned char)buf[i])) {
+            v = v * 10 + (uint64_t)(buf[i] - '0');
+            i++;
+        }
         arcs[n++] = v;
+
+        while(i < len && (isspace((unsigned char)buf[i]) || buf[i]=='.')) i++;
+        if(i < len && buf[i] == '}') { i++; break; }
     }
     return n;
 }
