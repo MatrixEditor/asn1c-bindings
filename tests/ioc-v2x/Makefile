@@ -3,4 +3,8 @@ all:
 
 check:
 	./run.sh
+
+clean:
+	rm -rf *.[choa]
+	echo "Cleaned ioc-v2x"
 #

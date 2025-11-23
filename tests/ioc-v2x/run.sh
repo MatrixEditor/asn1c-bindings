@@ -8,11 +8,12 @@ cp -p "$d/s4.xer" "$w/"
 cd "$w"
 
 ASN1C_EXE="${d}/../../asn1c/asn1c"
+#GEN_AUTOTOOLS="-gen-autotools"
 
 echo "d=${d} w=${w} pwd=${PWD}"
 
 ${ASN1C_EXE} -fall-defs-global -fcompound-names -fincludes-quoted \
-  -fline-refs -fwide-types -gen-autotools \
+  -fline-refs -fwide-types \
   -pdu=EndApplicationMessage C2X.asn
 
 make -f converter-example.mk CC="${CC:-cc}" >/dev/null
