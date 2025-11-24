@@ -16,7 +16,7 @@ ${ASN1C_EXE} -fall-defs-global -fcompound-names -fincludes-quoted \
   -fline-refs -fwide-types \
   -pdu=EndApplicationMessage C2X.asn
 
-make -f converter-example.mk CC="${CC:-cc}" >/dev/null
+CFLAGS="-g -DASN_EMIT_DEBUG" make -f converter-example.mk CC="${CC:-cc}" >/dev/null
 
 ./converter-example -p EndApplicationMessage -ixer s4.xer >/dev/null
 
