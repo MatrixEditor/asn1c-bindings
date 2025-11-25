@@ -722,6 +722,57 @@ OCTET_STRING__convert_base64(void *sptr, const void *chunk_buf,
 }
 
 /*
+ * Check if the content looks like hexadecimal encoding.
+ * Returns 1 if content appears to be hex, 0 if it appears to be Base64.
+ * Characters unique to hex: none (all hex chars are valid in Base64)
+ * Characters unique to Base64: G-Z, g-z, +, /, =
+ * If we see any Base64-only characters, treat as Base64.
+ * If all characters are valid hex digits or whitespace, treat as hex.
+ */
+static int
+OCTET_STRING__is_hexadecimal(const void *chunk_buf, size_t chunk_size) {
+    const char *p = (const char *)chunk_buf;
+    const char *pend = p + chunk_size;
+    int has_content = 0;
+
+    for(; p < pend; p++) {
+        int ch = *(const unsigned char *)p;
+        switch(ch) {
+        case 0x09: case 0x0a: case 0x0c: case 0x0d: case 0x20:
+            /* Whitespace - skip */
+            continue;
+        case 0x30: case 0x31: case 0x32: case 0x33: case 0x34:  /*01234*/
+        case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:  /*56789*/
+        case 0x41: case 0x42: case 0x43:  /* ABC */
+        case 0x44: case 0x45: case 0x46:  /* DEF */
+        case 0x61: case 0x62: case 0x63:  /* abc */
+        case 0x64: case 0x65: case 0x66:  /* def */
+            /* Valid hex character */
+            has_content = 1;
+            continue;
+        default:
+            /* Not a hex character - must be Base64 */
+            return 0;
+        }
+    }
+    return has_content;
+}
+
+/*
+ * Auto-detect and convert from either hexadecimal or Base64 format.
+ * Detects the format by examining the content for Base64-only characters.
+ */
+static ssize_t
+OCTET_STRING__convert_auto(void *sptr, const void *chunk_buf,
+                           size_t chunk_size, int have_more) {
+    if(OCTET_STRING__is_hexadecimal(chunk_buf, chunk_size)) {
+        return OCTET_STRING__convert_hexadecimal(sptr, chunk_buf, chunk_size, have_more);
+    } else {
+        return OCTET_STRING__convert_base64(sptr, chunk_buf, chunk_size, have_more);
+    }
+}
+
+/*
  * Decode OCTET STRING from the XML element's body.
  */
 static asn_dec_rval_t
@@ -832,4 +883,18 @@ OCTET_STRING_decode_xer_base64(const asn_codec_ctx_t *opt_codec_ctx,
     return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
                                     buf_ptr, size, 0,
                                     OCTET_STRING__convert_base64);
+}
+
+/*
+ * Decode OCTET STRING with auto-detection of hexadecimal or Base64 format.
+ * This allows XER input to use either format seamlessly.
+ */
+asn_dec_rval_t
+OCTET_STRING_decode_xer_auto(const asn_codec_ctx_t *opt_codec_ctx,
+                             const asn_TYPE_descriptor_t *td, void **sptr,
+                             const char *opt_mname, const void *buf_ptr,
+                             size_t size) {
+    return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
+                                    buf_ptr, size, 0,
+                                    OCTET_STRING__convert_auto);
 }
