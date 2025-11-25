@@ -4,3 +4,6 @@ converter-example
 converter-example.mk
 Makefile.am.*
 libasncodec.a
+# Test-generated output files
+s4a.xer
+s4a.der
