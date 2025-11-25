@@ -724,17 +724,29 @@ OCTET_STRING__convert_base64(void *sptr, const void *chunk_buf,
 /*
  * Check if the content looks like hexadecimal encoding.
  * Returns 1 if content appears to be hex, 0 if it appears to be Base64.
- * Characters unique to hex: none (all hex chars are valid in Base64)
- * Characters unique to Base64: G-Z, g-z, +, /, =
- * If we see any Base64-only characters, treat as Base64.
- * If all characters are valid hex digits or whitespace, treat as hex.
- * Also handles optional 0x/0X prefix and requires even number of hex digits.
+ * 
+ * Since Base64 is the default XER encoding for OCTET STRING (per X.693),
+ * we prefer Base64 decoding in ambiguous cases. Only treat as hex if we
+ * have strong indicators:
+ * 
+ * Definite hex indicators:
+ * - 0x/0X prefix
+ * - Spaces between character pairs (hex encoder adds spaces in normal mode)
+ * 
+ * Definite Base64 indicators:
+ * - Characters G-Z, g-z, +, /, = (not valid in hex)
+ * - Lowercase a-f (our hex encoder uses uppercase only)
+ * 
+ * Ambiguous (all uppercase A-F and 0-9): prefer Base64
  */
 static int
 OCTET_STRING__is_hexadecimal(const void *chunk_buf, size_t chunk_size) {
     const unsigned char *p = (const unsigned char *)chunk_buf;
     const unsigned char *pend = p + chunk_size;
+    int has_0x_prefix = 0;
+    int has_spaces_between = 0;
     int hex_digits = 0;
+    int prev_was_hex = 0;
 
     /* Skip leading whitespace */
     while (p < pend && (*p == 0x09 || *p == 0x0a || *p == 0x0c ||
@@ -742,46 +754,65 @@ OCTET_STRING__is_hexadecimal(const void *chunk_buf, size_t chunk_size) {
         p++;
     }
 
-    /* Optional 0x / 0X prefix */
+    /* Check for 0x / 0X prefix - strong hex indicator */
     if (p + 1 < pend && *p == '0' && (p[1] == 'x' || p[1] == 'X')) {
+        has_0x_prefix = 1;
         p += 2;
     }
 
     for (; p < pend; p++) {
         unsigned char ch = *p;
 
-        /* Whitespace allowed anywhere */
+        /* Check for spaces between hex digits (hex encoder adds these) */
         if (ch == 0x09 || ch == 0x0a || ch == 0x0c || ch == 0x0d || ch == 0x20) {
+            if (prev_was_hex && hex_digits >= 2) {
+                has_spaces_between = 1;
+            }
+            prev_was_hex = 0;
             continue;
         }
 
-        /* Base64-only chars or padding => definitely Base64 */
+        /* Lowercase a-f: our hex encoder uses uppercase only */
+        if (ch >= 'a' && ch <= 'f') {
+            return 0;  /* Treat as Base64 */
+        }
+
+        /* Other Base64-only chars or padding => definitely Base64 */
         if ((ch >= 'G' && ch <= 'Z') ||
             (ch >= 'g' && ch <= 'z') ||
             ch == '+' || ch == '/' || ch == '=') {
             return 0;
         }
 
-        /* Hex digits */
+        /* Uppercase hex digits (0-9, A-F) */
         if ((ch >= '0' && ch <= '9') ||
-            (ch >= 'A' && ch <= 'F') ||
-            (ch >= 'a' && ch <= 'f')) {
+            (ch >= 'A' && ch <= 'F')) {
             hex_digits++;
+            prev_was_hex = 1;
             continue;
         }
 
-        /* Any other character not valid hex -> treat as Base64 */
+        /* Any other character not valid in either format */
         return 0;
     }
 
-    /* No hex content -> not hex */
+    /* No content -> not hex */
     if (hex_digits == 0) return 0;
 
-    /* Odd number of hex digits -> prefer Base64 */
+    /* Odd number of hex digits -> not valid hex */
     if (hex_digits & 1) return 0;
 
-    /* Even non-zero hex digits -> hex */
-    return 1;
+    /* Strong hex indicators present -> treat as hex */
+    if (has_0x_prefix || has_spaces_between) {
+        return 1;
+    }
+
+    /* Ambiguous case (only uppercase hex chars, no spaces, no prefix):
+     * Prefer Base64 since it's the default XER encoding for OCTET STRING.
+     * This handles cases like "AAEA" which is valid Base64 for 3 bytes but
+     * could be misinterpreted as 2 hex bytes.
+     */
+    return 0;
 }
 
 /*
