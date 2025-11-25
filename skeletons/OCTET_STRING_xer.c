@@ -728,34 +728,60 @@ OCTET_STRING__convert_base64(void *sptr, const void *chunk_buf,
  * Characters unique to Base64: G-Z, g-z, +, /, =
  * If we see any Base64-only characters, treat as Base64.
  * If all characters are valid hex digits or whitespace, treat as hex.
+ * Also handles optional 0x/0X prefix and requires even number of hex digits.
  */
 static int
 OCTET_STRING__is_hexadecimal(const void *chunk_buf, size_t chunk_size) {
-    const char *p = (const char *)chunk_buf;
-    const char *pend = p + chunk_size;
-    int has_content = 0;
+    const unsigned char *p = (const unsigned char *)chunk_buf;
+    const unsigned char *pend = p + chunk_size;
+    int hex_digits = 0;
 
-    for(; p < pend; p++) {
-        int ch = *(const unsigned char *)p;
-        switch(ch) {
-        case 0x09: case 0x0a: case 0x0c: case 0x0d: case 0x20:
-            /* Whitespace - skip */
+    /* Skip leading whitespace */
+    while (p < pend && (*p == 0x09 || *p == 0x0a || *p == 0x0c ||
+                        *p == 0x0d || *p == 0x20)) {
+        p++;
+    }
+
+    /* Optional 0x / 0X prefix */
+    if (p + 1 < pend && *p == '0' && (p[1] == 'x' || p[1] == 'X')) {
+        p += 2;
+    }
+
+    for (; p < pend; p++) {
+        unsigned char ch = *p;
+
+        /* Whitespace allowed anywhere */
+        if (ch == 0x09 || ch == 0x0a || ch == 0x0c || ch == 0x0d || ch == 0x20) {
             continue;
-        case 0x30: case 0x31: case 0x32: case 0x33: case 0x34:  /*01234*/
-        case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:  /*56789*/
-        case 0x41: case 0x42: case 0x43:  /* ABC */
-        case 0x44: case 0x45: case 0x46:  /* DEF */
-        case 0x61: case 0x62: case 0x63:  /* abc */
-        case 0x64: case 0x65: case 0x66:  /* def */
-            /* Valid hex character */
-            has_content = 1;
-            continue;
-        default:
-            /* Not a hex character - must be Base64 */
+        }
+
+        /* Base64-only chars or padding => definitely Base64 */
+        if ((ch >= 'G' && ch <= 'Z') ||
+            (ch >= 'g' && ch <= 'z') ||
+            ch == '+' || ch == '/' || ch == '=') {
             return 0;
         }
+
+        /* Hex digits */
+        if ((ch >= '0' && ch <= '9') ||
+            (ch >= 'A' && ch <= 'F') ||
+            (ch >= 'a' && ch <= 'f')) {
+            hex_digits++;
+            continue;
+        }
+
+        /* Any other character not valid hex -> treat as Base64 */
+        return 0;
     }
-    return has_content;
+
+    /* No hex content -> not hex */
+    if (hex_digits == 0) return 0;
+
+    /* Odd number of hex digits -> prefer Base64 */
+    if (hex_digits & 1) return 0;
+
+    /* Even non-zero hex digits -> hex */
+    return 1;
 }
 
 /*
