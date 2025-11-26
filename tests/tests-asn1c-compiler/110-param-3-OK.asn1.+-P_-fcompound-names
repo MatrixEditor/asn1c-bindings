@@ -176,6 +176,20 @@ static const asn_INTEGER_enum_map_t asn_MAP_field_value2enum_7[] = {
 	{ 4,	5,	"green" },
 	{ 5,	4,	"blue" }
 };
+static int asn_validate_field(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_field value = *(e_field*)sptr;
+    switch(value) {
+    case field_red:
+    case field_green:
+    case field_blue:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_field_enum2value_7[] = {
 	2,	/* blue(5) */
 	1,	/* green(4) */
@@ -214,7 +228,7 @@ asn_TYPE_descriptor_t asn_DEF_field_7 = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		NativeEnumerated_constraint
+		asn_validate_field
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_field_specs_7	/* Additional specs */

@@ -878,6 +878,20 @@ static const asn_INTEGER_enum_map_t asn_MAP_accept_as_value2enum_2[] = {
 	{ 2,	6,	"unsafe" }
 	/* This list is extensible */
 };
+static int asn_validate_accept_as(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_accept_as value = *(e_accept_as*)sptr;
+    switch(value) {
+    case accept_as_unknown:
+    case accept_as_safe:
+    case accept_as_unsafe:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_accept_as_enum2value_2[] = {
 	1,	/* safe(1) */
 	0,	/* unknown(0) */
@@ -917,7 +931,7 @@ asn_TYPE_descriptor_t asn_DEF_accept_as_2 = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		NativeEnumerated_constraint
+		asn_validate_accept_as
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_accept_as_specs_2	/* Additional specs */

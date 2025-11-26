@@ -1,3 +1,22 @@
+WARNING: Parameterized type max-items expected for max-items at line 41 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
+WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
 
 /*** <<< INCLUDES [PacketId] >>> ***/
 
@@ -155,6 +174,20 @@ static const asn_INTEGER_enum_map_t asn_MAP_Color_value2enum_1[] = {
 	{ 1,	5,	"green" },
 	{ 2,	4,	"blue" }
 };
+static int asn_validate_Color(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_Color value = *(e_Color*)sptr;
+    switch(value) {
+    case Color_red:
+    case Color_green:
+    case Color_blue:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_Color_enum2value_1[] = {
 	2,	/* blue(2) */
 	1,	/* green(1) */
@@ -192,7 +225,7 @@ asn_TYPE_descriptor_t asn_DEF_Color = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		NativeEnumerated_constraint
+		asn_validate_Color
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Color_specs_1	/* Additional specs */
@@ -254,6 +287,19 @@ static const asn_INTEGER_enum_map_t asn_MAP_Valid_value2enum_1[] = {
 	{ 0,	7,	"crc-nok" },
 	{ 1,	6,	"crc-ok" }
 };
+static int asn_validate_Valid(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_Valid value = *(e_Valid*)sptr;
+    switch(value) {
+    case Valid_crc-nok:
+    case Valid_crc-ok:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_Valid_enum2value_1[] = {
 	0,	/* crc-nok(0) */
 	1	/* crc-ok(1) */
@@ -290,7 +336,7 @@ asn_TYPE_descriptor_t asn_DEF_Valid = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		NativeEnumerated_constraint
+		asn_validate_Valid
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Valid_specs_1	/* Additional specs */
@@ -1305,7 +1351,8 @@ static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (8 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static const asn_TYPE_tag2member_t asn_MAP_EXTERNAL_tag2el_1[] = {
+static const asn_TYPE_tag2mGenerated asn_constant.h
+ember_t asn_MAP_EXTERNAL_tag2el_1[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, 0, 0 }, /* indirect-reference */
     { (ASN_TAG_CLASS_UNIVERSAL | (6 << 2)), 0, 0, 0 }, /* direct-reference */
     { (ASN_TAG_CLASS_UNIVERSAL | (7 << 2)), 2, 0, 0 }, /* data-value-descriptor */

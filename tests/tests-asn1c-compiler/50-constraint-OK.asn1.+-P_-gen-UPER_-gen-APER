@@ -2672,6 +2672,20 @@ static const asn_INTEGER_enum_map_t asn_MAP_enum_c_value2enum_6[] = {
 	{ 3,	5,	"three" }
 	/* This list is extensible */
 };
+static int asn_validate_enum_c(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_enum_c value = *(e_enum_c*)sptr;
+    switch(value) {
+    case enum_c_one:
+    case enum_c_two:
+    case enum_c_three:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_enum_c_enum2value_6[] = {
 	0,	/* one(1) */
 	2,	/* three(3) */
@@ -2711,7 +2725,7 @@ asn_TYPE_descriptor_t asn_DEF_enum_c_6 = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		NativeEnumerated_constraint
+		asn_validate_enum_c
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_enum_c_specs_6	/* Additional specs */
@@ -3060,6 +3074,19 @@ static const asn_INTEGER_enum_map_t asn_MAP_Enum0_value2enum_1[] = {
 	{ 0,	3,	"one" },
 	{ 1,	3,	"two" }
 };
+static int asn_validate_Enum0(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_Enum0 value = *(e_Enum0*)sptr;
+    switch(value) {
+    case Enum0_one:
+    case Enum0_two:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_Enum0_enum2value_1[] = {
 	0,	/* one(0) */
 	1	/* two(1) */
@@ -3096,7 +3123,7 @@ asn_TYPE_descriptor_t asn_DEF_Enum0 = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		NativeEnumerated_constraint
+		asn_validate_Enum0
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Enum0_specs_1	/* Additional specs */
@@ -3181,6 +3208,19 @@ static const asn_INTEGER_enum_map_t asn_MAP_Enum1_value2enum_1[] = {
 	{ 0,	3,	"one" },
 	{ 1,	3,	"two" }
 };
+static int asn_validate_Enum1(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_Enum1 value = *(e_Enum1*)sptr;
+    switch(value) {
+    case Enum1_one:
+    case Enum1_two:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_Enum1_enum2value_1[] = {
 	0,	/* one(0) */
 	1	/* two(1) */
@@ -3633,7 +3673,8 @@ static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static const asn_TYPE_tag2member_t asn_MAP_EXTERNAL_tag2el_1[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, 0, 0 }, /* indirect-reference */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, 0, 0 }, /* indirGenerated asn_constant.h
+ect-reference */
     { (ASN_TAG_CLASS_UNIVERSAL | (6 << 2)), 0, 0, 0 }, /* direct-reference */
     { (ASN_TAG_CLASS_UNIVERSAL | (7 << 2)), 2, 0, 0 }, /* data-value-descriptor */
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 3, 0, 0 }, /* single-ASN1-type */

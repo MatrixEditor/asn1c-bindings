@@ -216,7 +216,7 @@ asn1c_lang_C_type_common_INTEGER(arg_t *arg) {
                 OUT("    }\n");
                 OUT("    return -1;\n");
                 OUT("}\n");
-                arg->param.localvalidation = 1;
+                arg->param.localvalidation_expr = expr;
                 }
 
 		OUT("static const unsigned int asn_MAP_%s_enum2value_%d[] = {\n",
@@ -3480,11 +3480,11 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 			OUT("0");
 		} else {
 			if (!expr->combined_constraints) {
-                          if(arg->param.localvalidation == 1)
+                          if(arg->param.localvalidation_expr == expr)
                              OUT("asn_validate_%s", p);
                           else
                              OUT("%s_constraint", p2);
-                          arg->param.localvalidation = 0;
+                          arg->param.localvalidation_expr = NULL;
 			} else
 				FUNCREF(constraint);
 		}

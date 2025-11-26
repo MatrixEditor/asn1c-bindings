@@ -61,7 +61,7 @@ typedef struct arg_s {
 
     int embed;
     union {
-       int localvalidation;
+       asn1p_expr_t *localvalidation_expr;
     } param;
 } arg_t;
 

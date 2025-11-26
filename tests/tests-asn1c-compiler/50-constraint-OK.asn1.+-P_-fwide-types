@@ -2812,6 +2812,19 @@ static const asn_INTEGER_enum_map_t asn_MAP_Enum1_value2enum_1[] = {
 	{ 0,	3,	"one" },
 	{ 1,	3,	"two" }
 };
+static int asn_validate_Enum1(const asn_TYPE_descriptor_t *td,
+                       const void *sptr,
+                       asn_app_constraint_failed_f *ctfailcb,
+                       void* app_key) {
+    if(! sptr) { return -1; }
+    e_Enum1 value = *(e_Enum1*)sptr;
+    switch(value) {
+    case Enum1_one:
+    case Enum1_two:
+        return 0;
+    }
+    return -1;
+}
 static const unsigned int asn_MAP_Enum1_enum2value_1[] = {
 	0,	/* one(0) */
 	1	/* two(1) */
@@ -3217,7 +3230,8 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 };
 static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (8 << 2)),
-	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+	(ASN_TAGenerated asn_constant.h
+G_CLASS_UNIVERSAL | (16 << 2))
 };
 static const asn_TYPE_tag2member_t asn_MAP_EXTERNAL_tag2el_1[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, 0, 0 }, /* indirect-reference */
