@@ -420,7 +420,7 @@ extern asn_TYPE_descriptor_t asn_DEF_value __attribute__((weak, alias("asn_DEF_v
 #else
 static asn_TYPE_descriptor_t asn_DEF_value_3;
 asn_TYPE_descriptor_t asn_DEF_value;
-__attribute__((constructor)) static void asn_DEF_value_alias_init(void) {
+__attribute__((constructor)) static void asn_DEF_value_3_alias_init(void) {
 	asn_DEF_value = asn_DEF_value_3;
 }
 #endif
@@ -496,7 +496,7 @@ extern asn_TYPE_descriptor_t asn_DEF_value __attribute__((weak, alias("asn_DEF_v
 #else
 static asn_TYPE_descriptor_t asn_DEF_value_6;
 asn_TYPE_descriptor_t asn_DEF_value;
-__attribute__((constructor)) static void asn_DEF_value_alias_init(void) {
+__attribute__((constructor)) static void asn_DEF_value_6_alias_init(void) {
 	asn_DEF_value = asn_DEF_value_6;
 }
 #endif
@@ -593,7 +593,7 @@ extern asn_TYPE_descriptor_t asn_DEF_value __attribute__((weak, alias("asn_DEF_v
 #else
 static asn_TYPE_descriptor_t asn_DEF_value_9;
 asn_TYPE_descriptor_t asn_DEF_value;
-__attribute__((constructor)) static void asn_DEF_value_alias_init(void) {
+__attribute__((constructor)) static void asn_DEF_value_9_alias_init(void) {
 	asn_DEF_value = asn_DEF_value_9;
 }
 #endif
@@ -1355,7 +1355,7 @@ extern asn_TYPE_descriptor_t asn_DEF_encoding __attribute__((weak, alias("asn_DE
 #else
 static asn_TYPE_descriptor_t asn_DEF_encoding_5;
 asn_TYPE_descriptor_t asn_DEF_encoding;
-__attribute__((constructor)) static void asn_DEF_encoding_alias_init(void) {
+__attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 	asn_DEF_encoding = asn_DEF_encoding_5;
 }
 #endif
