@@ -1,22 +1,3 @@
-WARNING: Parameterized type max-items expected for max-items at line 41 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 51 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 52 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
-WARNING: Parameterized type PACKET expected for PACKET at line 53 in 155-parameterization-more-than-two-level-OK.asn1
 
 /*** <<< INCLUDES [PacketId] >>> ***/
 
@@ -1351,8 +1332,7 @@ static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (8 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static const asn_TYPE_tag2mGenerated asn_constant.h
-ember_t asn_MAP_EXTERNAL_tag2el_1[] = {
+static const asn_TYPE_tag2member_t asn_MAP_EXTERNAL_tag2el_1[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, 0, 0 }, /* indirect-reference */
     { (ASN_TAG_CLASS_UNIVERSAL | (6 << 2)), 0, 0, 0 }, /* direct-reference */
     { (ASN_TAG_CLASS_UNIVERSAL | (7 << 2)), 2, 0, 0 }, /* data-value-descriptor */
