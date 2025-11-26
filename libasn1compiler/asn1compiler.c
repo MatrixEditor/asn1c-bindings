@@ -35,6 +35,28 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_
 	arg->asn = asn;
 
 	/*
+	 * If -flist-deps is specified, list dependencies and exit
+	 */
+	if(flags & A1C_LIST_DEPS) {
+		if(flags & (A1C_PDU_ALL | A1C_PDU_AUTO | A1C_PDU_TYPE)) {
+			asn1c_mark_pdu_dependencies(arg);
+			/* List all marked dependencies */
+			TQ_FOR(mod, &(asn->modules), mod_next) {
+				TQ_FOR(arg->expr, &(mod->members), next) {
+					if(arg->expr->_mark & TM_PDU_DEPENDENCY) {
+						printf("%s\n", arg->expr->Identifier);
+					}
+				}
+			}
+			return 0;
+		} else {
+			/* -flist-deps requires -pdu option */
+			FATAL("-flist-deps requires -pdu={all|auto|Type} option");
+			return -1;
+		}
+	}
+
+	/*
 	 * If -fgen-only-pdu-deps is specified, mark all PDU dependencies before compilation
 	 */
 	if(flags & A1C_GEN_ONLY_PDU_DEPS) {

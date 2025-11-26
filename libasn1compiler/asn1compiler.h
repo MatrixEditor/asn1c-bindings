@@ -133,6 +133,11 @@ enum asn1c_flags {
 	 * Generate code only for PDU dependencies
 	 */
 	A1C_GEN_ONLY_PDU_DEPS           = 0x200000000,
+	/*
+	 * -flist-deps
+	 * List PDU dependencies without generating code
+	 */
+	A1C_LIST_DEPS                   = 0x400000000,
 };
 
 /*
