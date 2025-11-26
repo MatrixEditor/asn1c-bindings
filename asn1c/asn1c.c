@@ -145,6 +145,8 @@ main(int ac, char **av) {
                 asn1_compiler_flags &= ~A1C_LINK_SKELETONS;
             } else if(strcmp(optarg, "link-skeletons") == 0) {
                 asn1_compiler_flags |= A1C_LINK_SKELETONS;
+            } else if(strcmp(optarg, "gen-only-pdu-deps") == 0) {
+                asn1_compiler_flags |= A1C_GEN_ONLY_PDU_DEPS;
             } else if(strncmp(optarg, "prefix=", 7) == 0) {
                 char *prefix = optarg + 7;
                 asn1c_prefix_set(prefix);
@@ -591,6 +593,7 @@ usage(const char *av0) {
 "  -fno-include-deps     Do not generate the courtesy #includes for dependencies\n"
 "  -funnamed-unions      Enable unnamed unions in structures\n"
 "  -fwide-types          Use INTEGER_t instead of \"long\" by default, etc.\n"
+"  -fgen-only-pdu-deps   Generate code only for types that are dependencies of -pdu types\n"
 "  -fprefix=<prefix>     Add the specified prefix to generated types\n"
 "\n"
 
