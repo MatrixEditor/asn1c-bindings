@@ -369,6 +369,12 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
 		/* Use _anonymous_type field to indicate it's called from
 		 * asn1c_lang_C_type_SEx_OF() */
 		if (expr->_anonymous_type) {
+			if (arg->embed > 2) {
+				/* For deeply nested SEQUENCE OF, just use the type name */
+				OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
+					c_name(arg).base_name);
+				return asn1c_lang_C_type_SEQUENCE_def(arg, ioc_tao.ioct ? &ioc_tao : 0);
+			}
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
@@ -411,7 +417,7 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
 
 	PCTX_DEF;
 
-	if (arg->embed && expr->_anonymous_type) {
+	if (arg->embed && expr->_anonymous_type && arg->embed <= 2) {
 		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"",
 			c_name(arg).base_name);
 
@@ -625,7 +631,7 @@ asn1c_lang_C_type_SET(arg_t *arg) {
 	REDIR(saved_target);
 
 	if(arg->embed) {
-		if (expr->_anonymous_type) {
+		if (expr->_anonymous_type && arg->embed == 1) {
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
@@ -664,7 +670,7 @@ asn1c_lang_C_type_SET(arg_t *arg) {
 
 	PCTX_DEF;
 
-	if (arg->embed && expr->_anonymous_type) {
+	if (arg->embed && expr->_anonymous_type && arg->embed == 1) {
 		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"",
 			c_name(arg).base_name);
 
@@ -866,7 +872,7 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 	DEPENDENCIES;
 
 	if(arg->embed) {
-		if (expr->_anonymous_type) {
+		if (expr->_anonymous_type && arg->embed == 1) {
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
@@ -887,10 +893,11 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 	   || (memb->expr_type == ASN_BASIC_ENUMERATED && expr_elements_count(arg, memb))
 	   || (memb_ioc.ioct && is_open_type(arg, memb, &memb_ioc))
 	   ) {
-		arg_t tmp = *arg;
+		arg_t tmp;
 		enum asn1p_expr_marker_e flags = memb->marker.flags;
 
 		arg->embed++;
+		tmp = *arg;
 		tmp.expr = memb;
 		memb->marker.flags &= ~EM_INDIRECT;
 		memb->_anonymous_type = 1;
@@ -923,7 +930,7 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 
 	PCTX_DEF;
 
-	if (arg->embed && expr->_anonymous_type) {
+	if (arg->embed && expr->_anonymous_type && arg->embed == 1) {
 		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"", c_name(arg).base_name);
 		REDIR(saved_target);
 		OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"", c_name(arg).base_name);
@@ -1055,7 +1062,7 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 	REDIR(saved_target);
 
 	if(arg->embed) {
-		if (expr->_anonymous_type) {
+		if (expr->_anonymous_type && arg->embed == 1) {
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
@@ -1082,7 +1089,7 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 
 	PCTX_DEF;
 
-	if (arg->embed && expr->_anonymous_type) {
+	if (arg->embed && expr->_anonymous_type && arg->embed == 1) {
 		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"",
 			c_name(arg).base_name);
 
