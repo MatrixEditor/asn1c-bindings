@@ -30,14 +30,14 @@
 
 % Courier 10 Pitch
 %\def\courierFont{Courier10 BT WGL4}
-\def\courierFont{Menlo}
-%\def\courierFont{Consolas}
+\def\courierFont{Courier10 BT WGL4}
 %\newfontfamily\courierFont[Scale=1]{Courier New}
 %\newcommand{\courierFont}{\fontspec{Courier New}\fontsize{10pt}{12pt}\selectfont}
+%\def\courierFont{Consolas}
 %\def\courierFont{Courier New}[Scale=1]
-\setmonofont[Scale=0.95]{\courierFont}
+\setmonofont[Scale=1.05]{\courierFont}
 %\setmathfont[Scale=1.05]{Cambria Math}
-\setmathfont[Scale=1]{Monaco}
+\setmathfont[Scale=1.05]{Cambria}
 
 \makeatletter
 
@@ -115,8 +115,7 @@
 \title{Using the Open Source ASN.1 Compiler\\
 \vspace*{0.4cm}
 \Large Documentation for asn1c version \asnver{}}
-\author{Lev Walkin <\href{mailto:vlm@lionet.info?Subject=asn1c}
-{vlm@lionet.info}>\\ 
+\author{Lev Walkin <\href{mailto:vlm@lionet.info?Subject=asn1c}{vlm@lionet.info}>, 
 Mouse <mouse07410@noreply.GitHub.com>}
 
 \pagestyle{fancy}
