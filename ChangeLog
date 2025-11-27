@@ -1,7 +1,8 @@
-1.0.0:
+1.2.0:
 	FEATURES:
 	* Added support for OPEN TYPE in IOC, now V2X and C2X should work.
 	* Added support for JER encoding and decoding.
+	* Added ability to generate only codecs relevant to selected PDU(s)
 	
 	NOTABLE:
 	* OCTET STRING in XER now uses Base64 encoding, CXER-compliant.

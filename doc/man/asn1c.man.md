@@ -11,7 +11,7 @@ asn1c -- the ASN.1 Compiler
 # SYNOPSIS
 
 asn1c [**-E** [**-F**] | **-P** | **-R**] \
-      [**-S***dir*] [**-S***dir*] [**-X**] \
+      [**-S** *dir*] [**-D** *dir*] [**-X**] \
       [**-W***debug-*...] [**-f***option*] [**-gen-***option*] 
       [**-pdu**={**all**|**auto**|*Type*}] \
       [**-print-***option*] \
