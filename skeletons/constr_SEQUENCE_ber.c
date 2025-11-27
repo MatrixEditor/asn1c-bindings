@@ -760,7 +760,7 @@ SEQUENCE_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
 
         if(computed_size < (size_t)tmperval.encoded) {
 	        /* This should never happen if estimation and encoding are consistent */
-	        ASN_DEBUG("Size mismatch: computed_size=%u < tmperval.encoded=%zd for element %s",
+	        ASN_DEBUG("Size mismatch: computed_size=%zu < tmperval.encoded=%zd for element %s",
 	                  computed_size, tmperval.encoded, elm->name);
 	        ASN__ENCODE_FAILED;
         }
