@@ -1,4 +1,6 @@
 % asn1c(1) ASN.1 Compiler
+% Mouse <mouse07410@noreply.GitHub.com>
+% 2025-11-27
 % Lev Walkin <vlm@lionet.info>
 % 2017-09-01
 
@@ -9,7 +11,7 @@ asn1c -- the ASN.1 Compiler
 # SYNOPSIS
 
 asn1c [**-E** [**-F**] | **-P** | **-R**] \
-      [**-S***dir*] [**-X**] \
+      [**-S***dir*] [**-S***dir*] [**-X**] \
       [**-W***debug-*...] [**-f***option*] [**-gen-***option*] 
       [**-pdu**={**all**|**auto**|*Type*}] \
       [**-print-***option*] \
@@ -26,7 +28,7 @@ and other encoding rules.
 ## Stage Selection Options
 
 -E
-:   Run the parsing stage only. Print the reconstructed ASN.1 text.
+:   Run the ASN.1 parsing stage only. Print the reconstructed ASN.1 tre (text).
 
 -F
 :   Used together with **-E**,
@@ -44,6 +46,9 @@ and other encoding rules.
 
 -S *directory*
 :   Use the specified directory with ASN.1 skeleton files.
+
+-D *directory*
+:	Destination directory for generated files (default current dir)
 
 -X
 :   Generate an XML DTD schema for the specified ASN.1 files.
@@ -104,6 +109,9 @@ and other encoding rules.
 -fno-include-deps
 :   Do not generate courtesy #include lines for non-critical type dependencies.
     Helps prevent namespace collisions.
+    
+-fprefix=*prefix*
+:	Add the specified prefix to generated types
 
 -funnamed-unions
 :   Enable unnamed unions in the definitions of target language's structures.
@@ -113,6 +121,12 @@ and other encoding rules.
     by default, instead of using the native machine's data types (long, double).
 
 ## Codecs Generation Options
+
+-fgen-only-pdu-deps
+:   Generate code only for types that are dependencies of -pdu types
+
+-flist-deps
+:	List PDU dependencies (requires -pdu option, no code generated)
 
 -no-gen-BER
 :   Do not generate the Basic Encoding Rules (BER, X.690) support code
@@ -138,6 +152,9 @@ and other encoding rules.
 -no-gen-example
 :   Do not generate the ASN.1 format converter example
 
+-gen-autotools
+:	Generate example top-level configure.ac and Makefile.am
+
 -pdu={all|auto|*Type*}
 :   Create a PDU table for specified types, or discover Protocol Data Units
     automatically. In case of **-pdu=all**,
@@ -149,6 +166,9 @@ and other encoding rules.
     The last form may be specified multiple times to add any number of PDUs.
 
 ## Output Options
+
+-print-class-matrix
+:	Print out the collected object class matrix (debug)
 
 -print-constraints
 :   When **-EF** options are also specified,
@@ -181,6 +201,8 @@ BER            der_encode()       BER           ber_decode()
 DER            der_encode()       DER, BER      ber_decode()
 
 CER            _not supported_    CER, BER      ber_decode()
+
+JER			   jer_encode()	      JER           jer_decode_
 
 BASIC-OER      oer_encode()       *-OER         oer_decode()
 

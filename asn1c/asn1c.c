@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.
+ * Copyright (c) 2022-2025 Mouse <mouse07410@hotmail.com> and contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +32,8 @@
 #include "asn1_common.h"
 
 #undef COPYRIGHT
-#define COPYRIGHT "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n"
+#define COPYRIGHT "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n\
+Copyright (c) 2022-2025 Mouse <mouse07410@noreply.github.com> and contributors.\n"
 
 #include <asn1parser.h>   /* Parse the ASN.1 file and build a tree */
 #include <asn1fix.h>      /* Fix the ASN.1 tree */
