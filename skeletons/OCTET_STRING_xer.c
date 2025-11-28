@@ -399,7 +399,7 @@ static ssize_t BIT_STRING__convert_hexadecimal(void *sptr, const void *chunk_buf
         if(have_more) {
             /*
              * Partial specification is fine,
-             * because no more more PXER_TEXT data is available.
+             * because no more PXER_TEXT data is available.
              */
             *buf++ = clv << 4;
             chunk_stop = p;
