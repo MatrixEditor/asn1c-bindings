@@ -246,8 +246,57 @@ INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
 
     if(ct && ct->lower_bound) {
         ASN_DEBUG("Adjust lower bound to %"ASN_PRIdMAX"", ct->lower_bound);
-        /* TODO: adjust lower bound */
-        ASN__ENCODE_FAILED;
+        /*
+         * Encode semi-constrained integer by subtracting lower bound.
+         * Per X.691, the value is encoded as (value - lower_bound),
+         * which is always non-negative.
+         */
+        INTEGER_t adjusted_int;
+        memset(&adjusted_int, 0, sizeof(adjusted_int));
+
+        if(specs && specs->field_unsigned) {
+            if(value.u < (uintmax_t)ct->lower_bound) {
+                ASN__ENCODE_FAILED;
+            }
+            value.u -= (uintmax_t)ct->lower_bound;
+            if(asn_umax2INTEGER(&adjusted_int, value.u)) {
+                ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
+                ASN__ENCODE_FAILED;
+            }
+        } else {
+            if(value.s < ct->lower_bound) {
+                ASN__ENCODE_FAILED;
+            }
+            value.s -= ct->lower_bound;
+            if(asn_imax2INTEGER(&adjusted_int, value.s)) {
+                ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
+                ASN__ENCODE_FAILED;
+            }
+        }
+
+        /* Encode the adjusted value using unconstrained encoding */
+        buf = adjusted_int.buf;
+        end = adjusted_int.buf + adjusted_int.size;
+        while(buf < end) {
+            int need_eom = 0;
+            ssize_t mayEncode = uper_put_length(po, end - buf, &need_eom);
+            if(mayEncode < 0) {
+                ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
+                ASN__ENCODE_FAILED;
+            }
+            if(per_put_many_bits(po, buf, 8 * mayEncode)) {
+                ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
+                ASN__ENCODE_FAILED;
+            }
+            buf += mayEncode;
+            if(need_eom && uper_put_length(po, 0, 0)) {
+                ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
+                ASN__ENCODE_FAILED;
+            }
+        }
+
+        ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
+        ASN__ENCODED_OK(er);
     }
 
     for(buf = st->buf, end = st->buf + st->size; buf < end;) {

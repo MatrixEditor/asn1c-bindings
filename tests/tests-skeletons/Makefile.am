@@ -22,9 +22,11 @@ check_PROGRAMS =                \
     check-APER-OCTET_STRING     \
     check-APER-INTEGER		\
     check-APER-INTEGER-constraint \
+    check-APER-INTEGER-semiconstrained \
     check-UPER-support          \
     check-UPER-UniversalString  \
-    check-UPER-INTEGER
+    check-UPER-INTEGER          \
+    check-UPER-INTEGER-semiconstrained
 
 if EXPLICIT_M32
 check_PROGRAMS +=                   \
@@ -48,9 +50,11 @@ check_PROGRAMS +=                   \
     check-32-APER-support           \
     check-32-APER-OCTET_STRING      \
     check-32-APER-INTEGER           \
+    check-32-APER-INTEGER-semiconstrained \
     check-32-UPER-support           \
     check-32-UPER-UniversalString   \
-    check-32-UPER-INTEGER
+    check-32-UPER-INTEGER           \
+    check-32-UPER-INTEGER-semiconstrained
 
 check_32_ber_tlv_tag_CFLAGS=$(CFLAGS_M32)
 check_32_ber_tlv_tag_LDADD=$(LDADD_32)
@@ -112,6 +116,9 @@ check_32_APER_OCTET_STRING_SOURCES=check-APER-OCTET_STRING.c
 check_32_APER_INTEGER_CFLAGS=$(CFLAGS_M32)
 check_32_APER_INTEGER_LDADD=$(LDADD_32)
 check_32_APER_INTEGER_SOURCES=check-APER-INTEGER.c
+check_32_APER_INTEGER_semiconstrained_CFLAGS=$(CFLAGS_M32)
+check_32_APER_INTEGER_semiconstrained_LDADD=$(LDADD_32)
+check_32_APER_INTEGER_semiconstrained_SOURCES=check-APER-INTEGER-semiconstrained.c
 check_32_UPER_support_CFLAGS=$(CFLAGS_M32)
 check_32_UPER_support_LDADD=$(LDADD_32)
 check_32_UPER_support_SOURCES=check-UPER-support.c
@@ -121,6 +128,9 @@ check_32_UPER_UniversalString_SOURCES=check-UPER-UniversalString.c
 check_32_UPER_INTEGER_CFLAGS=$(CFLAGS_M32)
 check_32_UPER_INTEGER_LDADD=$(LDADD_32)
 check_32_UPER_INTEGER_SOURCES=check-UPER-INTEGER.c
+check_32_UPER_INTEGER_semiconstrained_CFLAGS=$(CFLAGS_M32)
+check_32_UPER_INTEGER_semiconstrained_LDADD=$(LDADD_32)
+check_32_UPER_INTEGER_semiconstrained_SOURCES=check-UPER-INTEGER-semiconstrained.c
 
 
 LDADD_32 = -lm $(top_builddir)/skeletons/libasn1cskeletons_c89_32.la
