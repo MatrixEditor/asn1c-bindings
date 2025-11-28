@@ -446,12 +446,66 @@ BIT_STRING__is_binary(const void *chunk_buf, size_t chunk_size) {
 
 /*
  * Auto-detect and convert from either binary or hexadecimal format for BIT STRING.
- * Detects the format by examining if content contains only 0s and 1s (binary)
- * or also contains hex digits 2-9, A-F (hexadecimal).
+ * Supports explicit prefixes per X.693:
+ *   - B'...' or b'...' for binary format
+ *   - H'...' or h'...' for hexadecimal format
+ * Without explicit prefixes, defaults to binary unless hexadecimal digits (2-9, A-F)
+ * are found in the string.
  */
 static ssize_t
 BIT_STRING__convert_binary_or_hex(void *sptr, const void *chunk_buf,
                                   size_t chunk_size, int have_more) {
+    const unsigned char *buf_start = (const unsigned char *)chunk_buf;
+    const unsigned char *p = buf_start;
+    const unsigned char *pend = p + chunk_size;
+    int explicit_binary = 0;
+    int explicit_hex = 0;
+
+    /* Skip leading whitespace */
+    while(p < pend && (*p == 0x09 || *p == 0x0a || *p == 0x0c ||
+                       *p == 0x0d || *p == 0x20)) {
+        p++;
+    }
+
+    /* Check for explicit B or H prefix */
+    if(p < pend) {
+        if((*p == 'B' || *p == 'b') && (p + 1) < pend && p[1] == '\'') {
+            explicit_binary = 1;
+            p += 2;  /* Skip B' */
+        } else if((*p == 'H' || *p == 'h') && (p + 1) < pend && p[1] == '\'') {
+            explicit_hex = 1;
+            p += 2;  /* Skip H' */
+        }
+    }
+
+    if(explicit_binary || explicit_hex) {
+        /* Find the closing quote and calculate actual content size */
+        const unsigned char *content_start = p;
+        const unsigned char *content_end = p;
+        while(content_end < pend && *content_end != '\'') {
+            content_end++;
+        }
+        size_t content_size = content_end - content_start;
+        ssize_t result;
+
+        if(explicit_binary) {
+            result = OCTET_STRING__convert_binary(sptr, content_start, content_size, have_more);
+        } else {
+            result = BIT_STRING__convert_hexadecimal(sptr, content_start, content_size, have_more);
+        }
+
+        if(result < 0) return result;
+
+        /* Return total consumed from original buffer including prefix and closing quote */
+        size_t total_consumed = (content_end - buf_start);
+        if(content_end < pend && *content_end == '\'') {
+            total_consumed++;  /* Include closing quote */
+        }
+        return total_consumed;
+    }
+
+    /* No explicit prefix - auto-detect based on content */
+    /* Default to binary unless hex digits (2-9, A-F) are found */
     if(BIT_STRING__is_binary(chunk_buf, chunk_size)) {
         return OCTET_STRING__convert_binary(sptr, chunk_buf, chunk_size, have_more);
     } else {
