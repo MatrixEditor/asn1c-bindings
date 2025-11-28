@@ -20,6 +20,14 @@ static int FailOut(const void *data, size_t size, void *op_key) {
     return 0;
 }
 
+static void normalize(asn_per_outp_t *po) {
+    if(po->nboff >= 8) {
+        po->buffer += (po->nboff >> 3);
+        po->nbits  -= (po->nboff & ~0x07);
+        po->nboff  &= 0x07;
+    }
+}
+
 static void
 test_semiconstrained_signed_encode_decode(int lineno, long value, long lbound) {
     INTEGER_t st;
@@ -65,14 +73,17 @@ test_semiconstrained_signed_encode_decode(int lineno, long value, long lbound) {
         assert(!"Encoding should succeed");
     }
 
+    /* Normalize the output buffer */
+    normalize(&po);
+
     /* Calculate the encoded size */
-    size_t encoded_bytes = (po.buffer - po.tmpspace) + ((po.nboff + 7) / 8);
+    size_t encoded_bytes = po.buffer - po.tmpspace;
     printf("  Encoded %zu bytes\n", encoded_bytes);
 
     /* Decode the value back */
     pd.buffer = po.tmpspace;
     pd.nboff = 0;
-    pd.nbits = 8 * encoded_bytes;
+    pd.nbits = 8 * encoded_bytes + po.nboff;
     pd.moved = 0;
 
     dec_rval = INTEGER_decode_aper(0, &asn_DEF_INTEGER, &cts, 
@@ -142,14 +153,17 @@ test_semiconstrained_unsigned_encode_decode(int lineno, unsigned long value, lon
         assert(!"Encoding should succeed");
     }
 
+    /* Normalize the output buffer */
+    normalize(&po);
+
     /* Calculate the encoded size */
-    size_t encoded_bytes = (po.buffer - po.tmpspace) + ((po.nboff + 7) / 8);
+    size_t encoded_bytes = po.buffer - po.tmpspace;
     printf("  Encoded %zu bytes\n", encoded_bytes);
 
     /* Decode the value back */
     pd.buffer = po.tmpspace;
     pd.nboff = 0;
-    pd.nbits = 8 * encoded_bytes;
+    pd.nbits = 8 * encoded_bytes + po.nboff;
     pd.moved = 0;
 
     dec_rval = INTEGER_decode_aper(0, &asn_DEF_INTEGER, &cts, 

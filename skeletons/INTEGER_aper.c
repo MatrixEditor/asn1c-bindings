@@ -324,6 +324,9 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
             uintmax_t uval;
             if(asn_INTEGER2umax(st, &uval))
                 ASN__ENCODE_FAILED;
+            /* Check that value is >= lower_bound to avoid underflow */
+            if(uval < (uintmax_t)ct->lower_bound)
+                ASN__ENCODE_FAILED;
             uval -= (uintmax_t)ct->lower_bound;
             if(asn_umax2INTEGER(&adjusted_int, uval)) {
                 ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
@@ -332,6 +335,9 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
         } else {
             intmax_t sval;
             if(asn_INTEGER2imax(st, &sval))
+                ASN__ENCODE_FAILED;
+            /* Check that value is >= lower_bound */
+            if(sval < ct->lower_bound)
                 ASN__ENCODE_FAILED;
             sval -= ct->lower_bound;
             if(asn_imax2INTEGER(&adjusted_int, sval)) {
