@@ -9,7 +9,7 @@
 #include <errno.h>
 
 /*
- * Decode the chunk of XML text encoding INTEGER.
+ * Decode the chunk of XML text encoding BOOLEAN.
  */
 static enum xer_pbd_rval
 BOOLEAN__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
@@ -20,6 +20,7 @@ BOOLEAN__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
     (void)td;
 
     if(chunk_size && p[0] == 0x3c /* '<' */) {
+        /* Element form: <true/> or <false/> */
         switch(xer_check_tag(chunk_buf, chunk_size, "false")) {
         case XCT_BOTH:
             /* "<false/>" */
@@ -34,6 +35,14 @@ BOOLEAN__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
         default:
             return XPBD_BROKEN_ENCODING;
         }
+        return XPBD_BODY_CONSUMED;
+    } else if(chunk_size >= 4 && strncmp(p, "true", 4) == 0) {
+        /* Text content form: true */
+        *st = 1;
+        return XPBD_BODY_CONSUMED;
+    } else if(chunk_size >= 5 && strncmp(p, "false", 5) == 0) {
+        /* Text content form: false */
+        *st = 0;
         return XPBD_BODY_CONSUMED;
     } else {
         return XPBD_BROKEN_ENCODING;
