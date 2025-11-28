@@ -343,6 +343,123 @@ static ssize_t OCTET_STRING__convert_binary(void *sptr, const void *chunk_buf, s
 }
 
 /*
+ * Convert from hexadecimal format to BIT STRING: "0455AA..."
+ * This is similar to OCTET_STRING__convert_hexadecimal but sets bits_unused to 0.
+ */
+static ssize_t BIT_STRING__convert_hexadecimal(void *sptr, const void *chunk_buf, size_t chunk_size, int have_more) {
+    BIT_STRING_t *st = (BIT_STRING_t *)sptr;
+    const char *chunk_stop = (const char *)chunk_buf;
+    const char *p = chunk_stop;
+    const char *pend = p + chunk_size;
+    unsigned int clv = 0;
+    int half = 0;	/* Half bit */
+    uint8_t *buf;
+
+    /* Reallocate buffer according to high cap estimation */
+    size_t new_size = st->size + (chunk_size + 1) / 2;
+    void *nptr = REALLOC(st->buf, new_size + 1);
+    if(!nptr) return -1;
+    st->buf = (uint8_t *)nptr;
+    buf = st->buf + st->size;
+
+    for(; p < pend; p++) {
+        int ch = *(const unsigned char *)p;
+        switch(ch) {
+        case 0x09: case 0x0a: case 0x0c: case 0x0d:
+        case 0x20:
+            /* Ignore whitespace */
+            continue;
+        case 0x30: case 0x31: case 0x32: case 0x33: case 0x34:  /*01234*/
+        case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:  /*56789*/
+            clv = (clv << 4) + (ch - 0x30);
+            break;
+        case 0x41: case 0x42: case 0x43:  /* ABC */
+        case 0x44: case 0x45: case 0x46:  /* DEF */
+            clv = (clv << 4) + (ch - 0x41 + 10);
+            break;
+        case 0x61: case 0x62: case 0x63:  /* abc */
+        case 0x64: case 0x65: case 0x66:  /* def */
+            clv = (clv << 4) + (ch - 0x61 + 10);
+            break;
+        default:
+            *buf = 0;  /* JIC */
+            return -1;
+        }
+        if(half++) {
+            half = 0;
+            *buf++ = clv;
+            chunk_stop = p + 1;
+        }
+    }
+
+    /*
+     * Check partial decoding.
+     */
+    if(half) {
+        if(have_more) {
+            /*
+             * Partial specification is fine,
+             * because no more more PXER_TEXT data is available.
+             */
+            *buf++ = clv << 4;
+            chunk_stop = p;
+        }
+    } else {
+        chunk_stop = p;
+    }
+
+    st->size = buf - st->buf;  /* Adjust the buffer size */
+    st->bits_unused = 0;  /* For BIT STRING, hex means all bits are used */
+    assert(st->size <= new_size);
+    st->buf[st->size] = 0;  /* Courtesy termination */
+
+    return (chunk_stop - (const char *)chunk_buf);  /* Converted size */
+}
+
+/*
+ * Check if the content looks like binary format (only 0s, 1s, and whitespace).
+ * Returns 1 if content appears to be binary, 0 otherwise.
+ */
+static int
+BIT_STRING__is_binary(const void *chunk_buf, size_t chunk_size) {
+    const unsigned char *p = (const unsigned char *)chunk_buf;
+    const unsigned char *pend = p + chunk_size;
+
+    for (; p < pend; p++) {
+        unsigned char ch = *p;
+        switch(ch) {
+        case 0x09: case 0x0a: case 0x0c: case 0x0d:
+        case 0x20:
+            /* Whitespace is allowed */
+            continue;
+        case 0x30:  /* '0' */
+        case 0x31:  /* '1' */
+            /* Binary digits */
+            continue;
+        default:
+            /* Non-binary character found, not binary format */
+            return 0;
+        }
+    }
+    return 1;  /* Only binary characters found */
+}
+
+/*
+ * Auto-detect and convert from either binary or hexadecimal format for BIT STRING.
+ * Detects the format by examining if content contains only 0s and 1s (binary)
+ * or also contains hex digits 2-9, A-F (hexadecimal).
+ */
+static ssize_t
+BIT_STRING__convert_binary_or_hex(void *sptr, const void *chunk_buf,
+                                  size_t chunk_size, int have_more) {
+    if(BIT_STRING__is_binary(chunk_buf, chunk_size)) {
+        return OCTET_STRING__convert_binary(sptr, chunk_buf, chunk_size, have_more);
+    } else {
+        return BIT_STRING__convert_hexadecimal(sptr, chunk_buf, chunk_size, have_more);
+    }
+}
+
+/*
  * Something like strtod(), but with stricter rules.
  */
 static int
@@ -913,6 +1030,20 @@ OCTET_STRING_decode_xer_binary(const asn_codec_ctx_t *opt_codec_ctx,
     return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
                                     buf_ptr, size, 0,
                                     OCTET_STRING__convert_binary);
+}
+
+/*
+ * Decode BIT STRING with auto-detection of binary or hexadecimal format.
+ * This allows XER input to use either binary (0/1) or hexadecimal format.
+ */
+asn_dec_rval_t
+BIT_STRING_decode_xer_binary_or_hex(const asn_codec_ctx_t *opt_codec_ctx,
+                                    const asn_TYPE_descriptor_t *td, void **sptr,
+                                    const char *opt_mname, const void *buf_ptr,
+                                    size_t size) {
+    return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
+                                    buf_ptr, size, 0,
+                                    BIT_STRING__convert_binary_or_hex);
 }
 
 /*

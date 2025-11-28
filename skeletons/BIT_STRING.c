@@ -33,7 +33,7 @@ asn_TYPE_operation_t asn_OP_BIT_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-    OCTET_STRING_decode_xer_binary,
+    BIT_STRING_decode_xer_binary_or_hex,
     BIT_STRING_encode_xer,
 #else
     0,

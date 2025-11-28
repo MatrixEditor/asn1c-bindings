@@ -44,6 +44,7 @@ xer_type_decoder_f OCTET_STRING_decode_xer_binary;  /* 01010111010 */
 xer_type_decoder_f OCTET_STRING_decode_xer_utf8;    /* ASCII/UTF-8 */
 xer_type_decoder_f OCTET_STRING_decode_xer_base64;  /* Base64 */
 xer_type_decoder_f OCTET_STRING_decode_xer_auto;    /* Auto-detect hex or Base64 */
+xer_type_decoder_f BIT_STRING_decode_xer_binary_or_hex;  /* Auto-detect binary or hex for BIT STRING */
 xer_type_encoder_f OCTET_STRING_encode_xer;
 xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
 xer_type_encoder_f OCTET_STRING_encode_xer_base64;

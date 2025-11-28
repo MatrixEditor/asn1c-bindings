@@ -41,7 +41,7 @@ asn_constr_check_f BIT_STRING_constraint;
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-#define BIT_STRING_decode_xer OCTET_STRING_decode_xer_binary
+#define BIT_STRING_decode_xer BIT_STRING_decode_xer_binary_or_hex
 xer_type_encoder_f BIT_STRING_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
