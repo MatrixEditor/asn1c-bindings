@@ -37,16 +37,21 @@ BOOLEAN__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
         }
         return XPBD_BODY_CONSUMED;
     } else if(chunk_size >= 4 && strncmp(p, "true", 4) == 0) {
-        /* Text content form: true */
-        *st = 1;
-        return XPBD_BODY_CONSUMED;
+        /* Text content form: true (possibly followed by whitespace) */
+        if(chunk_size == 4
+           || xer_whitespace_span(p + 4, chunk_size - 4) == chunk_size - 4) {
+            *st = 1;
+            return XPBD_BODY_CONSUMED;
+        }
     } else if(chunk_size >= 5 && strncmp(p, "false", 5) == 0) {
-        /* Text content form: false */
-        *st = 0;
-        return XPBD_BODY_CONSUMED;
-    } else {
-        return XPBD_BROKEN_ENCODING;
+        /* Text content form: false (possibly followed by whitespace) */
+        if(chunk_size == 5
+           || xer_whitespace_span(p + 5, chunk_size - 5) == chunk_size - 5) {
+            *st = 0;
+            return XPBD_BODY_CONSUMED;
+        }
     }
+    return XPBD_BROKEN_ENCODING;
 }
 
 
