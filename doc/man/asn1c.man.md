@@ -1,8 +1,6 @@
 % asn1c(1) ASN.1 Compiler
-% Mouse <mouse07410@noreply.GitHub.com>
+% Lev Walkin <vlm@lionet.info>, Mouse <mouse07410@noreply.GitHub.com>
 % 2025-11-27
-% Lev Walkin <vlm@lionet.info>
-% 2017-09-01
 
 # NAME
 
