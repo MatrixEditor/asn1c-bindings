@@ -22,6 +22,8 @@ GeneralizedTime_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
 
     (void)constraints;
 
+    if (!sptr) return result_failed;
+
     if(max_length < sizeof("yyyymmddhhmmss") && !*sptr) {
         return result_skipped;
     }
@@ -32,6 +34,7 @@ GeneralizedTime_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
         }
     } else {
         *sptr = OCTET_STRING_new_fromBuf(td, values[rnd], -1);
+        if (!*sptr) return result_failed;
     }
 
     return result_ok;
