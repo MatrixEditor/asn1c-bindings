@@ -208,6 +208,7 @@ ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
  */
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
 /* C11 thread support */
+#include <threads.h>
 extern thread_local int asn1_encoding_depth;
 #elif defined(__GNUC__) || defined(__clang__)
 /* GCC/Clang thread-local extension */
