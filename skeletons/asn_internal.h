@@ -190,15 +190,15 @@ ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
 #endif
 
 /*
- * Decoder recursion depth tracking using ctx->step.
- * Check if recursion depth (stored in ctx->step) exceeds the limit.
- * This prevents stack overflow from circular references.
+* Decoder recursion/stack depth tracking.
+ * Use ASN__STACK_OVERFLOW_CHECK() to detect when the decoding context
+ * has exhausted the allowed stack space and abort decoding to prevent
+ * stack overflow from deep or circular references.
  */
 #define ASN__DECODER_RECURSION_DEPTH_CHECK(ctx) \
     do { \
-        if((ctx) && (ctx)->step >= ASN_STACK_OVERFLOW_LIMIT) { \
-            ASN_DEBUG("Decoding recursion depth limit exceeded"); \
-            return (asn_dec_rval_t){RC_FAIL, 0}; \
+        if(ASN__STACK_OVERFLOW_CHECK((ctx)) != 0) { \
+            ASN_DEBUG("Decoding stack limit reached"); \
         } \
     } while(0)
 
