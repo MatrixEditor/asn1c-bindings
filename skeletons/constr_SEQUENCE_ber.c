@@ -138,10 +138,6 @@ SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
     ASN_DEBUG("Decoding %s as SEQUENCE", td->name);
 
     /*
-     * Check recursion depth to prevent stack overflow from circular references.
-     */
-
-    /*
      * Create the target structure if it is not present already.
      */
     if(st == 0) {
@@ -156,7 +152,10 @@ SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
 
-    /* Check recursion depth using ctx->step */
+	/*
+     * Check recursion depth to prevent stack overflow from circular references,
+     * using ctx->step 
+	 */
     ASN__DECODER_RECURSION_DEPTH_CHECK(ctx);
 
     /*
