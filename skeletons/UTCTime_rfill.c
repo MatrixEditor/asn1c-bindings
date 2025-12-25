@@ -22,6 +22,8 @@ UTCTime_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
 
     (void)constraints;
 
+    if(!sptr) return result_failed;
+  
     if(max_length < sizeof("yymmddhhmmss") && !*sptr) {
         return result_skipped;
     }
@@ -31,8 +33,7 @@ UTCTime_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
             if(!sptr) return result_failed;
         }
     } else {
-        *sptr = OCTET_STRING_new_fromBuf(td, values[rnd], -1);
-        if(!sptr) return result_failed;
+        *sptr = OCTET_STRING_new_fromBuf(td, values[rnd], -1);     
     }
 
     return result_ok;
