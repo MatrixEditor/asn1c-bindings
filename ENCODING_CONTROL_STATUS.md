@@ -41,9 +41,9 @@ The following advanced features require more extensive changes and are planned f
 - Store encoding instructions for later linkage
 
 #### Phase 5: Type Linking  
-- Create `libasn1compiler/asn1c_encoding.c` module
-- Implement `asn1c_apply_encoding_controls()` to link directives to types
-- Apply encoding preferences from ENCODING-CONTROL to matching type definitions
+- `libasn1compiler/asn1c_encoding.c` module and `asn1c_encoding.h` API already added as stub infrastructure
+- `asn1c_apply_encoding_controls()` exists as a stub API; real linking logic is deferred until Phase 4 body parsing is implemented
+- Future Phase 5 work: link ENCODING-CONTROL directives to types and apply encoding preferences to matching type definitions
 
 #### Phase 6: Custom Encoder Generation
 - Generate custom XER encoders based on encoding controls
