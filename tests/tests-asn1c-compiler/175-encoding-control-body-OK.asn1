@@ -1,0 +1,28 @@
+
+-- Test ENCODING-CONTROL with body parsing  
+-- Verifies that encoding directives in the ENCODING-CONTROL body
+-- are parsed and applied to the appropriate types
+-- NOTE: Full body parsing not yet implemented - body is currently
+-- consumed but not parsed into individual encoding directives.
+
+TestEncodingControlBody DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+TestData ::= SEQUENCE {
+    hexField    HexData,
+    base64Field Base64Data,
+    textField   TextField
+}
+
+-- Type references for encoding controls
+HexData    ::= OCTET STRING
+Base64Data ::= OCTET STRING  
+TextField  ::= OCTET STRING
+
+ENCODING-CONTROL XER
+-- Body content: currently recognized but not fully parsed
+-- Future: parse individual encoding directives like:
+--   hexField    OCTET STRING ::= hexadecimal
+--   base64Field OCTET STRING ::= base64
+--   textField   OCTET STRING ::= utf8
+
+END
