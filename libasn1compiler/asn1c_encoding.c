@@ -7,7 +7,10 @@
 
 /*
  * Helper function to get string name for encoding type (for debug messages)
+ * TODO: This function will be used when Phase 5 is fully implemented to
+ * generate debug messages during encoding control application.
  */
+__attribute__((unused))
 static const char *
 encoding_type_name(enum asn1p_encoding_control_type_e type) {
     switch(type) {

@@ -1,7 +1,7 @@
 
--- Test ENCODING-CONTROL with body parsing  
--- Verifies that encoding directives in the ENCODING-CONTROL body
--- are parsed and applied to the appropriate types
+-- Test ENCODING-CONTROL with body content
+-- Verifies that an ENCODING-CONTROL section with body content
+-- is recognized and accepted without errors (directives not yet parsed or applied)
 -- NOTE: Full body parsing not yet implemented - body is currently
 -- consumed but not parsed into individual encoding directives.
 
@@ -15,7 +15,7 @@ TestData ::= SEQUENCE {
 
 -- Type references for encoding controls
 HexData    ::= OCTET STRING
-Base64Data ::= OCTET STRING  
+Base64Data ::= OCTET STRING
 TextField  ::= OCTET STRING
 
 ENCODING-CONTROL XER
