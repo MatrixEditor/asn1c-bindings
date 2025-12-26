@@ -21,4 +21,5 @@ libasn1compiler_la_SOURCES =                \
     asn1c_compat.c asn1c_compat.h           \
     asn1c_ioc.c asn1c_ioc.h                 \
     asn1c_fdeps.c asn1c_fdeps.h             \
+    asn1c_encoding.c asn1c_encoding.h       \
     asn1c_internal.h
