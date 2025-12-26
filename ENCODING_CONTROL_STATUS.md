@@ -1,8 +1,8 @@
 # ENCODING-CONTROL Support Status
 
-## Current Implementation (Phases 1-3)
+## Current Implementation (Phases 1-3 Complete, Phase 5 Infrastructure Added)
 
-The asn1c compiler currently provides basic recognition of ENCODING-CONTROL directives as specified in ASN.1 standards (X.693 Annex G, X.696).
+The asn1c compiler currently provides basic recognition of ENCODING-CONTROL directives as specified in ASN.1 standards (X.693 Annex G, X.696), along with stub infrastructure for future implementation of body parsing and code generation.
 
 ### What Works Now
 
@@ -19,6 +19,11 @@ The asn1c compiler currently provides basic recognition of ENCODING-CONTROL dire
 3. **Error Reporting**: Recognition messages include filename and line number for debugging
 
 4. **Test Coverage**: Tests verify that ENCODING-CONTROL sections are accepted without warnings
+
+5. **Phase 5 Infrastructure**: Stub implementation for encoding control processing
+   - `libasn1compiler/asn1c_encoding.c` - Stub function with implementation notes
+   - `libasn1compiler/asn1c_encoding.h` - API definition
+   - Integrated into build system
 
 ### What's Not Yet Implemented (Phases 4-6)
 
