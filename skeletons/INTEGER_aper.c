@@ -103,8 +103,27 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                     value = (value << 8) | buf;
                     len--;
                 }
-                
-                /* Add lower bound */
+
+                /*
+                 * Before adding the lower bound, ensure that the decoded
+                 * offset is within a range that cannot overflow when
+                 * shifted by ct->lower_bound.
+                 */
+                if(ct->upper_bound < ct->lower_bound) {
+                    ASN__DECODE_FAILED;
+                }
+                if(value < 0) {
+                    /* Offset must not be negative */
+                    ASN__DECODE_FAILED;
+                } else {
+                    uintmax_t max_offset =
+                        (uintmax_t)ct->upper_bound - (uintmax_t)ct->lower_bound;
+                    if((uintmax_t)value > max_offset) {
+                        ASN__DECODE_FAILED;
+                    }
+                }
+
+                /* Add lower bound; safe after the above checks */
                 value += ct->lower_bound;
                 
                 /* Validate the decoded value is within the constraint bounds */
