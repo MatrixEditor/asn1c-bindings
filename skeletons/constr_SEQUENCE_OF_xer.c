@@ -169,7 +169,16 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         if(!memb_ptr) continue;
 
         if(mname) {
-            if(!xcan) ASN__TEXT_INDENT(1, ilevel);
+            if(!xcan) {
+                if(i == 0 || er.encoded == 0) {
+                    /* First member: output newline + indent */
+                    ASN__TEXT_INDENT(1, ilevel);
+                } else {
+                    /* Subsequent members: output only indent (newline comes from previous closing tag) */
+                    int tmp_i;
+                    for(tmp_i = 0; tmp_i < ilevel; tmp_i++) ASN__CALLBACK("    ", 4);
+                }
+            }
             ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
         }
 
@@ -188,7 +197,11 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         }
 
         if(mname) {
-            ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
+            if(!xcan) {
+                ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
+            } else {
+                ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
+            }
         }
     }
 
