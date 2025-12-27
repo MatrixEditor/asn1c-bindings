@@ -333,9 +333,13 @@ CHOICE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
         if(!skip_wrapper) {
             /* Indent before the closing tag in non-canonical mode */
             if(!(flags & XER_F_CANONICAL)) {
+                ASN__TEXT_INDENT(1, ilevel);
+                ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
+                /* Position cursor for parent's closing tag */
                 ASN__TEXT_INDENT(1, ilevel - 1);
+            } else {
+                ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
             }
-            ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
         }
     }
 
