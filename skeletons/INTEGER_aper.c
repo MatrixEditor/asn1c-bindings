@@ -326,7 +326,9 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
             
             /* Use proper APER length determinant encoding */
             ssize_t mayEncode = aper_put_length(po, -1, -1, num_bytes, &need_eom);
-            if (mayEncode < 0 || (size_t)mayEncode != num_bytes)
+            if (mayEncode < 0)
+                ASN__ENCODE_FAILED;
+            if ((size_t)mayEncode != num_bytes)
                 ASN__ENCODE_FAILED;
             
             /* Output the value bytes */
