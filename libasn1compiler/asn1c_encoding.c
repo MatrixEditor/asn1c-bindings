@@ -39,7 +39,11 @@ asn1c_apply_encoding_controls(asn1p_t *asn, asn1p_module_t *mod) {
     
     /* Iterate through module members to find encoding instructions */
     TQ_FOR(instr, &(mod->members), next) {
-        /* Skip if not an encoding instruction (no encoding control set) */
+        /* Skip if not explicitly marked as an encoding instruction */
+        if((instr->_mark & TM_ENCODING_INSTRUCTION) == 0) {
+            continue;
+        }
+        /* Skip if no encoding control is actually set */
         if(instr->encoding_control.encoding_type == EC_NONE) {
             continue;
         }
@@ -78,9 +82,17 @@ asn1c_apply_encoding_controls(asn1p_t *asn, asn1p_module_t *mod) {
                     
                     /* Apply encoding control - deep copy */
                     type_def->encoding_control.encoding_type = instr->encoding_control.encoding_type;
+                    if(type_def->encoding_control.encoding_reference != NULL) {
+                        free(type_def->encoding_control.encoding_reference);
+                        type_def->encoding_control.encoding_reference = NULL;
+                    }
                     if(instr->encoding_control.encoding_reference) {
-                        type_def->encoding_control.encoding_reference = 
+                        type_def->encoding_control.encoding_reference =
                             strdup(instr->encoding_control.encoding_reference);
+                        if(type_def->encoding_control.encoding_reference == NULL) {
+                            fprintf(stderr,
+                                "ERROR: Failed to allocate memory for encoding_reference\n");
+                        }
                     } else {
                         type_def->encoding_control.encoding_reference = NULL;
                     }
