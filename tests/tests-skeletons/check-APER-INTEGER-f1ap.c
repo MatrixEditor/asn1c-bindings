@@ -120,42 +120,42 @@ int main() {
     printf("=== F1AP INTEGER (0..4294967295) APER Encoding Test ===\n\n");
     
     /* Test case 1 from issue: value 32 (0x20) */
-    /* Expected: 01 20 (length=1 byte, value=0x20) */
+    /* Expected: 01 20 (0x01 = length determinant: 1 byte, then value 0x20) */
     uint8_t expected_32[] = {0x01, 0x20};
     check_f1ap_id_encoding(__LINE__, 32, expected_32, sizeof(expected_32));
     
     /* Test case 2 from issue: value 1 (0x01) */
-    /* Expected: 01 01 (length=1 byte, value=0x01) */
+    /* Expected: 01 01 (0x01 = length determinant: 1 byte, then value 0x01) */
     uint8_t expected_1[] = {0x01, 0x01};
     check_f1ap_id_encoding(__LINE__, 1, expected_1, sizeof(expected_1));
     
     /* Additional test cases */
     
-    /* Value 0: Expected 01 00 (length=1, value=0x00) */
+    /* Value 0: Expected 01 00 (0x01 = length determinant: 1 byte, then value 0x00) */
     uint8_t expected_0[] = {0x01, 0x00};
     check_f1ap_id_encoding(__LINE__, 0, expected_0, sizeof(expected_0));
     
-    /* Value 255 (0xFF): Expected 01 FF (length=1, value=0xFF) */
+    /* Value 255 (0xFF): Expected 01 FF (0x01 = length determinant: 1 byte, then value 0xFF) */
     uint8_t expected_255[] = {0x01, 0xFF};
     check_f1ap_id_encoding(__LINE__, 255, expected_255, sizeof(expected_255));
     
-    /* Value 256 (0x0100): Expected 02 01 00 (length=2, value=0x0100) */
+    /* Value 256 (0x0100): Expected 02 01 00 (0x02 = length determinant: 2 bytes, then value 0x0100) */
     uint8_t expected_256[] = {0x02, 0x01, 0x00};
     check_f1ap_id_encoding(__LINE__, 256, expected_256, sizeof(expected_256));
     
-    /* Value 65535 (0xFFFF): Expected 02 FF FF (length=2, value=0xFFFF) */
+    /* Value 65535 (0xFFFF): Expected 02 FF FF (0x02 = length determinant: 2 bytes, then value 0xFFFF) */
     uint8_t expected_65535[] = {0x02, 0xFF, 0xFF};
     check_f1ap_id_encoding(__LINE__, 65535, expected_65535, sizeof(expected_65535));
     
-    /* Value 65536 (0x010000): Expected 03 01 00 00 (length=3, value=0x010000) */
+    /* Value 65536 (0x010000): Expected 03 01 00 00 (0x03 = length determinant: 3 bytes, then value 0x010000) */
     uint8_t expected_65536[] = {0x03, 0x01, 0x00, 0x00};
     check_f1ap_id_encoding(__LINE__, 65536, expected_65536, sizeof(expected_65536));
     
-    /* Value 16777215 (0xFFFFFF): Expected 03 FF FF FF (length=3, value=0xFFFFFF) */
+    /* Value 16777215 (0xFFFFFF): Expected 03 FF FF FF (0x03 = length determinant: 3 bytes, then value 0xFFFFFF) */
     uint8_t expected_16777215[] = {0x03, 0xFF, 0xFF, 0xFF};
     check_f1ap_id_encoding(__LINE__, 16777215, expected_16777215, sizeof(expected_16777215));
     
-    /* Max value 4294967295 (0xFFFFFFFF): Expected 04 FF FF FF FF */
+    /* Max value 4294967295 (0xFFFFFFFF): Expected 04 FF FF FF FF (0x04 = length determinant: 4 bytes, then value 0xFFFFFFFF) */
     uint8_t expected_max[] = {0x04, 0xFF, 0xFF, 0xFF, 0xFF};
     check_f1ap_id_encoding(__LINE__, 4294967295UL, expected_max, sizeof(expected_max));
     
