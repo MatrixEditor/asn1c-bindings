@@ -17,9 +17,9 @@ Base64Data ::= OCTET STRING
 TextField  ::= OCTET STRING
 
 ENCODING-CONTROL XER
-    hexField    OCTET STRING ::= hexadecimal
-    base64Field OCTET STRING ::= base64
-    textField   OCTET STRING ::= utf8
+    HexData    OCTET STRING ::= hexadecimal
+    Base64Data OCTET STRING ::= base64
+    TextField  OCTET STRING ::= utf8
 END
 
 END

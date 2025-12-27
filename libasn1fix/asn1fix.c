@@ -535,6 +535,12 @@ asn1f_check_duplicate(arg_t *arg) {
 
 			if(arg->expr->spec_index != -1)
 				continue;
+			
+			/* Skip encoding instructions - they're not real types */
+			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION)
+				continue;
+			if(tmparg.expr->_mark & TM_ENCODING_INSTRUCTION)
+				continue;
 
 			if(tmparg.expr == arg->expr) break;
 

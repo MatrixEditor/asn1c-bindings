@@ -79,18 +79,14 @@ asn1c_apply_encoding_controls(asn1p_t *asn, asn1p_module_t *mod) {
                     /* Apply encoding control */
                     type_def->encoding_control = instr->encoding_control;
                     
-                    ASN_DEBUG("Applied %s encoding to type %s",
-                              encoding_type_name(instr->encoding_control.encoding_type),
-                              type_def->Identifier);
                     applied++;
                     found = 1;
                     break;
                 } else {
                     fprintf(stderr,
-                        "WARNING: Encoding control for '%s' at %s:%d "
+                        "WARNING: Encoding control for '%s' at line %d "
                         "cannot be applied to non-OCTET STRING type\n",
                         instr->Identifier, 
-                        ASN_FILENAME,
                         instr->_lineno);
                     warnings++;
                     found = 1;
@@ -101,9 +97,8 @@ asn1c_apply_encoding_controls(asn1p_t *asn, asn1p_module_t *mod) {
         
         if(!found) {
             fprintf(stderr,
-                "WARNING: No type definition found for encoding control '%s' at %s:%d\n",
+                "WARNING: No type definition found for encoding control '%s' at line %d\n",
                 instr->Identifier,
-                ASN_FILENAME,
                 instr->_lineno);
             warnings++;
         }

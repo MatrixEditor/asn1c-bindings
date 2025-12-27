@@ -83,6 +83,11 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_
 	 */
 	TQ_FOR(mod, &(asn->modules), mod_next) {
 		TQ_FOR(arg->expr, &(mod->members), next) {
+			/* Skip encoding instructions - they're not real types to compile */
+			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) {
+				continue;
+			}
+			
 			/* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
 			if((flags & A1C_GEN_ONLY_PDU_DEPS) && 
 			   !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {

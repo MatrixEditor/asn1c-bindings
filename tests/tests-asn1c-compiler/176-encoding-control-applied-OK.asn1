@@ -14,8 +14,8 @@ BinaryData ::= OCTET STRING
 TextData   ::= OCTET STRING
 
 ENCODING-CONTROL XER
-    binaryData OCTET STRING ::= hexadecimal
-    textData   OCTET STRING ::= utf8
+    BinaryData OCTET STRING ::= hexadecimal
+    TextData   OCTET STRING ::= utf8
 END
 
 END

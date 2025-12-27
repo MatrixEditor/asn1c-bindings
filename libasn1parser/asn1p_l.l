@@ -224,6 +224,9 @@ WSP	[\t\r\v\f\n ]
 	
 	"::="		return TOK_PPEQ;
 	
+	OCTET		return TOK_OCTET;
+	STRING		return TOK_STRING;
+	
 	[a-z][a-zA-Z0-9]*([-][a-zA-Z0-9]+)*	{
 		asn1p_lval.tv_str = strdup(yytext);
 		return TOK_identifier;
