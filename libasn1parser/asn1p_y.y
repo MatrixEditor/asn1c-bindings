@@ -764,8 +764,18 @@ EncodingInstruction:
 				$5, ASN_FILENAME, yylineno);
 			$$->encoding_control.encoding_type = EC_NONE;
 		}
-		
+
+		if($$->encoding_control.encoding_reference != NULL) {
+			free($$->encoding_control.encoding_reference);
+			$$->encoding_control.encoding_reference = NULL;
+		}
 		$$->encoding_control.encoding_reference = strdup("XER");
+		if($$->encoding_control.encoding_reference == NULL) {
+			fprintf(stderr,
+				"ERROR: Memory allocation failed for encoding_reference at %s:%d\n",
+				ASN_FILENAME, yylineno);
+			YYABORT;
+		}
 		
 		free($5);
 	}
