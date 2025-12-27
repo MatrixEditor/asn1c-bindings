@@ -83,7 +83,7 @@ check_f1ap_id_encoding(int lineno, unsigned long value,
     
     if (memcmp(actual, expected, expected_len) != 0) {
         printf("  ERROR: Bytes don't match\n");
-        assert(!"Encoding mismatch");
+        assert(0 && "Encoding mismatch");
     }
     
     printf("  PASS: Encoding matches expected\n");
