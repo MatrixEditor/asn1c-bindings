@@ -77,35 +77,36 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         ASN_DEBUG("Integer with range %d bits", ct->range_bits);
         if(ct->range_bits >= 0) {
             if (ct->range_bits > 16) {
-                int max_range_bytes = (ct->range_bits >> 3) +
-                                      (((ct->range_bits % 8) > 0) ? 1 : 0);
-                int length = 0, i;
+                /* X.691 clause 11.5.7(d) - Range > 65536 uses length determinant */
+                ssize_t len;
+                int repeat;
                 intmax_t value = 0;
-
-                for (i = 1; ; i++) {
-                    int upper = 1 << i;
-                    if (upper >= max_range_bytes)
-                        break;
+                
+                ASN_DEBUG("Decoding constrained integer with range_bits=%d (>16)", ct->range_bits);
+                
+                /* Get the length using proper APER length determinant */
+                len = aper_get_length(pd, -1, -1, -1, &repeat);
+                if (len < 0) ASN__DECODE_STARVED;
+                if (repeat) {
+                    /* Fragmented encoding not expected for constrained integers */
+                    ASN_DEBUG("Unexpected fragmented encoding for constrained integer");
+                    ASN__DECODE_FAILED;
                 }
-                ASN_DEBUG("Can encode %d (%d bytes) in %d bits", ct->range_bits,
-                          max_range_bytes, i);
-
-                if ((length = per_get_few_bits(pd, i)) < 0)
-                    ASN__DECODE_FAILED;
-
-                /* X.691 #12.2.6 length determinant + lb (1) */
-                length += 1;
-                ASN_DEBUG("Got length %d", length);
-                if (aper_get_align(pd) != 0)
-                    ASN__DECODE_FAILED;
-                while (length--) {
+                
+                ASN_DEBUG("Got length %zd bytes", len);
+                
+                /* Read the value bytes (big-endian) */
+                while (len > 0) {
                     int buf = per_get_few_bits(pd, 8);
                     if (buf < 0)
-                        ASN__DECODE_FAILED;
-                    value += (((intmax_t)buf) << (8 * length));
+                        ASN__DECODE_STARVED;
+                    value = (value << 8) | buf;
+                    len--;
                 }
-
+                
+                /* Add lower bound */
                 value += ct->lower_bound;
+                
                 /* Validate the decoded value is within the constraint bounds */
                 if(specs && specs->field_unsigned) {
                     if((uintmax_t)value > (uintmax_t)ct->upper_bound)
@@ -118,6 +119,7 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                     if(asn_imax2INTEGER(st, value))
                         ASN__DECODE_FAILED;
                 }
+                
                 ASN_DEBUG("Got value %"ASN_PRIdMAX" + low %"ASN_PRIdMAX"",
                           value, (intmax_t)ct->lower_bound);
             } else {
@@ -300,37 +302,39 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
             if(per_put_few_bits(po, 0x0000 | v, 16))
                 ASN__ENCODE_FAILED;
         } else {
+            /* X.691 clause 11.5.7(d) - Range > 65536 requires length determinant */
             /* TODO: extend to >64 bits */
-            int64_t v64 = v;
-            int i, j;
-            int max_range_bytes = (ct->range_bits >> 3) +
-                                  (((ct->range_bits % 8) > 0) ? 1 : 0);
-
-            for (i = 1; ; i++) {
-                int upper = 1 << i;
-                if (upper >= max_range_bytes)
-                    break;
+            uint8_t buf[sizeof(uint64_t)];
+            uint64_t v64 = (uint64_t)v;
+            int need_eom = 0;
+            size_t num_bytes = 0;
+            int i;
+            
+            /* Calculate minimum number of bytes needed to represent v64 */
+            if (v64 == 0) {
+                num_bytes = 1;
+                buf[0] = 0;
+            } else {
+                /* Find the highest non-zero byte */
+                for (i = sizeof(uint64_t) - 1; i >= 0; i--) {
+                    uint8_t byte_val = (v64 >> (i * 8)) & 0xFF;
+                    if (byte_val != 0 || num_bytes > 0) {
+                        buf[num_bytes++] = byte_val;
+                    }
+                }
             }
-
-            for (j = sizeof(int64_t) -1; j != 0; j--) {
-                int64_t val;
-                val = v64 >> (j * 8);
-                if (val != 0)
-                    break;
-            }
-
-            /* Putting length in the minimum number of bits ex: 5 = 3bits */
-            if (per_put_few_bits(po, j, i))
+            
+            /* Use proper APER length determinant encoding */
+            ssize_t mayEncode = aper_put_length(po, -1, -1, num_bytes, &need_eom);
+            if (mayEncode < 0 || (size_t)mayEncode != num_bytes)
                 ASN__ENCODE_FAILED;
-
-            /* Consume the bits to align on octet */
-            if (aper_put_align(po) < 0)
+            
+            /* Output the value bytes */
+            if (per_put_many_bits(po, buf, 8 * num_bytes))
                 ASN__ENCODE_FAILED;
-            /* Put the value */
-            for (i = 0; i <= j; i++) {
-                if(per_put_few_bits(po, (v64 >> (8 * (j - i))) & 0xff, 8))
-                    ASN__ENCODE_FAILED;
-            }
+            
+            if (need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
+                ASN__ENCODE_FAILED;
         }
         ASN__ENCODED_OK(er);
     }
