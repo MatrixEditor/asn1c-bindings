@@ -15,6 +15,7 @@ check_PROGRAMS =                \
     check-XER                   \
     check-XER-base64            \
     check-XER-empty-names       \
+    check-XER-formatting        \
     check-JER                   \
     check-OER-support           \
     check-OER-INTEGER           \
