@@ -181,6 +181,16 @@ test_xer_choice_formatting(void) {
         exit(1);
     }
     
+    /* Check that closing tags appear on the same line as simple content (like INTEGER values) */
+    /* Pattern should be: "42</intValue>" not "42\n        </intValue>" */
+    char *intval_content = strstr(xb.buffer, "42</intValue>");
+    if(!intval_content) {
+        fprintf(stderr, "FAIL: </intValue> not on same line as content '42'!\n");
+        fprintf(stderr, "Expected pattern: '42</intValue>' in output\n");
+        FREEMEM(xb.buffer);
+        exit(1);
+    }
+    
     /* Check that each closing tag is followed by a newline */
     char *intval_close = strstr(xb.buffer, "</intValue>");
     char *choice_close = strstr(xb.buffer, "</myChoice>");
@@ -205,6 +215,16 @@ test_xer_choice_formatting(void) {
         FREEMEM(xb.buffer);
         exit(1);
     }
+    
+    /* Check that there are no extra blank lines after CHOICE member closing tags */
+    /* We expect one newline after each closing tag, not two (which would create a blank line) */
+    if(strstr(xb.buffer, "</intValue>\n\n")) {
+        fprintf(stderr, "FAIL: Found extra blank line after </intValue>!\n");
+        FREEMEM(xb.buffer);
+        exit(1);
+    }
+    
+    /* Note: A blank line before </TestContainer> is expected - that's standard SEQUENCE behavior */
     
     /* Cleanup */
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &container.myChoice.choice.intValue);

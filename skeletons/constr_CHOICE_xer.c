@@ -331,9 +331,9 @@ CHOICE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
         /* Output closing tag (unless it's ASN.1 meta-syntax) */
         if(!skip_wrapper) {
-            /* Indent before the closing tag in non-canonical mode */
+            /* In non-canonical mode, output closing tag immediately after content,
+             * then newline and indent for the parent's closing tag. */
             if(!(flags & XER_F_CANONICAL)) {
-                ASN__TEXT_INDENT(1, ilevel);
                 ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
                 /* Position cursor for parent's closing tag (indent only, no newline) */
                 ASN__TEXT_INDENT(0, ilevel - 1);
