@@ -148,25 +148,25 @@ test_xer_formatting(void) {
     assert(field3_close != NULL);
     
     /* Check that </field1> is followed by \n */
-    if(field1_close[9] != '\n') {
-        fprintf(stderr, "FAIL: </field1> not followed by newline! Next char is: 0x%02x\n", 
-                (unsigned char)field1_close[9]);
+    if(field1_close[strlen("</field1>")] != '\n') {
+        fprintf(stderr, "FAIL: </field1> not followed by newline! Next char is: 0x%02x\n",
+                (unsigned char)field1_close[strlen("</field1>")]);
         FREEMEM(xb.buffer);
         exit(1);
     }
     
     /* Check that </field2> is followed by \n */
-    if(field2_close[9] != '\n') {
-        fprintf(stderr, "FAIL: </field2> not followed by newline! Next char is: 0x%02x\n", 
-                (unsigned char)field2_close[9]);
+    if(field2_close[strlen("</field2>")] != '\n') {
+        fprintf(stderr, "FAIL: </field2> not followed by newline! Next char is: 0x%02x\n",
+                (unsigned char)field2_close[strlen("</field2>")]);
         FREEMEM(xb.buffer);
         exit(1);
     }
     
     /* Check that </field3> is followed by \n */
-    if(field3_close[9] != '\n') {
-        fprintf(stderr, "FAIL: </field3> not followed by newline! Next char is: 0x%02x\n", 
-                (unsigned char)field3_close[9]);
+    if(field3_close[strlen("</field3>")] != '\n') {
+        fprintf(stderr, "FAIL: </field3> not followed by newline! Next char is: 0x%02x\n",
+                (unsigned char)field3_close[strlen("</field3>")]);
         FREEMEM(xb.buffer);
         exit(1);
     }
