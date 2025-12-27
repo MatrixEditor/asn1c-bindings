@@ -214,11 +214,27 @@ WSP	[\t\r\v\f\n ]
 			for(; p >= s; p--) unput(*p);
 			yy_pop_state();
 		}
-	END	unput('D'); unput('N'); unput('E'); yy_pop_state();
-	[^{} \t\r\v\f\n]+
-	[[:alnum:]]+
-	.	/* Eat everything else */
-	"\n"
+	END	{
+		yy_pop_state();
+		return TOK_END;
+	}
+	
+	{WSP}+		/* skip whitespace */
+	"--".*		/* skip single-line comments */
+	
+	"::="		return TOK_PPEQ;
+	
+	[a-z][a-zA-Z0-9]*([-][a-zA-Z0-9]+)*	{
+		asn1p_lval.tv_str = strdup(yytext);
+		return TOK_identifier;
+	}
+	
+	[A-Z][A-Za-z0-9]*([-][A-Za-z0-9]+)*	{
+		asn1p_lval.tv_str = strdup(yytext);
+		return TOK_typereference;
+	}
+	
+	.	/* ignore other characters for error recovery */
 	}
 
 '[0-9A-F \t\r\v\f\n]+'H {

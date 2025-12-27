@@ -4,6 +4,7 @@
 #include "asn1c_save.h"
 #include "asn1c_ioc.h"
 #include "asn1c_naming.h"
+#include "asn1c_encoding.h"
 #include <asn1fix_export.h>
 
 static void default_logger_cb(int, const char *fmt, ...);
@@ -68,6 +69,13 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_
 			FATAL("-fgen-only-pdu-deps requires -pdu={all|auto|Type} option");
 			return -1;
 		}
+	}
+
+	/*
+	 * Apply encoding controls to types before code generation
+	 */
+	TQ_FOR(mod, &(asn->modules), mod_next) {
+		asn1c_apply_encoding_controls(asn, mod);
 	}
 
 	/*

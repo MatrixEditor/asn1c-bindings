@@ -4,13 +4,12 @@
  */
 #include "asn1c_internal.h"
 #include "asn1c_encoding.h"
+#include <asn1fix_export.h>
+#include <asn1_namespace.h>
 
 /*
  * Helper function to get string name for encoding type (for debug messages)
- * TODO: This function will be used when Phase 5 is fully implemented to
- * generate debug messages during encoding control application.
  */
-__attribute__((unused))
 static const char *
 encoding_type_name(enum asn1p_encoding_control_type_e type) {
     switch(type) {
@@ -25,51 +24,102 @@ encoding_type_name(enum asn1p_encoding_control_type_e type) {
 /*
  * Apply encoding controls from ENCODING-CONTROL sections to type definitions.
  * 
- * NOTE: This is currently a stub implementation. Full implementation requires:
- * 
- * 1. Phase 4 (Parse ENCODING-CONTROL body):
- *    - Modify lexer to parse encoding instruction syntax
- *    - Add grammar rules for: fieldName Type ::= encodingFormat
- *    - Store parsed instructions in module structure
- * 
- * 2. Phase 5 (Link to types):
- *    - Iterate through parsed encoding instructions
- *    - Match instruction field names to type identifiers
- *    - Copy encoding_control settings to matching types
- * 
- * 3. Phase 6 (Generate custom encoders):
- *    - In asn1c_C.c, check expr->encoding_control.encoding_type
- *    - Generate custom XER encoder function when != EC_NONE
- *    - Update type descriptor to use custom encoder
- *
- * Example of what Phase 5 would do (when body parsing is implemented):
- *
- *   TQ_FOR(instr, &(mod->members), next) {
- *       if(instr->encoding_control.encoding_type == EC_NONE) continue;
- *       
- *       TQ_FOR(type_def, &(mod->members), next) {
- *           if(type_def->Identifier && instr->Identifier &&
- *              strcmp(type_def->Identifier, instr->Identifier) == 0) {
- *               type_def->encoding_control = instr->encoding_control;
- *               applied++;
- *               break;
- *           }
- *       }
- *   }
+ * This function iterates through module members to find encoding instructions
+ * (identified by having encoding_control.encoding_type != EC_NONE), then matches
+ * them to type definitions by identifier name and copies the encoding settings.
  */
 int
 asn1c_apply_encoding_controls(asn1p_t *asn, asn1p_module_t *mod) {
+    asn1p_expr_t *instr;
+    asn1p_expr_t *type_def;
+    int applied = 0;
+    int warnings = 0;
+    
     if(!asn || !mod) return -1;
     
-    /* TODO: Implement when ENCODING-CONTROL body parsing is available (Phase 4)
-     * 
-     * For now, return 0 to indicate no encoding controls were applied.
-     * When Phase 4 is complete, this function will:
-     * 1. Iterate through parsed encoding instructions in the module
-     * 2. Find corresponding type definitions by identifier
-     * 3. Copy encoding_control settings to the type definitions
-     * 4. Return count of applied controls
-     */
+    /* Iterate through module members to find encoding instructions */
+    TQ_FOR(instr, &(mod->members), next) {
+        /* Skip if not an encoding instruction (no encoding control set) */
+        if(instr->encoding_control.encoding_type == EC_NONE) {
+            continue;
+        }
+        
+        if(!instr->Identifier) {
+            continue;  /* Shouldn't happen, but be safe */
+        }
+        
+        /* Find matching type definition */
+        int found = 0;
+        TQ_FOR(type_def, &(mod->members), next) {
+            /* Skip the instruction itself */
+            if(type_def == instr) continue;
+            
+            /* Skip if no identifier */
+            if(!type_def->Identifier) continue;
+            
+            /* Match by identifier name */
+            if(strcmp(type_def->Identifier, instr->Identifier) == 0) {
+                /* Verify type compatibility */
+                asn1p_expr_type_e target_type = type_def->expr_type;
+                
+                /* Resolve through references if needed */
+                if(target_type == A1TC_REFERENCE && type_def->reference) {
+                    asn1p_expr_t *resolved = WITH_MODULE_NAMESPACE(
+                        type_def->module, expr_ns,
+                        asn1f_find_terminal_type_ex(asn, expr_ns, type_def));
+                    if(resolved) {
+                        target_type = resolved->expr_type;
+                    }
+                }
+                
+                /* Check if encoding control is applicable to this type */
+                if(target_type == ASN_BASIC_OCTET_STRING ||
+                   target_type == A1TC_REFERENCE) {
+                    
+                    /* Apply encoding control */
+                    type_def->encoding_control = instr->encoding_control;
+                    
+                    ASN_DEBUG("Applied %s encoding to type %s",
+                              encoding_type_name(instr->encoding_control.encoding_type),
+                              type_def->Identifier);
+                    applied++;
+                    found = 1;
+                    break;
+                } else {
+                    fprintf(stderr,
+                        "WARNING: Encoding control for '%s' at %s:%d "
+                        "cannot be applied to non-OCTET STRING type\n",
+                        instr->Identifier, 
+                        ASN_FILENAME,
+                        instr->_lineno);
+                    warnings++;
+                    found = 1;
+                    break;
+                }
+            }
+        }
+        
+        if(!found) {
+            fprintf(stderr,
+                "WARNING: No type definition found for encoding control '%s' at %s:%d\n",
+                instr->Identifier,
+                ASN_FILENAME,
+                instr->_lineno);
+            warnings++;
+        }
+    }
     
-    return 0;  /* No encoding controls applied yet */
+    if(applied > 0) {
+        fprintf(stderr,
+            "NOTE: Applied %d encoding control directive(s) in module %s\n",
+            applied, mod->ModuleName);
+    }
+    
+    if(warnings > 0) {
+        fprintf(stderr,
+            "NOTE: %d encoding control warning(s) in module %s\n",
+            warnings, mod->ModuleName);
+    }
+    
+    return applied;
 }

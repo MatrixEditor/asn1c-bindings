@@ -284,6 +284,9 @@ static asn1p_module_t *currentModule;
 %type	<a_module_flags>	ModuleDefinitionFlags	/* Set of FL */
 %type	<a_module_flags>	ModuleDefinitionFlag		/* Single FL */
 %type	<a_module>		optImports
+%type	<a_module>		EncodingControlBody
+%type	<a_module>		EncodingInstructionList
+%type	<a_expr>		EncodingInstruction
 %type	<a_module>		optExports
 %type	<a_module>		ImportsDefinition
 %type	<a_module>		optImportsBundleSet
@@ -651,14 +654,108 @@ Assignment:
 	}
 	| TOK_ENCODING_CONTROL TOK_capitalreference 
 		{ asn1p_lexer_hack_push_encoding_control(); }
+		EncodingControlBody TOK_END
 			{
-		/* ENCODING-CONTROL directives are recognized but detailed parsing not yet implemented */
-		fprintf(stderr,
-			"NOTE: ENCODING-CONTROL %s recognized at %s:%d (detailed support pending)\n",
-			$2, ASN_FILENAME, yylineno);
-		free($2);
-		$$ = 0;
+		$$ = asn1p_module_new();
+		if($$) {
+			/* Store encoding reference */
+			$$->_encoding_control_name = $2;
+			
+			/* Store encoding instructions as module members */
+			if($4) {
+				asn1p_expr_t *instr;
+				TQ_FOR(instr, &($4->members), next) {
+					asn1p_expr_t *copy = asn1p_expr_clone(instr, 0);
+					if(copy) {
+						asn1p_module_member_add($$, copy);
+					}
+				}
+				asn1p_module_free($4);
+			}
+			
+			fprintf(stderr,
+				"NOTE: ENCODING-CONTROL %s at %s:%d with %d directive(s)\n",
+				$2, ASN_FILENAME, yylineno, 
+				$4 ? $4->members.lh_first ? 1 : 0 : 0);
+		} else {
+			free($2);
+		}
 	}
+
+EncodingControlBody:
+	/* Empty body */
+	{ $$ = asn1p_module_new(); }
+	| EncodingInstructionList
+	{ $$ = $1; }
+	;
+
+EncodingInstructionList:
+	EncodingInstruction
+	{
+		$$ = asn1p_module_new();
+		checkmem($$);
+		if($1) {
+			asn1p_module_member_add($$, $1);
+		}
+	}
+	| EncodingInstructionList EncodingInstruction
+	{
+		$$ = $1;
+		if($2) {
+			asn1p_module_member_add($$, $2);
+		}
+	}
+	;
+
+EncodingInstruction:
+	Identifier Type TOK_PPEQ Identifier
+	{
+		/* fieldName OCTET STRING ::= hexadecimal */
+		$$ = NEW_EXPR();
+		checkmem($$);
+		
+		$$->Identifier = $1;  /* Field name */
+		$$->meta_type = AMT_TYPE;
+		$$->expr_type = A1TC_REFERENCE;
+		
+		/* Copy type reference from $2 */
+		if($2->reference) {
+			$$->reference = asn1p_ref_clone($2->reference);
+		}
+		
+		/* Parse encoding format */
+		if(strcmp($4, "hexadecimal") == 0) {
+			$$->encoding_control.encoding_type = EC_XER_HEXADECIMAL;
+		} else if(strcmp($4, "base64") == 0) {
+			$$->encoding_control.encoding_type = EC_XER_BASE64;
+		} else if(strcmp($4, "utf8") == 0) {
+			$$->encoding_control.encoding_type = EC_XER_UTF8;
+		} else {
+			fprintf(stderr,
+				"WARNING: Unknown encoding format '%s' at %s:%d\n",
+				$4, ASN_FILENAME, yylineno);
+			$$->encoding_control.encoding_type = EC_NONE;
+		}
+		
+		$$->encoding_control.encoding_reference = strdup("XER");
+		
+		ASN_DEBUG("Encoding instruction: %s %s ::= %s",
+				  $1, 
+				  $2->reference ? asn1p_ref_string($2->reference) : "?",
+				  $4);
+		
+		free($4);
+		asn1p_expr_free($2);
+	}
+	| error
+	{
+		/* Error recovery - skip malformed instruction */
+		fprintf(stderr,
+			"WARNING: Malformed encoding instruction at %s:%d\n",
+			ASN_FILENAME, yylineno);
+		$$ = NULL;
+	}
+	;
 
 	/*
 	 * Erroneous attempts
