@@ -26,6 +26,7 @@ check_PROGRAMS =                \
     check-APER-INTEGER-constraint \
     check-APER-INTEGER-semiconstrained \
     check-APER-INTEGER-extensible-semi \
+    check-APER-INTEGER-f1ap     \
     check-UPER-support          \
     check-UPER-UniversalString  \
     check-UPER-INTEGER          \
