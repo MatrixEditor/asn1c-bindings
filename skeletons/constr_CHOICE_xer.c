@@ -331,12 +331,11 @@ CHOICE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
         /* Output closing tag (unless it's ASN.1 meta-syntax) */
         if(!skip_wrapper) {
+            /* Indent before the closing tag in non-canonical mode */
+            if(!(flags & XER_F_CANONICAL)) {
+                ASN__TEXT_INDENT(1, ilevel - 1);
+            }
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
-        }
-        
-        /* Only indent if we actually output wrapper tags */
-        if(!skip_wrapper && !(flags & XER_F_CANONICAL)) {
-            ASN__TEXT_INDENT(1, ilevel - 1);
         }
     }
 
