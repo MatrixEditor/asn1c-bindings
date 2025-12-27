@@ -138,7 +138,7 @@ test_xer_formatting(void) {
         exit(1);
     }
     
-    /* Check that each closing tag is followed by a newline (except the last one) */
+    /* Check that each closing tag is followed by a newline */
     char *field1_close = strstr(xb.buffer, "</field1>");
     char *field2_close = strstr(xb.buffer, "</field2>");
     char *field3_close = strstr(xb.buffer, "</field3>");
