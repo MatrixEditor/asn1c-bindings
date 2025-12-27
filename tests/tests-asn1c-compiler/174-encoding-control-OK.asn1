@@ -1,9 +1,7 @@
 
 -- Test ENCODING-CONTROL recognition
 -- This test verifies that ENCODING-CONTROL sections are accepted by the parser
--- without generating warnings or errors. Currently tests basic recognition;
--- full encoding directive support (body parsing and custom encoder generation)
--- is planned for future implementation.
+-- without generating warnings or errors.
 
 TestEncodingControl DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
@@ -12,6 +10,6 @@ TestMessage ::= SEQUENCE {
 }
 
 ENCODING-CONTROL XER
--- Body content will be parsed in Phase 4
+END
 
 END

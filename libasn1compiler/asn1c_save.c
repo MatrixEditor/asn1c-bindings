@@ -107,6 +107,9 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 	safe_fprintf(mkf, "ASN_MODULE_SRCS=");
 	TQ_FOR(mod, &(arg->asn->modules), mod_next) {
 		TQ_FOR(arg->expr, &(mod->members), next) {
+			/* Skip encoding instructions */
+			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+			
 			/* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
 			if((arg->flags & A1C_GEN_ONLY_PDU_DEPS) && 
 			   !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
@@ -123,6 +126,9 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 	safe_fprintf(mkf, "\n\nASN_MODULE_HDRS=");
 	TQ_FOR(mod, &(arg->asn->modules), mod_next) {
 		TQ_FOR(arg->expr, &(mod->members), next) {
+			/* Skip encoding instructions */
+			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+			
 			/* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
 			if((arg->flags & A1C_GEN_ONLY_PDU_DEPS) && 
 			   !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
@@ -470,6 +476,9 @@ asn1c_save_compiled_output(arg_t *arg, const char *datadir, const char *destdir,
 
         TQ_FOR(mod, &(arg->asn->modules), mod_next) {
             TQ_FOR(arg->expr, &(mod->members), next) {
+                /* Skip encoding instructions */
+                if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+                
                 /* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
                 if((arg->flags & A1C_GEN_ONLY_PDU_DEPS) && 
                    !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
@@ -868,6 +877,9 @@ generate_pdu_collection(arg_t *arg) {
 
     TQ_FOR(mod, &(arg->asn->modules), mod_next) {
         TQ_FOR(arg->expr, &(mod->members), next) {
+            /* Skip encoding instructions */
+            if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+            
             if(include_type_to_pdu_collection(arg) == TI_NOT_INCLUDED) continue;
             abuf_printf(buf,
                         "extern struct asn_TYPE_descriptor_s "
@@ -881,6 +893,8 @@ generate_pdu_collection(arg_t *arg) {
     TQ_FOR(mod, &(arg->asn->modules), mod_next) {
         int mod_printed = 0;
         TQ_FOR(arg->expr, &(mod->members), next) {
+            /* Skip encoding instructions */
+            if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
             switch(include_type_to_pdu_collection(arg)) {
             case TI_NOT_INCLUDED:
                 continue;
@@ -1041,6 +1055,9 @@ generate_constant_collection(arg_t *arg) {
 
     TQ_FOR(mod, &(arg->asn->modules), mod_next) {
         TQ_FOR(arg->expr, &(mod->members), next) {
+            /* Skip encoding instructions */
+            if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+            
             if(arg->expr->expr_type != ASN_BASIC_INTEGER)
                 continue;
 
