@@ -154,6 +154,10 @@ asn1print_module(asn1p_t *asn, asn1p_module_t *mod, enum asn1print_flags flags) 
 	safe_printf("BEGIN\n\n");
 
 	TQ_FOR(tc, &(mod->members), next) {
+		/* Skip encoding instructions - they're not regular ASN.1 types */
+		if(tc->_mark & TM_ENCODING_INSTRUCTION) {
+			continue;
+		}
 		asn1print_expr(asn, mod, tc, flags, 0);
 		if(flags & APF_PRINT_CONSTRAINTS)
 			safe_printf("\n");

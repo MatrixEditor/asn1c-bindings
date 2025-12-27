@@ -194,6 +194,9 @@ asn1f_fix_module__phase_1(arg_t *arg) {
 	 * Do various non-recursive transformations.
 	 */
 	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
 		arg->expr = expr;
 		ret = phase_1_1(arg, 0);
 		RET2RVAL(ret, rvalue);
@@ -203,6 +206,9 @@ asn1f_fix_module__phase_1(arg_t *arg) {
 		assert(arg->expr == expr);
 	}
 	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
 		arg->expr = expr;
 		ret = phase_1_1(arg, 1);
 		RET2RVAL(ret, rvalue);
@@ -215,6 +221,8 @@ asn1f_fix_module__phase_1(arg_t *arg) {
 	 * 5. Automatic tagging
 	 */
 	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
 
 		arg->expr = expr;
 
@@ -229,6 +237,9 @@ asn1f_fix_module__phase_1(arg_t *arg) {
 	 * 9. fix spaces in cstrings
 	 */
 	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
 		arg->expr = expr;
 
 		ret = asn1f_recurse_expr(arg, asn1f_fix_bit_string);
@@ -244,6 +255,9 @@ asn1f_fix_module__phase_1(arg_t *arg) {
 	 * ... Check for tags distinctness.
 	 */
 	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
 		arg->expr = expr;
 
 		ret = asn1f_recurse_expr(arg, asn1f_check_constr_tags_distinct);
@@ -262,6 +276,8 @@ asn1f_fix_module__phase_2(arg_t *arg) {
 	int ret;
 
 	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
 
 		arg->expr = expr;
 

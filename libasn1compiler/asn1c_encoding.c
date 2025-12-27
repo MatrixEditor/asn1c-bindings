@@ -76,8 +76,14 @@ asn1c_apply_encoding_controls(asn1p_t *asn, asn1p_module_t *mod) {
                 if(target_type == ASN_BASIC_OCTET_STRING ||
                    target_type == A1TC_REFERENCE) {
                     
-                    /* Apply encoding control */
-                    type_def->encoding_control = instr->encoding_control;
+                    /* Apply encoding control - deep copy */
+                    type_def->encoding_control.encoding_type = instr->encoding_control.encoding_type;
+                    if(instr->encoding_control.encoding_reference) {
+                        type_def->encoding_control.encoding_reference = 
+                            strdup(instr->encoding_control.encoding_reference);
+                    } else {
+                        type_def->encoding_control.encoding_reference = NULL;
+                    }
                     
                     applied++;
                     found = 1;
