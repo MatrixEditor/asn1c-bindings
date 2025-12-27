@@ -79,7 +79,6 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
             if (ct->range_bits > 16) {
                 /* X.691 clause 11.5.7(d) - Range > 65536 uses length determinant */
                 ssize_t len;
-                int repeat;
                 intmax_t value = 0;
                 
                 ASN_DEBUG("Decoding constrained integer with range_bits=%d (>16)", ct->range_bits);
