@@ -459,7 +459,8 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         }
     }
 
-    /* Parent handles positioning for SEQUENCE's own closing tag */
+    /* Output indentation for SEQUENCE's own closing tag (parent will output the tag itself) */
+    if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
