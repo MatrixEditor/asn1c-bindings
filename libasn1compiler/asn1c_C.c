@@ -65,6 +65,13 @@ static asn1p_expr_type_e expr_get_type(arg_t *arg, asn1p_expr_t *expr);
 static int try_inline_default(arg_t *arg, asn1p_expr_t *expr, int out);
 static int *compute_canonical_members_order(arg_t *arg, int el_count);
 
+/* Custom XER encoder/decoder generation for ENCODING-CONTROL */
+static int type_needs_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr);
+static int emit_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr);
+static int emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr);
+static int emit_custom_operation_structure(arg_t *arg, asn1p_expr_t *expr);
+static const char *encoding_type_description(enum asn1p_encoding_control_type_e type);
+
 enum tvm_compat {
 	_TVM_SAME	= 0,	/* tags and all_tags are same */
 	_TVM_SUBSET	= 1,	/* tags are subset of all_tags */
