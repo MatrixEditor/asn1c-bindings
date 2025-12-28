@@ -324,7 +324,7 @@ SET_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
         }
     }
 
-    /* Parent handles indentation for SET's closing tag */
+    if(!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);

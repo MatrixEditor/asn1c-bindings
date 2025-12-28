@@ -445,25 +445,13 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            /* Check if child needs indent before closing tag based on whether it outputs newlines */
-            /* OPEN_TYPE members are always complex (contain CHOICE or other complex types) */
-            /* Other complex types have elements_count > 0 */
-            int child_is_complex = (elm->flags & ATF_OPEN_TYPE) || 
-                                   (elm->type && elm->type->elements_count > 0);
-            
-            if(child_is_complex) {
-                /* Complex child outputs newline after content, just need indent before closing tag */
-                ASN__TEXT_INDENT(0, ilevel);
-            }
-            /* Primitive child - closing tag immediately after content */
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
         }
     }
 
-    /* Output indentation for SEQUENCE's own closing tag (parent will output the tag itself) */
-    if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
+    if(!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);

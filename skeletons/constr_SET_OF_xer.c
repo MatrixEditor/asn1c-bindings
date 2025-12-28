@@ -534,7 +534,7 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
     }
 
-    /* Parent handles indentation for SET_OF's closing tag */
+    if(!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
 
     if(encs) {
         xer_tmp_enc_t *enc = encs;
