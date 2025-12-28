@@ -331,11 +331,7 @@ CHOICE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
         /* Output closing tag (unless it's ASN.1 meta-syntax) */
         if(!skip_wrapper) {
-            if(!(flags & XER_F_CANONICAL)) {
-                ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
-            } else {
-                ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
-            }
+            ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
         }
     }
 
