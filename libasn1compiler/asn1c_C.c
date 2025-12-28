@@ -1674,6 +1674,15 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
 	DEBUG("emit tag vectors for %s %d, %d, %d", expr->Identifier,
 		tv_mode, tags_count, all_tags_count);
 
+	/*
+	 * Emit custom XER encoder/decoder if type has encoding controls
+	 */
+	if(type_needs_custom_xer_encoder(arg, expr)) {
+		emit_custom_xer_encoder(arg, expr);
+		emit_custom_xer_decoder(arg, expr);
+		emit_custom_operation_structure(arg, expr);
+	}
+
 	emit_type_DEF(arg, expr, tv_mode, tags_count, all_tags_count,
 		0, etd_spec);
 
@@ -2133,6 +2142,320 @@ expr_get_type(arg_t *arg, asn1p_expr_t *expr) {
 	terminal = asn1f_find_terminal_type_ex(arg->asn, arg->ns, expr);
 	if(terminal) return terminal->expr_type;
 	return A1TC_INVALID;
+}
+
+/*
+ * Check if type has custom encoding control that requires special XER encoder
+ */
+static int
+type_needs_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
+    if(!expr) return 0;
+    
+    /* Only applicable to OCTET STRING types */
+    asn1p_expr_type_e etype = expr_get_type(arg, expr);
+    if(etype != ASN_BASIC_OCTET_STRING) {
+        return 0;
+    }
+    
+    /* Check if encoding control is set */
+    switch(expr->encoding_control.encoding_type) {
+    case EC_XER_HEXADECIMAL:
+    case EC_XER_UTF8:
+        /* These need custom encoders (Base64 is default) */
+        return 1;
+    case EC_XER_BASE64:
+    case EC_NONE:
+    default:
+        return 0;
+    }
+}
+
+/*
+ * Get description string for encoding type (for comments)
+ */
+static const char *
+encoding_type_description(enum asn1p_encoding_control_type_e type) {
+    switch(type) {
+    case EC_XER_HEXADECIMAL: return "hexadecimal";
+    case EC_XER_UTF8: return "utf8";
+    case EC_XER_BASE64: return "base64";
+    case EC_NONE:
+    default: return "none";
+    }
+}
+
+/*
+ * Generate custom XER encoder for types with ENCODING-CONTROL directives
+ */
+static int
+emit_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
+    if(!type_needs_custom_xer_encoder(arg, expr)) {
+        return 0;  /* No custom encoder needed */
+    }
+    
+    const char *type_name = MKID(expr);
+    enum asn1p_encoding_control_type_e enc_type = expr->encoding_control.encoding_type;
+    
+    OUT("\n");
+    OUT("/* Custom XER encoder per ENCODING-CONTROL directive */\n");
+    OUT("static asn_enc_rval_t\n");
+    OUT("%s_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,\n", type_name);
+    INDENT(+1);
+    OUT("int ilevel, enum xer_encoder_flags_e flags,\n");
+    OUT("asn_app_consume_bytes_f *cb, void *app_key) {\n");
+    INDENT(-1);
+    
+    INDENT(+1);
+    OUT("const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;\n");
+    OUT("asn_enc_rval_t er = {0,0,0};\n");
+    OUT("\n");
+    
+    OUT("(void)td;  /* Unused parameter */\n");
+    OUT("(void)ilevel;  /* Unused in this implementation */\n");
+    OUT("(void)flags;  /* Unused in this implementation */\n");
+    OUT("\n");
+    
+    OUT("if(!st || (!st->buf && st->size)) {\n");
+    INDENT(+1);
+    OUT("ASN__ENCODE_FAILED;\n");
+    INDENT(-1);
+    OUT("}\n");
+    OUT("\n");
+    
+    switch(enc_type) {
+    case EC_XER_HEXADECIMAL:
+        OUT("/* Hexadecimal encoding per ENCODING-CONTROL */\n");
+        OUT("{\n");
+        INDENT(+1);
+        OUT("const char * const h2c = \"0123456789ABCDEF\";\n");
+        OUT("char *hexbuf;\n");
+        OUT("size_t i;\n");
+        OUT("\n");
+        OUT("hexbuf = (char *)MALLOC(st->size * 2 + 1);\n");
+        OUT("if(!hexbuf) ASN__ENCODE_FAILED;\n");
+        OUT("\n");
+        OUT("for(i = 0; i < st->size; i++) {\n");
+        INDENT(+1);
+        OUT("hexbuf[i*2] = h2c[(st->buf[i] >> 4) & 0x0F];\n");
+        OUT("hexbuf[i*2 + 1] = h2c[st->buf[i] & 0x0F];\n");
+        INDENT(-1);
+        OUT("}\n");
+        OUT("hexbuf[st->size * 2] = 0;\n");
+        OUT("\n");
+        OUT("er.encoded = cb(hexbuf, st->size * 2, app_key);\n");
+        OUT("FREEMEM(hexbuf);\n");
+        OUT("if(er.encoded < 0) ASN__ENCODE_FAILED;\n");
+        INDENT(-1);
+        OUT("}\n");
+        break;
+        
+    case EC_XER_UTF8:
+        OUT("/* UTF-8 text encoding per ENCODING-CONTROL */\n");
+        OUT("return OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb, app_key);\n");
+        break;
+        
+    default:
+        OUT("/* Fallback to default encoding */\n");
+        OUT("return OCTET_STRING_encode_xer(td, sptr, ilevel, flags, cb, app_key);\n");
+        break;
+    }
+    
+    OUT("\n");
+    OUT("return er;\n");
+    INDENT(-1);
+    OUT("}\n");
+    OUT("\n");
+    
+    return 1;  /* Custom encoder emitted */
+}
+
+/*
+ * Generate custom XER decoder for types with ENCODING-CONTROL directives
+ */
+static int
+emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr) {
+    if(!type_needs_custom_xer_encoder(arg, expr)) {
+        return 0;
+    }
+    
+    const char *type_name = MKID(expr);
+    enum asn1p_encoding_control_type_e enc_type = expr->encoding_control.encoding_type;
+    
+    OUT("\n");
+    OUT("/* Custom XER decoder per ENCODING-CONTROL directive */\n");
+    OUT("static asn_dec_rval_t\n");
+    OUT("%s_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,\n", type_name);
+    INDENT(+1);
+    OUT("const asn_TYPE_descriptor_t *td, void **sptr,\n");
+    OUT("const char *opt_mname, const void *buf_ptr, size_t size) {\n");
+    INDENT(-1);
+    
+    INDENT(+1);
+    
+    switch(enc_type) {
+    case EC_XER_HEXADECIMAL:
+        OUT("/* Hexadecimal decoding per ENCODING-CONTROL */\n");
+        OUT("return OCTET_STRING_decode_xer_hex(opt_codec_ctx, td, sptr,\n");
+        INDENT(+1);
+        OUT("opt_mname, buf_ptr, size);\n");
+        INDENT(-1);
+        break;
+        
+    case EC_XER_UTF8:
+        OUT("/* UTF-8 text decoding per ENCODING-CONTROL */\n");
+        OUT("return OCTET_STRING_decode_xer_utf8(opt_codec_ctx, td, sptr,\n");
+        INDENT(+1);
+        OUT("opt_mname, buf_ptr, size);\n");
+        INDENT(-1);
+        break;
+        
+    default:
+        OUT("/* Fallback to default decoder */\n");
+        OUT("return OCTET_STRING_decode_xer(opt_codec_ctx, td, sptr,\n");
+        INDENT(+1);
+        OUT("opt_mname, buf_ptr, size);\n");
+        INDENT(-1);
+        break;
+    }
+    
+    INDENT(-1);
+    OUT("}\n");
+    OUT("\n");
+    
+    return 1;
+}
+
+/*
+ * Generate custom operation structure for types with ENCODING-CONTROL directives
+ */
+static int
+emit_custom_operation_structure(arg_t *arg, asn1p_expr_t *expr) {
+    if(!type_needs_custom_xer_encoder(arg, expr)) {
+        return 0;
+    }
+    
+    const char *type_name = MKID(expr);
+    const char *base_type = c_name(arg).type.base_name;
+    
+    OUT("/*\n");
+    OUT(" * Custom operation structure per ENCODING-CONTROL directive:\n");
+    OUT(" * Format: %s\n", encoding_type_description(expr->encoding_control.encoding_type));
+    if(expr->encoding_control.encoding_reference) {
+        OUT(" * Reference: %s\n", expr->encoding_control.encoding_reference);
+    }
+    OUT(" */\n");
+    
+    if(HIDE_INNER_DEFS) OUT("static ");
+    OUT("asn_TYPE_operation_t asn_OP_%s", type_name);
+    if(HIDE_INNER_DEFS) OUT("_%d", expr->_type_unique_index);
+    OUT(" = {\n");
+    INDENT(+1);
+    
+    /* Use OCTET_STRING base operations except for XER */
+    OUT("%s_free,\n", base_type);
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_PRINT_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_PRINT) {
+        OUT("%s_print,\n", base_type);
+    } else {
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */\n");
+    
+    OUT("%s_compare,\n", base_type);
+    OUT("%s_copy,\n", base_type);
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_BER_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_BER) {
+        OUT("%s_decode_ber,\n", base_type);
+        OUT("%s_encode_der,\n", base_type);
+    } else {
+        OUT("0,\n");
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_XER_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_XER) {
+        /* Use custom XER functions */
+        OUT("%s_decode_xer,  /* Custom per ENCODING-CONTROL */\n", type_name);
+        OUT("%s_encode_xer,  /* Custom per ENCODING-CONTROL */\n", type_name);
+    } else {
+        OUT("0,\n");
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_JER_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_JER) {
+        OUT("%s_encode_jer,\n", base_type);
+    } else {
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_OER_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_OER) {
+        OUT("%s_decode_oer,\n", base_type);
+        OUT("%s_encode_oer,\n", base_type);
+    } else {
+        OUT("0,\n");
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_UPER_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_UPER) {
+        OUT("%s_decode_uper,\n", base_type);
+        OUT("%s_encode_uper,\n", base_type);
+    } else {
+        OUT("0,\n");
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_APER_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_APER) {
+        OUT("%s_decode_aper,\n", base_type);
+        OUT("%s_encode_aper,\n", base_type);
+    } else {
+        OUT("0,\n");
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_RFILL_SUPPORT)\n");
+    OUT("%s_random_fill,\n", base_type);
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */\n");
+    
+    OUT("0\t/* No outmost tag fetcher */\n");
+    
+    INDENT(-1);
+    OUT("};\n");
+    OUT("\n");
+    
+    return 1;
 }
 
 static asn1c_integer_t
@@ -3523,7 +3846,14 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 		if (!p2)
 			p2 = strdup(p);
 
-        OUT("&asn_OP_%s,\n", p2);
+        /* Use custom operation structure if type has encoding controls */
+        if(type_needs_custom_xer_encoder(arg, expr)) {
+            OUT("&asn_OP_%s", expr_id);
+            if(HIDE_INNER_DEFS) OUT("_%d", expr->_type_unique_index);
+            OUT(",  /* Custom operations per ENCODING-CONTROL */\n");
+        } else {
+            OUT("&asn_OP_%s,\n", p2);
+        }
 
 		if(tags_count) {
 			OUT("asn_DEF_%s_tags_%d,\n",
