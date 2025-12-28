@@ -445,13 +445,14 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            ASN__TEXT_INDENT(1, ilevel);
+            ASN__TEXT_INDENT(0, ilevel);
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
         }
     }
 
+    /* Output indentation for SEQUENCE's own closing tag */
     if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
