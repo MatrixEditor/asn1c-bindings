@@ -445,8 +445,11 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            /* Check if child type is complex (has elements) to determine formatting */
-            int child_is_complex = (elm->type && elm->type->elements_count > 0);
+            /* Check if child needs indent before closing tag based on whether it outputs newlines */
+            /* OPEN_TYPE members are always complex (contain CHOICE or other complex types) */
+            /* Other complex types have elements_count > 0 */
+            int child_is_complex = (elm->flags & ATF_OPEN_TYPE) || 
+                                   (elm->type && elm->type->elements_count > 0);
             
             if(child_is_complex) {
                 /* Complex child outputs newline after content, just need indent before closing tag */
