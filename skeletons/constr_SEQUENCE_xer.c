@@ -445,7 +445,15 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            ASN__TEXT_INDENT(0, ilevel);
+            /* Check if child type is complex to determine if indent is needed */
+            int child_is_complex = (elm->flags & ATF_OPEN_TYPE) || 
+                                   (elm->type && elm->type->elements_count > 0);
+            
+            if(child_is_complex) {
+                /* Complex child - output indent before closing tag */
+                ASN__TEXT_INDENT(0, ilevel);
+            }
+            /* Output closing tag */
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
