@@ -445,14 +445,20 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            ASN__TEXT_INDENT(0, ilevel);
+            /* Check if child type is complex (has elements) to determine formatting */
+            int child_is_complex = (elm->type && elm->type->elements_count > 0);
+            
+            if(child_is_complex) {
+                /* Complex child - output newline and indent before closing tag */
+                ASN__TEXT_INDENT(1, ilevel);
+            }
+            /* Primitive child or after complex child - closing tag positioned by content */
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
         }
     }
 
-    /* Output indentation for SEQUENCE's own closing tag */
     if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
