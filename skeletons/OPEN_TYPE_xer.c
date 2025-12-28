@@ -387,7 +387,6 @@ OPEN_TYPE_xer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
         /* Output closing tag (unless it's ASN.1 meta-syntax) */
         if(!skip_wrapper) {
             if(!(flags & XER_F_CANONICAL)) {
-                ASN__TEXT_INDENT(0, ilevel - 1);
                 ASN__CALLBACK3("</", 2, type_name, type_name_len, ">\n", 2);
             } else {
                 ASN__CALLBACK3("</", 2, type_name, type_name_len, ">", 1);
