@@ -445,7 +445,7 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            ASN__TEXT_INDENT(1, ilevel - 1);
+            ASN__TEXT_INDENT(1, ilevel);
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
