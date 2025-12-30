@@ -193,7 +193,6 @@ main(int ac, char **av) {
 	                exit(EX_USAGE);
 	            }
                 complex_threshold = (int) (thresh_val & 0x0ffff);
-                //fprintf(stderr, "DEBUG: complex_threshold = %d\n", complex_threshold);
             } else {
                 fprintf(stderr, "-f%s: Invalid argument\n", optarg);
                 exit(EX_USAGE);
