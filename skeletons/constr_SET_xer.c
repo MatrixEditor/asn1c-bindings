@@ -63,10 +63,6 @@ SET_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
 
-    /* Check recursion depth to prevent stack overflow */
-    if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
-        RETURN(RC_FAIL);
-
     /*
      * Phases of XER/XML processing:
      * Phase 0: Check that the opening tag matches our expectations.
@@ -263,9 +259,6 @@ SET_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
     if(!sptr)
         ASN__ENCODE_FAILED;
 
-    /* Check recursion depth to prevent stack overflow */
-    XER_ENCODER_RECURSION_DEPTH_INC();
-
     assert(t2m_count == td->elements_count);
 
     er.encoded = 0;
@@ -288,47 +281,29 @@ SET_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 if(elm->optional)
                     continue;
                 /* Mandatory element missing */
-                XER_ENCODER_RECURSION_DEPTH_DEC();
                 ASN__ENCODE_FAILED;
             }
         } else {
             memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
         }
 
-        if(!xcan) {
-            if(edx == 0 || er.encoded == 0) {
-                /* First member: output newline + indent */
-                ASN__TEXT_INDENT(1, ilevel);
-            } else {
-                /* Subsequent members: output only indent (newline comes from previous closing tag) */
-                int tmp_i;
-                for(tmp_i = 0; tmp_i < ilevel; tmp_i++) ASN__CALLBACK("    ", 4);
-            }
-        }
+        if(!xcan)
+            ASN__TEXT_INDENT(1, ilevel);
         ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
 
         /* Print the member itself */
         tmper = elm->type->op->xer_encoder(elm->type, memb_ptr,
                                            ilevel + 1, flags,
                                            cb, app_key);
-        if(tmper.encoded == -1) {
-            XER_ENCODER_RECURSION_DEPTH_DEC();
-            return tmper;
-        }
+        if(tmper.encoded == -1) return tmper;
         er.encoded += tmper.encoded;
 
-        if(!xcan) {
-            ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
-        } else {
-            ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
-        }
+        ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
     }
 
     if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
 
-    XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
 cb_failed:
-    XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODE_FAILED;
 }

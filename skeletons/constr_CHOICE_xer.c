@@ -26,6 +26,10 @@
         consumed_myself += num;                                   \
     } while(0)
 
+extern const asn_TYPE_operation_t asn_OP_SEQUENCE;
+extern const asn_TYPE_operation_t asn_OP_SEQUENCE_OF;
+extern const asn_TYPE_operation_t asn_OP_SET_OF;
+
 /*
  * Decode the XER (XML) data.
  */
@@ -332,7 +336,13 @@ CHOICE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
         /* Output closing tag (unless it's ASN.1 meta-syntax) */
         if(!skip_wrapper) {
             if(!(flags & XER_F_CANONICAL)) {
-                ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
+                 if(elm->type->elements_count > 0
+                    && elm->type->op != &asn_OP_SEQUENCE
+                    && elm->type->op != &asn_OP_SEQUENCE_OF
+                    && elm->type->op != &asn_OP_SET_OF) {
+                     ASN__TEXT_INDENT(0, ilevel);
+                 }
+                 ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
             } else {
                 ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
             }

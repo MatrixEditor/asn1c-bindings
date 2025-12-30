@@ -445,6 +445,11 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
+       		int add_indent = 0;
+	    	if(elm->flags & ATF_OPEN_TYPE) {
+    	       add_indent = 1;
+	       	}
+    	   	if(add_indent) ASN__TEXT_INDENT(0, ilevel);
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
