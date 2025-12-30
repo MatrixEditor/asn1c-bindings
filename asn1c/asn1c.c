@@ -50,8 +50,36 @@ Copyright (c) 2022-2026 Mouse <mouse07410@noreply.github.com> and contributors.\
 #include <dirent.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
+
+static
+int is_integer(const char *str, long *out_val) {
+    char *endptr;
+    errno = 0; // To distinguish success/failure after call
+
+    // 10 is the base (decimal)
+    long val = strtol(str, &endptr, 10);
+
+    // Check for various possible errors
+    if (str == endptr) return 0; // No digits found at all
+    if (errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) return 0; // Overflow
+    if (errno != 0 && val == 0) return 0; // Other conversion error
+
+    // Check for trailing garbage (optional)
+    // If you want to allow "123 ", you'd check if *endptr is whitespace
+    if (*endptr != '\0') return 0;
+
+    if (out_val) *out_val = val;
+    return 1; // Success
+}
+
 static void usage(const char *av0); /* Print the Usage screen and exit */
 static int importStandardModules(asn1p_t *asn, const char *skeletons_dir);
+
+int complex_threshold = 4;  /* threshold after which complex_level is true (DIRTY HACK */
 
 int
 main(int ac, char **av) {
@@ -154,6 +182,18 @@ main(int ac, char **av) {
             } else if(strncmp(optarg, "prefix=", 7) == 0) {
                 char *prefix = optarg + 7;
                 asn1c_prefix_set(prefix);
+            } else if(strncmp(optarg, "complex-threshold=", 18) == 0) {
+                char *threshold = optarg + 18;
+                long thresh_val;
+                if ((is_integer(threshold, &thresh_val) != 1)
+                	|| (thresh_val > 500) // let's not be stupid here
+                	|| (thresh_val <= 0)  // again, stupidity not appreciated
+                	) {
+                	fprintf(stderr, "-f%s: bad format or value too large\n", optarg);
+	                exit(EX_USAGE);
+	            }
+                complex_threshold = (int) (thresh_val & 0x0ffff);
+                //fprintf(stderr, "DEBUG: complex_threshold = %d\n", complex_threshold);
             } else {
                 fprintf(stderr, "-f%s: Invalid argument\n", optarg);
                 exit(EX_USAGE);
@@ -588,6 +628,7 @@ usage(const char *av0) {
 "\n"
 
 "  -fbless-SIZE          Allow SIZE() constraint for INTEGER etc (non-std.)\n"
+"  -fcomplex-threshold=<value>   Threshold value beyond which to use indirection\n"
 "  -fcompound-names      Disambiguate C's struct NAME's inside top-level types\n"
 "  -findirect-choice     Compile members of CHOICE as indirect pointers\n"
 "  -fincludes-quoted     Generate #includes in \"double\" instead of <angle> quotes\n"

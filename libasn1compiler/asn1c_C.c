@@ -4216,6 +4216,7 @@ emit_include_dependencies(arg_t *arg) {
 	return 0;
 }
 
+extern int complex_threshold; // defined in asn1c/asn1c.c - need fixing
 /*
  * Check if it is better to make this type indirectly accessed via
  * a pointer.
@@ -4308,7 +4309,7 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 			 * This threshold is chosen to avoid breaking existing test expectations
 			 * while still handling deeply nested structures like F1AP's SRSConfig.
 			 */
-			if(complex_members >= 4) {
+			if(complex_members >= complex_threshold) {
 				expr->marker.flags |= EM_INDIRECT;
 				expr->marker.flags |= EM_UNRECURSE;
 				return 1;

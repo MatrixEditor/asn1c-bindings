@@ -55,6 +55,8 @@ typedef struct arg_s {
 
 	struct compiler_streams *target;
 
+	int complex_threshold; // threshold for switching structures to ptrs (#398)
+
     asn1p_t *asn;
     asn1_namespace_t *ns;
     asn1p_expr_t *expr;
