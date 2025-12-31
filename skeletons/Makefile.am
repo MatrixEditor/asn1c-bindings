@@ -83,7 +83,6 @@ libasn1cskeletons_la_SOURCES =                  \
     constr_SET_OF.c constr_SET_OF.h             \
     constr_SET_OF_oer.c                         \
     constr_TYPE.c constr_TYPE.h                 \
-    asn_type_kinds.h                            \
     constraints.c constraints.h                 \
     der_encoder.c der_encoder.h                 \
     oer_decoder.c oer_decoder.h                 \
