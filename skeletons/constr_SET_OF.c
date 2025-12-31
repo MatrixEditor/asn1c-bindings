@@ -22,6 +22,7 @@ asn_TYPE_descriptor_t asn_DEF_SET_OF = {
 };
 
 asn_TYPE_operation_t asn_OP_SET_OF = {
+    .kind = ASN_KIND_SET_OF,
     SET_OF_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     SET_OF_print,

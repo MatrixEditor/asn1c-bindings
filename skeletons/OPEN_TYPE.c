@@ -7,6 +7,7 @@
 #include <constr_CHOICE.h>
 
 asn_TYPE_operation_t asn_OP_OPEN_TYPE = {
+    .kind = ASN_KIND_PRIMITIVE,
     OPEN_TYPE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OPEN_TYPE_print,

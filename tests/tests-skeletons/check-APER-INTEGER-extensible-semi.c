@@ -226,6 +226,9 @@ int main() {
     TEST_ROOT(200, 100);
     TEST_ROOT(1000, 100);
 
+    TEST_EXT(100, 100);
+    TEST_EXT(200, 100);
+
     printf("\n=== All extensible semi-constrained INTEGER tests passed! ===\n");
     return 0;
 }

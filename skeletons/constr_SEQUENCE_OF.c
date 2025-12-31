@@ -24,6 +24,7 @@ asn_TYPE_descriptor_t asn_DEF_SEQUENCE_OF = {
 };
 
 asn_TYPE_operation_t asn_OP_SEQUENCE_OF = {
+    .kind = ASN_KIND_SEQUENCE_OF,
     SEQUENCE_OF_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     SEQUENCE_OF_print,

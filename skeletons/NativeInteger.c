@@ -20,6 +20,7 @@ static const ber_tlv_tag_t asn_DEF_NativeInteger_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
 };
 asn_TYPE_operation_t asn_OP_NativeInteger = {
+    .kind = ASN_KIND_PRIMITIVE,
     NativeInteger_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     NativeInteger_print,

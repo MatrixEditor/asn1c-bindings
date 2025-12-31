@@ -13,6 +13,7 @@ static const ber_tlv_tag_t asn_DEF_T61String_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (4 << 2))    /* ... OCTET STRING */
 };
 asn_TYPE_operation_t asn_OP_T61String = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OCTET_STRING_print,  /* non-ascii string */

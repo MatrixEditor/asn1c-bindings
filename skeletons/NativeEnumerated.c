@@ -19,6 +19,7 @@ static const ber_tlv_tag_t asn_DEF_NativeEnumerated_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (10 << 2))
 };
 asn_TYPE_operation_t asn_OP_NativeEnumerated = {
+    .kind = ASN_KIND_PRIMITIVE,
     NativeInteger_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     NativeInteger_print,

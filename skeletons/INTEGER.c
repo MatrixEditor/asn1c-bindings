@@ -7,7 +7,6 @@
 #include <INTEGER.h>
 #include <errno.h>
 #include <inttypes.h>
-
 /*
  * INTEGER basic type description.
  */
@@ -15,6 +14,7 @@ static const ber_tlv_tag_t asn_DEF_INTEGER_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
 };
 asn_TYPE_operation_t asn_OP_INTEGER = {
+    .kind = ASN_KIND_PRIMITIVE,
     INTEGER_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     INTEGER_print,

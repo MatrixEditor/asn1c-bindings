@@ -40,6 +40,7 @@ static asn_per_constraints_t asn_DEF_NumericString_per_constraints = {
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_operation_t asn_OP_NumericString = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OCTET_STRING_print_utf8,  /* ASCII subset */

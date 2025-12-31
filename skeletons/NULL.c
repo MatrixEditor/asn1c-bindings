@@ -12,6 +12,7 @@ static const ber_tlv_tag_t asn_DEF_NULL_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (5 << 2))
 };
 asn_TYPE_operation_t asn_OP_NULL = {
+    .kind = ASN_KIND_PRIMITIVE,
     NULL_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     NULL_print,

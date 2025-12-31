@@ -7,6 +7,7 @@
 #include <constr_SET.h>
 
 asn_TYPE_operation_t asn_OP_SET = {
+    .kind = ASN_KIND_SET,
     SET_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     SET_print,

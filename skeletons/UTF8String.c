@@ -14,6 +14,7 @@ static const ber_tlv_tag_t asn_DEF_UTF8String_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),   /* ... OCTET STRING */
 };
 asn_TYPE_operation_t asn_OP_UTF8String = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     UTF8String_print,

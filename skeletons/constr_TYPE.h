@@ -11,6 +11,8 @@
 #ifndef	_CONSTR_TYPE_H_
 #define	_CONSTR_TYPE_H_
 
+#include "asn_internal.h"
+
 #include <ber_tlv_length.h>
 #include <ber_tlv_tag.h>
 
@@ -182,6 +184,7 @@ typedef asn_type_selector_result_t(asn_type_selector_f)(
  * May be directly invoked by applications.
  */
 typedef struct asn_TYPE_operation_s {
+    asn_type_kind_t kind;   /* The kind/category of this type */
     asn_struct_free_f *free_struct;     /* Free the structure */
     asn_struct_print_f *print_struct;   /* Human readable output */
     asn_struct_compare_f *compare_struct; /* Compare two structures */

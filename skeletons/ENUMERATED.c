@@ -13,6 +13,7 @@ static const ber_tlv_tag_t asn_DEF_ENUMERATED_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (10 << 2))
 };
 asn_TYPE_operation_t asn_OP_ENUMERATED = {
+    .kind = ASN_KIND_PRIMITIVE,
     ASN__PRIMITIVE_TYPE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     INTEGER_print,  /* Implemented in terms of INTEGER */

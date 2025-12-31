@@ -11,6 +11,7 @@ asn_OCTET_STRING_specifics_t asn_SPC_ANY_specs = {
     ASN_OSUBV_ANY
 };
 asn_TYPE_operation_t asn_OP_ANY = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OCTET_STRING_print,

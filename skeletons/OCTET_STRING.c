@@ -19,6 +19,7 @@ asn_OCTET_STRING_specifics_t asn_SPC_OCTET_STRING_specs = {
     ASN_OSUBV_STR
 };
 asn_TYPE_operation_t asn_OP_OCTET_STRING = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OCTET_STRING_print,  /* OCTET STRING generally means a non-ascii sequence */

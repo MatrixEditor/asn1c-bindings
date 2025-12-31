@@ -39,6 +39,7 @@ static const ber_tlv_tag_t asn_DEF_NativeReal_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (9 << 2))
 };
 asn_TYPE_operation_t asn_OP_NativeReal = {
+    .kind = ASN_KIND_PRIMITIVE,
     NativeReal_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     NativeReal_print,

@@ -101,6 +101,7 @@ ASN_MODULE_HDRS+=ber_tlv_length.h
 ASN_MODULE_SRCS+=ber_tlv_length.c
 ASN_MODULE_HDRS+=ber_tlv_tag.h
 ASN_MODULE_SRCS+=ber_tlv_tag.c
+ASN_MODULE_HDRS+=asn_type_kinds.h
 ASN_MODULE_HDRS+=constr_TYPE.h
 ASN_MODULE_SRCS+=constr_TYPE.c
 ASN_MODULE_HDRS+=constraints.h

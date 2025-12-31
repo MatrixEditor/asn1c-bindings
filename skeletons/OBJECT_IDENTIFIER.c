@@ -17,6 +17,7 @@ static const ber_tlv_tag_t asn_DEF_OBJECT_IDENTIFIER_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (6 << 2))
 };
 asn_TYPE_operation_t asn_OP_OBJECT_IDENTIFIER = {
+    .kind = ASN_KIND_PRIMITIVE,
     ASN__PRIMITIVE_TYPE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OBJECT_IDENTIFIER_print,

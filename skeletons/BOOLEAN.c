@@ -12,6 +12,7 @@ static const ber_tlv_tag_t asn_DEF_BOOLEAN_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (1 << 2))
 };
 asn_TYPE_operation_t asn_OP_BOOLEAN = {
+    .kind = ASN_KIND_PRIMITIVE,
     BOOLEAN_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     BOOLEAN_print,

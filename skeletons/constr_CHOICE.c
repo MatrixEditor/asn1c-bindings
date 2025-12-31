@@ -6,6 +6,7 @@
 #include <constr_CHOICE.h>
 
 asn_TYPE_operation_t asn_OP_CHOICE = {
+    .kind = ASN_KIND_CHOICE,
     CHOICE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     CHOICE_print,

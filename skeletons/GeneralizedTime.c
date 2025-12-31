@@ -177,6 +177,7 @@ static asn_per_constraints_t asn_DEF_GeneralizedTime_per_constraints = {
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_operation_t asn_OP_GeneralizedTime = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     GeneralizedTime_print,

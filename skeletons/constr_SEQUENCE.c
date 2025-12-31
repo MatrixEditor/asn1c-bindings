@@ -7,6 +7,7 @@
 #include <constr_SEQUENCE.h>
 
 asn_TYPE_operation_t asn_OP_SEQUENCE = {
+    .kind = ASN_KIND_SEQUENCE,
     SEQUENCE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     SEQUENCE_print,

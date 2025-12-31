@@ -17,6 +17,7 @@ asn_OCTET_STRING_specifics_t asn_SPC_BIT_STRING_specs = {
     ASN_OSUBV_BIT
 };
 asn_TYPE_operation_t asn_OP_BIT_STRING = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,         /* Implemented in terms of OCTET STRING */
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     BIT_STRING_print,
