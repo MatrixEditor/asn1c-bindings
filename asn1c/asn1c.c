@@ -55,8 +55,13 @@ Copyright (c) 2022-2026 Mouse <mouse07410@noreply.github.com> and contributors.\
 #include <errno.h>
 #include <limits.h>
 
-static
-int is_integer(const char *str, long *out_val) {
+/*
+ * Parse a string as a decimal integer with validation.
+ * Returns 1 on success, 0 on failure (non-integer, overflow, or trailing garbage).
+ * If out_val is non-NULL, stores the parsed value on success.
+ */
+static int
+is_integer(const char *str, long *out_val) {
     char *endptr;
     errno = 0; /* To distinguish success/failure after call */
 
