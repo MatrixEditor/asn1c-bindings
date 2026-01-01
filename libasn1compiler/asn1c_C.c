@@ -428,6 +428,8 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
             if(asn1c_lang_C_OpenType(&tmp_arg, &ioc_tao, column_name)) {
                 return -1;
             }
+            OUT(" %s%s;\n", v->Identifier, 
+                v->marker.flags & EM_OPTIONAL ? "\t/* OPTIONAL */" : "");
             INDENT(-1);
             tmp_arg.embed--;
         } else {
@@ -1017,7 +1019,9 @@ asn1c_lang_C_type_SEx_OF_def(arg_t *arg, int seq_of) {
 	asn1c_ioc_table_and_objset_t el_ioc = {0,0,0};
 	(void)compute_member_ioc(arg, v, &el_ioc);
 		
-	emit_member_table(arg, v, el_ioc.ioct ? &el_ioc : NULL);
+	if(emit_member_table(arg, v, el_ioc.ioct ? &el_ioc : NULL) < 0) {
+		return -1;
+	}
 	
 	arg->embed--;
 	free(v->Identifier);
@@ -1091,7 +1095,7 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 	REDIR(saved_target);
 
 	if(arg->embed) {
-		if (expr->_anonymous_type && arg->embed == 1) {
+		if (expr->_anonymous_type) {
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
@@ -1118,14 +1122,17 @@ asn1c_lang_C_type_CHOICE(arg_t *arg) {
 
 	PCTX_DEF;
 
-	if (arg->embed && expr->_anonymous_type && arg->embed == 1) {
+	if (arg->embed && expr->_anonymous_type) {
 		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"",
 			c_name(arg).base_name);
 
 		REDIR(saved_target);
 
-		OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
-			c_name(arg).base_name);
+		/* Don't output the type name if we're in STAT_DEFS context (member table) */
+		if(saved_target != OT_STAT_DEFS) {
+			OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
+				c_name(arg).base_name);
+		}
 	} else {
 		OUT("} %s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
 			arg->embed ? c_name(arg).as_member : c_name(arg).short_name);
@@ -1193,6 +1200,7 @@ asn1c_lang_C_OpenType(arg_t *arg, asn1c_ioc_table_and_objset_t *opt_ioc,
     open_type_choice->expr_type = ASN_CONSTR_OPEN_TYPE;
     open_type_choice->_type_unique_index = arg->expr->_type_unique_index;
     open_type_choice->parent_expr = arg->expr->parent_expr;
+    open_type_choice->_anonymous_type = 1;
 
     for(size_t row = 0; row < opt_ioc->ioct->rows; row++) {
         struct asn1p_ioc_cell_s *cell =
