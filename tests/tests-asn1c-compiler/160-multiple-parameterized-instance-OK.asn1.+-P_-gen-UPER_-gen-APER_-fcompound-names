@@ -905,7 +905,7 @@ asn_TYPE_member_t asn_MBR_TotalRegionExtension_1[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct TotalRegionExtension, value),
 		.tag = -1 /* Ambiguous tag (ANY?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_3,
 		.type_selector = select_TotalRegionExtension_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1070,7 +1070,7 @@ asn_TYPE_member_t asn_MBR_RegionalExtension3_4[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct RegionalExtension3, value),
 		.tag = -1 /* Ambiguous tag (ANY?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_6,
 		.type_selector = select_RegionalExtension3_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1235,7 +1235,7 @@ asn_TYPE_member_t asn_MBR_RegionalExtension4_7[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct RegionalExtension4, value),
 		.tag = -1 /* Ambiguous tag (ANY?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_9,
 		.type_selector = select_RegionalExtension4_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

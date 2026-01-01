@@ -1002,7 +1002,7 @@ asn_TYPE_member_t asn_MBR_ClassItem_1[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct ClassItem, value),
 		.tag = -1 /* Ambiguous tag (ANY?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_4,
 		.type_selector = select_ClassItem_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

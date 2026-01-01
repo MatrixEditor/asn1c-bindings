@@ -428,7 +428,7 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
             if(asn1c_lang_C_OpenType(&tmp_arg, &ioc_tao, column_name)) {
                 return -1;
             }
-            OUT(" %s%s;\n", v->Identifier, 
+            OUT(" %s%s;\n", MKID_safe(v), 
                 v->marker.flags & EM_OPTIONAL ? "\t/* OPTIONAL */" : "");
             INDENT(-1);
             tmp_arg.embed--;
@@ -3671,7 +3671,8 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 	 */
 	if(complex_contents) {
 		OUT("&asn_DEF_%s", MKID(expr));
-		if(HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL)) {
+		/* Open Types are always generated with suffix since they're embedded */
+		if(is_open_type(arg, expr, opt_ioc) || HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL)) {
 			OUT("_%d", expr->_type_unique_index);
 		}
 		OUT(",\n");

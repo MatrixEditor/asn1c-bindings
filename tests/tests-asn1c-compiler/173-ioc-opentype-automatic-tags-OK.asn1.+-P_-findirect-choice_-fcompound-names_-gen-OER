@@ -364,7 +364,7 @@ static asn_TYPE_member_t asn_MBR_ContentWrapper_1[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct ContentWrapper, content),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
-		.type = &asn_DEF_content,
+		.type = &asn_DEF_content_3,
 		.type_selector = select_ContentWrapper_content_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

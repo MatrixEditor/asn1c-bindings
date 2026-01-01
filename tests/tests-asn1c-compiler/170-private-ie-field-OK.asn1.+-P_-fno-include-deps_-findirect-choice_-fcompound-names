@@ -574,7 +574,7 @@ asn_TYPE_member_t asn_MBR_PrivateMessage_IEs_1[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct PrivateMessage_IEs, value),
 		.tag = -1 /* Ambiguous tag (ANY?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_4,
 		.type_selector = select_PrivateMessage_IEs_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

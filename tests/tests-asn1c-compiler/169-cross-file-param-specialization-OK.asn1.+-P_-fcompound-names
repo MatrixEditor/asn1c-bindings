@@ -730,7 +730,7 @@ asn_TYPE_member_t asn_MBR_SampleIEs_1[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct SampleIEs, value),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_4,
 		.type_selector = select_SampleIEs_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -896,7 +896,7 @@ asn_TYPE_member_t asn_MBR_AnotherIEs_5[] = {
 	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct AnotherIEs, value),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
-		.type = &asn_DEF_value,
+		.type = &asn_DEF_value_8,
 		.type_selector = select_AnotherIEs_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
