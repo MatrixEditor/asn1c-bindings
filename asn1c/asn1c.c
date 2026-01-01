@@ -58,22 +58,22 @@ Copyright (c) 2022-2026 Mouse <mouse07410@noreply.github.com> and contributors.\
 static
 int is_integer(const char *str, long *out_val) {
     char *endptr;
-    errno = 0; // To distinguish success/failure after call
+    errno = 0; /* To distinguish success/failure after call */
 
-    // 10 is the base (decimal)
+    /* 10 is the base (decimal) */
     long val = strtol(str, &endptr, 10);
 
-    // Check for various possible errors
-    if (str == endptr) return 0; // No digits found at all
-    if (errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) return 0; // Overflow
-    if (errno != 0 && val == 0) return 0; // Other conversion error
+    /* Check for various possible errors */
+    if (str == endptr) return 0; /* No digits found at all */
+    if (errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) return 0; /* Overflow */
+    if (errno != 0 && val == 0) return 0; /* Other conversion error */
 
-    // Check for trailing garbage (optional)
-    // If you want to allow "123 ", you'd check if *endptr is whitespace
+    /* Check for trailing garbage (optional) */
+    /* If you want to allow "123 ", you'd check if *endptr is whitespace */
     if (*endptr != '\0') return 0;
 
     if (out_val) *out_val = val;
-    return 1; // Success
+    return 1; /* Success */
 }
 
 static void usage(const char *av0); /* Print the Usage screen and exit */
