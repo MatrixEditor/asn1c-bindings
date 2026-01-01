@@ -337,15 +337,10 @@ CHOICE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
         if(!skip_wrapper) {
             if(!(flags & XER_F_CANONICAL)) {
                  if(elm->type->elements_count > 0
-/*
-                    && elm->type->op != &asn_OP_SEQUENCE
-                    && elm->type->op != &asn_OP_SEQUENCE_OF
-                    && elm->type->op != &asn_OP_SET_OF) {
-*/
-   && elm->type->op->kind != ASN_KIND_SEQUENCE
-   && elm->type->op->kind != ASN_KIND_SEQUENCE_OF
-   && elm->type->op->kind != ASN_KIND_SET_OF
-   && elm->type->op->kind != ASN_KIND_SET)
+                    && elm->type->op->kind != ASN_KIND_SEQUENCE
+                    && elm->type->op->kind != ASN_KIND_SEQUENCE_OF
+                    && elm->type->op->kind != ASN_KIND_SET_OF
+                    && elm->type->op->kind != ASN_KIND_SET)
                  {
                      ASN__TEXT_INDENT(0, ilevel);
                  }
