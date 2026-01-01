@@ -186,8 +186,8 @@ main(int ac, char **av) {
                 char *threshold = optarg + 18;
                 long thresh_val;
                 if ((is_integer(threshold, &thresh_val) != 1)
-                	|| (thresh_val > 500) // let's not be stupid here
-                	|| (thresh_val <= 0)  // again, stupidity not appreciated
+                	|| (thresh_val > 500) /* let's not be stupid here */
+                	|| (thresh_val <= 0)  /* again, stupidity not appreciated */
                 	) {
                 	fprintf(stderr, "-f%s: bad format or value too large\n", optarg);
 	                exit(EX_USAGE);
