@@ -301,20 +301,24 @@ typedef enum PrivateMessage_IEs__value_PR {
 	PrivateMessage_IEs__value_PR_INTEGER
 } PrivateMessage_IEs__value_PR;
 
+/*** <<< FWD-DEFS [PrivateIE-Field] >>> ***/
+
+typedef struct PrivateMessage_IEs__value {
+	PrivateMessage_IEs__value_PR present;
+	union PrivateMessage_IEs__value_u {
+		long	 INTEGER;
+	} choice;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} PrivateMessage_IEs__value;
+
 /*** <<< TYPE-DECLS [PrivateIE-Field] >>> ***/
 
 typedef struct PrivateMessage_IEs {
 	PrivateIE_ID_t	 id;
 	Criticality_t	 criticality;
-	struct PrivateMessage_IEs__value {
-		PrivateMessage_IEs__value_PR present;
-		union PrivateMessage_IEs__value_u {
-			long	 INTEGER;
-		} choice;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} value;
+	PrivateMessage_IEs__value value;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -345,17 +349,6 @@ static const asn_ioc_set_t asn_IOS_PrivateMessage_IEs_1[] = {
 
 /*** <<< CODE [PrivateIE-Field] >>> ***/
 
-#ifndef ASN1C_NO_UNSUFFIXED_PDU_ALIAS
-#if defined(__ELF__) && (defined(__GNUC__) || defined(__clang__))
-extern asn_TYPE_descriptor_t asn_DEF_value __attribute__((weak, alias("asn_DEF_value_4")));
-#else
-static asn_TYPE_descriptor_t asn_DEF_value_4;
-asn_TYPE_descriptor_t asn_DEF_value;
-__attribute__((constructor)) static void asn_DEF_value_4_alias_init(void) {
-	asn_DEF_value = asn_DEF_value_4;
-}
-#endif
-#endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
 static int
 memb_id_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
@@ -513,8 +506,8 @@ static asn_CHOICE_specifics_t asn_SPC_value_specs_4 = {
 };
 static /* Use -fall-defs-global to expose */
 asn_TYPE_descriptor_t asn_DEF_value_4 = {
-	"value",
-	"value",
+	"OPEN TYPE",
+	"OPEN_TYPE",
 	&asn_OP_OPEN_TYPE,
 	0,	/* No effective tags (pointer) */
 	0,	/* No effective tags (count) */

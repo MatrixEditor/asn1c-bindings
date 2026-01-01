@@ -153,19 +153,23 @@ typedef enum ContentWrapper__content_PR {
 
 struct PersonInfo;
 
+/*** <<< FWD-DEFS [ContentWrapper] >>> ***/
+
+typedef struct ContentWrapper__content {
+	ContentWrapper__content_PR present;
+	union ContentWrapper__content_u {
+		struct PersonInfo	*PersonInfo;
+	} choice;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ContentWrapper__content;
+
 /*** <<< TYPE-DECLS [ContentWrapper] >>> ***/
 
 typedef struct ContentWrapper {
 	OBJECT_IDENTIFIER_t	 contentType;
-	struct ContentWrapper__content {
-		ContentWrapper__content_PR present;
-		union ContentWrapper__content_u {
-			struct PersonInfo	*PersonInfo;
-		} choice;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} content;
+	ContentWrapper__content content;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -194,17 +198,6 @@ static const asn_ioc_set_t asn_IOS_SupportedContentTypes_1[] = {
 
 /*** <<< CODE [ContentWrapper] >>> ***/
 
-#ifndef ASN1C_NO_UNSUFFIXED_PDU_ALIAS
-#if defined(__ELF__) && (defined(__GNUC__) || defined(__clang__))
-extern asn_TYPE_descriptor_t asn_DEF_content __attribute__((weak, alias("asn_DEF_content_3")));
-#else
-static asn_TYPE_descriptor_t asn_DEF_content_3;
-asn_TYPE_descriptor_t asn_DEF_content;
-__attribute__((constructor)) static void asn_DEF_content_3_alias_init(void) {
-	asn_DEF_content = asn_DEF_content_3;
-}
-#endif
-#endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
 static int
 memb_contentType_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
@@ -323,8 +316,8 @@ static asn_CHOICE_specifics_t asn_SPC_content_specs_3 = {
 };
 static /* Use -fall-defs-global to expose */
 asn_TYPE_descriptor_t asn_DEF_content_3 = {
-	"content",
-	"content",
+	"OPEN TYPE",
+	"OPEN_TYPE",
 	&asn_OP_OPEN_TYPE,
 	0,	/* No effective tags (pointer) */
 	0,	/* No effective tags (count) */
