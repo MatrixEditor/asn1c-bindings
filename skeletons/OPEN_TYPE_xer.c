@@ -392,11 +392,6 @@ OPEN_TYPE_xer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
         if(!skip_wrapper) {
              if(!(flags & XER_F_CANONICAL)) {
                  if(selected.type_descriptor->elements_count > 0
-/*
-                    && selected.type_descriptor->op != &asn_OP_SEQUENCE
-                    && selected.type_descriptor->op != &asn_OP_SEQUENCE_OF
-                    && selected.type_descriptor->op != &asn_OP_SET_OF) 
-*/
    && selected.type_descriptor->op->kind != ASN_KIND_SEQUENCE
    && selected.type_descriptor->op->kind != ASN_KIND_SEQUENCE_OF
    && selected.type_descriptor->op->kind != ASN_KIND_SET_OF
