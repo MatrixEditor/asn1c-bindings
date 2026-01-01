@@ -79,7 +79,7 @@ int is_integer(const char *str, long *out_val) {
 static void usage(const char *av0); /* Print the Usage screen and exit */
 static int importStandardModules(asn1p_t *asn, const char *skeletons_dir);
 
-int complex_threshold = 4;  /* threshold after which complex_level is true (DIRTY HACK */
+int complex_threshold = 4;  /* threshold after which complex_level is true (DIRTY HACK) */
 
 int
 main(int ac, char **av) {
