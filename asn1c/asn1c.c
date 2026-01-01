@@ -192,7 +192,7 @@ main(int ac, char **av) {
                 	fprintf(stderr, "-f%s: bad format or value too large\n", optarg);
 	                exit(EX_USAGE);
 	            }
-                complex_threshold = (int) (thresh_val & 0x0ffff);
+                complex_threshold = (int)thresh_val;
             } else {
                 fprintf(stderr, "-f%s: Invalid argument\n", optarg);
                 exit(EX_USAGE);
