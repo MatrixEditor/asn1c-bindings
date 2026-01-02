@@ -144,6 +144,9 @@ Rectangle ::= SEQUENCE {
     width   INTEGER
 }
 
+-- ENCODING-CONTROL directives can be added to customize XER encoding.
+-- See \fref{sec:ENCODING-CONTROL} for details.
+
 END
 \end{asn}
 
@@ -414,6 +417,13 @@ ASN.1 types. The compiler also creates the code which allows automatic
 serialization and deserialization of these structures using several
 standardized encoding rules (BER, DER, OER, PER, XER).
 
+The compiler includes advanced features for handling complex specifications:
+\begin{itemize}
+\item \textbf{ENCODING-CONTROL directives} for customizing XER encoding (see \fref{sec:ENCODING-CONTROL})
+\item \textbf{Circular dependency detection and resolution} for complex type graphs (see \fref{sec:Circular-Dependencies})
+\item \textbf{Information Object Class support} for protocol specifications like F1AP (see \fref{sec:IOC-Support})
+\end{itemize}
+
 Let's take the following ASN.1 example%
 \footnote{\Fref{chap:Abstract-Syntax-Notation} provides a quick reference
 on the ASN.1 notation.}:
@@ -545,7 +555,7 @@ This is a violation of an ASN.1 standard and compiler may fail to produce the me
 name clashes in case the module reuses the same identifiers in multiple
 contexts.}\\
 {\ttfamily -findirect-choice} & {\small When generating code for a CHOICE type, compile the CHOICE
-members as indirect pointers instead of declaring them inline. Consider
+members as indirect pointers instead of declaring them inline. Also affects Information Object Class OPEN\_TYPE pointer generation. Consider
 using this option together with \texttt{-fno-include-deps}
 to prevent circular references.}\\
 {\ttfamily -fincludes-quoted} & {\small Generate \#include lines in "double" instead of <angle> quotes.}\\
@@ -569,7 +579,8 @@ may produce a shorter executable.}\\
 {\ttfamily -no-gen-random-fill} & {\small Do not generate the random fill code.}\\
 {\ttfamily -no-gen-example} & {\small Do not generate the ASN.1 format converter example.}\\
 {\ttfamily -pdu=\{\textbf{all}|\textbf{auto}|\emph{Type}\}} & {\small Create a PDU table for specified types, or discover the Protocol Data Units automatically.
-In case of \texttt{-pdu=\textbf{all}}, all ASN.1 types defined in all modules will form a PDU table. In case of \texttt{-pdu=\textbf{auto}}, all types not referenced by any other type will form a PDU table. If \texttt{\emph{Type}} is an ASN.1 type identifier, it is added to a PDU table. The last form may be specified multiple times.}\\ \\
+In case of \texttt{-pdu=\textbf{all}}, all ASN.1 types defined in all modules will form a PDU table. In case of \texttt{-pdu=\textbf{auto}}, all types not referenced by any other type will form a PDU table. If \texttt{\emph{Type}} is an ASN.1 type identifier, it is added to a PDU table. The last form may be specified multiple times.}\\
+{\ttfamily -fgen-only-pdu-deps} & {\small Generate code only for types that are dependencies of \texttt{-pdu} types. This includes types referenced in Information Object Class tables, parameterized types, and constraint-based IOC references. Useful for large specifications like F1AP where only a subset of types is needed. See \fref{sec:IOC-Support}.}\\ \\
 \textbf{Output Options} & \textbf{Description}\\
 \midrule
 {\ttfamily -print-class-matrix} & {\small When \texttt{-EF} options are given, this option instructs the compiler to print out the collected Information Object Class matrix.}\\
@@ -1896,6 +1907,397 @@ ASN_STRUCT_FREE(asn_DEF_Rectangle, rect);
 \end{codesample}
 It is safe to invoke both macros with the target structure pointer
 set to 0 (NULL). In this case, the function will do nothing.
+
+\chapter{Advanced Features}
+
+\section{\label{sec:ENCODING-CONTROL}ENCODING-CONTROL Directives}
+
+The ENCODING-CONTROL directive allows you to customize how specific types are encoded 
+and decoded in XML Encoding Rules (XER). This feature is particularly useful when you 
+need to control the representation of binary data in XML documents.
+
+\subsection*{Syntax}
+
+The ENCODING-CONTROL directive is specified within an ASN.1 module using the following syntax:
+
+\begin{asn}
+ENCODING-CONTROL <encoding-reference>
+    <type-name> <type-constraint> ::= <encoding-format>
+    ...
+END
+\end{asn}
+
+Where:
+\begin{itemize}
+\item \textbf{encoding-reference}: The encoding rules to which the directive applies (e.g., \texttt{XER})
+\item \textbf{type-name}: The name of the type being controlled
+\item \textbf{type-constraint}: The ASN.1 type (e.g., \texttt{OCTET STRING})
+\item \textbf{encoding-format}: The desired encoding format (see below)
+\end{itemize}
+
+\subsection*{Supported Encoding Formats}
+
+The following encoding formats are currently supported for OCTET STRING types:
+
+\begin{itemize}
+\item \textbf{hexadecimal}: Encodes binary data as hexadecimal digits (0-9, A-F)
+\item \textbf{base64}: Encodes binary data using Base64 encoding (default behavior)
+\item \textbf{utf8}: Treats the OCTET STRING as UTF-8 text and encodes it directly
+\end{itemize}
+
+\subsection*{Example}
+
+Consider a PKI application that needs to encode certificate extensions:
+
+\begin{asn}
+CertificateModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+Extension ::= SEQUENCE {
+    extnID      OBJECT IDENTIFIER,
+    critical    BOOLEAN DEFAULT FALSE,
+    extnValue   ExtensionValue
+}
+
+ExtensionValue ::= OCTET STRING
+
+ENCODING-CONTROL XER
+    ExtensionValue OCTET STRING ::= hexadecimal
+END
+
+END
+\end{asn}
+
+With this directive, when encoding an Extension to XER format, the \texttt{extnValue} 
+field will be represented as hexadecimal:
+
+\begin{example}
+<Extension>
+    <extnID>2.5.29.19</extnID>
+    <critical>true</critical>
+    <extnValue>30030101FF</extnValue>
+</Extension>
+\end{example}
+
+Without the ENCODING-CONTROL directive, the same data would be Base64-encoded by default.
+
+\subsection*{Compilation}
+
+When compiling ASN.1 modules containing ENCODING-CONTROL directives, the compiler 
+generates custom XER encoder and decoder functions for the affected types:
+
+\begin{bash}
+asn1c -no-gen-example CertificateModule.asn1
+\end{bash}
+
+The compiler will output a note indicating which encoding controls were applied:
+
+\begin{bash}
+NOTE: ENCODING-CONTROL XER at CertificateModule.asn1:15 with 1 directive(s)
+NOTE: Applied 1 encoding control directive(s) in module CertificateModule
+\end{bash}
+
+\subsection*{Runtime Behavior}
+
+At runtime, types with ENCODING-CONTROL directives use custom encoder and decoder functions:
+
+\begin{itemize}
+\item \textbf{hexadecimal}: Binary data \texttt{\{0xDE, 0xAD, 0xBE, 0xEF\}} encodes as \texttt{DEADBEEF}
+\item \textbf{utf8}: Text data "Hello World" encodes directly without Base64 wrapping
+\item \textbf{base64}: Standard Base64 encoding (unchanged from default behavior)
+\end{itemize}
+
+\subsection*{XER Decoding Support}
+
+The XER decoder has been enhanced to support X.693 hexadecimal string notation using 
+the \texttt{H'...'} syntax:
+
+\begin{example}
+<Extension>
+    <extnValue>H'30030101FF'</extnValue>
+</Extension>
+\end{example}
+
+This notation is automatically recognized and decoded by the \code{OCTET\_STRING\_decode\_xer()} 
+function through the enhanced \code{OCTET\_STRING\_\_convert\_auto()} converter.
+
+\subsection*{See also}
+
+For implementation details, see:
+\begin{itemize}
+\item \texttt{libasn1compiler/asn1c\_encoding.c} -- Encoding control application logic
+\item \texttt{skeletons/OCTET\_STRING\_xer.c} -- Runtime XER encoding/decoding functions
+\item \texttt{ENCODING\_CONTROL\_STATUS.md} -- Complete implementation status
+\end{itemize}
+
+\section{\label{sec:Circular-Dependencies}Circular Dependency Handling}
+
+Circular dependencies occur when two or more ASN.1 types reference each other, 
+directly or indirectly, creating a cycle in the type dependency graph. The asn1c 
+compiler includes sophisticated mechanisms to detect and resolve these dependencies.
+
+\subsection*{Detection}
+
+The compiler analyzes the type dependency graph to identify circular references. 
+For example:
+
+\begin{asn}
+Node ::= SEQUENCE {
+    value   INTEGER,
+    next    Node OPTIONAL     -- References itself
+}
+
+TypeA ::= SEQUENCE {
+    field-b TypeB OPTIONAL
+}
+
+TypeB ::= SEQUENCE {
+    field-a TypeA OPTIONAL
+}
+\end{asn}
+
+In the first example, \texttt{Node} has a self-reference. In the second, \texttt{TypeA} 
+and \texttt{TypeB} reference each other, creating a circular dependency.
+
+\subsection*{Resolution Strategies}
+
+The compiler employs several strategies to break circular dependencies:
+
+\subsubsection*{1. Automatic Pointer Indirection}
+
+When a circular dependency is detected, the compiler automatically converts certain 
+type members to pointers. This is the most common resolution mechanism.
+
+\subsubsection*{2. The \texttt{-findirect-choice} Flag}
+
+This flag forces CHOICE type members to be compiled as indirect pointers:
+
+\begin{bash}
+asn1c -findirect-choice module.asn1
+\end{bash}
+
+This is particularly useful for:
+\begin{itemize}
+\item Complex specifications with many CHOICE types (e.g., F1AP, NGAP)
+\item Information Object Class OPEN\_TYPE fields
+\item Breaking circular dependencies involving CHOICE constructs
+\end{itemize}
+
+\subsection*{Example: F1AP Compilation}
+
+The F1AP specification is a complex 3GPP protocol with extensive circular dependencies. 
+To successfully compile F1AP:
+
+\begin{bash}
+asn1c -findirect-choice F1AP-PDU-Descriptions.asn1 \textbackslash
+      F1AP-IEs.asn1 F1AP-Containers.asn1 F1AP-Constants.asn1
+\end{bash}
+
+This approach:
+\begin{enumerate}
+\item Forces CHOICE members to be indirect pointers
+\item Breaks circular dependencies involving CHOICE types
+\item Handles Information Object Class tables correctly
+\end{enumerate}
+
+\subsection*{Generated Code}
+
+For a type with circular dependencies, the compiler converts members to pointers:
+
+\begin{example}
+/* Original ASN.1:
+ * Node ::= SEQUENCE {
+ *     value   INTEGER,
+ *     next    Node OPTIONAL
+ * }
+ */
+
+/* Generated C: */
+typedef struct Node {
+    long      value;
+    struct Node  *next;  /* OPTIONAL, pointer to break cycle */
+} Node_t;
+\end{example}
+
+Without proper handling, the compiler might fail with "circular dependency" errors, or 
+generate code that causes C compiler errors.
+
+\subsection*{Backward Compatibility}
+
+The circular dependency detection maintains backward compatibility:
+\begin{itemize}
+\item Default behavior: only actual cycles trigger pointer indirection
+\item The \texttt{-findirect-choice} flag must be explicitly enabled for CHOICE indirection
+\item Existing ASN.1 modules compile without modification
+\item Generated code remains compatible with existing applications
+\end{itemize}
+
+\subsection*{See also}
+
+For implementation details:
+\begin{itemize}
+\item \texttt{libasn1compiler/asn1c\_constraint.c} -- Circular dependency detection
+\item \texttt{libasn1fix/asn1fix\_crange.c} -- Constraint range fixing with cycle detection
+\end{itemize}
+
+\section{\label{sec:IOC-Support}Information Object Class Support}
+
+Information Object Classes (IOCs) are an advanced ASN.1 feature used for defining 
+protocol data structures with type-value relationships. The asn1c compiler provides 
+comprehensive support for IOC tables and their use in type definitions.
+
+\subsection*{What are Information Object Classes?}
+
+Information Object Classes define relationships between identifiers (like OBJECT IDENTIFIERs 
+or INTEGERs) and associated types. They are commonly used in telecommunications protocols 
+to define extensible message structures.
+
+\begin{asn}
+PROTOCOL-IE ::= CLASS {
+    &id                 ProtocolIE-ID UNIQUE,
+    &criticality        Criticality,
+    &Value,
+    &presence           Presence
+}
+WITH SYNTAX {
+    ID                  &id
+    CRITICALITY         &criticality
+    TYPE                &Value
+    PRESENCE            &presence
+}
+
+ProtocolIE-Container { PROTOCOL-IE : IEsSetParam } ::= 
+    SEQUENCE (SIZE (0..maxProtocolIEs)) OF
+        ProtocolIE-Field { {IEsSetParam} }
+
+ProtocolIE-Field { PROTOCOL-IE : IEsSetParam } ::= SEQUENCE {
+    id                  PROTOCOL-IE.&id          ({IEsSetParam}),
+    criticality         PROTOCOL-IE.&criticality ({IEsSetParam}{@id}),
+    value               PROTOCOL-IE.&Value       ({IEsSetParam}{@id})
+}
+\end{asn}
+
+\subsection*{Code Generation with \texttt{-fgen-only-pdu-deps}}
+
+The \texttt{-fgen-only-pdu-deps} flag generates code only for types that are dependencies 
+of PDU types. This is particularly useful for large specifications:
+
+\begin{bash}
+asn1c -pdu=F1AP-PDU -fgen-only-pdu-deps F1AP-*.asn1
+\end{bash}
+
+The compiler performs sophisticated analysis to include all necessary types:
+
+\begin{enumerate}
+\item \textbf{Direct dependencies}: Types directly referenced by PDU types
+\item \textbf{IOC table references}: Types referenced in Information Object Class tables
+\item \textbf{Parameterized types}: Specializations of parameterized types
+\item \textbf{Constraint-based IOC references}: Types referenced through IOC constraints
+\item \textbf{Transitive dependencies}: All dependencies of included types
+\end{enumerate}
+
+\subsection*{IOC Table Traversal}
+
+The compiler traverses IOC tables to identify all referenced types:
+
+\begin{itemize}
+\item Examines each Information Object in the table
+\item Extracts type references from object fields
+\item Follows parameterized type instantiations
+\item Resolves constraint-based type selections
+\item Marks all discovered types for code generation
+\end{itemize}
+
+\subsection*{Example: F1AP Protocol}
+
+F1AP uses extensive IOC tables for protocol IEs (Information Elements):
+
+\begin{bash}
+asn1c -pdu=F1AP-PDU -fgen-only-pdu-deps -findirect-choice \textbackslash
+      F1AP-PDU-Descriptions.asn1 F1AP-IEs.asn1 F1AP-Containers.asn1
+\end{bash}
+
+This generates code for:
+\begin{itemize}
+\item The \texttt{F1AP-PDU} type itself
+\item All IEs referenced in F1AP protocol message definitions
+\item Container types (ProtocolIE-Container, etc.)
+\item All types referenced in IOC tables for these IEs
+\item Parameterized type specializations
+\end{itemize}
+
+Without IOC table traversal, many required types would be omitted, resulting in 
+incomplete or non-compilable generated code.
+
+\subsection*{Parameterized Types}
+
+IOC-based definitions often use parameterized types:
+
+\begin{asn}
+Container { TYPE-CLASS : TypeSet } ::= SEQUENCE (SIZE(1..100)) OF
+    Element { {TypeSet} }
+
+Element { TYPE-CLASS : TypeSet } ::= SEQUENCE {
+    id      TYPE-CLASS.&id      ({TypeSet}),
+    value   TYPE-CLASS.&Value   ({TypeSet}{@id})
+}
+\end{asn}
+
+The compiler:
+\begin{enumerate}
+\item Identifies parameterized type instantiations
+\item Generates specialized versions for each instantiation
+\item Includes all types referenced in the specializations
+\item Maintains correct type relationships
+\end{enumerate}
+
+\subsection*{OPEN TYPE Handling}
+
+When combined with \texttt{-findirect-choice}, IOC OPEN\_TYPE fields are generated 
+as indirect pointers:
+
+\begin{example}
+/* ASN.1 OPEN TYPE field:
+ * value   PROTOCOL-IE.&Value  ({IEsSetParam}{@id})
+ */
+
+/* Generated C structure: */
+typedef struct ProtocolIE_Field {
+    long                     id;
+    long                     criticality;
+    struct value_OpenType   *value;  /* Indirect pointer */
+} ProtocolIE_Field_t;
+\end{example}
+
+This prevents circular dependencies and improves code organization for complex protocols.
+
+\subsection*{Benefits}
+
+Using \texttt{-fgen-only-pdu-deps} with IOC support:
+\begin{itemize}
+\item Reduces generated code size (only needed types)
+\item Faster compilation of large specifications
+\item Smaller executable binaries
+\item Easier code review and maintenance
+\item Complete and correct dependency resolution
+\end{itemize}
+
+\subsection*{Limitations}
+
+Current limitations:
+\begin{itemize}
+\item IOC table analysis is best-effort; complex constraint expressions may be incomplete
+\item Some rare IOC usage patterns may not be fully analyzed
+\item Generated code should be tested to verify all required types are present
+\end{itemize}
+
+\subsection*{See also}
+
+Implementation details:
+\begin{itemize}
+\item \texttt{libasn1compiler/asn1c\_ioc.c} -- IOC table handling
+\item \texttt{libasn1compiler/asn1c\_C.c} -- Code generation with IOC support
+\item \texttt{libasn1fix/asn1fix\_param.c} -- Parameterized type handling
+\end{itemize}
 
 \chapter{\label{chap:Abstract-Syntax-Notation}Abstract Syntax Notation: ASN.1}
 
