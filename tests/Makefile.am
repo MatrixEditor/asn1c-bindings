@@ -7,6 +7,7 @@ SUBDIRS = \
     tests-c-compiler        \
     tests-randomized        \
     ioc-v2x                 \
+    ieee1609-ioc            \
     f1ap-regression  
 
 EXTRA_DIST = README

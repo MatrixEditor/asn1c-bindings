@@ -3338,6 +3338,26 @@ static int
 emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *opt_ioc) {
 	int save_target = arg->target->target;
     asn1p_expr_t *parent_expr = arg->expr;
+    
+    /*
+     * When processing a member of a SEQUENCE OF or SET OF, the parent_expr
+     * (arg->expr) points to the SEQUENCE OF/SET OF itself. However, IOC
+     * constraints like {@.field} need to look in the parent of the SEQUENCE OF,
+     * not in the SEQUENCE OF itself (which has no named members).
+     * 
+     * Example: ContributedExtensionBlock ::= SEQUENCE {
+     *   contributorId ...,
+     *   extns SEQUENCE OF Type({ObjectSet}{@.contributorId})
+     * }
+     * When processing the SEQUENCE OF member, we need to find 'contributorId'
+     * in ContributedExtensionBlock, not in the SEQUENCE OF 'extns'.
+     */
+    if(parent_expr && (parent_expr->expr_type == ASN_CONSTR_SEQUENCE_OF
+                       || parent_expr->expr_type == ASN_CONSTR_SET_OF)) {
+        if(parent_expr->parent_expr) {
+            parent_expr = parent_expr->parent_expr;
+        }
+    }
 
     const asn1p_constraint_t *crc =
         asn1p_get_component_relation_constraint(expr->combined_constraints);
@@ -3351,7 +3371,7 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
         asn1c_get_information_object_set_reference_from_constraint(arg, crc);
 
     if(!objset_ref) {
-        FATAL("Constraint %s does not look like it referst to a set type %s",
+        FATAL("Constraint %s does not look like it refers to a set type %s",
               asn1p_constraint_string(crc),
               opt_ioc->objset->Identifier);
         return -1;
@@ -3518,10 +3538,18 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
     OUT("size_t for_column = %zu; /* %s */\n", for_column, for_field);
     OUT("size_t row, presence_index = 0;\n");
 
+    /* 
+     * Generate struct name for parent_expr where the constraining member is located.
+     * We need a temporary arg structure with parent_expr as the expression.
+     */
+    arg_t parent_arg = *arg;
+    parent_arg.expr = parent_expr;
+    const char *parent_struct_name = c_name(&parent_arg).full_name;
+
     const char *tname = asn1c_type_name(arg, constraining_memb, TNF_SAFE);
     if(constraining_memb->marker.flags & EM_INDIRECT) {
         OUT("const void *memb_ptr = *(const void **)");
-        OUT("((const char *)parent_sptr + offsetof(%s", c_name(arg).full_name);
+        OUT("((const char *)parent_sptr + offsetof(%s", parent_struct_name);
         OUT(", %s));", MKID_safe(constraining_memb));
         OUT("if(!memb_ptr) return result;\n");
         OUT("\n");
@@ -3542,7 +3570,7 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
     if(constraining_memb->marker.flags & EM_INDIRECT) {
         OUT("memb_ptr;\n");
     } else {
-        OUT("((const char *)parent_sptr + offsetof(%s", c_name(arg).full_name);
+        OUT("((const char *)parent_sptr + offsetof(%s", parent_struct_name);
         OUT(", %s));\n", MKID_safe(constraining_memb));
     }
     OUT("\n");
