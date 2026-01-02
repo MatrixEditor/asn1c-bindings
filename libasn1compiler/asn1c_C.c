@@ -4302,6 +4302,7 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 		terminal = terminal_structable(arg, expr);
 		if(terminal && terminal != arg->expr) {
 			int complex_members = 0;
+			int optional_complex_members = 0;
 			asn1p_expr_t *memb;
 			
 			/* Count how many members are themselves complex types */
@@ -4309,6 +4310,9 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 				asn1p_expr_t *memb_terminal = terminal_structable(arg, memb);
 				if(memb_terminal && (memb_terminal->expr_type & ASN_CONSTR_MASK)) {
 					complex_members++;
+					if(memb->marker.flags & EM_OPTIONAL) {
+						optional_complex_members++;
+					}
 				}
 			}
 			
@@ -4317,10 +4321,14 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 			 * that might not be caught by simple recursion detection.
 			 * This threshold is chosen to avoid breaking existing test expectations
 			 * while still handling deeply nested structures like F1AP's SRSConfig.
+			 * 
+			 * Also use indirection if there are 2+ optional complex members,
+			 * as these often create circular include chains (e.g., F1AP's
+			 * CompositeAvailableCapacity -> CapacityValue -> ... -> CompositeAvailableCapacityGroup).
+			 * Making them pointers breaks the circular dependency.
 			 */
-			if(complex_members >= complex_threshold) {
-				expr->marker.flags |= EM_INDIRECT;
-				expr->marker.flags |= EM_UNRECURSE;
+			if(complex_members >= complex_threshold || optional_complex_members >= 2) {
+				expr->marker.flags |= EM_INDIRECT | EM_UNRECURSE;
 				return 1;
 			}
 		}
