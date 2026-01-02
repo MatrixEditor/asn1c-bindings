@@ -4424,15 +4424,20 @@ check_is_refer_to_enhanced(arg_t *arg, circ_detect_ctx_t *ctx) {
 	int maxret = 0;
 	asn1p_expr_t *memb;
 	TQ_FOR(memb, &(terminal->members), next) {
-		/* Only follow constructed type members that could create circular dependencies.
-		 * Skip: 
-		 * - Members already converted to pointers (EM_INDIRECT)
-		 * - Optional members (already break cycles through pointer indirection)
-		 * - Non-constructed types (primitive types can't create circular dependencies)
+		/* Follow all constructed type members to detect circular #include dependencies.
+		 * 
+		 * Note: We must follow optional members (EM_OPTIONAL) even though they become
+		 * pointers in the struct. Optional members still create circular #include
+		 * dependencies because the header file needs the full type definition for
+		 * the "Referred external types" section that appears after the header guard.
+		 * This is critical for complex specifications like F1AP where optional members
+		 * create circular include chains (e.g., CompositeAvailableCapacity -> CapacityValue
+		 * -> SSBAreaCapacityValueList -> ... -> CompositeAvailableCapacityGroup ->
+		 * CompositeAvailableCapacity).
+		 * 
+		 * The cycle detection (checking if terminal is already in path) prevents
+		 * infinite recursion.
 		 */
-		if(memb->marker.flags & (EM_INDIRECT | EM_OPTIONAL)) {
-			continue;
-		}
 		
 		/* Check if this member is a constructed type reference */
 		if(memb->expr_type != A1TC_REFERENCE) {
