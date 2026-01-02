@@ -61,7 +61,7 @@ if ! ${CC:-cc} $CFLAGS -c ContributedExtensionBlock.c -o ContributedExtensionBlo
 fi
 
 # Super-test to ensure everything here compiles and links
-CFLAGS="-I. -I${SKELETONS_DIR} -Wno-parentheses-equality" make -f converter-example.mk
+make CFLAGS="-I. -I${SKELETONS_DIR} -Wno-parentheses-equality" -f converter-example.mk
 echo ""
 
 echo "OK: IEEE 1609.2 IOC test passed"
