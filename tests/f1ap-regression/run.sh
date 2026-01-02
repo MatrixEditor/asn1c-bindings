@@ -26,21 +26,10 @@ echo "srcdir=${srcdir} abs_top_builddir=${abs_top_builddir} abs_top_srcdir=${abs
 ${ASN1C_EXE} -S "${SKELETONS_DIR}" \
   -fcompound-names \
   -findirect-choice \
-  -no-gen-BER \
-  -no-gen-XER \
-  -no-gen-JER \
-  -no-gen-OER \
-  -no-gen-example \
   F1AP-16.7.0.asn
 
-# Test compilation of the specific files that failed in the bug report
-echo "Compiling CompositeAvailableCapacity.c..."
-${CC:-cc} -c -I. CompositeAvailableCapacity.c -o CompositeAvailableCapacity.o
-
-echo "Compiling CompositeAvailableCapacityGroup.c..."
-${CC:-cc} -c -I. CompositeAvailableCapacityGroup.c -o CompositeAvailableCapacityGroup.o
-
-echo "Compiling CapacityValue.c..."
-${CC:-cc} -c -I. CapacityValue.c -o CapacityValue.o
+# Test compilation of everything
+echo "Attempt to build converter-example"
+make -f converter-example.mk
 
 echo "F1AP test PASSED: Code generated and compiled successfully"
