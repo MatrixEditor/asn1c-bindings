@@ -54,10 +54,14 @@ fi
 
 # Try to compile the generated code
 echo "Compiling generated code..."
-CFLAGS="-I. -I${SKELETONS_DIR} -Werror -Wall"
+CFLAGS="-I. -I${SKELETONS_DIR} -Werror -Wall" 
 if ! ${CC:-cc} $CFLAGS -c ContributedExtensionBlock.c -o ContributedExtensionBlock.o; then
   echo "ERROR: Generated code does not compile" >&2
   exit 1
 fi
+
+# Super-test to ensure everything here compiles and links
+CFLAGS="-I. -I${SKELETONS_DIR} -Wno-parentheses-equality" make -f converter-example.mk
+echo ""
 
 echo "OK: IEEE 1609.2 IOC test passed"

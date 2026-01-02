@@ -1,12 +1,18 @@
 dist_check_SCRIPTS = run.sh
-TESTS = $(dist_check_SCRIPTS)
-EXTRA_DIST = $(dist_check_SCRIPTS) ieee1609-contributed-extension.asn1
-CLEANFILES = *.c *.h *.o Makefile.am.* converter-example.mk pdu_collection.c asn_constant.h
 
 TESTS_ENVIRONMENT = \
-    top_builddir='$(top_builddir)' \
-    srcdir='$(srcdir)' \
-    builddir='$(builddir)'
+	abs_top_srcdir=${abs_top_srcdir} \
+	abs_top_builddir=${abs_top_builddir} \
+	srcdir=${srcdir}
 
+TESTS = $(dist_check_SCRIPTS)
+
+EXTRA_DIST = ieee1609-contributed-extension.asn1
+
+CLEANFILES = *.[choa] converter-example converter-example.mk Makefile.am.* asn_constant.h
+
+# Remove files copied from srcdir during out-of-tree builds (distcheck)
 clean-local:
-	-rm -f ieee1609-contributed-extension.asn1
+	if [ "$(srcdir)" != "." ]; then \
+		rm -f ieee1609-contributed-extension.asn1; \
+	fi
