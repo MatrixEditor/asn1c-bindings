@@ -4322,12 +4322,18 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 			 * This threshold is chosen to avoid breaking existing test expectations
 			 * while still handling deeply nested structures like F1AP's SRSConfig.
 			 * 
-			 * Also use indirection if there are 2+ optional complex members,
-			 * as these often create circular include chains (e.g., F1AP's
-			 * CompositeAvailableCapacity -> CapacityValue -> ... -> CompositeAvailableCapacityGroup).
-			 * Making them pointers breaks the circular dependency.
+			 * Also use indirection when both -findirect-choice and -fcompound-names
+			 * are set AND there are 2+ optional complex members. This targets complex
+			 * specifications like F1AP that have circular include chains (e.g.,
+			 * CompositeAvailableCapacity -> CapacityValue -> ... ->
+			 * CompositeAvailableCapacityGroup). Making them pointers breaks the
+			 * circular dependency. Requiring both flags minimizes impact on existing
+			 * code (test 92-circular-loops-OK.asn1 only uses -findirect-choice).
 			 */
-			if(complex_members >= complex_threshold || optional_complex_members >= 2) {
+			if(complex_members >= complex_threshold ||
+			   ((arg->flags & (A1C_INDIRECT_CHOICE | A1C_COMPOUND_NAMES)) == 
+			    (A1C_INDIRECT_CHOICE | A1C_COMPOUND_NAMES) &&
+			    optional_complex_members >= 2)) {
 				expr->marker.flags |= EM_INDIRECT | EM_UNRECURSE;
 				return 1;
 			}
