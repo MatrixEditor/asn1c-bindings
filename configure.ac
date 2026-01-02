@@ -315,6 +315,7 @@ tests/tests-randomized/Makefile             \
 tests/tests-c-compiler/Makefile             \
 tests/tests-skeletons/Makefile              \
 tests/ioc-v2x/Makefile                      \
+tests/ieee1609-ioc/Makefile                 \
 tests/f1ap-regression/Makefile              \
 asn1-tools/enber/Makefile                   \
 asn1-tools/unber/Makefile                   \
