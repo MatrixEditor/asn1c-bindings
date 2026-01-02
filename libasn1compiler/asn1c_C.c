@@ -4302,7 +4302,6 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 		terminal = terminal_structable(arg, expr);
 		if(terminal && terminal != arg->expr) {
 			int complex_members = 0;
-			int optional_complex_members = 0;
 			asn1p_expr_t *memb;
 			
 			/* Count how many members are themselves complex types */
@@ -4310,9 +4309,6 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 				asn1p_expr_t *memb_terminal = terminal_structable(arg, memb);
 				if(memb_terminal && (memb_terminal->expr_type & ASN_CONSTR_MASK)) {
 					complex_members++;
-					if(memb->marker.flags & EM_OPTIONAL) {
-						optional_complex_members++;
-					}
 				}
 			}
 			
@@ -4321,20 +4317,10 @@ expr_break_recursion(arg_t *arg, asn1p_expr_t *expr) {
 			 * that might not be caught by simple recursion detection.
 			 * This threshold is chosen to avoid breaking existing test expectations
 			 * while still handling deeply nested structures like F1AP's SRSConfig.
-			 * 
-			 * Also use indirection when both -findirect-choice and -fcompound-names
-			 * are set AND there are 2+ optional complex members. This targets complex
-			 * specifications like F1AP that have circular include chains (e.g.,
-			 * CompositeAvailableCapacity -> CapacityValue -> ... ->
-			 * CompositeAvailableCapacityGroup). Making them pointers breaks the
-			 * circular dependency. Requiring both flags minimizes impact on existing
-			 * code (test 92-circular-loops-OK.asn1 only uses -findirect-choice).
 			 */
-			if(complex_members >= complex_threshold ||
-			   ((arg->flags & (A1C_INDIRECT_CHOICE | A1C_COMPOUND_NAMES)) == 
-			    (A1C_INDIRECT_CHOICE | A1C_COMPOUND_NAMES) &&
-			    optional_complex_members >= 2)) {
-				expr->marker.flags |= EM_INDIRECT | EM_UNRECURSE;
+			if(complex_members >= complex_threshold) {
+				expr->marker.flags |= EM_INDIRECT;
+				expr->marker.flags |= EM_UNRECURSE;
 				return 1;
 			}
 		}
@@ -4415,14 +4401,11 @@ check_is_refer_to_enhanced(arg_t *arg, circ_detect_ctx_t *ctx) {
 		return 2; /* Direct circular dependency */
 	}
 	
-	/* Check if this terminal is already in our path (cycle detection).
-	 * If we hit a cycle without finding our target, stop exploring this branch.
-	 * The cycle will be broken when processing the types that are actually
-	 * in the cycle - we don't need to add indirection here just because
-	 * we reference a type that's part of some other cycle. */
+	/* Check if this terminal is already in our path (cycle detection)
+	 * If we hit a cycle without finding our target, stop this branch */
 	for(size_t i = 0; i < ctx->path_len; i++) {
 		if(ctx->path[i] == terminal) {
-			return 0; /* Cycle detected but doesn't include our target */
+			return 0; /* Cycle without reaching target */
 		}
 	}
 	
@@ -4438,20 +4421,15 @@ check_is_refer_to_enhanced(arg_t *arg, circ_detect_ctx_t *ctx) {
 	int maxret = 0;
 	asn1p_expr_t *memb;
 	TQ_FOR(memb, &(terminal->members), next) {
-		/* Follow all constructed type members to detect circular #include dependencies.
-		 * 
-		 * Note: We must follow optional members (EM_OPTIONAL) even though they become
-		 * pointers in the struct. Optional members still create circular #include
-		 * dependencies because the header file needs the full type definition for
-		 * the "Referred external types" section that appears after the header guard.
-		 * This is critical for complex specifications like F1AP where optional members
-		 * create circular include chains (e.g., CompositeAvailableCapacity -> CapacityValue
-		 * -> SSBAreaCapacityValueList -> ... -> CompositeAvailableCapacityGroup ->
-		 * CompositeAvailableCapacity).
-		 * 
-		 * The cycle detection (checking if terminal is already in path) prevents
-		 * infinite recursion.
+		/* Only follow constructed type members that could create circular dependencies.
+		 * Skip: 
+		 * - Members already converted to pointers (EM_INDIRECT)
+		 * - Optional members (already break cycles through pointer indirection)
+		 * - Non-constructed types (primitive types can't create circular dependencies)
 		 */
+		if(memb->marker.flags & (EM_INDIRECT | EM_OPTIONAL)) {
+			continue;
+		}
 		
 		/* Check if this member is a constructed type reference */
 		if(memb->expr_type != A1TC_REFERENCE) {
@@ -4526,12 +4504,7 @@ expr_defined_recursively(arg_t *arg, asn1p_expr_t *expr) {
 			.target = topmost
 		};
 		
-		/* Create a temporary arg with expr set to the member we're analyzing,
-		 * not the container type that arg->expr currently points to */
-		arg_t tmp_arg = *arg;
-		tmp_arg.expr = expr;
-		
-		result = check_is_refer_to_enhanced(&tmp_arg, &ctx);
+		result = check_is_refer_to_enhanced(arg, &ctx);
 		
 		if(ctx.path) {
 			free(ctx.path);
