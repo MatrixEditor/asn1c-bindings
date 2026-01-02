@@ -3371,7 +3371,7 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
         asn1c_get_information_object_set_reference_from_constraint(arg, crc);
 
     if(!objset_ref) {
-        FATAL("Constraint %s does not look like it referst to a set type %s",
+        FATAL("Constraint %s does not look like it refers to a set type %s",
               asn1p_constraint_string(crc),
               opt_ioc->objset->Identifier);
         return -1;
