@@ -4,6 +4,7 @@
 *.obj
 *.lo
 *.la
+*.a
 .libs
 .deps
 Makefile
