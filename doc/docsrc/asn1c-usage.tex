@@ -551,14 +551,13 @@ creating the target language files on disk.}\\
 \midrule
 {\ttfamily -fbless-SIZE} & {\small Allow SIZE() constraint for INTEGER, ENUMERATED, and other types for which this constraint is normally prohibited by the standard.
 This is a violation of an ASN.1 standard and compiler may fail to produce the meaningful code.}\\
-{\ttfamily -fcomplex-threshold=\emph{<N>}} & {\small Set the threshold for complex type detection. Types with \emph{N} or more optional complex members may become pointers when both \texttt{-findirect-choice} and \texttt{-fcompound-names} are enabled. This helps break circular dependencies. Default is 2. See \fref{sec:Circular-Dependencies} for details.}\\
 {\ttfamily -fcompound-names} & {\small Use complex names for C structures. Using complex names prevents
 name clashes in case the module reuses the same identifiers in multiple
-contexts. When combined with \texttt{-findirect-choice}, enables enhanced circular dependency detection.}\\
+contexts.}\\
 {\ttfamily -findirect-choice} & {\small When generating code for a CHOICE type, compile the CHOICE
-members as indirect pointers instead of declaring them inline. Also affects Information Object Class OPEN\_TYPE pointer generation and circular dependency resolution. Consider
+members as indirect pointers instead of declaring them inline. Also affects Information Object Class OPEN\_TYPE pointer generation. Consider
 using this option together with \texttt{-fno-include-deps}
-to prevent circular references. See \fref{sec:Circular-Dependencies}.}\\
+to prevent circular references.}\\
 {\ttfamily -fincludes-quoted} & {\small Generate \#include lines in "double" instead of <angle> quotes.}\\
 {\ttfamily -fknown-extern-type=\emph{<name>}} & {\small Pretend the specified type is known. The compiler will assume
 the target language source files for the given type have been provided
@@ -2083,80 +2082,51 @@ This is particularly useful for:
 \item Breaking circular dependencies involving CHOICE constructs
 \end{itemize}
 
-\subsubsection*{3. Combined \texttt{-findirect-choice} and \texttt{-fcompound-names}}
-
-When both flags are enabled, the compiler uses an enhanced heuristic:
-
-\begin{bash}
-asn1c -findirect-choice -fcompound-names module.asn1
-\end{bash}
-
-Types with 2 or more optional complex members become pointers when:
-\begin{itemize}
-\item Both \texttt{-findirect-choice} and \texttt{-fcompound-names} are set
-\item The type contains optional members that are constructed types (SEQUENCE, SET, CHOICE)
-\item The threshold is met (default is 2, configurable via \texttt{-fcomplex-threshold})
-\end{itemize}
-
-\subsubsection*{4. The \texttt{-fcomplex-threshold} Parameter}
-
-Control the threshold for complex type detection:
-
-\begin{bash}
-asn1c -findirect-choice -fcompound-names -fcomplex-threshold=3 module.asn1
-\end{bash}
-
-This sets the threshold to 3, meaning only types with 3 or more optional complex 
-members will become pointers. The default value is 2.
-
 \subsection*{Example: F1AP Compilation}
 
 The F1AP specification is a complex 3GPP protocol with extensive circular dependencies. 
 To successfully compile F1AP:
 
 \begin{bash}
-asn1c -findirect-choice -fcompound-names F1AP-PDU-Descriptions.asn1 \textbackslash
+asn1c -findirect-choice F1AP-PDU-Descriptions.asn1 \textbackslash
       F1AP-IEs.asn1 F1AP-Containers.asn1 F1AP-Constants.asn1
 \end{bash}
 
-This combination:
+This approach:
 \begin{enumerate}
-\item Detects only real circular dependencies (not just type references)
-\item Applies minimal pointer indirection needed to break cycles
-\item Preserves direct embedding where safe, improving performance
+\item Forces CHOICE members to be indirect pointers
+\item Breaks circular dependencies involving CHOICE types
 \item Handles Information Object Class tables correctly
 \end{enumerate}
 
 \subsection*{Generated Code}
 
-For a type that becomes a pointer due to circular dependency resolution:
+For a type with circular dependencies, the compiler converts members to pointers:
 
 \begin{example}
 /* Original ASN.1:
- * Container ::= SEQUENCE {
- *     item1  ComplexType1 OPTIONAL,
- *     item2  ComplexType2 OPTIONAL,
- *     item3  SimpleType
+ * Node ::= SEQUENCE {
+ *     value   INTEGER,
+ *     next    Node OPTIONAL
  * }
  */
 
-/* Generated C with -findirect-choice -fcompound-names: */
-typedef struct Container {
-    struct ComplexType1  *item1;  /* OPTIONAL, pointer due to heuristic */
-    struct ComplexType2  *item2;  /* OPTIONAL, pointer due to heuristic */
-    long                 item3;
-} Container_t;
+/* Generated C: */
+typedef struct Node {
+    long      value;
+    struct Node  *next;  /* OPTIONAL, pointer to break cycle */
+} Node_t;
 \end{example}
 
-Without these flags, the compiler might fail with "circular dependency" errors, or 
+Without proper handling, the compiler might fail with "circular dependency" errors, or 
 generate code that causes C compiler errors.
 
 \subsection*{Backward Compatibility}
 
-The circular dependency detection improvements maintain backward compatibility:
+The circular dependency detection maintains backward compatibility:
 \begin{itemize}
-\item Default behavior unchanged: only actual cycles trigger pointer indirection
-\item Flags must be explicitly enabled for enhanced behavior
+\item Default behavior: only actual cycles trigger pointer indirection
+\item The \texttt{-findirect-choice} flag must be explicitly enabled for CHOICE indirection
 \item Existing ASN.1 modules compile without modification
 \item Generated code remains compatible with existing applications
 \end{itemize}
