@@ -54,7 +54,7 @@ fi
 
 # Try to compile the generated code
 echo "Compiling generated code..."
-CFLAGS="-I. -I${SKELETONS_DIR} -Werror -Wall" 
+CFLAGS="-I. -I${SKELETONS_DIR} -Werror -Wall"
 if ! ${CC:-cc} $CFLAGS -c ContributedExtensionBlock.c -o ContributedExtensionBlock.o; then
   echo "ERROR: Generated code does not compile" >&2
   exit 1
