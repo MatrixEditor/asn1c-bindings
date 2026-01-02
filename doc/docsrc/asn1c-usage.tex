@@ -417,6 +417,13 @@ ASN.1 types. The compiler also creates the code which allows automatic
 serialization and deserialization of these structures using several
 standardized encoding rules (BER, DER, OER, PER, XER).
 
+The compiler includes advanced features for handling complex specifications:
+\begin{itemize}
+\item \textbf{ENCODING-CONTROL directives} for customizing XER encoding (see \fref{sec:ENCODING-CONTROL})
+\item \textbf{Circular dependency detection and resolution} for complex type graphs (see \fref{sec:Circular-Dependencies})
+\item \textbf{Information Object Class support} for protocol specifications like F1AP (see \fref{sec:IOC-Support})
+\end{itemize}
+
 Let's take the following ASN.1 example%
 \footnote{\Fref{chap:Abstract-Syntax-Notation} provides a quick reference
 on the ASN.1 notation.}:
