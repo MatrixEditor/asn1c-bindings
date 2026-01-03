@@ -263,6 +263,64 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
 #endif
                         /* Fall through for non-optional or when feature disabled */
                     case XCT_OPENING:
+#if XER_EMPTY_OPTIONALS_ENABLED
+                        /*
+                         * Check if this is an empty optional field with separate
+                         * opening/closing tags (e.g., <field></field>).
+                         */
+                        if(elm->optional) {
+                            const char *peek_ptr = (const char *)ptr + ch_size;
+                            size_t peek_size = size - ch_size;
+                            int peek_ctx = 0;
+                            pxer_chunk_type_e peek_type;
+                            ssize_t peek_ch_size;
+                            int found_empty_optional = 0;
+                            
+                            /* Skip whitespace and comments to find next token */
+                            while(peek_size > 0) {
+                                peek_ch_size = xer_next_token(&peek_ctx, peek_ptr, peek_size, &peek_type);
+                                if(peek_ch_size <= 0) break;
+                                
+                                if(peek_type == PXER_COMMENT || peek_type == PXER_TEXT) {
+                                    /* Skip whitespace/comments */
+                                    size_t ws_span = xer_whitespace_span(peek_ptr, peek_ch_size);
+                                    if(ws_span == (size_t)peek_ch_size) {
+                                        /* Pure whitespace, skip it */
+                                        peek_ptr += peek_ch_size;
+                                        peek_size -= peek_ch_size;
+                                        peek_ctx = 0;
+                                        continue;
+                                    } else if(peek_type == PXER_COMMENT) {
+                                        /* Comment, skip it */
+                                        peek_ptr += peek_ch_size;
+                                        peek_size -= peek_ch_size;
+                                        peek_ctx = 0;
+                                        continue;
+                                    }
+                                }
+                                
+                                /* Found a non-whitespace token */
+                                if(peek_type == PXER_TAG) {
+                                    xer_check_tag_e peek_tcv = xer_check_tag(peek_ptr, peek_ch_size, elm->name);
+                                    if(peek_tcv == XCT_CLOSING) {
+                                        /* This is an empty optional field! */
+                                        ASN_DEBUG("XER/SEQUENCE: Empty optional field '%s' (separate tags), treating as absent",
+                                                  elm->name ? elm->name : "(null)");
+                                        /* Skip both opening and closing tags */
+                                        XER_ADVANCE(ch_size + (peek_ptr - ((const char *)ptr + ch_size)) + peek_ch_size);
+                                        ctx->step = edx = n + 1;
+                                        found_empty_optional = 1;
+                                        break;  /* Exit while loop */
+                                    }
+                                }
+                                break;  /* Not an empty tag, proceed normally */
+                            }
+                            
+                            if(found_empty_optional) {
+                                continue;  /* Skip to next element in for loop */
+                            }
+                        }
+#endif
                         /*
                          * Process this member.
                          */
