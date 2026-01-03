@@ -366,6 +366,19 @@ extern int jer_encoding_depth;   /* JER */
         } \
     } while(0)
 
+/*
+ * XER decoder support for empty OPTIONAL fields.
+ * When enabled, the XER decoder treats empty tags (e.g., <field></field> or <field/>)
+ * in OPTIONAL fields as absent rather than invalid.
+ * Define XER_ALLOW_EMPTY_OPTIONALS at compile time to enable this feature:
+ *   -DXER_ALLOW_EMPTY_OPTIONALS
+ */
+#ifdef XER_ALLOW_EMPTY_OPTIONALS
+#define XER_EMPTY_OPTIONALS_ENABLED 1
+#else
+#define XER_EMPTY_OPTIONALS_ENABLED 0
+#endif
+
 /**
  * Check if the given name is an ASN.1 meta-syntax keyword that should
  * not be output as an XML wrapper tag (e.g., "SEQUENCE OF", "SET OF").

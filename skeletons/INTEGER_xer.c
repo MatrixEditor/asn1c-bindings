@@ -117,6 +117,18 @@ INTEGER__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
         ASN_DEBUG("INTEGER body %ld 0x%2x..0x%2x",
                   (long)chunk_size, *lstart, lstop[-1]);
 
+#if XER_EMPTY_OPTIONALS_ENABLED
+    /*
+     * Handle empty content for optional fields.
+     * When chunk_size is 0, this is an empty tag, which should be
+     * treated as absent for optional fields.
+     */
+    if(chunk_size == 0) {
+        ASN_DEBUG("INTEGER: Empty content, returning BODY_CONSUMED for optional field");
+        return XPBD_BODY_CONSUMED;
+    }
+#endif
+
     if(INTEGER_st_prealloc(st, (chunk_size/3) + 1))
         return XPBD_SYSTEM_FAILURE;
 

@@ -248,6 +248,20 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                         
                     switch(tcv) {
                     case XCT_BOTH:
+#if XER_EMPTY_OPTIONALS_ENABLED
+                        /*
+                         * Empty tag detected (e.g., <field/>).
+                         * If this field is OPTIONAL, treat it as absent.
+                         */
+                        if(elm->optional) {
+                            ASN_DEBUG("XER/SEQUENCE: Empty optional field '%s', treating as absent",
+                                      elm->name ? elm->name : "(null)");
+                            XER_ADVANCE(ch_size);
+                            ctx->step = edx = n + 1;
+                            continue;  /* Skip to next element */
+                        }
+#endif
+                        /* Fall through for non-optional or when feature disabled */
                     case XCT_OPENING:
                         /*
                          * Process this member.
