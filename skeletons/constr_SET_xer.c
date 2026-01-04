@@ -311,8 +311,6 @@ SET_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
         }
     }
 
-    if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
-
     ASN__ENCODED_OK(er);
 cb_failed:
     ASN__ENCODE_FAILED;
