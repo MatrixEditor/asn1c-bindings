@@ -1,3 +1,53 @@
+Changes since v1.2.0:
+	FEATURES:
+	* Added compile-time flag XER_ALLOW_EMPTY_OPTIONALS for XER decoder support
+	  of empty OPTIONAL fields. (PR #416)
+	* Added -fcomplex-threshold CLI parameter to control XER encoding complexity.
+	  (PR #399)
+	* Added -fprefix option to prefix generated type names. (PR #170)
+	* Complete ENCODING-CONTROL Phases 4-5: Body Parsing and Type Linking. (PR #389)
+	* Added JER-specific constraints for BIT STRING variable size. (PR #192)
+	* Added JER support for pure hexadecimal OCTET STRINGs. (PR #193)
+	* Added class default syntax support. (PR #172)
+	* Added copy operation support. (PR #174)
+
+	NOTABLE:
+	* Reverted circular dependency detection changes from PRs #409 and #411,
+	  preserved F1AP regression test. (PR #414)
+	* Updated asn1c-usage.tex documentation for PRs #399, #389, #353, #336, #334.
+	  (PR #412)
+	* Updated README with supported encoding rules. (PR #173)
+
+	FIXES:
+	* Fixed IOC constraint resolution for SEQUENCE OF with parent field references.
+	  (PR #415) (Severity: medium; Security impact: none)
+	* Fixed Open Type code generation for SEQUENCE OF in IEEE 1609.2. (PR #408)
+	  (Severity: medium; Security impact: low)
+	* Fixed XER encoding issues. (PR #399)
+	  (Severity: medium; Security impact: none)
+	* Fixed F1AP circular dependency using -findirect-choice flag for IOC OPEN_TYPE
+	  pointer generation. (PR #353) (Severity: medium; Security impact: none)
+	* Fixed -fgen-only-pdu-deps to mark IOC table types and parameterized type
+	  dependencies. (PR #336) (Severity: low; Security impact: none)
+	* Fixed XER parsing for OCTET STRING with H'...' prefix notation. (PR #334)
+	  (Severity: low; Security impact: none)
+	* Fixed -Wsign-compare compiler warning in BIT_STRING_jer. (PR #200)
+	  (Severity: low; Security impact: none)
+	* Fixed version brackets in CHOICE type. (PR #199)
+	  (Severity: low; Security impact: none)
+	* Fixed format specifiers for 64-bit integers. (PR #185)
+	  (Severity: low; Security impact: none)
+	* Fixed integer tests warnings. (PR #182)
+	  (Severity: low; Security impact: none)
+	* Fixed GCC warnings. (PR #181)
+	  (Severity: low; Security impact: none)
+	* Fixed JER OBJECT IDENTIFIER quotes handling. (PR #178)
+	  (Severity: low; Security impact: none)
+	* Fixed INTEGER to 64-bit native methods conversion. (PR #177)
+	  (Severity: low; Security impact: none)
+	* Fixed APER INTEGER longs to intmaxs conversion. (PR #176)
+	  (Severity: low; Security impact: none)
+
 1.2.0:
 	FEATURES:
 	* Added support for OPEN TYPE in IOC, now V2X and C2X should work.
