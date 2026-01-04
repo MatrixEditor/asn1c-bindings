@@ -258,7 +258,7 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                                       elm->name ? elm->name : "(null)");
                             XER_ADVANCE(ch_size);
                             ctx->step = edx = n + 1;
-                            continue;  /* Skip to next element */
+                            break;  /* Skip to next element */
                         }
 #endif
                         /* Fall through for non-optional or when feature disabled */
