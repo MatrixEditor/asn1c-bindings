@@ -119,12 +119,13 @@ INTEGER__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
 
 #if XER_EMPTY_OPTIONALS_ENABLED
     /*
-     * Handle empty content for optional fields.
-     * When chunk_size is 0, this is an empty tag, which should be
-     * treated as absent for optional fields.
+     * Handle zero-length element content.
+     * When chunk_size is 0, report BODY_CONSUMED and let the caller
+     * decide how to interpret the empty element (for example, as an
+     * absent optional field).
      */
     if(chunk_size == 0) {
-        ASN_DEBUG("INTEGER: Empty content, returning BODY_CONSUMED for optional field");
+        ASN_DEBUG("INTEGER: Empty content, returning BODY_CONSUMED");
         return XPBD_BODY_CONSUMED;
     }
 #endif
