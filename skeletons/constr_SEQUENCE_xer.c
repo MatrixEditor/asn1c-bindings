@@ -258,7 +258,7 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                                       elm->name ? elm->name : "(null)");
                             XER_ADVANCE(ch_size);
                             ctx->step = edx = n + 1;
-                            break;  /* Skip to next element */
+                            break;  /* Exit inner loop to get next token */
                         }
 #endif
                         /* Fall through for non-optional or when feature disabled */
@@ -307,7 +307,7 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                                         ASN_DEBUG("XER/SEQUENCE: Empty optional field '%s' (separate tags), treating as absent",
                                                   elm->name ? elm->name : "(null)");
                                         /* Skip both opening and closing tags */
-                                        XER_ADVANCE(ch_size + (peek_ptr - ((const char *)ptr + ch_size)) + peek_ch_size);
+                                        XER_ADVANCE((peek_ptr - (const char *)ptr) + peek_ch_size);
                                         ctx->step = edx = n + 1;
                                         found_empty_optional = 1;
                                         break;  /* Exit while loop */
@@ -317,7 +317,7 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                             }
                             
                             if(found_empty_optional) {
-                                continue;  /* Skip to next element in for loop */
+                                break;  /* Exit inner loop to get next token */
                             }
                         }
 #endif
