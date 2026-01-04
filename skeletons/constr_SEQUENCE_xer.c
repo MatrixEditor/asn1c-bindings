@@ -523,12 +523,7 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
              * that outputs newlines in its content (SEQUENCE, SET, CHOICE, etc.)
              * Primitive types like INTEGER output inline content, so no indent needed. */
             if(tmper.encoded > 0 && 
-               (elm->type->op->kind == ASN_KIND_SEQUENCE ||
-                elm->type->op->kind == ASN_KIND_SET ||
-                elm->type->op->kind == ASN_KIND_CHOICE ||
-                elm->type->op->kind == ASN_KIND_SEQUENCE_OF ||
-                elm->type->op->kind == ASN_KIND_SET_OF ||
-                elm->flags & ATF_OPEN_TYPE)) {
+               (ASN__IS_STRUCTURED_TYPE(elm) || elm->flags & ATF_OPEN_TYPE)) {
                 ASN__TEXT_INDENT(0, ilevel);
             }
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
