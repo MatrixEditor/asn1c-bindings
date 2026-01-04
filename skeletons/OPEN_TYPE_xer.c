@@ -132,6 +132,23 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
      * Wrapper value confirmed.
      */
     switch(xer_check_tag(ptr, ch_size, elm->name)) {
+    case XCT_BOTH:
+#if XER_EMPTY_OPTIONALS_ENABLED
+        /*
+         * Empty tag detected (e.g., <field/>).
+         * If this OPEN TYPE field is optional, treat it as absent.
+         */
+        if(elm->optional) {
+            ASN_DEBUG("OPEN_TYPE: Empty optional field '%s', treating as absent",
+                      elm->name ? elm->name : "(null)");
+            rv.code = RC_OK;
+            rv.consumed = consumed_myself + ch_size;
+            return rv;
+        }
+#endif
+        /* Fall through for non-optional or when feature disabled */
+        /* Note: Empty OPEN TYPE is invalid for non-optional fields */
+        ASN__DECODE_FAILED;
     case XCT_OPENING:
         ADVANCE(ch_size);
         break;
