@@ -274,7 +274,7 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                             int peek_ctx = 0;
                             pxer_chunk_type_e peek_type;
                             ssize_t peek_ch_size;
-                            int found_empty_optional = 0;
+                            ssize_t closing_tag_size = 0;
                             
                             /* Skip whitespace and comments to find next token */
                             while(peek_size > 0) {
@@ -306,18 +306,20 @@ SEQUENCE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                                         /* This is an empty optional field! */
                                         ASN_DEBUG("XER/SEQUENCE: Empty optional field '%s' (separate tags), treating as absent",
                                                   elm->name ? elm->name : "(null)");
+                                        /* Capture closing tag size before using it */
+                                        closing_tag_size = peek_ch_size;
                                         /* Skip both opening and closing tags */
-                                        XER_ADVANCE((peek_ptr - (const char *)ptr) + peek_ch_size);
+                                        XER_ADVANCE((peek_ptr - (const char *)ptr) + closing_tag_size);
                                         ctx->step = edx = n + 1;
-                                        found_empty_optional = 1;
-                                        break;  /* Exit while loop */
+                                        break;  /* Exit inner loop to get next token */
                                     }
                                 }
                                 break;  /* Not an empty tag, proceed normally */
                             }
                             
-                            if(found_empty_optional) {
-                                break;  /* Exit inner loop to get next token */
+                            /* If we found and handled an empty optional, skip normal processing */
+                            if(closing_tag_size > 0) {
+                                break;  /* Exit switch to skip normal member processing */
                             }
                         }
 #endif
