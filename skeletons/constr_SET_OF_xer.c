@@ -540,9 +540,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
     }
 
-    /* Add indentation before returning to parent, but only if we encoded any elements */
-    if(!xcan && er.encoded > 0) ASN__TEXT_INDENT(0, ilevel - 1);
-
     if(encs) {
         xer_tmp_enc_t *enc = encs;
         xer_tmp_enc_t *end = encs + encs_count;

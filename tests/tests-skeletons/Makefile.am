@@ -17,6 +17,7 @@ check_PROGRAMS =                \
     check-XER-empty-names       \
     check-XER-empty-optionals   \
     check-XER-formatting        \
+    check-XER-formatting-regression \
     check-XER-CHOICE-formatting \
     check-JER                   \
     check-OER-support           \

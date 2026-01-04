@@ -211,9 +211,6 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         }
     }
 
-    /* Add indentation before returning to parent, but only if we encoded any elements */
-    if(!xcan && er.encoded > 0) ASN__TEXT_INDENT(0, ilevel - 1);
-
     XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
 cb_failed:
