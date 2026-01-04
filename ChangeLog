@@ -17,6 +17,9 @@
 	* Updated asn1c-usage.tex documentation for PRs #399, #389, #353, #336, #334.
 	  (PR #412)
 	* Updated README with supported encoding rules. (PR #173)
+	* Breaking change: now many structures are represented as pointers, which can
+	  require edits of the older code in order to compile and link it with the
+	  current ASN1C.
 
 	FIXES:
 	* Fixed IOC constraint resolution for SEQUENCE OF with parent field references.
