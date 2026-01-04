@@ -133,6 +133,19 @@ asn__format_to_callback(
         for(tmp_i = 0; tmp_i < tmp_level; tmp_i++) ASN__CALLBACK("    ", 4); \
     } while(0)
 
+/*
+ * Check if an ASN.1 type is a structured type that outputs newlines in XER.
+ * Structured types (SEQUENCE, SET, CHOICE, SEQUENCE_OF, SET_OF) output 
+ * multi-line XER content, so their closing tags need indentation.
+ * Primitive types output inline content, so no indentation is needed.
+ */
+#define ASN__IS_STRUCTURED_TYPE(elm) \
+    ((elm)->type->op->kind == ASN_KIND_SEQUENCE ||    \
+     (elm)->type->op->kind == ASN_KIND_SET ||         \
+     (elm)->type->op->kind == ASN_KIND_CHOICE ||      \
+     (elm)->type->op->kind == ASN_KIND_SEQUENCE_OF || \
+     (elm)->type->op->kind == ASN_KIND_SET_OF)
+
 #define	_i_INDENT(nl)	do {                        \
         int tmp_i;                                  \
         if((nl) && cb("\n", 1, app_key) < 0)        \

@@ -519,18 +519,18 @@ SEQUENCE_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += tmper.encoded;
 
         if(!xcan) {
-            int add_indent = 0;
-            if(elm->flags & ATF_OPEN_TYPE) {
-                add_indent = 1;
+            /* Add indentation before closing tag only if element is a structured type
+             * that outputs newlines in its content (SEQUENCE, SET, CHOICE, etc.)
+             * Primitive types like INTEGER output inline content, so no indent needed. */
+            if(tmper.encoded > 0 && 
+               (ASN__IS_STRUCTURED_TYPE(elm) || elm->flags & ATF_OPEN_TYPE)) {
+                ASN__TEXT_INDENT(0, ilevel);
             }
-            if(add_indent) ASN__TEXT_INDENT(0, ilevel);
             ASN__CALLBACK3("</", 2, mname, mlen, ">\n", 2);
         } else {
             ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
         }
     }
-
-    if(!xcan) ASN__TEXT_INDENT(0, ilevel - 1);
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
