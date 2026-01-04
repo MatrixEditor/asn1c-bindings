@@ -2020,12 +2020,50 @@ the \texttt{H'...'} syntax:
 This notation is automatically recognized and decoded by the \code{OCTET\_STRING\_decode\_xer()} 
 function through the enhanced \code{OCTET\_STRING\_\_convert\_auto()} converter.
 
+\subsection*{Empty OPTIONAL Fields in XER}
+
+By default, the XER decoder treats empty XML tags (e.g., \texttt{<field></field>} or 
+\texttt{<field/>}) for OPTIONAL fields as invalid, causing decoding failures. This differs 
+from BER/DER and PER encodings, which simply omit absent optional fields.
+
+To enable lenient handling of empty OPTIONAL fields in XER, compile the generated code 
+with the \texttt{XER\_ALLOW\_EMPTY\_OPTIONALS} preprocessor flag:
+
+\begin{bash}
+gcc -DXER_ALLOW_EMPTY_OPTIONALS -c *.c
+\end{bash}
+
+When this flag is enabled, empty tags for OPTIONAL fields are treated as absent rather 
+than invalid. For example:
+
+\begin{example}
+<TestSequence>
+    <mandatoryInt>42</mandatoryInt>
+    <optionalInt></optionalInt>    <!-- Treated as absent -->
+    <optionalString/>              <!-- Treated as absent -->
+</TestSequence>
+\end{example}
+
+In the above example, both \texttt{optionalInt} and \texttt{optionalString} will be 
+decoded as absent (NULL pointers), not as present with invalid/empty values.
+
+\textbf{Important notes:}
+\begin{itemize}
+\item Empty tags for mandatory fields still cause decoding failures, preserving data integrity
+\item This feature only affects XER decoding; other encoding rules are unaffected
+\item The feature is disabled by default to maintain strict XML validation
+\item Both self-closing tags (\texttt{<field/>}) and separate empty tags 
+(\texttt{<field></field>}) are supported
+\end{itemize}
+
 \subsection*{See also}
 
 For implementation details, see:
 \begin{itemize}
 \item \texttt{libasn1compiler/asn1c\_encoding.c} -- Encoding control application logic
 \item \texttt{skeletons/OCTET\_STRING\_xer.c} -- Runtime XER encoding/decoding functions
+\item \texttt{skeletons/constr\_SEQUENCE\_xer.c} -- Empty optional field detection
+\item \texttt{skeletons/asn\_internal.h} -- XER\_ALLOW\_EMPTY\_OPTIONALS flag definition
 \item \texttt{ENCODING\_CONTROL\_STATUS.md} -- Complete implementation status
 \end{itemize}
 
