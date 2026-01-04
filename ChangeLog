@@ -2,10 +2,12 @@
 	FEATURES:
 	* Added compile-time flag XER_ALLOW_EMPTY_OPTIONALS for XER decoder support
 	  of empty OPTIONAL fields. (PR #416)
-	* Added -fcomplex-threshold CLI parameter to control XER encoding complexity.
-	  (PR #399)
+	* Added -fcomplex-threshold CLI parameter to control XER encoding complexity
+	  and fixed related XER encoding issues. (PR #399)
 	* Added -fprefix option to prefix generated type names. (PR #170)
-	* Complete ENCODING-CONTROL Phases 4-5: Body Parsing and Type Linking. (PR #389)
+	* Completed ENCODING-CONTROL Phases 4-5: full parsing of ENCODING-CONTROL
+	  directive bodies and linking encoding instructions to target type
+	  definitions. (PR #389)
 	* Added JER-specific constraints for BIT STRING variable size. (PR #192)
 	* Added JER support for pure hexadecimal OCTET STRINGs. (PR #193)
 	* Added class default syntax support. (PR #172)
@@ -17,16 +19,17 @@
 	* Updated asn1c-usage.tex documentation for PRs #399, #389, #353, #336, #334.
 	  (PR #412)
 	* Updated README with supported encoding rules. (PR #173)
-	* Breaking change: now many structures are represented as pointers, which can
-	  require edits of the older code in order to compile and link it with the
-	  current ASN1C.
+	* Breaking change introduced by circular dependency handling refactor in
+	  PR #409 (later reverted in PR #414): many generated structures were
+	  temporarily represented as pointers, requiring updates to existing code
+	  (for example, adding dereferences) to compile and link it with the
+	  current asn1c. This entry documents the temporary impact for users who
+	  upgraded during that period.
 
 	FIXES:
 	* Fixed IOC constraint resolution for SEQUENCE OF with parent field references.
 	  (PR #415) (Severity: medium; Security impact: none)
 	* Fixed Open Type code generation for SEQUENCE OF in IEEE 1609.2. (PR #408)
-	  (Severity: medium; Security impact: low)
-	* Fixed XER encoding issues. (PR #399)
 	  (Severity: medium; Security impact: none)
 	* Fixed F1AP circular dependency using -findirect-choice flag for IOC OPEN_TYPE
 	  pointer generation. (PR #353) (Severity: medium; Security impact: none)
