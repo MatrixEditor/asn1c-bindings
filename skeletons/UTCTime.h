@@ -6,13 +6,21 @@
 #define	_UTCTime_H_
 
 /* Include <time.h> first to ensure the system header is used.
- * On case-insensitive filesystems with -I. (macOS default, Cygwin), a local
- * Time.h from ASN.1 schemas (e.g., RFC 3280) can shadow <time.h>.
- * 
- * IMPORTANT FOR macOS USERS: If you encounter "non-portable path" warnings,
- * use asn1c's -fprefix= flag to rename generated files:
+ * On case-insensitive filesystems with -I. (macOS default APFS, Cygwin), a
+ * local Time.h from ASN.1 schemas (e.g., RFC 3280) can shadow <time.h>.
+ *
+ * IMPORTANT FOR macOS AND OTHER CASE-INSENSITIVE FILESYSTEMS:
+ * If you encounter "non-portable path" or header shadowing warnings,
+ * you can ask asn1c to prefix generated filenames, e.g.:
  *   asn1c -fprefix=ASN1_ ...
- * This will generate ASN1_Time.h instead of Time.h, avoiding the conflict.
+ * which will generate ASN1_Time.h instead of Time.h and avoid conflicts.
+ * When using -fprefix= with the generated converter-example.mk, you may also
+ * need to edit that Makefile to change the -DPDU= definition to use the
+ * prefixed PDU name.
+ *
+ * This approach works transparently on Linux and other case-sensitive
+ * filesystems. On macOS, the most robust workaround is to build on a
+ * case-sensitive APFS volume so that Time.h and time.h cannot conflict.
  */
 #ifdef	__CYGWIN__
 #include "/usr/include/time.h"

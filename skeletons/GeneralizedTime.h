@@ -6,13 +6,25 @@
 #define	_GeneralizedTime_H_
 
 /* Include <time.h> first to ensure the system header is used.
- * On case-insensitive filesystems with -I. (macOS default, Cygwin), a local
- * Time.h from ASN.1 schemas (e.g., RFC 3280) can shadow <time.h>.
- * 
- * IMPORTANT FOR macOS USERS: If you encounter "non-portable path" warnings,
- * use asn1c's -fprefix= flag to rename generated files:
+ * On case-insensitive filesystems with -I. (macOS default APFS, Cygwin), a
+ * local Time.h from ASN.1 schemas (e.g., RFC 3280) can shadow <time.h>.
+ *
+ * On Linux and other case-sensitive filesystems this is typically not an
+ * issue, but on macOS and other case-insensitive systems name clashes are
+ * common when ASN.1 modules define a type named "Time".
+ *
+ * IMPORTANT FOR macOS / CASE-INSENSITIVE FILESYSTEMS:
+ * If you encounter "non-portable path" warnings or header name conflicts,
+ * you can use asn1c's -fprefix= flag to rename generated files, for example:
  *   asn1c -fprefix=ASN1_ ...
- * This will generate ASN1_Time.h instead of Time.h, avoiding the conflict.
+ * which will generate ASN1_Time.h instead of Time.h and similar names.
+ * When using -fprefix=, you MUST also adjust the generated converter-example.mk
+ * (or equivalent Makefile) to update the -DPDU=<TypeName> definition so that
+ * it refers to the new, prefixed type name (e.g., ASN1_Time instead of Time).
+ *
+ * The most reliable workaround for macOS users is to build on a case-sensitive
+ * filesystem (for example, a case-sensitive APFS volume) to avoid these
+ * header name collisions entirely.
  */
 #ifdef	__CYGWIN__
 #include "/usr/include/time.h"
