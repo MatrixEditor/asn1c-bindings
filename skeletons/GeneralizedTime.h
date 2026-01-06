@@ -59,7 +59,14 @@ asn_random_fill_f GeneralizedTime_random_fill;
  * Some handy helpers. *
  ***********************/
 
-struct tm;	/* <time.h> */
+/* Include <time.h> before forward declaration to ensure the system header
+ * is used on case-insensitive filesystems (e.g., macOS) where it could be
+ * confused with generated Time.h from ASN.1 schemas. */
+#ifdef	__CYGWIN__
+#include "/usr/include/time.h"
+#else
+#include <time.h>
+#endif	/* __CYGWIN__ */
 
 /*
  * Convert a GeneralizedTime structure into time_t

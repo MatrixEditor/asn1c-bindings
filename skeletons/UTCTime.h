@@ -59,7 +59,14 @@ asn_random_fill_f UTCTime_random_fill;
  * Some handy helpers. *
  ***********************/
 
-struct tm;	/* <time.h> */
+/* Include <time.h> before forward declaration to ensure the system header
+ * is used on case-insensitive filesystems (e.g., macOS) where it could be
+ * confused with generated Time.h from ASN.1 schemas. */
+#ifdef	__CYGWIN__
+#include "/usr/include/time.h"
+#else
+#include <time.h>
+#endif	/* __CYGWIN__ */
 
 /* See asn_GT2time() in GeneralizedTime.h */
 time_t asn_UT2time(const UTCTime_t *, struct tm *_optional_tm4fill, int as_gmt);
