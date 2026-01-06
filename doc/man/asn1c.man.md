@@ -109,7 +109,24 @@ and other encoding rules.
     Helps prevent namespace collisions.
     
 -fprefix=*prefix*
-:	Add the specified prefix to generated types
+:	Add the specified prefix to all generated type names and filenames.
+	This helps avoid naming conflicts in several scenarios:
+	
+	* **System header conflicts**: On case-insensitive filesystems (macOS HFS+, Windows),
+	  ASN.1 types like "Time" would generate `Time.h`, which can conflict with 
+	  system header `<time.h>`. Using `-fprefix=ASN1_` generates `ASN1_Time.h` instead.
+	
+	* **Multiple ASN.1 modules**: When generating code for multiple ASN.1 syntaxes
+	  that have type name clashes, a prefix prevents symbol collisions.
+	
+	* **Integration with existing code**: Prefixes help avoid conflicts with
+	  existing types in your codebase.
+	
+	**Important**: asn1c will warn when generating files that might conflict with
+	common system headers (e.g., time.h, string.h) on case-insensitive filesystems.
+	In such cases, use this flag to avoid compilation issues.
+	
+	Example: `asn1c -fprefix=PKIX_ rfc3280.asn1`
 
 -funnamed-unions
 :   Enable unnamed unions in the definitions of target language's structures.

@@ -119,7 +119,31 @@ dependencies.
 Helps prevent namespace collisions.
 .TP
 \-fprefix=\f[I]prefix\f[R]
-Add the specified prefix to generated types
+Add the specified prefix to all generated type names and filenames.
+This helps avoid naming conflicts in several scenarios:
+.RS
+.IP \[bu] 2
+\f[B]System header conflicts\f[R]: On case\-insensitive filesystems (macOS
+HFS+, Windows), ASN.1 types like \[lq]Time\[rq] would generate
+\f[CR]Time.h\f[R], which can conflict with system header
+\f[CR]<time.h>\f[R].
+Using \f[CR]\-fprefix=ASN1_\f[R] generates \f[CR]ASN1_Time.h\f[R]
+instead.
+.IP \[bu] 2
+\f[B]Multiple ASN.1 modules\f[R]: When generating code for multiple ASN.1
+syntaxes that have type name clashes, a prefix prevents symbol
+collisions.
+.IP \[bu] 2
+\f[B]Integration with existing code\f[R]: Prefixes help avoid conflicts
+with existing types in your codebase.
+.PP
+\f[B]Important\f[R]: asn1c will warn when generating files that might
+conflict with common system headers (e.g., time.h, string.h) on
+case\-insensitive filesystems.
+In such cases, use this flag to avoid compilation issues.
+.PP
+Example: \f[CR]asn1c \-fprefix=PKIX_ rfc3280.asn1\f[R]
+.RE
 .TP
 \-funnamed\-unions
 Enable unnamed unions in the definitions of target language\(cqs
