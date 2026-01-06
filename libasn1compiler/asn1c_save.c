@@ -947,7 +947,7 @@ generate_pdu_C_definition(void) {
 	char *dst;
     if(pduTypes == 0) return "";
     
-    /* Get the prefix if one is set */
+    /* Get the prefix if one is set (never returns NULL, returns "" if not set) */
     prefix = asn1c_prefix_get();
     
     /* Allocate space for "-DPDU=" + prefix + typename + " \0" */
@@ -957,7 +957,7 @@ generate_pdu_C_definition(void) {
     dst = def + 6;
     
     /* Add prefix if present */
-    if(prefix && prefix[0]) {
+    if(prefix[0]) {
         for(src = prefix; *src; src++, dst++) {
             *dst = *src;
         }
