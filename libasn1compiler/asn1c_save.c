@@ -54,6 +54,7 @@ static int pdu_collection_has_unused_types(arg_t *arg);
 static const char *generate_pdu_C_definition(void);
 static void asn1c__cleanup_pdu_type(void);
 static int generate_constant_file(arg_t *arg, const char *destdir);
+static void warn_if_conflicts_with_system_headers(const char *filename, const char *typename);
 
 static int
 asn1c__save_asn_config(arg_t *arg, const char *destdir,
@@ -595,6 +596,13 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
 
 	filename = strdup(asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
 						expr, (char*)0));
+	
+	/* Warn if filename might conflict with system headers on case-insensitive filesystems */
+	/* Only warn if no prefix is being used (prefix would avoid the conflict) */
+	if(asn1c_prefix_get()[0] == '\0') {
+		warn_if_conflicts_with_system_headers(filename, expr->Identifier);
+	}
+	
 	fp_c = asn1c_open_file(destdir, filename, ".c", &tmpname_c);
     if(fp_c == NULL) {
         return -1;
@@ -1039,6 +1047,72 @@ include_type_to_pdu_collection(arg_t *arg) {
     }
 
     return 0;
+}
+
+/*
+ * Check if a generated filename might conflict with common system headers
+ * on case-insensitive filesystems. Issue a warning with suggestion to use -fprefix.
+ */
+static void
+warn_if_conflicts_with_system_headers(const char *filename, const char *typename) {
+    /* List of common system header names (without .h extension) that might conflict.
+     * These are headers commonly included by generated code or skeleton files. */
+    static const char *system_headers[] = {
+        "time",      /* <time.h> - conflicts with ASN.1 Time type (RFC 3280 PKIX) */
+        "string",    /* <string.h> - could conflict with ASN.1 String types */
+        "assert",    /* <assert.h> */
+        "errno",     /* <errno.h> */
+        "stdio",     /* <stdio.h> */
+        "stdlib",    /* <stdlib.h> */
+        "stdint",    /* <stdint.h> */
+        "stddef",    /* <stddef.h> */
+        "stdbool",   /* <stdbool.h> */
+        "limits",    /* <limits.h> */
+        "math",      /* <math.h> */
+        "memory",    /* <memory.h> */
+        "setjmp",    /* <setjmp.h> */
+        "signal",    /* <signal.h> */
+        "unistd",    /* <unistd.h> */
+        NULL
+    };
+
+    /* Check if filename (case-insensitively) matches any system header */
+    for(const char **hdr = system_headers; *hdr != NULL; hdr++) {
+        /* Case-insensitive comparison for potential conflicts on case-insensitive filesystems */
+        int match = 1;
+        const char *f = filename;
+        const char *h = *hdr;
+        while(*f && *h) {
+            int fc = tolower((unsigned char)*f);
+            int hc = tolower((unsigned char)*h);
+            if(fc != hc) {
+                match = 0;
+                break;
+            }
+            f++;
+            h++;
+        }
+        if(match && *f == '\0' && *h == '\0') {
+            fprintf(stderr, 
+                "WARNING: Generated file '%s.h' may conflict with system header <%s.h> on\n"
+                "         case-insensitive filesystems (e.g., macOS HFS+, Windows).\n"
+                "         This occurs when ASN.1 type '%s' generates a filename that matches\n"
+                "         a system header name (case-insensitive match).\n"
+                "\n"
+                "         To avoid this conflict, use the -fprefix flag:\n"
+                "           asn1c -fprefix=<PREFIX>_ ...\n"
+                "\n"
+                "         For example:\n"
+                "           asn1c -fprefix=ASN1_ your-schema.asn1\n"
+                "\n"
+                "         This will generate '%s_%s.h' instead of '%s.h', preventing the conflict.\n",
+                filename, *hdr, typename,
+                asn1c_prefix_get()[0] ? asn1c_prefix_get() : "PREFIX",
+                filename, filename
+            );
+            break; /* Only warn once per file */
+        }
+    }
 }
 
 static abuf *
