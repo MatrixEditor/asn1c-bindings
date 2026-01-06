@@ -1073,15 +1073,18 @@ warn_if_conflicts_with_system_headers(const char *filename, const char *typename
         "setjmp",    /* <setjmp.h> */
         "signal",    /* <signal.h> */
         "unistd",    /* <unistd.h> */
-        NULL
     };
+    const size_t num_headers = sizeof(system_headers) / sizeof(system_headers[0]);
 
     /* Check if filename (case-insensitively) matches any system header */
-    for(const char **hdr = system_headers; *hdr != NULL; hdr++) {
-        /* Case-insensitive comparison for potential conflicts on case-insensitive filesystems */
+    for(size_t i = 0; i < num_headers; i++) {
+        const char *hdr = system_headers[i];
+        
+        /* Manual case-insensitive comparison for portability across platforms.
+         * strcasecmp() is POSIX but not C standard. */
         int match = 1;
         const char *f = filename;
-        const char *h = *hdr;
+        const char *h = hdr;
         while(*f && *h) {
             int fc = tolower((unsigned char)*f);
             int hc = tolower((unsigned char)*h);
@@ -1093,6 +1096,9 @@ warn_if_conflicts_with_system_headers(const char *filename, const char *typename
             h++;
         }
         if(match && *f == '\0' && *h == '\0') {
+            const char *prefix = asn1c_prefix_get();
+            const char *example_prefix = prefix[0] ? prefix : "PREFIX";
+            
             fprintf(stderr, 
                 "WARNING: Generated file '%s.h' may conflict with system header <%s.h> on\n"
                 "         case-insensitive filesystems (e.g., macOS HFS+, Windows).\n"
@@ -1106,8 +1112,8 @@ warn_if_conflicts_with_system_headers(const char *filename, const char *typename
                 "           asn1c -fprefix=ASN1_ your-schema.asn1\n"
                 "\n"
                 "         This will generate '%s_%s.h' instead of '%s.h', preventing the conflict.\n",
-                filename, *hdr, typename,
-                asn1c_prefix_get()[0] ? asn1c_prefix_get() : "PREFIX",
+                filename, hdr, typename,
+                example_prefix,
                 filename, filename
             );
             break; /* Only warn once per file */
