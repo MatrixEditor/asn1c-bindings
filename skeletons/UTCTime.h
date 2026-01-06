@@ -5,9 +5,15 @@
 #ifndef	_UTCTime_H_
 #define	_UTCTime_H_
 
-/* Include <time.h> first to ensure the system header is used on
- * case-insensitive filesystems (e.g., macOS) before any local Time.h
- * from ASN.1 schemas (e.g., RFC 3280) can shadow it. */
+/* Include <time.h> first to ensure the system header is used.
+ * On case-insensitive filesystems with -I. (macOS default, Cygwin), a local
+ * Time.h from ASN.1 schemas (e.g., RFC 3280) can shadow <time.h>.
+ * 
+ * IMPORTANT FOR macOS USERS: If you encounter "non-portable path" warnings,
+ * use asn1c's -fprefix= flag to rename generated files:
+ *   asn1c -fprefix=ASN1_ ...
+ * This will generate ASN1_Time.h instead of Time.h, avoiding the conflict.
+ */
 #ifdef	__CYGWIN__
 #include "/usr/include/time.h"
 #else
