@@ -12,11 +12,10 @@
  * IMPORTANT FOR macOS AND OTHER CASE-INSENSITIVE FILESYSTEMS:
  * If you encounter "non-portable path" or header shadowing warnings,
  * you can ask asn1c to prefix generated filenames, e.g.:
- *   asn1c -fprefix=ASN1_ ...
+ *   asn1c -fprefix=ASN1_ -pdu=Certificate ...
  * which will generate ASN1_Time.h instead of Time.h and avoid conflicts.
- * When using -fprefix= with the generated converter-example.mk, you may also
- * need to edit that Makefile to change the -DPDU= definition to use the
- * prefixed PDU name.
+ * The -fprefix= flag automatically handles prefixing in both generated code
+ * and makefiles, so no manual editing is required.
  *
  * This approach works transparently on Linux and other case-sensitive
  * filesystems. On macOS, the most robust workaround is to build on a
