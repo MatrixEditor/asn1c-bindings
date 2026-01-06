@@ -12,13 +12,6 @@
 #endif
 #include <asn_internal.h>
 #include <GeneralizedTime.h>
-
-#ifdef	__CYGWIN__
-#include "/usr/include/time.h"
-#else
-#include <time.h>
-#endif	/* __CYGWIN__ */
-
 #include <errno.h>
 
 #if	defined(_WIN32)
