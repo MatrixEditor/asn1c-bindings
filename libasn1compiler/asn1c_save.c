@@ -942,13 +942,29 @@ static size_t pduTypes;
 static const char *
 generate_pdu_C_definition(void) {
     const char *src;
+    const char *prefix;
     char *def;
 	char *dst;
     if(pduTypes == 0) return "";
-    def = malloc(strlen(pduType[0].typename) + 20);
+    
+    /* Get the prefix if one is set */
+    prefix = asn1c_prefix_get();
+    
+    /* Allocate space for "-DPDU=" + prefix + typename + " \0" */
+    def = malloc(strlen(prefix) + strlen(pduType[0].typename) + 20);
     assert(def);
     strcpy(def, "-DPDU=");
-	for(src = pduType[0].typename, dst = def + 6; *src; src++, dst++) {
+    dst = def + 6;
+    
+    /* Add prefix if present */
+    if(prefix && prefix[0]) {
+        for(src = prefix; *src; src++, dst++) {
+            *dst = *src;
+        }
+    }
+    
+    /* Add typename */
+	for(src = pduType[0].typename; *src; src++, dst++) {
         if((*dst = *src) == '-') {
             *dst = '_';
         }
