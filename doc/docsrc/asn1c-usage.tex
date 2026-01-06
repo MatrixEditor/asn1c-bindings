@@ -566,6 +566,7 @@ manually. }\\
 {\ttfamily -fno-constraints} & {\small Do not generate the ASN.1 subtype constraint checking code. This
 may produce a shorter executable.}\\
 {\ttfamily -fno-include-deps} & {\small Do not generate the courtesy \#include lines for non-critical dependencies.}\\
+{\ttfamily -fprefix=\emph{<prefix>}} & {\small Add the specified prefix to all generated type names and filenames. This helps avoid naming conflicts in several scenarios: (1) \textbf{System header conflicts}: On case-insensitive filesystems (macOS HFS+, Windows), ASN.1 types like \texttt{Time} generate \texttt{Time.h}, which can conflict with system header \texttt{<time.h>}. Using \texttt{-fprefix=ASN1\_} generates \texttt{ASN1\_Time.h} instead. The compiler will warn when generating files that might conflict with common system headers. (2) \textbf{Multiple ASN.1 modules}: When generating code for multiple ASN.1 syntaxes with type name clashes, a prefix prevents symbol collisions. (3) \textbf{Integration with existing code}: Prefixes help avoid conflicts with existing types in your codebase. When used with \texttt{-pdu} options, the prefix is automatically applied to PDU definitions in \texttt{converter-example.mk}. For example, \texttt{-fprefix=ASN1\_ -pdu=Certificate} generates \texttt{-DPDU=ASN1\_Certificate}. With \texttt{-pdu=all} or \texttt{-pdu=auto}, the generated \texttt{converter-example.mk} includes instructions for selecting specific prefixed PDU types.}\\
 {\ttfamily -funnamed-unions} & {\small Enable  unnamed  unions in the definitions of target language's structures.}\\
 {\ttfamily -fwide-types} & {\small Use the wide integer types (INTEGER\_t, REAL\_t) instead of machine's native data types (long, double). }\\\\
 \textbf{Codecs Generation Options} & \textbf{Description}\\
@@ -2336,6 +2337,119 @@ Implementation details:
 \item \texttt{libasn1compiler/asn1c\_C.c} -- Code generation with IOC support
 \item \texttt{libasn1fix/asn1fix\_param.c} -- Parameterized type handling
 \end{itemize}
+
+\section{\label{sec:Using-fprefix}Using the \texttt{-fprefix} Option}
+
+The \texttt{-fprefix} option adds a prefix to all generated type names and filenames, 
+helping to avoid naming conflicts in various scenarios.
+
+\subsection*{System Header Conflicts on Case-Insensitive Filesystems}
+
+On case-insensitive filesystems (macOS HFS+, Windows), ASN.1 types can generate 
+files that conflict with system headers. For example, an ASN.1 type named \texttt{Time} 
+generates \texttt{Time.h}, which can shadow the system header \texttt{<time.h>} when 
+compiling with \texttt{-I.}.
+
+\textbf{Problem:}
+\begin{bash}
+asn1c rfc3280.asn1
+cc -I. -o myprogram *.c
+\end{bash}
+
+On macOS or Windows, this may produce errors like:
+\begin{verbatim}
+warning: non-portable path to file '<Time.h>'
+\end{verbatim}
+
+\textbf{Solution:}
+\begin{bash}
+asn1c -fprefix=ASN1_ rfc3280.asn1
+cc -I. -o myprogram *.c
+\end{bash}
+
+This generates \texttt{ASN1\_Time.h} instead of \texttt{Time.h}, avoiding the conflict.
+
+\textbf{Automatic Warning:} The compiler will warn you when generating files that might 
+conflict with common system headers (time.h, string.h, stdio.h, etc.) on case-insensitive 
+filesystems, suggesting the use of \texttt{-fprefix}.
+
+\subsection*{Using \texttt{-fprefix} with PDU Options}
+
+When using \texttt{-fprefix} with \texttt{-pdu} options, the prefix is automatically 
+applied to PDU definitions in \texttt{converter-example.mk}.
+
+\subsubsection*{Specific PDU Type}
+
+\begin{bash}
+asn1c -fprefix=ASN1_ -pdu=Certificate rfc3280.asn1
+\end{bash}
+
+The generated \texttt{converter-example.mk} automatically contains:
+\begin{verbatim}
+CFLAGS += $(ASN_MODULE_CFLAGS) -DPDU=ASN1_Certificate -I.
+\end{verbatim}
+
+No manual editing required -- the prefix is applied automatically to the PDU definition.
+
+\subsubsection*{Multiple PDUs with \texttt{-pdu=all}}
+
+\begin{bash}
+asn1c -fprefix=ASN1_ -pdu=all myschema.asn1
+\end{bash}
+
+When using \texttt{-pdu=all} or \texttt{-pdu=auto}, the compiler:
+\begin{enumerate}
+\item Generates \texttt{pdu\_collection.c} with all available PDU types
+\item Adds helpful comments in \texttt{converter-example.mk} explaining how to select a specific PDU
+\item Prints an informative message to stderr with usage instructions
+\end{enumerate}
+
+Example output:
+\begin{verbatim}
+Generated pdu_collection.c
+NOTE: Multiple PDU types available. The converter-example 
+      uses the first PDU by default.
+      To decode a specific PDU type, add -DPDU=ASN1_YourTypeName 
+      to CFLAGS in converter-example.mk
+      See pdu_collection.c for the complete list of PDU types.
+\end{verbatim}
+
+The generated \texttt{converter-example.mk} includes:
+\begin{verbatim}
+# PDU COLLECTION MODE: Multiple PDU types are available.
+# The converter-example will default to the first PDU in 
+# pdu_collection.c
+#
+# To use a specific PDU type, add -DPDU=<TypeName> to CFLAGS.
+# NOTE: With -fprefix=ASN1_, type names are prefixed.
+# Example: -DPDU=ASN1_YourTypeName
+#
+# See pdu_collection.c for the list of available PDU types.
+\end{verbatim}
+
+\subsection*{Multiple ASN.1 Modules with Name Clashes}
+
+When generating code for multiple ASN.1 specifications that have type name clashes:
+
+\begin{bash}
+asn1c -fprefix=PKIX_ rfc3280.asn1
+asn1c -fprefix=CMS_ rfc3852.asn1
+\end{bash}
+
+This prevents symbol collisions in the global C namespace by ensuring types from 
+different modules have different prefixes.
+
+\subsection*{Integration with Existing Code}
+
+If your existing codebase has types that might conflict with generated ASN.1 types, 
+use \texttt{-fprefix} to namespace the generated code:
+
+\begin{bash}
+asn1c -fprefix=ASN_ myprotocol.asn1
+\end{bash}
+
+All generated types will have the \texttt{ASN\_} prefix, avoiding conflicts with your 
+existing type definitions.
 
 \chapter{\label{chap:Abstract-Syntax-Notation}Abstract Syntax Notation: ASN.1}
 
