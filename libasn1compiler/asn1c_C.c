@@ -944,6 +944,60 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 			if(asn1c_lang_C_OpenType(&tmp, &memb_ioc, column_name)) return -1;
 			INDENT(-1);
 		} else {
+			/* Before processing this member (which will call SEQUENCE at tmp.embed),
+			 * check if it contains SEQUENCE OF members that would be at embed > 2,
+			 * and pre-generate their typedefs */
+			if (tmp.embed == 2 && (memb->expr_type & ASN_CONSTR_MASK)) {
+				asn1p_expr_t *inner_v;
+				TQ_FOR(inner_v, &(memb->members), next) {
+					if (inner_v->expr_type == ASN_CONSTR_SEQUENCE_OF ||
+					    inner_v->expr_type == ASN_CONSTR_SET_OF) {
+						asn1p_expr_t *seq_of_inner_memb = TQ_FIRST(&inner_v->members);
+						if (seq_of_inner_memb && (seq_of_inner_memb->expr_type & ASN_CONSTR_MASK)) {
+							/* This will be at embed 3 when processed - pre-generate it */
+							arg_t deep_tmp = tmp;
+							deep_tmp.embed = 3;
+							deep_tmp.expr = seq_of_inner_memb;
+							
+							/* Set up the member */
+							enum asn1p_expr_marker_e deep_saved_flags = seq_of_inner_memb->marker.flags;
+							seq_of_inner_memb->marker.flags &= ~EM_INDIRECT;
+							int deep_saved_anon = seq_of_inner_memb->_anonymous_type;
+							seq_of_inner_memb->_anonymous_type = 1;
+							char *deep_saved_id = seq_of_inner_memb->Identifier;
+							if(seq_of_inner_memb->Identifier == 0) {
+								seq_of_inner_memb->Identifier = strdup("Member");
+								assert(seq_of_inner_memb->Identifier);
+							}
+							
+							/* Generate typedef */
+							int deep_saved_target = arg->target->target;
+							REDIR(OT_FWD_DEFS);
+							OUT("typedef %s {\n", c_name(&deep_tmp).full_name);
+							
+							asn1p_expr_t *deep_memb;
+							TQ_FOR(deep_memb, &(seq_of_inner_memb->members), next) {
+								INDENT(+1);
+								EMBED(deep_memb);
+								INDENT(-1);
+							}
+							
+							PCTX_DEF;
+							OUT("} %s;\n", c_name(&deep_tmp).base_name);
+							REDIR(deep_saved_target);
+							
+							/* Restore state */
+							seq_of_inner_memb->marker.flags = deep_saved_flags;
+							seq_of_inner_memb->_anonymous_type = deep_saved_anon;
+							if (deep_saved_id == 0 && seq_of_inner_memb->Identifier != deep_saved_id) {
+								free(seq_of_inner_memb->Identifier);
+								seq_of_inner_memb->Identifier = deep_saved_id;
+							}
+						}
+					}
+				}
+			}
+			
 			tmp.default_cb(&tmp, NULL);
 		}
 
