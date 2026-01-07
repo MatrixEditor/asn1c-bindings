@@ -10,11 +10,13 @@ Certificate.c: ../sample.makefile.regen ../rfc3280-*.asn1
 	make
 
 regen-makefile:
-	ASN_CMDOPTS="-fcompound-names -fwide-types" \
+	ASN_CMDOPTS="-fcompound-names -fwide-types -fprefix=ASN1_" \
 	ASN_MODULES="../rfc3280-*.asn1" \
 	ASN_PDU=Certificate \
 	ASN_PROGRAM=x509dump \
 	../sample.makefile.regen
+
+all: check
 
 check: ${ASN_PROGRAM} check-ber check-xer check-oer check-per check-aper
 	@echo ================
@@ -114,6 +116,9 @@ check-aper:
 
 maybe-wip-pause:
 	@if [ -f WIP ]; then cat WIP; sleep 2; fi
+
+clean: 
+	rm -f *.[oa] $(ASN_PROGRAM)
 
 distclean: clean
 	rm -f $(ASN_MODULE_SRCS)

@@ -60,6 +60,8 @@ test -n "$TITLE" && EXTRA_CFLAGS="-DASN_CONVERTER_TITLE=\"$TITLE\" ${EXTRA_CFLAG
 	echo "	ASN_PROGRAM=${ASN_PROGRAM} \\"
 	echo "	$0"
 	echo
+	echo 'all: check'
+	echo
 	echo 'check: ${ASN_PROGRAM} check-ber check-xer check-oer check-per check-aper'
 	echo '	@echo ================'
 	echo '	@echo All tests passed'
@@ -158,6 +160,9 @@ test -n "$TITLE" && EXTRA_CFLAGS="-DASN_CONVERTER_TITLE=\"$TITLE\" ${EXTRA_CFLAG
 	echo
 	echo "maybe-wip-pause:"
 	echo "	@if [ -f WIP ]; then cat WIP; sleep 2; fi"
+	echo
+	echo "clean: "
+	echo '	rm -f *.[oa] $(ASN_PROGRAM)'
 	echo
 	echo "distclean: clean"
 	echo '	rm -f $(ASN_MODULE_SRCS)'
