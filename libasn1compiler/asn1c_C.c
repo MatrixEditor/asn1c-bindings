@@ -410,8 +410,8 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
 						/* Check if the SEQUENCE OF member is a constructed type */
 						if (seq_of_member && (seq_of_member->expr_type & ASN_CONSTR_MASK)) {
 							/* This will be at embed+2 when the SEQUENCE OF processes it.
-							 * If embed+2 > 2, we need to generate it here as a full typedef. */
-							if (arg->embed + 2 > 2) {
+							 * If embed+2 > 2 (i.e., embed > 0), we need to generate it here as a full typedef. */
+							if (arg->embed > 0) {
 								arg_t tmp = *arg;
 								tmp.embed += 2;
 								tmp.expr = seq_of_member;
