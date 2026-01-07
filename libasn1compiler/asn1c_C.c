@@ -398,12 +398,60 @@ asn1c_lang_C_type_SEQUENCE(arg_t *arg) {
 		/* Use _anonymous_type field to indicate it's called from
 		 * asn1c_lang_C_type_SEx_OF() */
 		if (expr->_anonymous_type) {
+			/* For SEQUENCE members at embed >= 1, pre-generate full typedefs
+			 * for any deeply nested SEQUENCE OF members (embed >= 3) */
+			if (arg->embed >= 1) {
+				asn1p_expr_t *member;
+				TQ_FOR(member, &(expr->members), next) {
+					/* Check if this member is a SEQUENCE OF or SET OF */
+					if (member->expr_type == ASN_CONSTR_SEQUENCE_OF ||
+					    member->expr_type == ASN_CONSTR_SET_OF) {
+						asn1p_expr_t *seq_of_member = TQ_FIRST(&member->members);
+						/* Check if the SEQUENCE OF member is a constructed type */
+						if (seq_of_member && (seq_of_member->expr_type & ASN_CONSTR_MASK)) {
+							/* This will be at embed+2 when the SEQUENCE OF processes it.
+							 * If embed+2 > 2, we need to generate it here as a full typedef. */
+							if (arg->embed + 2 > 2) {
+								arg_t tmp = *arg;
+								tmp.embed += 2;
+								tmp.expr = seq_of_member;
+								seq_of_member->_anonymous_type = 1;
+								if(seq_of_member->Identifier == 0) {
+									seq_of_member->Identifier = strdup("Member");
+									assert(seq_of_member->Identifier);
+								}
+								
+								/* Get c_name once */
+								struct c_names names = c_name(&tmp);
+								
+								/* Generate full typedef in FWD_DEFS section */
+								REDIR(OT_FWD_DEFS);
+								OUT("typedef %s {\n", names.full_name);
+								
+								/* Generate struct members */
+								asn1p_expr_t *nested_v;
+								TQ_FOR(nested_v, &(seq_of_member->members), next) {
+									INDENT(+1);
+									EMBED_WITH_IOCT(nested_v, ioc_tao);
+									INDENT(-1);
+								}
+								
+								PCTX_DEF;
+								OUT("} %s;\n", names.base_name);
+								REDIR(saved_target);
+							}
+						}
+					}
+				}
+			}
+			
 			if (arg->embed > 2) {
 				/* For deeply nested SEQUENCE OF, just use the type name */
 				OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"",
 					c_name(arg).base_name);
 				return asn1c_lang_C_type_SEQUENCE_def(arg, ioc_tao.ioct ? &ioc_tao : 0);
 			}
+			
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
