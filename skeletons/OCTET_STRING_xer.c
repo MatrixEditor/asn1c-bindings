@@ -815,9 +815,22 @@ OCTET_STRING__convert_base64(void *sptr, const void *chunk_buf,
     const char *p = (const char *)chunk_buf;
     const char *pend = p + chunk_size;
     uint8_t *buf;
-    uint32_t value = 0;
-    int bits_collected = 0;
-    int padding_seen = 0;
+    uint32_t value;
+    int bits_collected;
+    int padding_seen;
+
+    /* Initialize decoder state on first call */
+    if(!st->_xer_decode_state.decoder_initialized) {
+        st->_xer_decode_state.accumulated_value = 0;
+        st->_xer_decode_state.bits_collected = 0;
+        st->_xer_decode_state.padding_seen = 0;
+        st->_xer_decode_state.decoder_initialized = 1;
+    }
+
+    /* Load state from structure */
+    value = st->_xer_decode_state.accumulated_value;
+    bits_collected = st->_xer_decode_state.bits_collected;
+    padding_seen = st->_xer_decode_state.padding_seen;
 
     /* Reallocate buffer - Base64 decodes to approximately 3/4 of input size */
     size_t new_size = st->size + (chunk_size * 3 / 4) + 3;
@@ -876,6 +889,11 @@ OCTET_STRING__convert_base64(void *sptr, const void *chunk_buf,
 
     /* Update size */
     st->size = buf - st->buf;
+    
+    /* Save state back to structure for next call */
+    st->_xer_decode_state.accumulated_value = value;
+    st->_xer_decode_state.bits_collected = bits_collected;
+    st->_xer_decode_state.padding_seen = padding_seen;
     
     /* Always write null terminator to prevent buffer overflow in callers */
     if(st->size <= new_size) {

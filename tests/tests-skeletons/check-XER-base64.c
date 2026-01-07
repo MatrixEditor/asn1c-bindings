@@ -436,6 +436,112 @@ test_invalid_hex_prefix() {
     printf("  Invalid H' prefix rejection: SUCCESS\n\n");
 }
 
+static void
+test_character_by_character_decode() {
+    printf("Test: Character-by-character Base64 decoding (buffer size = 1)\n");
+    
+    /*
+     * This test simulates a scenario where the XER decoder processes
+     * the Base64 content character-by-character. In real usage, this
+     * happens when xer_decode_general calls body_receiver multiple times
+     * with small chunks.
+     *
+     * We test by feeding the decoder in various chunk sizes including
+     * very small ones that would previously fail.
+     */
+    
+    struct test_case {
+        const char *xml;
+        const char *expected;
+        size_t chunk_sizes[10];  /* 0-terminated list */
+        const char *description;
+    } tests[] = {
+        {
+            "<tag>SGVsbG8sIFdvcmxkIQ==</tag>",
+            "Hello, World!",
+            {5, 5, 5, 5, 5, 5, 2, 0},  /* Varying chunk sizes */
+            "Multiple small chunks"
+        },
+        {
+            "<tag>QUJD</tag>",
+            "ABC",
+            {10, 0},  /* Single chunk */
+            "Single chunk"
+        },
+        {
+            "<tag>QUI=</tag>",
+            "AB",
+            {3, 3, 3, 3, 1, 0},  /* Very small chunks with padding */
+            "Small chunks with padding"
+        }
+    };
+    
+    for(size_t test_idx = 0; test_idx < sizeof(tests)/sizeof(tests[0]); test_idx++) {
+        struct test_case *tc = &tests[test_idx];
+        OCTET_STRING_t *decoded = NULL;
+        asn_dec_rval_t dr;
+        size_t total_consumed = 0;
+        size_t xml_len = strlen(tc->xml);
+        size_t chunk_idx = 0;
+        
+        printf("  Subtest: %s\n", tc->description);
+        
+        /* Decode in chunks according to the test case */
+        while(total_consumed < xml_len && tc->chunk_sizes[chunk_idx] > 0) {
+            size_t chunk_size = tc->chunk_sizes[chunk_idx];
+            size_t remaining = xml_len - total_consumed;
+            if(chunk_size > remaining) chunk_size = remaining;
+            
+            dr = OCTET_STRING_decode_xer_base64(NULL, &asn_DEF_OCTET_STRING,
+                                                (void **)&decoded, "tag",
+                                                tc->xml + total_consumed, chunk_size);
+            
+            if(dr.code == RC_OK) {
+                total_consumed += dr.consumed;
+                break;
+            } else if(dr.code == RC_WMORE) {
+                total_consumed += dr.consumed;
+                chunk_idx++;
+                continue;
+            } else {
+                printf("    ERROR: Decode failed with code %d at position %zu\n",
+                       dr.code, total_consumed);
+                if(decoded) ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, decoded);
+                assert(0);
+            }
+        }
+        
+        /* Feed any remaining data */
+        while(dr.code != RC_OK && total_consumed < xml_len) {
+            size_t remaining = xml_len - total_consumed;
+            dr = OCTET_STRING_decode_xer_base64(NULL, &asn_DEF_OCTET_STRING,
+                                                (void **)&decoded, "tag",
+                                                tc->xml + total_consumed, remaining);
+            if(dr.code == RC_OK) {
+                total_consumed += dr.consumed;
+                break;
+            } else if(dr.code == RC_WMORE) {
+                total_consumed += dr.consumed;
+                continue;
+            } else {
+                printf("    ERROR: Final decode failed with code %d\n", dr.code);
+                if(decoded) ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, decoded);
+                assert(0);
+            }
+        }
+        
+        assert(dr.code == RC_OK);
+        assert(decoded != NULL);
+        assert(decoded->size == strlen(tc->expected));
+        assert(memcmp(decoded->buf, tc->expected, decoded->size) == 0);
+        
+        ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, decoded);
+        printf("    Result: PASS\n");
+    }
+    
+    printf("  Character-by-character decoding: SUCCESS\n\n");
+}
+
 int
 main() {
     printf("=== XER Base64 OCTET_STRING Comprehensive Tests ===\n\n");
@@ -450,6 +556,7 @@ main() {
     test_large_data();
     test_hex_prefix();
     test_invalid_hex_prefix();
+    test_character_by_character_decode();
     
     printf("=== All tests passed ===\n");
     return 0;

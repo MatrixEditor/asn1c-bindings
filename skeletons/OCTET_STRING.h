@@ -16,6 +16,14 @@ typedef struct OCTET_STRING {
 	size_t size;	/* Size of the buffer */
 
 	asn_struct_ctx_t _asn_ctx;	/* Parsing across buffer boundaries */
+
+	/* XER decoder state for stateful decoders (Base64, etc.) */
+	struct {
+		uint32_t accumulated_value;  /* Accumulated bits during decoding */
+		int bits_collected;          /* Number of bits in accumulated_value */
+		int padding_seen;            /* Whether padding was encountered */
+		int decoder_initialized;     /* Whether decoder state is valid */
+	} _xer_decode_state;
 } OCTET_STRING_t;
 
 extern asn_TYPE_descriptor_t asn_DEF_OCTET_STRING;
