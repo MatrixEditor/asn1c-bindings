@@ -5,11 +5,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include <SeqWithNestedSOS.h>
+#include <Type.h>
 
 int
 main(int ac, char **av) {
-	SeqWithNestedSOS_t t;
+	Type_t t;
 
 	(void)ac;	/* Unused argument */
 	(void)av;	/* Unused argument */

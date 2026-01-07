@@ -70,8 +70,9 @@ TESTS += check-src/check64-136.-gen-OER.c
 endif
 
 XFAIL_TESTS =
-# check-158 issue is now fixed - deeply nested SEQUENCE OF (3+ levels)
-# now works with -fcompound-names
+XFAIL_TESTS += check-src/check-158.-fcompound-names.c
+# check-158 fails due to deeply nested SEQUENCE OF (3+ levels)
+# which requires more complex typedef handling
 
 EXTRA_DIST =    \
     data-62     \
