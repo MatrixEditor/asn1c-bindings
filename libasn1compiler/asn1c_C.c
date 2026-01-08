@@ -929,9 +929,7 @@ generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int targ
 	/* Generate members */
 	asn1p_expr_t *memb;
 	TQ_FOR(memb, &(expr->members), next) {
-		INDENT(+1);
 		EMBED(memb);
-		INDENT(-1);
 	}
 	
 	PCTX_DEF;
@@ -984,9 +982,14 @@ pregenerate_nested_typedefs(arg_t *arg, asn1p_expr_t *parent_expr, int current_e
 		/* If it's a constructed type, it will be at embed level current_embed + 2 */
 		if(seq_member->expr_type & ASN_CONSTR_MASK) {
 			int target_embed = current_embed + 2;
+			int ret;
 			
 			/* Generate typedef for this deeply nested member */
-			generate_typedef_for_constructed_member(arg, seq_member, target_embed);
+			ret = generate_typedef_for_constructed_member(arg, seq_member, target_embed);
+			if(ret != 0) {
+				/* Stop further processing on error */
+				return;
+			}
 			
 			/* Recursively check if this member has even deeper nesting */
 			pregenerate_nested_typedefs(arg, seq_member, target_embed);
