@@ -65,6 +65,10 @@ static asn1p_expr_type_e expr_get_type(arg_t *arg, asn1p_expr_t *expr);
 static int try_inline_default(arg_t *arg, asn1p_expr_t *expr, int out);
 static int *compute_canonical_members_order(arg_t *arg, int el_count);
 
+/* Forward typedef generation for deeply nested SEQUENCE OF members */
+static int generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int target_embed);
+static void pregenerate_nested_typedefs(arg_t *arg, asn1p_expr_t *parent_expr, int current_embed);
+
 /* Custom XER encoder/decoder generation for ENCODING-CONTROL */
 static int type_needs_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr);
 static int emit_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr);
@@ -891,6 +895,108 @@ compute_member_ioc(arg_t *arg, asn1p_expr_t *m,
     return 0;
 }
 
+/*
+ * Generate a complete typedef for a constructed type member.
+ * This is used when we need to pre-generate typedefs for deeply nested
+ * SEQUENCE OF members to avoid forward reference issues.
+ */
+static int
+generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int target_embed) {
+	/* Save current state */
+	enum asn1p_expr_marker_e saved_flags = expr->marker.flags;
+	int saved_anon = expr->_anonymous_type;
+	char *saved_id = expr->Identifier;
+	int saved_target = arg->target->target;
+	int saved_embed = arg->embed;
+	
+	/* Set up the member for typedef generation */
+	expr->marker.flags &= ~EM_INDIRECT;
+	expr->_anonymous_type = 1;
+	if(expr->Identifier == 0) {
+		expr->Identifier = strdup("Member");
+		assert(expr->Identifier);
+	}
+	
+	/* Create a temporary arg with the target embed level */
+	arg_t tmp = *arg;
+	tmp.embed = target_embed;
+	tmp.expr = expr;
+	
+	/* Generate typedef in FWD-DEFS section */
+	REDIR(OT_FWD_DEFS);
+	OUT("typedef %s {\n", c_name(&tmp).full_name);
+	
+	/* Generate members */
+	asn1p_expr_t *memb;
+	TQ_FOR(memb, &(expr->members), next) {
+		EMBED(memb);
+	}
+	
+	PCTX_DEF;
+	OUT("} %s;\n", c_name(&tmp).base_name);
+	
+	/* Restore state */
+	REDIR(saved_target);
+	arg->embed = saved_embed;
+	expr->marker.flags = saved_flags;
+	expr->_anonymous_type = saved_anon;
+	if (saved_id == 0 && expr->Identifier != saved_id) {
+		free(expr->Identifier);
+		expr->Identifier = saved_id;
+	}
+	
+	return 0;
+}
+
+/*
+ * Recursively scan for deeply nested SEQUENCE OF/SET OF members and
+ * pre-generate their typedefs to avoid forward reference issues.
+ * 
+ * This handles the case where:
+ * - We're at embed level N processing a SEQUENCE OF
+ * - Its member is a constructed type (SEQUENCE/SET/CHOICE) at level N+1
+ * - That constructed type contains SEQUENCE OF/SET OF members at level N+2
+ * - Those SEQUENCE OF members have constructed type members at level N+3
+ * 
+ * At embed level >= 3, the normal code generation doesn't create complete
+ * typedefs, which breaks A_SEQUENCE_OF() macro usage.
+ */
+static void
+pregenerate_nested_typedefs(arg_t *arg, asn1p_expr_t *parent_expr, int current_embed) {
+	/* Only scan when we're at embed >= 2, as problems occur at embed >= 3 */
+	if(current_embed < 2) return;
+	if(!(parent_expr->expr_type & ASN_CONSTR_MASK)) return;
+	
+	asn1p_expr_t *member;
+	TQ_FOR(member, &(parent_expr->members), next) {
+		/* Look for SEQUENCE OF or SET OF members */
+		if(member->expr_type != ASN_CONSTR_SEQUENCE_OF &&
+		   member->expr_type != ASN_CONSTR_SET_OF) {
+			continue;
+		}
+		
+		/* Get the member type of this SEQUENCE OF/SET OF */
+		asn1p_expr_t *seq_member = TQ_FIRST(&member->members);
+		if(!seq_member) continue;
+		
+		/* If it's a constructed type, it will be at embed level current_embed + 2 */
+		if(seq_member->expr_type & ASN_CONSTR_MASK) {
+			int target_embed = current_embed + 2;
+			int ret;
+			
+			/* Generate typedef for this deeply nested member */
+			ret = generate_typedef_for_constructed_member(arg, seq_member, target_embed);
+			if(ret != 0) {
+				/* Stop further processing on error */
+				return;
+			}
+			
+			/* Recursively check if this member has even deeper nesting */
+			pregenerate_nested_typedefs(arg, seq_member, target_embed);
+		}
+	}
+}
+
 int
 asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 	asn1p_expr_t *expr = arg->expr;
@@ -944,6 +1050,12 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 			if(asn1c_lang_C_OpenType(&tmp, &memb_ioc, column_name)) return -1;
 			INDENT(-1);
 		} else {
+			/* Pre-generate typedefs for deeply nested SEQUENCE OF/SET OF members
+			 * to avoid forward reference issues at embed level >= 3 */
+			if (tmp.embed == 2 && (memb->expr_type & ASN_CONSTR_MASK)) {
+				pregenerate_nested_typedefs(arg, memb, tmp.embed);
+			}
+			
 			tmp.default_cb(&tmp, NULL);
 		}
 
