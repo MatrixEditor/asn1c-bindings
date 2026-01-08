@@ -2205,7 +2205,9 @@ PartialSpecification:
         asn1p_constraint_insert($$, ct);
         for(unsigned i = 0; i < $4->el_count; i++) {
             asn1p_constraint_insert($$, $4->elements[i]);
+            $4->elements[i] = NULL;
         }
+        asn1p_constraint_free($4);
     };
 TypeConstraints:
     NamedConstraint {
