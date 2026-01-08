@@ -146,6 +146,20 @@ static asn1p_module_t *currentModule;
 	} tv_nametag;
 };
 
+%destructor { asn1p_delete($$); } <a_grammar>
+%destructor { asn1p_module_free($$); } <a_module>
+%destructor { asn1p_expr_free($$); } <a_expr>
+%destructor { asn1p_constraint_free($$); } <a_constr>
+%destructor { asn1p_xports_free($$); } <a_xports>
+%destructor { asn1p_oid_free($$); } <a_oid>
+/* %destructor { asn1p_ref_free($$); } <a_ref> */
+%destructor { asn1p_wsyntx_free($$); } <a_wsynt>
+%destructor { asn1p_wsyntx_chunk_free($$); } <a_wchunk>
+%destructor { asn1p_value_free($$); } <a_value>
+%destructor { asn1p_paramlist_free($$); } <a_plist>
+%destructor { free($$); } <tv_str>
+%destructor { free($$.buf); } <tv_opaque>
+
 /*
  * Token types returned by scanner.
  */
@@ -793,6 +807,7 @@ EncodingInstruction:
 	 * Erroneous attempts
 	 */
 	| BasicString {
+		$$ = NULL;
 		return yyerror(param,
 			"Attempt to redefine a standard basic string type, "
 			"please comment out or remove this type redefinition.");
@@ -820,6 +835,7 @@ ImportsDefinition:
 	 * Some error cases.
 	 */
 	| TOK_IMPORTS TOK_FROM /* ... */ {
+		$$ = NULL;
 		return yyerror(param, "Empty IMPORTS list");
 	}
 	;
