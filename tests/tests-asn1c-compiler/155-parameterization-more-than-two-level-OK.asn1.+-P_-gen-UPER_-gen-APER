@@ -155,7 +155,7 @@ static const asn_INTEGER_enum_map_t asn_MAP_Color_value2enum_1[] = {
 	{ 1,	5,	"green" },
 	{ 2,	4,	"blue" }
 };
-static int asn_validate_Color(const asn_TYPE_descriptor_t *td,
+static int asn_validate_Color_1(const asn_TYPE_descriptor_t *td,
                        const void *sptr,
                        asn_app_constraint_failed_f *ctfailcb,
                        void* app_key) {
@@ -206,7 +206,7 @@ asn_TYPE_descriptor_t asn_DEF_Color = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		asn_validate_Color
+		asn_validate_Color_1
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Color_specs_1	/* Additional specs */
@@ -268,7 +268,7 @@ static const asn_INTEGER_enum_map_t asn_MAP_Valid_value2enum_1[] = {
 	{ 0,	7,	"crc-nok" },
 	{ 1,	6,	"crc-ok" }
 };
-static int asn_validate_Valid(const asn_TYPE_descriptor_t *td,
+static int asn_validate_Valid_1(const asn_TYPE_descriptor_t *td,
                        const void *sptr,
                        asn_app_constraint_failed_f *ctfailcb,
                        void* app_key) {
@@ -317,7 +317,7 @@ asn_TYPE_descriptor_t asn_DEF_Valid = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		asn_validate_Valid
+		asn_validate_Valid_1
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Valid_specs_1	/* Additional specs */

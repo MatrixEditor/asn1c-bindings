@@ -124,7 +124,7 @@ static const asn_INTEGER_enum_map_t asn_MAP_Criticality_value2enum_1[] = {
 	{ 1,	6,	"ignore" },
 	{ 2,	6,	"notify" }
 };
-static int asn_validate_Criticality(const asn_TYPE_descriptor_t *td,
+static int asn_validate_Criticality_1(const asn_TYPE_descriptor_t *td,
                        const void *sptr,
                        asn_app_constraint_failed_f *ctfailcb,
                        void* app_key) {
@@ -175,7 +175,7 @@ asn_TYPE_descriptor_t asn_DEF_Criticality = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		asn_validate_Criticality
+		asn_validate_Criticality_1
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Criticality_specs_1	/* Additional specs */
@@ -224,7 +224,7 @@ static const asn_INTEGER_enum_map_t asn_MAP_Presence_value2enum_1[] = {
 	{ 1,	11,	"conditional" },
 	{ 2,	9,	"mandatory" }
 };
-static int asn_validate_Presence(const asn_TYPE_descriptor_t *td,
+static int asn_validate_Presence_1(const asn_TYPE_descriptor_t *td,
                        const void *sptr,
                        asn_app_constraint_failed_f *ctfailcb,
                        void* app_key) {
@@ -275,7 +275,7 @@ asn_TYPE_descriptor_t asn_DEF_Presence = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		asn_validate_Presence
+		asn_validate_Presence_1
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_Presence_specs_1	/* Additional specs */

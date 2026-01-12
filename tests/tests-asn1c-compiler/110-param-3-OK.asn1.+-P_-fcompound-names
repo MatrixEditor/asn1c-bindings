@@ -176,7 +176,7 @@ static const asn_INTEGER_enum_map_t asn_MAP_field_value2enum_7[] = {
 	{ 4,	5,	"green" },
 	{ 5,	4,	"blue" }
 };
-static int asn_validate_field(const asn_TYPE_descriptor_t *td,
+static int asn_validate_field_7(const asn_TYPE_descriptor_t *td,
                        const void *sptr,
                        asn_app_constraint_failed_f *ctfailcb,
                        void* app_key) {
@@ -228,7 +228,7 @@ asn_TYPE_descriptor_t asn_DEF_field_7 = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		asn_validate_field
+		asn_validate_field_7
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_field_specs_7	/* Additional specs */
