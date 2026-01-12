@@ -1,15 +1,3 @@
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 40 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 41 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 42 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 40 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 40 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 40 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 41 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 41 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 41 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 42 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 42 in 170-private-ie-field-OK.asn1
-WARNING: Parameterized type PRIVATE-IE-ID expected for PRIVATE-IE-ID at line 42 in 170-private-ie-field-OK.asn1
 
 /*** <<< INCLUDES [PrivateIE-ID] >>> ***/
 
@@ -1044,8 +1032,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			.per_constraints = 0,
-#endif  /* !definedGenerated asn_constant.h
-(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */

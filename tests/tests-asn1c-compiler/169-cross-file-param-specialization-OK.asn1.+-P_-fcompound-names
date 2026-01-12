@@ -1,41 +1,3 @@
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
 
 /*** <<< INCLUDES [ProtocolIE-ID] >>> ***/
 
@@ -1814,8 +1776,7 @@ asn_TYPE_descriptor_t asn_DEF_EXTERNAL = {
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
-#endif  /Generated asn_constant.h
-* !defined(ASN_DISABLE_JER_SUPPORT) */
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_EXTERNAL_1,
