@@ -219,11 +219,20 @@ asn1c_lang_C_type_common_INTEGER(arg_t *arg) {
                  * which is the actual typedef name for the enum.
                  * For enum constants, we iterate over members and use c_member_name
                  * which generates the correct constant names.
-                 * The function name must match MKID(expr) since that's used in emit_type_DEF.
+                 * The function name includes the type unique index to ensure uniqueness
+                 * even when multiple ENUMERATED types with the same name exist in
+                 * different nested contexts (e.g., in different CHOICE branches).
                  */
                 struct c_names cnames = c_name(arg);
                 char *enum_type = strdup(cnames.members_name);
-                char *func_name = strdup(MKID(expr));
+                char *func_name = NULL;
+                int name_len = snprintf(NULL, 0, "%s_%d", MKID(expr), expr->_type_unique_index);
+                if(name_len > 0) {
+                    func_name = malloc(name_len + 1);
+                    if(func_name) {
+                        snprintf(func_name, name_len + 1, "%s_%d", MKID(expr), expr->_type_unique_index);
+                    }
+                }
                 if(!enum_type || !func_name) {
                     free(enum_type);
                     free(func_name);
@@ -4111,10 +4120,11 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 			OUT("0");
 		} else {
 			if (!expr->combined_constraints) {
-                          if(arg->param.localvalidation_expr == expr)
-                             OUT("asn_validate_%s", p);
-                          else
+                          if(arg->param.localvalidation_expr == expr) {
+                             OUT("asn_validate_%s_%d", p, expr->_type_unique_index);
+                          } else {
                              OUT("%s_constraint", p2);
+                          }
                           arg->param.localvalidation_expr = NULL;
 			} else
 				FUNCREF(constraint);

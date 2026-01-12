@@ -77,6 +77,33 @@ memb_varsets_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 
+/*** <<< CTDEFS [LogLine] >>> ***/
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_type_varsets_constr_3 CC_NOTUSED = {
+	{ 0, 0 },
+	-1	/* (SIZE(1..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_type_varsets_constr_3 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_SEMI_CONSTRAINED,	-1, -1,  1,  0 }	/* (SIZE(1..MAX)) */,
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_memb_varsets_constr_3 CC_NOTUSED = {
+	{ 0, 0 },
+	-1	/* (SIZE(1..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_memb_varsets_constr_3 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_SEMI_CONSTRAINED,	-1, -1,  1,  0 }	/* (SIZE(1..MAX)) */,
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+
 /*** <<< STAT-DEFS [LogLine] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_varsets_3[] = {
@@ -122,10 +149,10 @@ asn_TYPE_descriptor_t asn_DEF_varsets_3 = {
 		/sizeof(asn_DEF_varsets_tags_3[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		0,
+		&asn_OER_type_varsets_constr_3,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		0,
+		&asn_PER_type_varsets_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -165,10 +192,10 @@ static asn_TYPE_member_t asn_MBR_LogLine_1[] = {
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = 0,
+			.oer_constraints = &asn_OER_memb_varsets_constr_3,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = 0,
+			.per_constraints = &asn_PER_memb_varsets_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -296,6 +323,33 @@ memb_vparts_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 
+/*** <<< CTDEFS [VariablePartSet] >>> ***/
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_type_vparts_constr_2 CC_NOTUSED = {
+	{ 0, 0 },
+	-1	/* (SIZE(0..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_type_vparts_constr_2 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_SEMI_CONSTRAINED,	-1, -1,  0,  0 }	/* (SIZE(0..MAX)) */,
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_memb_vparts_constr_2 CC_NOTUSED = {
+	{ 0, 0 },
+	-1	/* (SIZE(0..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_memb_vparts_constr_2 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_SEMI_CONSTRAINED,	-1, -1,  0,  0 }	/* (SIZE(0..MAX)) */,
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+
 /*** <<< STAT-DEFS [VariablePartSet] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_vparts_2[] = {
@@ -341,10 +395,10 @@ asn_TYPE_descriptor_t asn_DEF_vparts_2 = {
 		/sizeof(asn_DEF_vparts_tags_2[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		0,
+		&asn_OER_type_vparts_constr_2,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		0,
+		&asn_PER_type_vparts_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -364,10 +418,10 @@ asn_TYPE_member_t asn_MBR_VariablePartSet_1[] = {
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = 0,
+			.oer_constraints = &asn_OER_memb_vparts_constr_2,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = 0,
+			.per_constraints = &asn_PER_memb_vparts_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -496,6 +550,8 @@ typedef struct VariablePart {
 extern asn_TYPE_descriptor_t asn_DEF_VariablePart;
 extern asn_CHOICE_specifics_t asn_SPC_VariablePart_specs_1;
 extern asn_TYPE_member_t asn_MBR_VariablePart_1[2];
+extern asn_oer_constraints_t asn_OER_type_VariablePart_constr_1;
+extern asn_per_constraints_t asn_PER_type_VariablePart_constr_1;
 
 /*** <<< CODE [VariablePart] >>> ***/
 
@@ -548,6 +604,45 @@ memb_vset_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 
+/*** <<< CTDEFS [VariablePart] >>> ***/
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_type_vset_constr_2 CC_NOTUSED = {
+	{ 0, 0 },
+	-1	/* (SIZE(1..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_type_vset_constr_2 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_SEMI_CONSTRAINED,	-1, -1,  1,  0 }	/* (SIZE(1..MAX)) */,
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_memb_vset_constr_2 CC_NOTUSED = {
+	{ 0, 0 },
+	-1	/* (SIZE(1..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_memb_vset_constr_2 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_SEMI_CONSTRAINED,	-1, -1,  1,  0 }	/* (SIZE(1..MAX)) */,
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+asn_oer_constraints_t asn_OER_type_VariablePart_constr_1 CC_NOTUSED = {
+	{ 0, 0 },
+	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+asn_per_constraints_t asn_PER_type_VariablePart_constr_1 CC_NOTUSED = {
+	{ APC_CONSTRAINED | APC_EXTENSIBLE,  1,  1,  0,  1 }	/* (0..1,...) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+
 /*** <<< STAT-DEFS [VariablePart] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_vset_2[] = {
@@ -593,10 +688,10 @@ asn_TYPE_descriptor_t asn_DEF_vset_2 = {
 		/sizeof(asn_DEF_vset_tags_2[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		0,
+		&asn_OER_type_vset_constr_2,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		0,
+		&asn_PER_type_vset_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -701,10 +796,10 @@ asn_TYPE_member_t asn_MBR_VariablePart_1[] = {
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = 0,
+			.oer_constraints = &asn_OER_memb_vset_constr_2,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = 0,
+			.per_constraints = &asn_PER_memb_vset_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -735,6 +830,8 @@ asn_TYPE_member_t asn_MBR_VariablePart_1[] = {
 		.name = "vrange"
 		},
 };
+static const unsigned asn_MAP_VariablePart_to_canonical_1[] = { 1, 0 };
+static const unsigned asn_MAP_VariablePart_from_canonical_1[] = { 1, 0 };
 static const asn_TYPE_tag2member_t asn_MAP_VariablePart_tag2el_1[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 1, 0, 0 }, /* vrange */
     { (ASN_TAG_CLASS_UNIVERSAL | (17 << 2)), 0, 0, 0 } /* vset */
@@ -746,7 +843,8 @@ asn_CHOICE_specifics_t asn_SPC_VariablePart_specs_1 = {
 	sizeof(((struct VariablePart *)0)->present),
 	.tag2el = asn_MAP_VariablePart_tag2el_1,
 	.tag2el_count = 2,	/* Count of tags in the map */
-	0, 0,
+	.to_canonical_order = asn_MAP_VariablePart_to_canonical_1,
+	.from_canonical_order = asn_MAP_VariablePart_from_canonical_1,
 	.first_extension = 2	/* Extensions start */
 };
 asn_TYPE_descriptor_t asn_DEF_VariablePart = {
@@ -759,10 +857,10 @@ asn_TYPE_descriptor_t asn_DEF_VariablePart = {
 	0,	/* No tags (count) */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		0,
+		&asn_OER_type_VariablePart_constr_1,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		0,
+		&asn_PER_type_VariablePart_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -871,6 +969,21 @@ __attribute__((constructor)) static void asn_DEF_notify_7_alias_init(void) {
 #endif
 #endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
 
+/*** <<< CTDEFS [ActionItem] >>> ***/
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_type_accept_as_constr_2 CC_NOTUSED = {
+	{ 0, 0 },
+	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_type_accept_as_constr_2 CC_NOTUSED = {
+	{ APC_CONSTRAINED | APC_EXTENSIBLE,  2,  2,  0,  2 }	/* (0..2,...) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+
 /*** <<< STAT-DEFS [ActionItem] >>> ***/
 
 static const asn_INTEGER_enum_map_t asn_MAP_accept_as_value2enum_2[] = {
@@ -879,7 +992,7 @@ static const asn_INTEGER_enum_map_t asn_MAP_accept_as_value2enum_2[] = {
 	{ 2,	6,	"unsafe" }
 	/* This list is extensible */
 };
-static int asn_validate_accept_as(const asn_TYPE_descriptor_t *td,
+static int asn_validate_accept_as_2(const asn_TYPE_descriptor_t *td,
                        const void *sptr,
                        asn_app_constraint_failed_f *ctfailcb,
                        void* app_key) {
@@ -924,15 +1037,15 @@ asn_TYPE_descriptor_t asn_DEF_accept_as_2 = {
 		/sizeof(asn_DEF_accept_as_tags_2[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		0,
+		&asn_OER_type_accept_as_constr_2,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		0,
+		&asn_PER_type_accept_as_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-		asn_validate_accept_as
+		asn_validate_accept_as_2
 	},
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_accept_as_specs_2	/* Additional specs */
@@ -1123,6 +1236,7 @@ asn_TYPE_member_t asn_MBR_ActionItem_1[] = {
 		.name = "notify"
 		},
 };
+static const int asn_MAP_ActionItem_oms_1[] = { 1 };
 static const ber_tlv_tag_t asn_DEF_ActionItem_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
@@ -1135,7 +1249,8 @@ asn_SEQUENCE_specifics_t asn_SPC_ActionItem_specs_1 = {
 	offsetof(struct ActionItem, _asn_ctx),
 	.tag2el = asn_MAP_ActionItem_tag2el_1,
 	.tag2el_count = 2,	/* Count of tags in the map */
-	0, 0, 0,	/* Optional elements (not needed) */
+	asn_MAP_ActionItem_oms_1,	/* Optional members */
+	1, 0,	/* Root/Additions */
 	2,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_ActionItem = {
@@ -1225,6 +1340,21 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 }
 #endif
 #endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
+
+/*** <<< CTDEFS [EXTERNAL] >>> ***/
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+static asn_oer_constraints_t asn_OER_type_encoding_constr_5 CC_NOTUSED = {
+	{ 0, 0 },
+	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+static asn_per_constraints_t asn_PER_type_encoding_constr_5 CC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
@@ -1316,10 +1446,10 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 	0,	/* No tags (count) */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		0,
+		&asn_OER_type_encoding_constr_5,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		0,
+		&asn_PER_type_encoding_constr_5,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -1413,6 +1543,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 		.name = "encoding"
 		},
 };
+static const int asn_MAP_EXTERNAL_oms_1[] = { 0, 1, 2 };
 static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (8 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -1430,7 +1561,8 @@ static asn_SEQUENCE_specifics_t asn_SPC_EXTERNAL_specs_1 = {
 	offsetof(struct EXTERNAL, _asn_ctx),
 	.tag2el = asn_MAP_EXTERNAL_tag2el_1,
 	.tag2el_count = 6,	/* Count of tags in the map */
-	0, 0, 0,	/* Optional elements (not needed) */
+	asn_MAP_EXTERNAL_oms_1,	/* Optional members */
+	3, 0,	/* Root/Additions */
 	-1,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_EXTERNAL = {
