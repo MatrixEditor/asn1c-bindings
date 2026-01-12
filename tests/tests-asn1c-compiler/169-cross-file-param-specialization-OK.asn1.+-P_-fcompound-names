@@ -1,41 +1,41 @@
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
-WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in tests/tests-asn1c-compiler/169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 43 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 44 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
+WARNING: Parameterized type PROTOCOL-IES expected for PROTOCOL-IES at line 45 in 169-cross-file-param-specialization-OK.asn1
 
 /*** <<< INCLUDES [ProtocolIE-ID] >>> ***/
 
@@ -47,8 +47,6 @@ typedef long	 ProtocolIE_ID_t;
 
 /*** <<< FUNC-DECLS [ProtocolIE-ID] >>> ***/
 
-extern asn_oer_constraints_t asn_OER_type_ProtocolIE_ID_constr_1;
-extern asn_per_constraints_t asn_PER_type_ProtocolIE_ID_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_ID;
 asn_struct_free_f ProtocolIE_ID_free;
 asn_struct_print_f ProtocolIE_ID_print;
@@ -57,13 +55,6 @@ ber_type_decoder_f ProtocolIE_ID_decode_ber;
 der_type_encoder_f ProtocolIE_ID_encode_der;
 xer_type_decoder_f ProtocolIE_ID_decode_xer;
 xer_type_encoder_f ProtocolIE_ID_encode_xer;
-jer_type_encoder_f ProtocolIE_ID_encode_jer;
-oer_type_decoder_f ProtocolIE_ID_decode_oer;
-oer_type_encoder_f ProtocolIE_ID_encode_oer;
-per_type_decoder_f ProtocolIE_ID_decode_uper;
-per_type_encoder_f ProtocolIE_ID_encode_uper;
-per_type_decoder_f ProtocolIE_ID_decode_aper;
-per_type_encoder_f ProtocolIE_ID_encode_aper;
 
 /*** <<< CODE [ProtocolIE-ID] >>> ***/
 
@@ -97,21 +88,6 @@ ProtocolIE_ID_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 
-/*** <<< CTDEFS [ProtocolIE-ID] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-asn_oer_constraints_t asn_OER_type_ProtocolIE_ID_constr_1 CC_NOTUSED = {
-	{ 2, 1 }	/* (0..65535) */,
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-asn_per_constraints_t asn_PER_type_ProtocolIE_ID_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-
 /*** <<< STAT-DEFS [ProtocolIE-ID] >>> ***/
 
 static const ber_tlv_tag_t asn_DEF_ProtocolIE_ID_tags_1[] = {
@@ -129,10 +105,10 @@ asn_TYPE_descriptor_t asn_DEF_ProtocolIE_ID = {
 		/sizeof(asn_DEF_ProtocolIE_ID_tags_1[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_ProtocolIE_ID_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_ProtocolIE_ID_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -162,8 +138,6 @@ typedef long	 Criticality_t;
 
 /*** <<< FUNC-DECLS [Criticality] >>> ***/
 
-extern asn_oer_constraints_t asn_OER_type_Criticality_constr_1;
-extern asn_per_constraints_t asn_PER_type_Criticality_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Criticality;
 extern const asn_INTEGER_specifics_t asn_SPC_Criticality_specs_1;
 asn_struct_free_f Criticality_free;
@@ -173,13 +147,6 @@ ber_type_decoder_f Criticality_decode_ber;
 der_type_encoder_f Criticality_encode_der;
 xer_type_decoder_f Criticality_decode_xer;
 xer_type_encoder_f Criticality_encode_xer;
-jer_type_encoder_f Criticality_encode_jer;
-oer_type_decoder_f Criticality_decode_oer;
-oer_type_encoder_f Criticality_encode_oer;
-per_type_decoder_f Criticality_decode_uper;
-per_type_encoder_f Criticality_encode_uper;
-per_type_decoder_f Criticality_decode_aper;
-per_type_encoder_f Criticality_encode_aper;
 
 /*** <<< CODE [Criticality] >>> ***/
 
@@ -187,21 +154,6 @@ per_type_encoder_f Criticality_encode_aper;
  * This type is implemented using NativeEnumerated,
  * so here we adjust the DEF accordingly.
  */
-
-/*** <<< CTDEFS [Criticality] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-asn_oer_constraints_t asn_OER_type_Criticality_constr_1 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-asn_per_constraints_t asn_PER_type_Criticality_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
 /*** <<< STAT-DEFS [Criticality] >>> ***/
 
@@ -253,10 +205,10 @@ asn_TYPE_descriptor_t asn_DEF_Criticality = {
 		/sizeof(asn_DEF_Criticality_tags_1[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_Criticality_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_Criticality_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -286,8 +238,6 @@ typedef long	 Presence_t;
 
 /*** <<< FUNC-DECLS [Presence] >>> ***/
 
-extern asn_oer_constraints_t asn_OER_type_Presence_constr_1;
-extern asn_per_constraints_t asn_PER_type_Presence_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Presence;
 extern const asn_INTEGER_specifics_t asn_SPC_Presence_specs_1;
 asn_struct_free_f Presence_free;
@@ -297,13 +247,6 @@ ber_type_decoder_f Presence_decode_ber;
 der_type_encoder_f Presence_encode_der;
 xer_type_decoder_f Presence_decode_xer;
 xer_type_encoder_f Presence_encode_xer;
-jer_type_encoder_f Presence_encode_jer;
-oer_type_decoder_f Presence_decode_oer;
-oer_type_encoder_f Presence_encode_oer;
-per_type_decoder_f Presence_decode_uper;
-per_type_encoder_f Presence_encode_uper;
-per_type_decoder_f Presence_decode_aper;
-per_type_encoder_f Presence_encode_aper;
 
 /*** <<< CODE [Presence] >>> ***/
 
@@ -311,21 +254,6 @@ per_type_encoder_f Presence_encode_aper;
  * This type is implemented using NativeEnumerated,
  * so here we adjust the DEF accordingly.
  */
-
-/*** <<< CTDEFS [Presence] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-asn_oer_constraints_t asn_OER_type_Presence_constr_1 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-asn_per_constraints_t asn_PER_type_Presence_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
 /*** <<< STAT-DEFS [Presence] >>> ***/
 
@@ -377,10 +305,10 @@ asn_TYPE_descriptor_t asn_DEF_Presence = {
 		/sizeof(asn_DEF_Presence_tags_1[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_Presence_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_Presence_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -733,81 +661,6 @@ memb_value_constraint_5(const asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 
-/*** <<< CTDEFS [ProtocolIE-Field] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_memb_id_constr_2 CC_NOTUSED = {
-	{ 2, 1 }	/* (0..65535) */,
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_memb_id_constr_2 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_memb_criticality_constr_3 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_memb_criticality_constr_3 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_memb_value_constr_4 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_memb_value_constr_4 CC_NOTUSED = {
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_memb_id_constr_6 CC_NOTUSED = {
-	{ 2, 1 }	/* (0..65535) */,
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_memb_id_constr_6 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_memb_criticality_constr_7 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_memb_criticality_constr_7 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_memb_value_constr_8 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_memb_value_constr_8 CC_NOTUSED = {
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-
 /*** <<< STAT-DEFS [ProtocolIE-Field] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_value_4[] = {
@@ -879,10 +732,10 @@ asn_TYPE_member_t asn_MBR_SampleIEs_1[] = {
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = &asn_OER_memb_id_constr_2,
+			.oer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = &asn_PER_memb_id_constr_2,
+			.per_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -899,10 +752,10 @@ asn_TYPE_member_t asn_MBR_SampleIEs_1[] = {
 		.type_selector = select_SampleIEs_criticality_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = &asn_OER_memb_criticality_constr_3,
+			.oer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = &asn_PER_memb_criticality_constr_3,
+			.per_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -919,10 +772,10 @@ asn_TYPE_member_t asn_MBR_SampleIEs_1[] = {
 		.type_selector = select_SampleIEs_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = &asn_OER_memb_value_constr_4,
+			.oer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = &asn_PER_memb_value_constr_4,
+			.per_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -1045,10 +898,10 @@ asn_TYPE_member_t asn_MBR_AnotherIEs_5[] = {
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = &asn_OER_memb_id_constr_6,
+			.oer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = &asn_PER_memb_id_constr_6,
+			.per_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -1065,10 +918,10 @@ asn_TYPE_member_t asn_MBR_AnotherIEs_5[] = {
 		.type_selector = select_AnotherIEs_criticality_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = &asn_OER_memb_criticality_constr_7,
+			.oer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = &asn_PER_memb_criticality_constr_7,
+			.per_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -1085,10 +938,10 @@ asn_TYPE_member_t asn_MBR_AnotherIEs_5[] = {
 		.type_selector = select_AnotherIEs_value_type,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-			.oer_constraints = &asn_OER_memb_value_constr_8,
+			.oer_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-			.per_constraints = &asn_PER_memb_value_constr_8,
+			.per_constraints = 0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 			.jer_constraints = 0,
@@ -1162,13 +1015,6 @@ ber_type_decoder_f ProtocolIE_SingleContainer_52P0_decode_ber;
 der_type_encoder_f ProtocolIE_SingleContainer_52P0_encode_der;
 xer_type_decoder_f ProtocolIE_SingleContainer_52P0_decode_xer;
 xer_type_encoder_f ProtocolIE_SingleContainer_52P0_encode_xer;
-jer_type_encoder_f ProtocolIE_SingleContainer_52P0_encode_jer;
-oer_type_decoder_f ProtocolIE_SingleContainer_52P0_decode_oer;
-oer_type_encoder_f ProtocolIE_SingleContainer_52P0_encode_oer;
-per_type_decoder_f ProtocolIE_SingleContainer_52P0_decode_uper;
-per_type_encoder_f ProtocolIE_SingleContainer_52P0_encode_uper;
-per_type_decoder_f ProtocolIE_SingleContainer_52P0_decode_aper;
-per_type_encoder_f ProtocolIE_SingleContainer_52P0_encode_aper;
 extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_SingleContainer_52P1;
 asn_struct_free_f ProtocolIE_SingleContainer_52P1_free;
 asn_struct_print_f ProtocolIE_SingleContainer_52P1_print;
@@ -1177,13 +1023,6 @@ ber_type_decoder_f ProtocolIE_SingleContainer_52P1_decode_ber;
 der_type_encoder_f ProtocolIE_SingleContainer_52P1_encode_der;
 xer_type_decoder_f ProtocolIE_SingleContainer_52P1_decode_xer;
 xer_type_encoder_f ProtocolIE_SingleContainer_52P1_encode_xer;
-jer_type_encoder_f ProtocolIE_SingleContainer_52P1_encode_jer;
-oer_type_decoder_f ProtocolIE_SingleContainer_52P1_decode_oer;
-oer_type_encoder_f ProtocolIE_SingleContainer_52P1_encode_oer;
-per_type_decoder_f ProtocolIE_SingleContainer_52P1_decode_uper;
-per_type_encoder_f ProtocolIE_SingleContainer_52P1_encode_uper;
-per_type_decoder_f ProtocolIE_SingleContainer_52P1_decode_aper;
-per_type_encoder_f ProtocolIE_SingleContainer_52P1_encode_aper;
 
 /*** <<< CODE [ProtocolIE-SingleContainer] >>> ***/
 
@@ -1282,27 +1121,10 @@ typedef struct ProtocolIE_Container_57P0 {
 extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_57P0;
 extern asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_57P0_specs_1;
 extern asn_TYPE_member_t asn_MBR_ProtocolIE_Container_57P0_1[1];
-extern asn_oer_constraints_t asn_OER_type_ProtocolIE_Container_57P0_constr_1;
-extern asn_per_constraints_t asn_PER_type_ProtocolIE_Container_57P0_constr_1;
 
 /*** <<< POST-INCLUDE [ProtocolIE-Container] >>> ***/
 
 #include "ProtocolIE-Field.h"
-
-/*** <<< CTDEFS [ProtocolIE-Container] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-asn_oer_constraints_t asn_OER_type_ProtocolIE_Container_57P0_constr_1 CC_NOTUSED = {
-	{ 0, 0 },
-	-1	/* (SIZE(0..65535)) */};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-asn_per_constraints_t asn_PER_type_ProtocolIE_Container_57P0_constr_1 CC_NOTUSED = {
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (SIZE(0..65535)) */,
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
 /*** <<< STAT-DEFS [ProtocolIE-Container] >>> ***/
 
@@ -1348,10 +1170,10 @@ asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_57P0 = {
 		/sizeof(asn_DEF_ProtocolIE_Container_57P0_tags_1[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_ProtocolIE_Container_57P0_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_ProtocolIE_Container_57P0_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -1382,13 +1204,6 @@ ber_type_decoder_f SampleContainer_decode_ber;
 der_type_encoder_f SampleContainer_encode_der;
 xer_type_decoder_f SampleContainer_decode_xer;
 xer_type_encoder_f SampleContainer_encode_xer;
-jer_type_encoder_f SampleContainer_encode_jer;
-oer_type_decoder_f SampleContainer_decode_oer;
-oer_type_encoder_f SampleContainer_encode_oer;
-per_type_decoder_f SampleContainer_decode_uper;
-per_type_encoder_f SampleContainer_encode_uper;
-per_type_decoder_f SampleContainer_decode_aper;
-per_type_encoder_f SampleContainer_encode_aper;
 
 /*** <<< CODE [SampleContainer] >>> ***/
 
@@ -1448,13 +1263,6 @@ ber_type_decoder_f AnotherContainer_decode_ber;
 der_type_encoder_f AnotherContainer_encode_der;
 xer_type_decoder_f AnotherContainer_decode_xer;
 xer_type_encoder_f AnotherContainer_encode_xer;
-jer_type_encoder_f AnotherContainer_encode_jer;
-oer_type_decoder_f AnotherContainer_decode_oer;
-oer_type_encoder_f AnotherContainer_encode_oer;
-per_type_decoder_f AnotherContainer_decode_uper;
-per_type_encoder_f AnotherContainer_encode_uper;
-per_type_decoder_f AnotherContainer_decode_aper;
-per_type_encoder_f AnotherContainer_encode_aper;
 
 /*** <<< CODE [AnotherContainer] >>> ***/
 
@@ -1506,8 +1314,6 @@ typedef ProtocolIE_Container_57P0_t	 SampleList_t;
 
 /*** <<< FUNC-DECLS [SampleList] >>> ***/
 
-extern asn_oer_constraints_t asn_OER_type_SampleList_constr_1;
-extern asn_per_constraints_t asn_PER_type_SampleList_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SampleList;
 asn_struct_free_f SampleList_free;
 asn_struct_print_f SampleList_print;
@@ -1516,13 +1322,6 @@ ber_type_decoder_f SampleList_decode_ber;
 der_type_encoder_f SampleList_encode_der;
 xer_type_decoder_f SampleList_decode_xer;
 xer_type_encoder_f SampleList_encode_xer;
-jer_type_encoder_f SampleList_encode_jer;
-oer_type_decoder_f SampleList_decode_oer;
-oer_type_encoder_f SampleList_encode_oer;
-per_type_decoder_f SampleList_decode_uper;
-per_type_encoder_f SampleList_encode_uper;
-per_type_decoder_f SampleList_decode_aper;
-per_type_encoder_f SampleList_encode_aper;
 
 /*** <<< CODE [SampleList] >>> ***/
 
@@ -1557,21 +1356,6 @@ SampleList_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 
-/*** <<< CTDEFS [SampleList] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-asn_oer_constraints_t asn_OER_type_SampleList_constr_1 CC_NOTUSED = {
-	{ 0, 0 },
-	-1	/* (SIZE(0..65535)) */};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-asn_per_constraints_t asn_PER_type_SampleList_constr_1 CC_NOTUSED = {
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (SIZE(0..65535)) */,
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-
 /*** <<< STAT-DEFS [SampleList] >>> ***/
 
 static const ber_tlv_tag_t asn_DEF_SampleList_tags_1[] = {
@@ -1589,10 +1373,10 @@ asn_TYPE_descriptor_t asn_DEF_SampleList = {
 		/sizeof(asn_DEF_SampleList_tags_1[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_SampleList_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_SampleList_constr_1,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -1700,7 +1484,6 @@ static asn_TYPE_member_t asn_MBR_TestPDU_1[] = {
 		.name = "sampleList"
 		},
 };
-static const int asn_MAP_TestPDU_oms_1[] = { 1 };
 static const ber_tlv_tag_t asn_DEF_TestPDU_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
@@ -1714,8 +1497,7 @@ static asn_SEQUENCE_specifics_t asn_SPC_TestPDU_specs_1 = {
 	offsetof(struct TestPDU, _asn_ctx),
 	.tag2el = asn_MAP_TestPDU_tag2el_1,
 	.tag2el_count = 3,	/* Count of tags in the map */
-	asn_MAP_TestPDU_oms_1,	/* Optional members */
-	1, 0,	/* Root/Additions */
+	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_TestPDU = {
@@ -1805,21 +1587,6 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 }
 #endif
 #endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
-
-/*** <<< CTDEFS [EXTERNAL] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_encoding_constr_5 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_encoding_constr_5 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
@@ -1911,10 +1678,10 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 	0,	/* No tags (count) */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_encoding_constr_5,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_encoding_constr_5,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -1967,8 +1734,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 		0, 0, /* No default value */
 		.name = "indirect-reference"
 		},
-	{ ATF_POINTER, 1, offsetof(struct EXTERNAL, datGenerated asn_constant.h
-a_value_descriptor),
+	{ ATF_POINTER, 1, offsetof(struct EXTERNAL, data_value_descriptor),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (7 << 2)),
 		.tag_mode = 0,
 		.type = &asn_DEF_ObjectDescriptor,
@@ -2009,7 +1775,6 @@ a_value_descriptor),
 		.name = "encoding"
 		},
 };
-static const int asn_MAP_EXTERNAL_oms_1[] = { 0, 1, 2 };
 static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (8 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -2027,8 +1792,7 @@ static asn_SEQUENCE_specifics_t asn_SPC_EXTERNAL_specs_1 = {
 	offsetof(struct EXTERNAL, _asn_ctx),
 	.tag2el = asn_MAP_EXTERNAL_tag2el_1,
 	.tag2el_count = 6,	/* Count of tags in the map */
-	asn_MAP_EXTERNAL_oms_1,	/* Optional members */
-	3, 0,	/* Root/Additions */
+	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_EXTERNAL = {
@@ -2050,7 +1814,8 @@ asn_TYPE_descriptor_t asn_DEF_EXTERNAL = {
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
-#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+#endif  /Generated asn_constant.h
+* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_EXTERNAL_1,
@@ -2062,7 +1827,7 @@ asn_TYPE_descriptor_t asn_DEF_EXTERNAL = {
 /*** <<< asn_constant.h >>> ***/
 
 /*
- * Generated by asn1c-c4f35d4-2026-01-12 (https://github.com/mouse07410/asn1c)
+ * Generated by asn1c-0.9.29 (http://lionet.info/asn1c)
  */
 
 #ifndef _ASN_CONSTANT_H
