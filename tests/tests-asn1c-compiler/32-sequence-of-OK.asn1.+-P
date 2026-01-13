@@ -275,7 +275,7 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqWithMandatory;
 extern asn_TYPE_descriptor_t asn_DEF_seqOfMan __attribute__((weak, alias("asn_DEF_seqOfMan_3")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_seqOfMan_3;
-asn_TYPE_descriptor_t asn_DEF_seqOfMan;
+static asn_TYPE_descriptor_t asn_DEF_seqOfMan;
 __attribute__((constructor)) static void asn_DEF_seqOfMan_3_alias_init(void) {
 	asn_DEF_seqOfMan = asn_DEF_seqOfMan_3;
 }
@@ -469,7 +469,7 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqWithOptional;
 extern asn_TYPE_descriptor_t asn_DEF_seqOfOpt __attribute__((weak, alias("asn_DEF_seqOfOpt_3")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_seqOfOpt_3;
-asn_TYPE_descriptor_t asn_DEF_seqOfOpt;
+static asn_TYPE_descriptor_t asn_DEF_seqOfOpt;
 __attribute__((constructor)) static void asn_DEF_seqOfOpt_3_alias_init(void) {
 	asn_DEF_seqOfOpt = asn_DEF_seqOfOpt_3;
 }
@@ -675,7 +675,7 @@ extern asn_TYPE_descriptor_t asn_DEF_EXTERNAL;
 extern asn_TYPE_descriptor_t asn_DEF_encoding __attribute__((weak, alias("asn_DEF_encoding_5")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_encoding_5;
-asn_TYPE_descriptor_t asn_DEF_encoding;
+static asn_TYPE_descriptor_t asn_DEF_encoding;
 __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 	asn_DEF_encoding = asn_DEF_encoding_5;
 }

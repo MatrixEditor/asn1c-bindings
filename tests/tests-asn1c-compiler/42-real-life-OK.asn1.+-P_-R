@@ -44,7 +44,7 @@ extern asn_TYPE_descriptor_t asn_DEF_LogLine;
 extern asn_TYPE_descriptor_t asn_DEF_varsets __attribute__((weak, alias("asn_DEF_varsets_3")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_varsets_3;
-asn_TYPE_descriptor_t asn_DEF_varsets;
+static asn_TYPE_descriptor_t asn_DEF_varsets;
 __attribute__((constructor)) static void asn_DEF_varsets_3_alias_init(void) {
 	asn_DEF_varsets = asn_DEF_varsets_3;
 }
@@ -270,7 +270,7 @@ extern asn_TYPE_member_t asn_MBR_VariablePartSet_1[2];
 extern asn_TYPE_descriptor_t asn_DEF_vparts __attribute__((weak, alias("asn_DEF_vparts_2")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_vparts_2;
-asn_TYPE_descriptor_t asn_DEF_vparts;
+static asn_TYPE_descriptor_t asn_DEF_vparts;
 __attribute__((constructor)) static void asn_DEF_vparts_2_alias_init(void) {
 	asn_DEF_vparts = asn_DEF_vparts_2;
 }
@@ -504,7 +504,7 @@ extern asn_TYPE_member_t asn_MBR_VariablePart_1[2];
 extern asn_TYPE_descriptor_t asn_DEF_vset __attribute__((weak, alias("asn_DEF_vset_2")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_vset_2;
-asn_TYPE_descriptor_t asn_DEF_vset;
+static asn_TYPE_descriptor_t asn_DEF_vset;
 __attribute__((constructor)) static void asn_DEF_vset_2_alias_init(void) {
 	asn_DEF_vset = asn_DEF_vset_2;
 }
@@ -515,7 +515,7 @@ __attribute__((constructor)) static void asn_DEF_vset_2_alias_init(void) {
 extern asn_TYPE_descriptor_t asn_DEF_vrange __attribute__((weak, alias("asn_DEF_vrange_4")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_vrange_4;
-asn_TYPE_descriptor_t asn_DEF_vrange;
+static asn_TYPE_descriptor_t asn_DEF_vrange;
 __attribute__((constructor)) static void asn_DEF_vrange_4_alias_init(void) {
 	asn_DEF_vrange = asn_DEF_vrange_4;
 }
@@ -838,7 +838,7 @@ extern asn_TYPE_member_t asn_MBR_ActionItem_1[2];
 extern asn_TYPE_descriptor_t asn_DEF_accept_as __attribute__((weak, alias("asn_DEF_accept_as_2")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_accept_as_2;
-asn_TYPE_descriptor_t asn_DEF_accept_as;
+static asn_TYPE_descriptor_t asn_DEF_accept_as;
 __attribute__((constructor)) static void asn_DEF_accept_as_2_alias_init(void) {
 	asn_DEF_accept_as = asn_DEF_accept_as_2;
 }
@@ -853,7 +853,7 @@ __attribute__((constructor)) static void asn_DEF_accept_as_2_alias_init(void) {
 extern asn_TYPE_descriptor_t asn_DEF_email __attribute__((weak, alias("asn_DEF_email_9")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_email_9;
-asn_TYPE_descriptor_t asn_DEF_email;
+static asn_TYPE_descriptor_t asn_DEF_email;
 __attribute__((constructor)) static void asn_DEF_email_9_alias_init(void) {
 	asn_DEF_email = asn_DEF_email_9;
 }
@@ -864,7 +864,7 @@ __attribute__((constructor)) static void asn_DEF_email_9_alias_init(void) {
 extern asn_TYPE_descriptor_t asn_DEF_notify __attribute__((weak, alias("asn_DEF_notify_7")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_notify_7;
-asn_TYPE_descriptor_t asn_DEF_notify;
+static asn_TYPE_descriptor_t asn_DEF_notify;
 __attribute__((constructor)) static void asn_DEF_notify_7_alias_init(void) {
 	asn_DEF_notify = asn_DEF_notify_7;
 }
@@ -1219,7 +1219,7 @@ extern asn_TYPE_descriptor_t asn_DEF_EXTERNAL;
 extern asn_TYPE_descriptor_t asn_DEF_encoding __attribute__((weak, alias("asn_DEF_encoding_5")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_encoding_5;
-asn_TYPE_descriptor_t asn_DEF_encoding;
+static asn_TYPE_descriptor_t asn_DEF_encoding;
 __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 	asn_DEF_encoding = asn_DEF_encoding_5;
 }
