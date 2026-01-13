@@ -74,7 +74,7 @@ static int check_permitted_alphabet_9(const void *sptr) {
 extern asn_TYPE_descriptor_t asn_DEF_unconstrained __attribute__((weak, alias("asn_DEF_unconstrained_2")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_unconstrained_2;
-asn_TYPE_descriptor_t asn_DEF_unconstrained;
+static asn_TYPE_descriptor_t asn_DEF_unconstrained;
 __attribute__((constructor)) static void asn_DEF_unconstrained_2_alias_init(void) {
 	asn_DEF_unconstrained = asn_DEF_unconstrained_2;
 }
@@ -171,7 +171,7 @@ memb_con_universal_constraint_6(const asn_TYPE_descriptor_t *td, const void *spt
 extern asn_TYPE_descriptor_t asn_DEF_constrained __attribute__((weak, alias("asn_DEF_constrained_6")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_constrained_6;
-asn_TYPE_descriptor_t asn_DEF_constrained;
+static asn_TYPE_descriptor_t asn_DEF_constrained;
 __attribute__((constructor)) static void asn_DEF_constrained_6_alias_init(void) {
 	asn_DEF_constrained = asn_DEF_constrained_6;
 }
@@ -548,7 +548,7 @@ extern asn_TYPE_descriptor_t asn_DEF_EXTERNAL;
 extern asn_TYPE_descriptor_t asn_DEF_encoding __attribute__((weak, alias("asn_DEF_encoding_5")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_encoding_5;
-asn_TYPE_descriptor_t asn_DEF_encoding;
+static asn_TYPE_descriptor_t asn_DEF_encoding;
 __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 	asn_DEF_encoding = asn_DEF_encoding_5;
 }

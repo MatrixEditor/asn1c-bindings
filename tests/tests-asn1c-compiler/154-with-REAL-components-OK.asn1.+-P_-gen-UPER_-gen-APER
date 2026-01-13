@@ -918,7 +918,7 @@ indirect_ieee_binary32_2_constraint(const asn_TYPE_descriptor_t *td, const void 
 extern asn_TYPE_descriptor_t asn_DEF_indirect_ieee_binary32 __attribute__((weak, alias("asn_DEF_indirect_ieee_binary32_2")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_indirect_ieee_binary32_2;
-asn_TYPE_descriptor_t asn_DEF_indirect_ieee_binary32;
+static asn_TYPE_descriptor_t asn_DEF_indirect_ieee_binary32;
 __attribute__((constructor)) static void asn_DEF_indirect_ieee_binary32_2_alias_init(void) {
 	asn_DEF_indirect_ieee_binary32 = asn_DEF_indirect_ieee_binary32_2;
 }
@@ -957,7 +957,7 @@ ieee_binary32_w_3_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 extern asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w __attribute__((weak, alias("asn_DEF_ieee_binary32_w_3")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w_3;
-asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w;
+static asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w;
 __attribute__((constructor)) static void asn_DEF_ieee_binary32_w_3_alias_init(void) {
 	asn_DEF_ieee_binary32_w = asn_DEF_ieee_binary32_w_3;
 }
@@ -996,7 +996,7 @@ ieee_binary32_0w_4_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 extern asn_TYPE_descriptor_t asn_DEF_ieee_binary32_0w __attribute__((weak, alias("asn_DEF_ieee_binary32_0w_4")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_ieee_binary32_0w_4;
-asn_TYPE_descriptor_t asn_DEF_ieee_binary32_0w;
+static asn_TYPE_descriptor_t asn_DEF_ieee_binary32_0w;
 __attribute__((constructor)) static void asn_DEF_ieee_binary32_0w_4_alias_init(void) {
 	asn_DEF_ieee_binary32_0w = asn_DEF_ieee_binary32_0w_4;
 }
@@ -1035,7 +1035,7 @@ ieee_binary32_w0_5_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 extern asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w0 __attribute__((weak, alias("asn_DEF_ieee_binary32_w0_5")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w0_5;
-asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w0;
+static asn_TYPE_descriptor_t asn_DEF_ieee_binary32_w0;
 __attribute__((constructor)) static void asn_DEF_ieee_binary32_w0_5_alias_init(void) {
 	asn_DEF_ieee_binary32_w0 = asn_DEF_ieee_binary32_w0_5;
 }
@@ -1454,7 +1454,7 @@ extern asn_TYPE_descriptor_t asn_DEF_EXTERNAL;
 extern asn_TYPE_descriptor_t asn_DEF_encoding __attribute__((weak, alias("asn_DEF_encoding_5")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_encoding_5;
-asn_TYPE_descriptor_t asn_DEF_encoding;
+static asn_TYPE_descriptor_t asn_DEF_encoding;
 __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 	asn_DEF_encoding = asn_DEF_encoding_5;
 }

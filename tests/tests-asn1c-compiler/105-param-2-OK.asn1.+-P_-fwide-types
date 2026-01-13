@@ -56,7 +56,7 @@ extern asn_TYPE_member_t asn_MBR_SIGNED_16P1_3[1];
 extern asn_TYPE_descriptor_t asn_DEF_signed __attribute__((weak, alias("asn_DEF_signed_4")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_signed_4;
-asn_TYPE_descriptor_t asn_DEF_signed;
+static asn_TYPE_descriptor_t asn_DEF_signed;
 __attribute__((constructor)) static void asn_DEF_signed_4_alias_init(void) {
 	asn_DEF_signed = asn_DEF_signed_4;
 }
@@ -434,7 +434,7 @@ extern asn_TYPE_descriptor_t asn_DEF_EXTERNAL;
 extern asn_TYPE_descriptor_t asn_DEF_encoding __attribute__((weak, alias("asn_DEF_encoding_5")));
 #else
 static asn_TYPE_descriptor_t asn_DEF_encoding_5;
-asn_TYPE_descriptor_t asn_DEF_encoding;
+static asn_TYPE_descriptor_t asn_DEF_encoding;
 __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 	asn_DEF_encoding = asn_DEF_encoding_5;
 }
