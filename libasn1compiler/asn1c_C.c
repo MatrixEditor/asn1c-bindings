@@ -1018,7 +1018,7 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 	DEPENDENCIES;
 
 	if(arg->embed) {
-		if (expr->_anonymous_type && arg->embed == 1) {
+		if (expr->_anonymous_type && arg->embed >= 1) {
 			REDIR(OT_FWD_DEFS);
 			OUT("typedef ");
 		}
@@ -1060,9 +1060,22 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 			INDENT(-1);
 		} else {
 			/* Pre-generate typedefs for deeply nested SEQUENCE OF/SET OF members
-			 * to avoid forward reference issues at embed level >= 3 */
-			if (tmp.embed == 2 && (memb->expr_type & ASN_CONSTR_MASK)) {
+			 * to avoid forward reference issues at embed level >= 3.
+			 * At embed level 2, the member will go to FWD-DEFS naturally if the
+			 * SEQUENCE OF itself is in FWD-DEFS. At embed level >= 3, we need
+			 * explicit pre-generation. Only do this if we're not already in FWD-DEFS
+			 * (to avoid recursive pre-generation). */
+			if (arg->embed >= 2 && (memb->expr_type & ASN_CONSTR_MASK) &&
+			    arg->target->target != OT_FWD_DEFS) {
+				/* Pre-generate typedefs for any deeply nested SEQUENCE OF/SET OF
+				 * members within this constructed type */
 				pregenerate_nested_typedefs(arg, memb, tmp.embed);
+				
+				/* At embed >= 3, also pre-generate this member's typedef */
+				if (arg->embed >= 3) {
+					int ret = generate_typedef_for_constructed_member(arg, memb, tmp.embed);
+					if(ret != 0) return ret;
+				}
 			}
 			
 			tmp.default_cb(&tmp, NULL);
@@ -1082,7 +1095,7 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 
 	PCTX_DEF;
 
-	if (arg->embed && expr->_anonymous_type && arg->embed == 1) {
+	if (arg->embed && expr->_anonymous_type && arg->embed >= 1) {
 		OUT("} %s%s;\n", (expr->marker.flags & EM_INDIRECT)?"*":"", c_name(arg).base_name);
 		REDIR(saved_target);
 		OUT("%s%s", (expr->marker.flags & EM_INDIRECT)?"*":"", c_name(arg).base_name);
