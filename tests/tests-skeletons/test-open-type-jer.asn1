@@ -1,0 +1,30 @@
+-- Test ASN.1 module for JER Open Type encoding
+-- Tests that Open Type values are encoded without type name wrapper
+-- per ITU-T X.697 Clause 41
+
+TestOpenTypeJER DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+    -- Information Object Class for testing Open Types
+    TEST-CLASS ::= CLASS {
+        &id    INTEGER UNIQUE,
+        &Type
+    } WITH SYNTAX { ID &id TYPE &Type }
+
+    TestSet TEST-CLASS ::= {
+        { ID 42 TYPE TestMessage },
+        ...
+    }
+
+    -- Container with Open Type field
+    TestFrame ::= SEQUENCE {
+        msgId   TEST-CLASS.&id({TestSet}),
+        value   TEST-CLASS.&Type({TestSet}{@msgId})
+    }
+
+    -- Contained type for Open Type
+    TestMessage ::= SEQUENCE {
+        msgCount INTEGER(0..255),
+        msgData  OCTET STRING(SIZE(1..100))
+    }
+
+END
