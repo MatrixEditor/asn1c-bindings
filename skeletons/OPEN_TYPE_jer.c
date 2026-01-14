@@ -323,50 +323,56 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
 
     /* Check if this OPEN_TYPE uses CHOICE wrapper (elements_count > 0) or direct type */
     if(elm->type->elements_count > 0) {
-        /* CHOICE wrapper mode: use standard CHOICE encoder */
-        return CHOICE_encode_jer(elm->type, elm->encoding_constraints.jer_constraints,
-                                memb_ptr, ilevel, flags, cb, app_key);
-    } else {
-        /* Direct type mode: encode using the selected type descriptor with wrapper */
-        ASN_DEBUG("Direct type mode: encoding using %s", selected.type_descriptor->name);
+        /* CHOICE wrapper mode: get the actual member to encode */
+        const asn_CHOICE_specifics_t *choice_specs = 
+            (const asn_CHOICE_specifics_t *)elm->type->specifics;
         
-        const char *type_name = selected.type_descriptor->xml_tag;  /* Using xml_tag as JSON key */
-        if(!type_name || !*type_name) {
-            /* Fallback to type name if xml_tag is not set */
-            type_name = selected.type_descriptor->name;
-            if(!type_name) {
-                ASN_DEBUG("ERROR: Type descriptor has no name or xml_tag");
-                ASN__ENCODE_FAILED;
-            }
+        if(!choice_specs) {
+            ASN_DEBUG("Open Type CHOICE wrapper has no specifics");
+            ASN__ENCODE_FAILED;
         }
-        size_t type_name_len = strlen(type_name);
-        asn_enc_rval_t tmper;
-        int jmin = (flags & JER_F_MINIFIED);
         
-        er.encoded = 0;
+        /* Validate the selected variant */
+        if(selected.presence_index == 0 || selected.presence_index > elm->type->elements_count) {
+            ASN_DEBUG("Open Type %s->%s: presence index %u out of bounds (max %u)",
+                      td->name, elm->name, selected.presence_index,
+                      elm->type->elements_count);
+            ASN__ENCODE_FAILED;
+        }
         
-        /* Output opening brace and key for the selected type */
-        ASN__CALLBACK("{", 1);
-        if(!jmin) {
-            ASN__TEXT_INDENT(1, ilevel + 1);
-            ASN__CALLBACK3("\"", 1, type_name, type_name_len, "\": ", 3);
+        /* Get the element descriptor for the selected variant */
+        const asn_TYPE_member_t *variant_elm = &elm->type->elements[selected.presence_index - 1];
+        const void *variant_memb_ptr;
+        
+        /* Get pointer to the actual data */
+        if(variant_elm->flags & ATF_POINTER) {
+            variant_memb_ptr = *(const void *const *)((const char *)memb_ptr + variant_elm->memb_offset);
+            if(!variant_memb_ptr) ASN__ENCODE_FAILED;
         } else {
-            ASN__CALLBACK3("\"", 1, type_name, type_name_len, "\":", 2);
+            variant_memb_ptr = (const void *)((const char *)memb_ptr + variant_elm->memb_offset);
         }
         
-        /* Encode the actual content */
-        tmper = selected.type_descriptor->op->jer_encoder(
+        /* 
+         * ITU-T X.697 Clause 41: "The encoding of an open type value shall be 
+         * the encoding of the value of the contained type."
+         * Encode directly without type name wrapper.
+         */
+        ASN_DEBUG("Open Type CHOICE wrapper mode: encoding %s directly without wrapper", 
+                  selected.type_descriptor->name);
+        return selected.type_descriptor->op->jer_encoder(
             selected.type_descriptor, selected.type_descriptor->encoding_constraints.jer_constraints,
-            memb_ptr, ilevel + 1, flags, cb, app_key);
-        if(tmper.encoded == -1) return tmper;
-        er.encoded += tmper.encoded;
-        
-        /* Output closing brace */
-        if(!jmin) ASN__TEXT_INDENT(1, ilevel);
-        ASN__CALLBACK("}", 1);
-        
-        ASN__ENCODED_OK(er);
+            variant_memb_ptr, ilevel, flags, cb, app_key);
+    } else {
+        /* 
+         * Direct type mode: encode using the selected type descriptor directly.
+         * ITU-T X.697 Clause 41: "The encoding of an open type value shall be 
+         * the encoding of the value of the contained type."
+         * No type name wrapper should be added.
+         */
+        ASN_DEBUG("Open Type direct mode: encoding %s directly without wrapper", 
+                  selected.type_descriptor->name);
+        return selected.type_descriptor->op->jer_encoder(
+            selected.type_descriptor, selected.type_descriptor->encoding_constraints.jer_constraints,
+            memb_ptr, ilevel, flags, cb, app_key);
     }
-cb_failed:
-    ASN__ENCODE_FAILED;
 }
