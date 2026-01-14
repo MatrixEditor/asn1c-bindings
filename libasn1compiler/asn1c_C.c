@@ -949,7 +949,8 @@ generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int targ
 	arg->embed = saved_embed;
 	expr->marker.flags = saved_flags;
 	expr->_anonymous_type = saved_anon;
-	if (saved_id == 0 && expr->Identifier != saved_id) {
+	if (saved_id == 0) {
+		/* We allocated the identifier, so free it */
 		free(expr->Identifier);
 		expr->Identifier = saved_id;
 	}
