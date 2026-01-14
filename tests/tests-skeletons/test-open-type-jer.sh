@@ -19,7 +19,7 @@ cd "${WORKDIR}"
 # Generate C code from ASN.1 schema
 echo "Generating C code from ASN.1 schema..."
 "${ASN1C}" -fcompound-names -findirect-choice -gen-JER \
-    "${SCRIPT_DIR}/test-open-type-jer.asn1" > /dev/null 2>&1
+    "${SCRIPT_DIR}/test-open-type-jer.asn1" > /dev/null
 
 # Create test program
 cat > test_program.c << 'EOF'
@@ -103,12 +103,12 @@ EOF
 
 # Build the test program
 echo "Building test program..."
-make -f converter-example.mk > /dev/null 2>&1 || {
+make -f converter-example.mk > /dev/null || {
     echo "ERROR: Failed to build library"
     exit 1
 }
 
-cc -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm > /dev/null 2>&1 || {
+cc -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm > /dev/null || {
     echo "ERROR: Failed to compile test program"
     exit 1
 }
