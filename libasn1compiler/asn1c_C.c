@@ -949,7 +949,7 @@ generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int targ
 	arg->embed = saved_embed;
 	expr->marker.flags = saved_flags;
 	expr->_anonymous_type = saved_anon;
-	if (saved_id == 0) {
+	if (saved_id == 0 && expr->Identifier != saved_id) {
 		/* We allocated the identifier, so free it */
 		free(expr->Identifier);
 		expr->Identifier = saved_id;
@@ -1061,18 +1061,24 @@ asn1c_lang_C_type_SEx_OF(arg_t *arg) {
 			INDENT(-1);
 		} else {
 			/* Pre-generate typedefs for deeply nested SEQUENCE OF/SET OF members
-			 * to avoid forward reference issues at embed level >= 3.
+			 * to avoid forward reference issues at higher embed levels.
 			 * At embed level 2, the member will go to FWD-DEFS naturally if the
-			 * SEQUENCE OF itself is in FWD-DEFS. At embed level >= 3, we need
-			 * explicit pre-generation. Only do this if we're not already in FWD-DEFS
-			 * (to avoid recursive pre-generation). */
+			 * SEQUENCE OF itself is in FWD-DEFS. For deeper nesting (embed >= 3),
+			 * we need explicit typedef generation.
+			 * Only do this if we're not already in FWD-DEFS (to avoid recursive
+			 * pre-generation). */
 			if (arg->embed >= 2 && (memb->expr_type & ASN_CONSTR_MASK) &&
 			    arg->target->target != OT_FWD_DEFS) {
 				/* Pre-generate typedefs for any deeply nested SEQUENCE OF/SET OF
-				 * members within this constructed type */
+				 * members within this constructed type. This scans the member's
+				 * children for nested SEQUENCE OF and generates their typedefs. */
 				pregenerate_nested_typedefs(arg, memb, tmp.embed);
 				
-				/* At embed >= 3, also pre-generate this member's typedef */
+				/* At embed >= 3, also pre-generate this member's own typedef.
+				 * This is separate from the above: pregenerate_nested_typedefs
+				 * handles NESTED members (children), while this handles the
+				 * current member itself. Both are needed because the normal code
+				 * path doesn't create complete typedefs at embed > 2. */
 				if (arg->embed >= 3) {
 					int ret = generate_typedef_for_constructed_member(arg, memb, tmp.embed);
 					if(ret != 0) return ret;
