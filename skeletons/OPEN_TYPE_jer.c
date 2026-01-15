@@ -284,7 +284,6 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
                   asn_app_consume_bytes_f *cb, void *app_key) {
     asn_type_selector_result_t selected;
     const void *memb_ptr;
-    asn_enc_rval_t er = {0,0,0};
 
     if(!(elm->flags & ATF_OPEN_TYPE)) {
         ASN__ENCODE_FAILED;
