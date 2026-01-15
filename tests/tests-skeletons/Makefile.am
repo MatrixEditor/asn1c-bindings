@@ -155,6 +155,9 @@ check_XER_empty_optionals_CFLAGS = -DXER_ALLOW_EMPTY_OPTIONALS $(CFLAGS)
 
 TESTS = $(check_PROGRAMS)
 TESTS_ENVIRONMENT=                      \
+    abs_top_srcdir=${abs_top_srcdir}    \
+    abs_top_builddir=${abs_top_builddir} \
+    srcdir=${srcdir}                    \
     @ASAN_ENV_FLAGS@                    \
     UBSAN_OPTIONS=print_stacktrace=1    \
     ${srcdir}/disable-leak-check-m32.sh

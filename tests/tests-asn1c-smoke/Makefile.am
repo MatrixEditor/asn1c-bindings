@@ -20,6 +20,7 @@ TESTS += check-UTF8String.sh
 TESTS += check-REAL.sh
 TESTS += check-SET_OF_INTEGER.sh
 TESTS += check-SEQUENCE_OF_INTEGER.sh
+TESTS += check-JER-open-type.sh
 
 CLEANFILES = Makefile.am.* *.[acho] check-*.log check-*.trs
 
