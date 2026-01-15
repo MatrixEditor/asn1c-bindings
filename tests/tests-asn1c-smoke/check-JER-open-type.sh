@@ -1,37 +1,55 @@
-#!/bin/sh
+#!/usr/bin/env sh
 #
-# Test script for JER Open Type encoding
+# Test JER Open Type encoding compliance with ITU-T X.697 Clause 41
 # Validates that Open Type values are encoded without type name wrapper
-# per ITU-T X.697 Clause 41
 #
 
 set -e
 
-# Support both manual execution and autotools test environment
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-abs_top_builddir="${abs_top_builddir:-$(cd ../.. && pwd)}"
-abs_top_srcdir="${abs_top_srcdir:-$(cd ../.. && pwd)}"
-srcdir="${srcdir:-${SCRIPT_DIR}}"
+top_builddir=${top_builddir:-../..}
+top_srcdir=${top_srcdir:-../..}
 
-WORKDIR="${SCRIPT_DIR}/test-open-type-jer-workdir"
-ASN1C="${abs_top_builddir}/asn1c/asn1c"
+WORKDIR="test-JER-open-type"
 
 # Clean up from previous runs
 rm -rf "${WORKDIR}"
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}"
 
+# Create ASN.1 schema with Open Type structure
+cat > test-open-type.asn1 << 'EOF'
+TestModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+    TEST-CLASS ::= CLASS {
+        &id    INTEGER UNIQUE,
+        &Type
+    } WITH SYNTAX { ID &id TYPE &Type }
+
+    TestSet TEST-CLASS ::= {
+        { ID 42 TYPE TestMessage },
+        ...
+    }
+
+    TestFrame ::= SEQUENCE {
+        msgId   TEST-CLASS.&id({TestSet}),
+        value   TEST-CLASS.&Type({TestSet}{@msgId})
+    }
+
+    TestMessage ::= SEQUENCE {
+        msgCount INTEGER(0..127),
+        msgData  OCTET STRING(SIZE(1..32))
+    }
+END
+EOF
+
 # Generate C code from ASN.1 schema
-echo "Generating C code from ASN.1 schema..."
+ASN1C="../${top_builddir}/asn1c/asn1c"
 if [ ! -x "${ASN1C}" ]; then
     echo "ERROR: asn1c executable not found at ${ASN1C}" >&2
     exit 1
 fi
-"${ASN1C}" -fcompound-names -findirect-choice -gen-JER \
-    "${srcdir}/test-open-type-jer.asn1" > /dev/null 2>&1 || {
+
+"${ASN1C}" -fcompound-names -findirect-choice -gen-JER -S "../${top_srcdir}/skeletons" test-open-type.asn1 || {
     echo "ERROR: Failed to generate C code from ASN.1 schema" >&2
-    "${ASN1C}" -fcompound-names -findirect-choice -gen-JER \
-        "${srcdir}/test-open-type-jer.asn1" >&2
     exit 1
 }
 
@@ -88,12 +106,11 @@ int main() {
         goto cleanup;
     }
     
-    printf("%s\n", output);
-    
     /* Verify that output does NOT contain "TestMessage" wrapper */
     if(strstr(output, "\"TestMessage\"")) {
         fprintf(stderr, "FAIL: Output incorrectly contains 'TestMessage' wrapper\n");
         fprintf(stderr, "This violates ITU-T X.697 Clause 41\n");
+        fprintf(stderr, "Output: %s\n", output);
         result = 1;
         goto cleanup;
     }
@@ -101,11 +118,10 @@ int main() {
     /* Verify that output contains the expected fields */
     if(!strstr(output, "\"msgCount\"") || !strstr(output, "\"msgData\"")) {
         fprintf(stderr, "FAIL: Output missing expected fields\n");
+        fprintf(stderr, "Output: %s\n", output);
         result = 1;
         goto cleanup;
     }
-    
-    fprintf(stderr, "PASS: Open Type encoded without type wrapper\n");
     
 cleanup:
     if(output) free(output);
@@ -116,27 +132,23 @@ cleanup:
 EOF
 
 # Build the test program
-echo "Building test program..."
-make -f converter-example.mk > /dev/null 2>&1 || {
+${MAKE:-make} -f converter-example.mk || {
     echo "ERROR: Failed to build library" >&2
-    make -f converter-example.mk >&2
     exit 1
 }
 
-${CC:-cc} -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm > /dev/null 2>&1 || {
+${CC:-cc} -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm || {
     echo "ERROR: Failed to compile test program" >&2
-    ${CC:-cc} -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm >&2
     exit 1
 }
 
 # Run the test
-echo "Running test..."
 ./test_program || {
-    echo "ERROR: Test failed"
+    echo "ERROR: Test failed" >&2
     exit 1
 }
 
-echo "Test passed successfully!"
+echo "JER Open Type test passed"
 cd ..
 rm -rf "${WORKDIR}"
 exit 0
