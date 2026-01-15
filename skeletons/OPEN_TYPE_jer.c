@@ -347,7 +347,9 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
         /* Get pointer to the actual data */
         if(variant_elm->flags & ATF_POINTER) {
             variant_memb_ptr = *(const void *const *)((const char *)memb_ptr + variant_elm->memb_offset);
-            if(!variant_memb_ptr) ASN__ENCODE_FAILED;
+            if(!variant_memb_ptr) {
+                ASN__ENCODE_FAILED;
+            }
         } else {
             variant_memb_ptr = (const void *)((const char *)memb_ptr + variant_elm->memb_offset);
         }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Test script for JER Open Type encoding
 # Validates that Open Type values are encoded without type name wrapper
@@ -108,7 +108,7 @@ make -f converter-example.mk > /dev/null || {
     exit 1
 }
 
-cc -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm > /dev/null || {
+${CC:-cc} -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a -lm > /dev/null || {
     echo "ERROR: Failed to compile test program"
     exit 1
 }
