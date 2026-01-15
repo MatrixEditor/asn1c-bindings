@@ -7,9 +7,14 @@
 
 set -e
 
+# Support both manual execution and autotools test environment
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+abs_top_builddir="${abs_top_builddir:-$(cd ../.. && pwd)}"
+abs_top_srcdir="${abs_top_srcdir:-$(cd ../.. && pwd)}"
+srcdir="${srcdir:-${SCRIPT_DIR}}"
+
 WORKDIR="${SCRIPT_DIR}/test-open-type-jer-workdir"
-ASN1C="${SCRIPT_DIR}/../../asn1c/asn1c"
+ASN1C="${abs_top_builddir}/asn1c/asn1c"
 
 # Clean up from previous runs
 rm -rf "${WORKDIR}"
@@ -19,7 +24,7 @@ cd "${WORKDIR}"
 # Generate C code from ASN.1 schema
 echo "Generating C code from ASN.1 schema..."
 "${ASN1C}" -fcompound-names -findirect-choice -gen-JER \
-    "${SCRIPT_DIR}/test-open-type-jer.asn1" > /dev/null
+    "${srcdir}/test-open-type-jer.asn1" > /dev/null
 
 # Create test program
 cat > test_program.c << 'EOF'
