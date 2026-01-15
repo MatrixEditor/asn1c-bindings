@@ -1,3 +1,36 @@
+1.3.1:
+	FEATURES:
+	* Enhanced -fprefix implementation with automatic PDU handling and system
+	  header conflict warnings. (PR #427)
+	* Added warning system to detect filename conflicts with system headers on
+	  case-insensitive filesystems. (PR #425)
+
+	NOTABLE:
+	* Added S1AP missing ASN.1 file to examples. (PR #423)
+
+	FIXES:
+	* Fixed JER Open Type encoding to comply with ITU-T X.697 Clause 41 - removed
+	  incorrect type name wrapper. (PR #444) (Severity: medium; Security impact: none)
+	* Fixed SEQUENCE OF with inline SEQUENCE inside CHOICE generating undefined
+	  types. (PR #442) (Severity: high; Security impact: none)
+	* Fixed linker errors from duplicate unsuffixed type descriptor symbols on
+	  non-ELF platforms (CYGWIN, Windows). (PR #439) (Severity: high; Security impact: none)
+	* Fixed duplicate validation function names for nested ENUMERATEDs with
+	  identical identifiers. (PR #436) (Severity: high; Security impact: none)
+	* Fixed parser memory leak on syntax error. (PR #434) (Severity: low; Security impact: low)
+	* Fixed memory leak in parser when processing unused tokens. (PR #433)
+	  (Severity: low; Security impact: low)
+	* Fixed code generation for deeply nested SEQUENCE OF with compound names.
+	  (PR #432) (Severity: medium; Security impact: none)
+	* Fixed XER Base64 decoder state loss in chunked decoding. (PR #430)
+	  (Severity: medium; Security impact: none)
+	* Fixed time.h shadowing on case-insensitive filesystems (macOS, Windows) by
+	  moving include to header files. (PR #425) (Severity: medium; Security impact: none)
+	* Fixed XER encoder indentation and empty element spacing issues. (PR #420)
+	  (Severity: low; Security impact: none)
+	* Fixed unused variable 'er' in OPEN_TYPE_jer.c that caused compilation
+	  failure with -Werror -Wall flags. (Severity: low; Security impact: none)
+
 1.3.0:
 	FEATURES:
 	* Added compile-time flag XER_ALLOW_EMPTY_OPTIONALS for XER decoder support
