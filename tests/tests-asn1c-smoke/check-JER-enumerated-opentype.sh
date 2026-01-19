@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 #
-# Test JER encoding of ENUMERATED types in OPEN TYPE contexts
-# Validates that ENUMERATED values are encoded as strings, not integers
+# Test JER encoding of ENUMERATED and CHOICE types in OPEN TYPE contexts
+# Validates that:
+#   1. ENUMERATED values are encoded as strings, not integers
+#   2. CHOICE types are properly encoded with their selected alternative
+#   3. ENUMERATED within CHOICE are encoded as strings
 # This is a regression test for the F1AP JER encoding issue
 #
 
@@ -17,11 +20,11 @@ rm -rf "${WORKDIR}"
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}"
 
-# Create ASN.1 schema similar to F1AP structure with ENUMERATED in IOC
+# Create ASN.1 schema similar to F1AP structure with ENUMERATED and CHOICE in IOC
 cat > test-enum-ioc.asn1 << 'ENDOFASN1'
 TestModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
--- Simulates F1AP-style protocol IE structure
+-- Simulates F1AP-style protocol IE structure with both ENUMERATED and CHOICE types
 TEST-PROTOCOL-IES ::= CLASS {
     &id         INTEGER UNIQUE,
     &criticality    Criticality,
@@ -51,7 +54,7 @@ CauseRadioNetwork ::= ENUMERATED {
     unknownCell(2)
 }
 
--- Define protocol IEs
+-- Define protocol IEs: mix of ENUMERATED and CHOICE types for comprehensive testing
 TestIEs TEST-PROTOCOL-IES ::= {
     { ID 1 CRITICALITY reject TYPE ResetType } |
     { ID 2 CRITICALITY ignore TYPE Cause },
@@ -179,14 +182,17 @@ int main() {
         test_failures++;
     }
     
-    /* Verification 2: Check that CauseRadioNetwork (in CHOICE) is encoded as string */
-    if(strstr(output, "\"rlFailure\"")) {
-        printf("PASS: CauseRadioNetwork encoded as string \"rlFailure\"\n");
+    /* Verification 2: Check that CHOICE (Cause) is properly encoded with selected alternative */
+    if(strstr(output, "\"radioNetwork\"") && strstr(output, "\"rlFailure\"")) {
+        printf("PASS: CHOICE encoded correctly with alternative \"radioNetwork\": \"rlFailure\"\n");
     } else if(strstr(output, "\"radioNetwork\": 1") || strstr(output, "\"radioNetwork\":1")) {
-        fprintf(stderr, "FAIL: CauseRadioNetwork encoded as integer 1 instead of \"rlFailure\"\n");
+        fprintf(stderr, "FAIL: CHOICE alternative encoded as integer 1 instead of \"rlFailure\"\n");
+        test_failures++;
+    } else if(!strstr(output, "\"radioNetwork\"")) {
+        fprintf(stderr, "FAIL: CHOICE alternative name \"radioNetwork\" not found\n");
         test_failures++;
     } else {
-        fprintf(stderr, "FAIL: Could not find CauseRadioNetwork encoding\n");
+        fprintf(stderr, "FAIL: Could not find proper CHOICE encoding\n");
         test_failures++;
     }
     
