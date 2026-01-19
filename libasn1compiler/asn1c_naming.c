@@ -182,11 +182,13 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
     }
 
     /*
-     * For types that are members of a CHOICE or SET,
-     * always use compound naming to include parent context and avoid name collisions
-     * with nested types that have the same identifier.
+     * For constructed types (SEQUENCE, SET, CHOICE, SEQUENCE OF, SET OF) that are 
+     * members of a CHOICE or SET, always use compound naming to include parent context
+     * and avoid name collisions with nested types that have the same identifier.
+     * This prevents issues where the same identifier is used for nested elements.
      */
-    if(expr->parent_expr && 
+    if(!compound_names && expr->parent_expr && 
+       (expr_type & ASN_CONSTR_MASK) &&
        (expr->parent_expr->expr_type == ASN_CONSTR_CHOICE || 
         expr->parent_expr->expr_type == ASN_CONSTR_SET)) {
         compound_names = 1;
