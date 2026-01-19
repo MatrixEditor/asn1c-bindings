@@ -182,17 +182,27 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
     }
 
     /*
-     * For non-anonymous constructed types (SEQUENCE, SET, CHOICE, SEQUENCE OF, SET OF)
-     * that are members of a CHOICE or SET, use compound naming to include parent context
-     * and avoid name collisions with nested types that have the same identifier.
-     * This prevents issues where the same identifier is used for nested elements.
-     * Anonymous types are excluded because they're defined inline and isolated by context.
+     * For constructed types (SEQUENCE, SET, CHOICE, SEQUENCE OF, SET OF) that are 
+     * members of a CHOICE or SET, check if we need compound naming to avoid collisions.
+     * This is specifically needed when the same identifier appears at multiple nesting
+     * levels (like "criticalExtensions" used recursively), which would cause name
+     * collisions in generated code.
+     * We only apply compound naming if the identifier matches an ancestor's identifier.
      */
-    if(!compound_names && expr->parent_expr && !expr->_anonymous_type &&
+    if(!compound_names && expr->parent_expr && expr->Identifier &&
        (expr_type & ASN_CONSTR_MASK) &&
        (expr->parent_expr->expr_type == ASN_CONSTR_CHOICE || 
         expr->parent_expr->expr_type == ASN_CONSTR_SET)) {
-        compound_names = 1;
+        /* Check if this identifier matches any ancestor identifier */
+        asn1p_expr_t *ancestor = expr->parent_expr;
+        while(ancestor) {
+            if(ancestor->Identifier && 
+               strcmp(expr->Identifier, ancestor->Identifier) == 0) {
+                compound_names = 1;
+                break;
+            }
+            ancestor = ancestor->parent_expr;
+        }
     }
 
     construct_base_name(&b_asn_name, expr, 0, 0, 0);

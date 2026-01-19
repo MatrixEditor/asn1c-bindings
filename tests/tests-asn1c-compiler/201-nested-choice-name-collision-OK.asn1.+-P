@@ -26,7 +26,7 @@ typedef struct HandoverCommand {
 	struct criticalExtensions {
 		criticalExtensions_PR present;
 		union HandoverCommand__criticalExtensions_u {
-			struct HandoverCommand__criticalExtensions__r8 {
+			struct r8 {
 				OCTET_STRING_t	 data;
 				
 				/* Context for parsing across buffer boundaries */
@@ -35,7 +35,7 @@ typedef struct HandoverCommand {
 			struct HandoverCommand__criticalExtensions__criticalExtensions {
 				HandoverCommand__criticalExtensions__criticalExtensions_PR present;
 				union HandoverCommand__criticalExtensions__criticalExtensions_u {
-					struct HandoverCommand__criticalExtensions__criticalExtensions__r11 {
+					struct r11 {
 						OCTET_STRING_t	 data2;
 						
 						/* Context for parsing across buffer boundaries */
@@ -123,37 +123,10 @@ __attribute__((constructor)) static void asn_DEF_criticalExtensions_3_alias_init
 #endif
 #endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
 
-/*** <<< CTDEFS [HandoverCommand] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_criticalExtensions_constr_6 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_criticalExtensions_constr_6 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_criticalExtensions_constr_3 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_criticalExtensions_constr_3 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-
 /*** <<< STAT-DEFS [HandoverCommand] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_r8_4[] = {
-	{ ATF_NOFLAGS, 0, offsetof(struct HandoverCommand__criticalExtensions__r8, data),
+	{ ATF_NOFLAGS, 0, offsetof(struct r8, data),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
 		.type = &asn_DEF_OCTET_STRING,
@@ -182,8 +155,8 @@ static const asn_TYPE_tag2member_t asn_MAP_r8_tag2el_4[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* data */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_r8_specs_4 = {
-	sizeof(struct HandoverCommand__criticalExtensions__r8),
-	offsetof(struct HandoverCommand__criticalExtensions__r8, _asn_ctx),
+	sizeof(struct r8),
+	offsetof(struct r8, _asn_ctx),
 	.tag2el = asn_MAP_r8_tag2el_4,
 	.tag2el_count = 1,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
@@ -218,7 +191,7 @@ asn_TYPE_descriptor_t asn_DEF_r8_4 = {
 };
 
 static asn_TYPE_member_t asn_MBR_r11_7[] = {
-	{ ATF_NOFLAGS, 0, offsetof(struct HandoverCommand__criticalExtensions__criticalExtensions__r11, data2),
+	{ ATF_NOFLAGS, 0, offsetof(struct r11, data2),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
 		.type = &asn_DEF_OCTET_STRING,
@@ -247,8 +220,8 @@ static const asn_TYPE_tag2member_t asn_MAP_r11_tag2el_7[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* data2 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_r11_specs_7 = {
-	sizeof(struct HandoverCommand__criticalExtensions__criticalExtensions__r11),
-	offsetof(struct HandoverCommand__criticalExtensions__criticalExtensions__r11, _asn_ctx),
+	sizeof(struct r11),
+	offsetof(struct r11, _asn_ctx),
 	.tag2el = asn_MAP_r11_tag2el_7,
 	.tag2el_count = 1,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
@@ -388,10 +361,10 @@ asn_TYPE_descriptor_t asn_DEF_criticalExtensions_6 = {
 	0,	/* No tags (count) */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_criticalExtensions_constr_6,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_criticalExtensions_constr_6,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -470,10 +443,10 @@ asn_TYPE_descriptor_t asn_DEF_criticalExtensions_3 = {
 	0,	/* No tags (count) */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_criticalExtensions_constr_3,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_criticalExtensions_constr_3,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -630,21 +603,6 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 #endif
 #endif /* ASN1C_NO_UNSUFFIXED_PDU_ALIAS */
 
-/*** <<< CTDEFS [EXTERNAL] >>> ***/
-
-#if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_encoding_constr_5 CC_NOTUSED = {
-	{ 0, 0 },
-	-1};
-#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
-#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_encoding_constr_5 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	0, 0	/* No PER value map */
-};
-#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_encoding_5[] = {
@@ -735,10 +693,10 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 	0,	/* No tags (count) */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_encoding_constr_5,
+		0,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_encoding_constr_5,
+		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 		0,
@@ -832,7 +790,6 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 		.name = "encoding"
 		},
 };
-static const int asn_MAP_EXTERNAL_oms_1[] = { 0, 1, 2 };
 static const ber_tlv_tag_t asn_DEF_EXTERNAL_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (8 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -850,8 +807,7 @@ static asn_SEQUENCE_specifics_t asn_SPC_EXTERNAL_specs_1 = {
 	offsetof(struct EXTERNAL, _asn_ctx),
 	.tag2el = asn_MAP_EXTERNAL_tag2el_1,
 	.tag2el_count = 6,	/* Count of tags in the map */
-	asn_MAP_EXTERNAL_oms_1,	/* Optional members */
-	3, 0,	/* Root/Additions */
+	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_EXTERNAL = {

@@ -267,7 +267,7 @@ struct Sequence;
 typedef struct Choice {
 	Choice_PR present;
 	union Choice_u {
-		struct Choice__setof {
+		struct setof {
 			A_SET_OF(INTEGER_t) list;
 			
 			/* Context for parsing across buffer boundaries */
@@ -332,8 +332,8 @@ static const ber_tlv_tag_t asn_DEF_setof_tags_2[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (17 << 2))
 };
 static asn_SET_OF_specifics_t asn_SPC_setof_specs_2 = {
-	sizeof(struct Choice__setof),
-	offsetof(struct Choice__setof, _asn_ctx),
+	sizeof(struct setof),
+	offsetof(struct setof, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */

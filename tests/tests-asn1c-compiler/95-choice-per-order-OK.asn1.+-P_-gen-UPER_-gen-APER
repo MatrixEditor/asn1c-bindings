@@ -18,11 +18,11 @@ typedef enum Choice_PR {
 	/* Extensions may appear below */
 	Choice_PR_bool
 } Choice_PR;
-typedef enum Choice__ch_PR {
-	Choice__ch_PR_NOTHING,	/* No components present */
-	Choice__ch_PR_null,
-	Choice__ch_PR_int
-} Choice__ch_PR;
+typedef enum ch_PR {
+	ch_PR_NOTHING,	/* No components present */
+	ch_PR_null,
+	ch_PR_int
+} ch_PR;
 
 /*** <<< TYPE-DECLS [Choice] >>> ***/
 
@@ -31,8 +31,8 @@ typedef struct Choice {
 	union Choice_u {
 		RELATIVE_OID_t	 roid;
 		BIT_STRING_t	 bitstr;
-		struct Choice__ch {
-			Choice__ch_PR present;
+		struct ch {
+			ch_PR present;
 			union Choice__ch_u {
 				NULL_t	 null;
 				long	 Int;
@@ -90,7 +90,7 @@ static asn_per_constraints_t asn_PER_type_Choice_constr_1 CC_NOTUSED = {
 /*** <<< STAT-DEFS [Choice] >>> ***/
 
 static asn_TYPE_member_t asn_MBR_ch_4[] = {
-	{ ATF_NOFLAGS, 0, offsetof(struct Choice__ch, choice.null),
+	{ ATF_NOFLAGS, 0, offsetof(struct ch, choice.null),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (5 << 2)),
 		.tag_mode = 0,
 		.type = &asn_DEF_NULL,
@@ -110,7 +110,7 @@ static asn_TYPE_member_t asn_MBR_ch_4[] = {
 		0, 0, /* No default value */
 		.name = "null"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct Choice__ch, choice.Int),
+	{ ATF_NOFLAGS, 0, offsetof(struct ch, choice.Int),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
 		.type = &asn_DEF_NativeInteger,
@@ -138,10 +138,10 @@ static const asn_TYPE_tag2member_t asn_MAP_ch_tag2el_4[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (5 << 2)), 0, 0, 0 } /* null */
 };
 static asn_CHOICE_specifics_t asn_SPC_ch_specs_4 = {
-	sizeof(struct Choice__ch),
-	offsetof(struct Choice__ch, _asn_ctx),
-	offsetof(struct Choice__ch, present),
-	sizeof(((struct Choice__ch *)0)->present),
+	sizeof(struct ch),
+	offsetof(struct ch, _asn_ctx),
+	offsetof(struct ch, present),
+	sizeof(((struct ch *)0)->present),
 	.tag2el = asn_MAP_ch_tag2el_4,
 	.tag2el_count = 2,	/* Count of tags in the map */
 	.to_canonical_order = asn_MAP_ch_to_canonical_4,
