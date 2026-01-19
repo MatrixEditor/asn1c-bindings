@@ -480,7 +480,7 @@ struct Epyt;
 typedef struct Ypet {
 	struct Epyt	*epyt;
 	INTEGER_t	*plain;	/* DEFAULT 7 */
-	struct senums {
+	struct Ypet__senums {
 		A_SET_OF(EnumType_t) list;
 		
 		/* Context for parsing across buffer boundaries */
@@ -650,8 +650,8 @@ static const ber_tlv_tag_t asn_DEF_senums_tags_4[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (17 << 2))
 };
 static asn_SET_OF_specifics_t asn_SPC_senums_specs_4 = {
-	sizeof(struct senums),
-	offsetof(struct senums, _asn_ctx),
+	sizeof(struct Ypet__senums),
+	offsetof(struct Ypet__senums, _asn_ctx),
 	1,	/* XER encoding is XMLValueList */
 };
 static /* Use -fall-defs-global to expose */

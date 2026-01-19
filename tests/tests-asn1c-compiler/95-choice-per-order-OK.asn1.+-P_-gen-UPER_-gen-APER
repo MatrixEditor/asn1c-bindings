@@ -19,9 +19,9 @@ typedef enum Choice_PR {
 	Choice_PR_bool
 } Choice_PR;
 typedef enum Choice__ch_PR {
-	ch_PR_NOTHING,	/* No components present */
-	ch_PR_null,
-	ch_PR_int
+	Choice__ch_PR_NOTHING,	/* No components present */
+	Choice__ch_PR_null,
+	Choice__ch_PR_int
 } Choice__ch_PR;
 
 /*** <<< TYPE-DECLS [Choice] >>> ***/
