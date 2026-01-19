@@ -171,14 +171,16 @@ int main() {
     printf("=== Encoded JER ===\n%s\n", output);
     printf("===================\n\n");
     
-    /* Verification 1: Check that ResetType is encoded as string, not integer */
+    /* Verification 1: Check that ResetType is encoded as string, not integer 
+     * Note: We check for "value": 1 specifically to avoid matching "id": 1
+     * which is a legitimate integer field in the protocol IE structure */
     if(strstr(output, "\"partOfInterface\"")) {
         printf("PASS: ResetType encoded as string \"partOfInterface\"\n");
-    } else if(strstr(output, ": 1") || strstr(output, ":1")) {
-        fprintf(stderr, "FAIL: ResetType encoded as integer 1 instead of \"partOfInterface\"\n");
+    } else if(strstr(output, "\"value\": 1") || strstr(output, "\"value\":1")) {
+        fprintf(stderr, "FAIL: ResetType value encoded as integer 1 instead of \"partOfInterface\"\n");
         test_failures++;
     } else {
-        fprintf(stderr, "FAIL: Could not find ResetType encoding\n");
+        fprintf(stderr, "FAIL: ResetType value \"partOfInterface\" not found in output\n");
         test_failures++;
     }
     
