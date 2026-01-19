@@ -9,6 +9,12 @@
 	* Added S1AP missing ASN.1 file to examples. (PR #423)
 
 	FIXES:
+	* Fixed name collision for nested CHOICE/SET members with identical identifiers.
+	  When the same identifier appears recursively in nested CHOICE or SET structures
+	  (e.g., "criticalExtensions" used at multiple nesting levels in 3GPP RRC schemas),
+	  the compiler now automatically applies compound naming to prevent collisions.
+	  This fixes UPER decoding failures in 3GPP WCDMA RRC and similar schemas.
+	  (Severity: high; Security impact: none)
 	* Fixed JER Open Type encoding to comply with ITU-T X.697 Clause 41 - removed
 	  incorrect type name wrapper. (PR #444) (Severity: medium; Security impact: none)
 	* Fixed SEQUENCE OF with inline SEQUENCE inside CHOICE generating undefined

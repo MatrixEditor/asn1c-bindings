@@ -181,6 +181,31 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
         }
     }
 
+    /*
+     * For constructed types that are members of a CHOICE or SET, check whether
+     * compound naming is required to avoid name collisions.
+     * This is specifically needed when the same identifier appears at multiple
+     * nesting levels (like "criticalExtensions" used recursively), which would
+     * cause name collisions in generated code.
+     * We only apply compound naming if the identifier matches an ancestor's
+     * identifier.
+     */
+    if(!compound_names && expr->parent_expr && expr->Identifier &&
+       (expr_type & ASN_CONSTR_MASK) &&
+       (expr->parent_expr->expr_type == ASN_CONSTR_CHOICE || 
+        expr->parent_expr->expr_type == ASN_CONSTR_SET)) {
+        /* Check if this identifier matches any ancestor identifier */
+        asn1p_expr_t *ancestor = expr->parent_expr;
+        while(ancestor) {
+            if(ancestor->Identifier && 
+               strcmp(expr->Identifier, ancestor->Identifier) == 0) {
+                compound_names = 1;
+                break;
+            }
+            ancestor = ancestor->parent_expr;
+        }
+    }
+
     construct_base_name(&b_asn_name, expr, 0, 0, 0);
     construct_base_name(&b_part_name, expr, 0, 0, AMI_USE_PREFIX);
     construct_base_name(&b_base_name, expr, compound_names, avoid_keywords, 0);
