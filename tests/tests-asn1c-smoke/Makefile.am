@@ -21,6 +21,7 @@ TESTS += check-REAL.sh
 TESTS += check-SET_OF_INTEGER.sh
 TESTS += check-SEQUENCE_OF_INTEGER.sh
 TESTS += check-JER-open-type.sh
+TESTS += check-JER-enumerated-opentype.sh
 
 CLEANFILES = Makefile.am.* *.[acho] check-*.log check-*.trs
 
