@@ -182,12 +182,13 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
     }
 
     /*
-     * For constructed types (SEQUENCE, SET, CHOICE, SEQUENCE OF, SET OF) that are 
-     * members of a CHOICE or SET, check if we need compound naming to avoid collisions.
-     * This is specifically needed when the same identifier appears at multiple nesting
-     * levels (like "criticalExtensions" used recursively), which would cause name
-     * collisions in generated code.
-     * We only apply compound naming if the identifier matches an ancestor's identifier.
+     * For constructed types that are members of a CHOICE or SET, check whether
+     * compound naming is required to avoid name collisions.
+     * This is specifically needed when the same identifier appears at multiple
+     * nesting levels (like "criticalExtensions" used recursively), which would
+     * cause name collisions in generated code.
+     * We only apply compound naming if the identifier matches an ancestor's
+     * identifier.
      */
     if(!compound_names && expr->parent_expr && expr->Identifier &&
        (expr_type & ASN_CONSTR_MASK) &&
