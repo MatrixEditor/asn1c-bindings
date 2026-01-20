@@ -19,10 +19,6 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     void *inner_value;
     asn_dec_rval_t rv;
 
-    int jer_context = 0;
-    ssize_t ch_size;
-    pjer_chunk_type_e ch_type;
-
     if(!(elm->flags & ATF_OPEN_TYPE)) {
         ASN__DECODE_FAILED;
     }

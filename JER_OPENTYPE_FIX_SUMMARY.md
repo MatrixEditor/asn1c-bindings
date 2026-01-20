@@ -1,52 +1,58 @@
 # JER OPEN TYPE Fix - Summary
 
 ## Issue Addressed
-Fixed issue #455 where the JER encoder produces non-parseable JSON for OPEN TYPE values in direct type mode.
+Fixed JER OPEN TYPE decoder to comply with ITU-T X.697 Clause 41, which specifies that
+OPEN TYPE values are encoded as the contained type directly, without any wrapper.
 
 ## Problem Description
-The `OPEN_TYPE_jer_get` decoder was always expecting a CHOICE-style JSON key wrapper even for direct type mode (no CHOICE wrapper). This caused "Unexpected JSON key in SEQUENCE" errors when decoding OPEN TYPE values that are direct SEQUENCE or SEQUENCE OF types without a CHOICE wrapper.
+The JER decoder for OPEN TYPE was incorrectly trying to parse CHOICE-style key wrappers
+and consuming parent SEQUENCE delimiters. This caused decode failures on valid,
+standards-compliant JER encodings.
 
-### Example of the Issue
-For an OPEN TYPE field that contains a direct SEQUENCE (no CHOICE), the JSON should be:
+### Example
+For an OPEN TYPE field containing a SEQUENCE, the correct JER per X.697 Clause 41 is:
 ```json
 "value": {"field1": 1, "field2": "test"}
 ```
 
-But the decoder was expecting:
+The decoder was incorrectly expecting a CHOICE wrapper:
 ```json
 "value": {"someKey": {"field1": 1, "field2": "test"}}
 ```
 
-This mismatch caused decoding to fail with "Unexpected JSON key" errors.
+And was consuming the closing `}` after decoding, preventing the parent decoder from
+properly finalizing.
 
 ## Root Cause
-In `/home/runner/work/asn1c/asn1c/skeletons/OPEN_TYPE_jer.c`, the `OPEN_TYPE_jer_get` function had code (lines 105-145) that always expected to parse and skip a JSON key+colon before decoding the value. This code should only execute for CHOICE wrapper mode, not for direct type mode.
+In `skeletons/OPEN_TYPE_jer.c`, the `OPEN_TYPE_jer_get` function had two issues:
+1. **CHOICE wrapper parsing**: Attempting to parse non-existent CHOICE wrapper keys
+2. **Finalization code**: Consuming parent SEQUENCE delimiters (closing `}`)
 
 ## Solution
-Modified `OPEN_TYPE_jer_get` to conditionally execute the key-parsing logic:
-- **CHOICE wrapper mode** (`elm->type->elements_count > 0`): Parse and skip the key+colon
-- **Direct type mode** (`elm->type->elements_count == 0`): Skip key-parsing, decode value directly
+Modified `OPEN_TYPE_jer_get` to:
+- Decode OPEN TYPE values directly without attempting CHOICE wrapper parsing
+- Return immediately after decoding, letting parent decoders handle structural elements
+
+This implements proper decoder responsibility boundaries per ITU-T X.697 Clause 41.
 
 ## Files Modified
-1. `/home/runner/work/asn1c/asn1c/skeletons/OPEN_TYPE_jer.c` - Main fix
-2. `/home/runner/work/asn1c/asn1c/skeletons/constr_SEQUENCE_OF_jer.c` - Added clarifying comments
+1. `skeletons/OPEN_TYPE_jer.c` - Removed CHOICE wrapper parsing and finalization code
+2. `skeletons/constr_SEQUENCE_OF_jer.c` - Added clarifying comments
 
 ## Testing
 - Basic ASN.1 compiler tests pass
-- Project builds successfully
+- Project builds successfully  
 - Comprehensive test documentation provided in `tests/f1ap-regression/JER_OPENTYPE_FIX_TEST.md`
 
 ## Impact
-This fix resolves the critical bug where JER encoding produced valid JSON but the decoder could not parse it back, making JER unusable for certain ASN.1 structures (particularly F1AP and similar protocols with OPEN TYPE fields).
+This fix resolves a critical bug where standards-compliant JER encoding could not be
+decoded, making JER unusable for certain ASN.1 structures (particularly F1AP and similar
+protocols with OPEN TYPE fields).
 
 ## Commits
-1. Fix OPEN_TYPE_jer_get to handle direct type mode - Main fix
-2. Add test documentation for JER OPEN TYPE fix - Testing docs
-3. Add clarifying comment for XMLValueList in SEQUENCE_OF JER encoder - Additional documentation
-4. Address code review feedback - improve documentation and comments - Final polish
+1. Fix OPEN_TYPE decoder to never parse CHOICE wrapper - Main fix
+2. Remove finalization code that consumed parent delimiters - Second fix
+3. Address code review feedback - Documentation and cleanup
 
 ## Branch
 `copilot/fix-jer-encoder-issues`
-
-## Related Issue
-Fixes #455
