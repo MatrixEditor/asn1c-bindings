@@ -304,6 +304,21 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
 
     selected = elm->type_selector(td, sptr);
     if(!selected.presence_index) {
+        ASN_DEBUG("Open Type %s->%s: type_selector returned presence_index=0",
+                  td->name, elm->name);
+        ASN__ENCODE_FAILED;
+    }
+
+    /* Validate selected type descriptor */
+    if(!selected.type_descriptor) {
+        ASN_DEBUG("Open Type %s->%s: type_selector returned NULL type descriptor",
+                  td->name, elm->name);
+        ASN__ENCODE_FAILED;
+    }
+
+    if(!selected.type_descriptor->op || !selected.type_descriptor->op->jer_encoder) {
+        ASN_DEBUG("Open Type %s->%s: selected type %s has no JER encoder",
+                  td->name, elm->name, selected.type_descriptor->name);
         ASN__ENCODE_FAILED;
     }
 
@@ -347,10 +362,19 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
         if(variant_elm->flags & ATF_POINTER) {
             variant_memb_ptr = *(const void *const *)((const char *)memb_ptr + variant_elm->memb_offset);
             if(!variant_memb_ptr) {
+                ASN_DEBUG("Open Type %s->%s: variant data pointer is NULL",
+                          td->name, elm->name);
                 ASN__ENCODE_FAILED;
             }
         } else {
             variant_memb_ptr = (const void *)((const char *)memb_ptr + variant_elm->memb_offset);
+        }
+        
+        /* Validate type descriptor match for safety */
+        if(variant_elm->type && variant_elm->type != selected.type_descriptor) {
+            ASN_DEBUG("Open Type %s->%s: WARNING - variant type %s != selected type %s",
+                      td->name, elm->name, 
+                      variant_elm->type->name, selected.type_descriptor->name);
         }
         
         /* 
@@ -358,8 +382,9 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
          * the encoding of the value of the contained type."
          * Encode directly without type name wrapper.
          */
-        ASN_DEBUG("Open Type CHOICE wrapper mode: encoding %s directly without wrapper", 
-                  selected.type_descriptor->name);
+        ASN_DEBUG("Open Type CHOICE wrapper mode: encoding %s (variant %s) at offset %u, ATF_POINTER=%d", 
+                  selected.type_descriptor->name, variant_elm->name,
+                  variant_elm->memb_offset, !!(variant_elm->flags & ATF_POINTER));
         return selected.type_descriptor->op->jer_encoder(
             selected.type_descriptor, selected.type_descriptor->encoding_constraints.jer_constraints,
             variant_memb_ptr, ilevel, flags, cb, app_key);
@@ -370,8 +395,8 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
          * the encoding of the value of the contained type."
          * No type name wrapper should be added.
          */
-        ASN_DEBUG("Open Type direct mode: encoding %s directly without wrapper", 
-                  selected.type_descriptor->name);
+        ASN_DEBUG("Open Type direct mode: encoding %s, memb_ptr=%p, ATF_POINTER=%d", 
+                  selected.type_descriptor->name, memb_ptr, !!(elm->flags & ATF_POINTER));
         return selected.type_descriptor->op->jer_encoder(
             selected.type_descriptor, selected.type_descriptor->encoding_constraints.jer_constraints,
             memb_ptr, ilevel, flags, cb, app_key);
