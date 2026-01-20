@@ -1,3 +1,15 @@
+1.3.2:
+	FIXES:
+	* Fixed JER OPEN TYPE decoder to comply with ITU-T X.697 Clause 41. The decoder
+	  was incorrectly attempting to parse CHOICE-style key wrappers and consuming
+	  parent SEQUENCE delimiters, causing "Unexpected JSON key" and "Out of defined
+	  members" errors when decoding valid ITU-T X.697 compliant JSON. The decoder now
+	  decodes OPEN TYPE values directly without wrapper parsing and returns immediately
+	  without consuming trailing delimiters, letting parent decoders handle structural
+	  elements. Added automated regression test to prevent future issues. Affects F1AP
+	  and similar specifications with OPEN TYPE fields. (PR #456)
+	  (Severity: high; Security impact: none)
+
 1.3.1:
 	FEATURES:
 	* Enhanced -fprefix implementation with automatic PDU handling and system
