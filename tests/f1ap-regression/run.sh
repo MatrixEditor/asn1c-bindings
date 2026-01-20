@@ -4,6 +4,7 @@ set -euo pipefail
 # Test for F1AP compilation regression (issue #410)
 # This test ensures that F1AP code generated with -findirect-choice and 
 # -fcompound-names compiles successfully without circular include errors
+# Also tests JER round-trip encoding/decoding for OPEN TYPE fields
 
 # For distcheck: srcdir points to source directory, current dir is build directory
 # For normal check: srcdir=. and we're in the source directory
@@ -26,10 +27,37 @@ echo "srcdir=${srcdir} abs_top_builddir=${abs_top_builddir} abs_top_srcdir=${abs
 ${ASN1C_EXE} -S "${SKELETONS_DIR}" \
   -fcompound-names \
   -findirect-choice \
+  -gen-JER \
   F1AP-16.7.0.asn
 
 # Test compilation of everything
 echo "Attempt to build converter-example"
 make -f converter-example.mk
 
-echo "F1AP test PASSED: Code generated and compiled successfully"
+# Test JER OPEN TYPE encoding/decoding round-trip
+echo "Testing JER OPEN TYPE round-trip..."
+cat > test-jer-opentype.jer << 'EOF'
+{
+    "initiatingMessage": {
+        "procedureCode": 0,
+        "criticality": "reject",
+        "value": {
+            "protocolIEs": []
+        }
+    }
+}
+EOF
+
+# Attempt to decode the JER (should not fail with "Unexpected JSON key")
+if ./converter-example -p F1AP-PDU -ijer -otext test-jer-opentype.jer > test-output.txt 2>&1; then
+  echo "JER decoding test PASSED"
+else
+  echo "JER decoding test FAILED:"
+  cat test-output.txt
+  exit 1
+fi
+
+# Clean up test files
+rm -f test-jer-opentype.jer test-output.txt
+
+echo "F1AP test PASSED: Code generated, compiled, and JER round-trip successful"
