@@ -9,6 +9,10 @@
 	* Added S1AP missing ASN.1 file to examples. (PR #423)
 
 	FIXES:
+	* Improved JER OPEN_TYPE encoder validation and diagnostics. Added comprehensive
+	  checks for type descriptor validity, NULL pointer detection, and type mismatch
+	  warnings. Enhanced debug logging to help diagnose encoding issues in complex
+	  IOC scenarios. (Severity: low; Security impact: none)
 	* Fixed name collision for nested CHOICE/SET members with identical identifiers.
 	  When the same identifier appears recursively in nested CHOICE or SET structures
 	  (e.g., "criticalExtensions" used at multiple nesting levels in 3GPP RRC schemas),
