@@ -208,41 +208,6 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
         return rv;
     }
 
-
-    /*
-     * Finalize wrapper.
-     */
-    for(;;) {
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if(ch_size < 0) {
-            ASN__DECODE_FAILED;
-        } else {
-            switch(ch_type) {
-            case PJER_WMORE:
-                ASN__DECODE_STARVED;
-            case PJER_TEXT:
-                ADVANCE(ch_size);
-                continue;
-            default:
-                break;
-            }
-            break;
-        }
-    }
-
-    /*
-     * Wrapper value confirmed.
-     */
-    switch(jer_check_sym(ptr, ch_size, NULL)) {
-    case JCK_KEY:
-    case JCK_OEND:
-        ADVANCE(ch_size);
-        break;
-    case JCK_BROKEN:
-    default:
-        ASN__DECODE_FAILED;
-    }
-
     rv.consumed += consumed_myself;
 
     return rv;
