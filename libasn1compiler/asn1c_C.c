@@ -3985,21 +3985,21 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 static int
 identifier_collides_with_ancestor(asn1p_expr_t *expr) {
 	asn1p_expr_t *ancestor;
-	
+
 	if(!expr || !expr->Identifier) {
 		return 0;
 	}
-	
+
 	/* Walk up the parent chain looking for matching identifiers */
 	ancestor = expr->parent_expr;
 	while(ancestor) {
-		if(ancestor->Identifier && 
-		   strcmp(expr->Identifier, ancestor->Identifier) == 0) {
+		if(ancestor->Identifier
+		    && strcmp(expr->Identifier, ancestor->Identifier) == 0) {
 			return 1;  /* Collision detected */
 		}
 		ancestor = ancestor->parent_expr;
 	}
-	
+
 	return 0;  /* No collision */
 }
 
