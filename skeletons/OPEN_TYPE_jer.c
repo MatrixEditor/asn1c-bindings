@@ -395,14 +395,6 @@ OPEN_TYPE_jer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
          * the encoding of the value of the contained type."
          * No type name wrapper should be added.
          */
-        
-        /* Additional safety check for direct mode */
-        if(elm->flags & ATF_POINTER && !memb_ptr) {
-            ASN_DEBUG("Open Type %s->%s: direct mode data pointer is NULL",
-                      td->name, elm->name);
-            ASN__ENCODE_FAILED;
-        }
-        
         ASN_DEBUG("Open Type direct mode: encoding %s, memb_ptr=%p, ATF_POINTER=%d", 
                   selected.type_descriptor->name, memb_ptr, !!(elm->flags & ATF_POINTER));
         return selected.type_descriptor->op->jer_encoder(
