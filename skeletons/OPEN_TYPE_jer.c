@@ -100,60 +100,16 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /*
-     * For CHOICE wrapper mode (elm->type->elements_count > 0), we need to
-     * skip past the CHOICE key and colon in the JSON.
-     * For direct type mode (elm->type->elements_count == 0), we skip this
-     * since there's no wrapper - the value is encoded directly.
+     * Per ITU-T X.697 Clause 41: "The encoding of an open type value shall be
+     * the encoding of the value of the contained type."
+     * 
+     * For OPEN TYPE, the encoder does NOT add a CHOICE wrapper key, even if
+     * elm->type is internally structured as a CHOICE (elements_count > 0).
+     * The value is encoded directly as per the selected type.
      *
-     * Example CHOICE wrapper: {"choiceName": value}
-     * Example direct type: value (no wrapper)
+     * Therefore, the decoder should NOT try to parse a CHOICE key wrapper.
+     * We proceed directly to decoding the value using the selected type descriptor.
      */
-    if(elm->type->elements_count > 0) {
-        /*
-         * Confirm wrapper.
-         */
-        for(;;) {
-            ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-            if(ch_size < 0) {
-                ASN__DECODE_FAILED;
-            } else {
-                switch(ch_type) {
-                case PJER_WMORE:
-                    ASN__DECODE_STARVED;
-                case PJER_TEXT:
-                case PJER_DLM:
-                    ADVANCE(ch_size);
-                    continue;
-                case PJER_KEY:
-                default:
-                    break;
-                }
-                break;
-            }
-
-        }
-
-        /*
-         * Wrapper value confirmed.
-         */
-        switch(jer_check_sym(ptr, ch_size, NULL)) {
-        case JCK_UNKNOWN:
-            ADVANCE(ch_size);
-            break;
-        case JCK_BROKEN:
-        default:
-            ASN__DECODE_FAILED;
-        }
-
-
-        /* Skip colon */
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if(ch_size < 0 || ch_type != PJER_TEXT)  {
-            ASN__DECODE_FAILED;
-        } else {
-            ADVANCE(ch_size);
-        }
-    }
 
     /* Compute inner_value based on CHOICE wrapper mode or direct type mode */
     unsigned int memb_offset = 0;
