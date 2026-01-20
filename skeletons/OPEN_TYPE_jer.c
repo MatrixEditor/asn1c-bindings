@@ -100,48 +100,54 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /*
-     * Confirm wrapper.
+     * For CHOICE wrapper mode, we need to skip past the CHOICE key and colon.
+     * For direct type mode, we skip this since there's no wrapper.
      */
-    for(;;) {
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if(ch_size < 0) {
-            ASN__DECODE_FAILED;
-        } else {
-            switch(ch_type) {
-            case PJER_WMORE:
-                ASN__DECODE_STARVED;
-            case PJER_TEXT:
-            case PJER_DLM:
-                ADVANCE(ch_size);
-                continue;
-            case PJER_KEY:
-            default:
+    if(elm->type->elements_count > 0) {
+        /*
+         * Confirm wrapper.
+         */
+        for(;;) {
+            ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
+            if(ch_size < 0) {
+                ASN__DECODE_FAILED;
+            } else {
+                switch(ch_type) {
+                case PJER_WMORE:
+                    ASN__DECODE_STARVED;
+                case PJER_TEXT:
+                case PJER_DLM:
+                    ADVANCE(ch_size);
+                    continue;
+                case PJER_KEY:
+                default:
+                    break;
+                }
                 break;
             }
-            break;
+
         }
 
-    }
-
-    /*
-     * Wrapper value confirmed.
-     */
-    switch(jer_check_sym(ptr, ch_size, NULL)) {
-    case JCK_UNKNOWN:
-        ADVANCE(ch_size);
-        break;
-    case JCK_BROKEN:
-    default:
-        ASN__DECODE_FAILED;
-    }
+        /*
+         * Wrapper value confirmed.
+         */
+        switch(jer_check_sym(ptr, ch_size, NULL)) {
+        case JCK_UNKNOWN:
+            ADVANCE(ch_size);
+            break;
+        case JCK_BROKEN:
+        default:
+            ASN__DECODE_FAILED;
+        }
 
 
-    /* Skip colon */
-    ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-    if(ch_size < 0 || ch_type != PJER_TEXT)  {
-        ASN__DECODE_FAILED;
-    } else {
-        ADVANCE(ch_size);
+        /* Skip colon */
+        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
+        if(ch_size < 0 || ch_type != PJER_TEXT)  {
+            ASN__DECODE_FAILED;
+        } else {
+            ADVANCE(ch_size);
+        }
     }
 
     /* Compute inner_value based on CHOICE wrapper mode or direct type mode */
