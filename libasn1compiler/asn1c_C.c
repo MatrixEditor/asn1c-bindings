@@ -64,6 +64,7 @@ static int asn1c_recurse(arg_t *arg, asn1p_expr_t *expr, int (*callback)(arg_t *
 static asn1p_expr_type_e expr_get_type(arg_t *arg, asn1p_expr_t *expr);
 static int try_inline_default(arg_t *arg, asn1p_expr_t *expr, int out);
 static int *compute_canonical_members_order(arg_t *arg, int el_count);
+static int identifier_collides_with_ancestor(asn1p_expr_t *expr);
 
 /* Forward typedef generation for deeply nested SEQUENCE OF members */
 static int generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int target_embed);
@@ -3977,6 +3978,32 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 }
 
 /*
+ * Check if an expression's identifier collides with any of its ancestors' identifiers.
+ * This is used to determine if we should skip generating a weak alias to avoid
+ * name collisions when multiple nested structures use the same identifier name.
+ */
+static int
+identifier_collides_with_ancestor(asn1p_expr_t *expr) {
+	asn1p_expr_t *ancestor;
+	
+	if(!expr || !expr->Identifier) {
+		return 0;
+	}
+	
+	/* Walk up the parent chain looking for matching identifiers */
+	ancestor = expr->parent_expr;
+	while(ancestor) {
+		if(ancestor->Identifier && 
+		   strcmp(expr->Identifier, ancestor->Identifier) == 0) {
+			return 1;  /* Collision detected */
+		}
+		ancestor = ancestor->parent_expr;
+	}
+	
+	return 0;  /* No collision */
+}
+
+/*
  * Generate "asn_DEF_XXX" type definition.
  */
 static int
@@ -4240,8 +4267,12 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 	 * that aliases the concrete symbol we just defined in this TU
 	 * (asn_DEF_<UserType>_<index>) when inner defs are hidden.
 	 * Only for named (non-anonymous) types.
+	 * 
+	 * Skip generating the weak alias if the identifier collides with an ancestor's
+	 * identifier, as this would create multiple weak aliases to the same name,
+	 * causing runtime issues where the wrong type descriptor is selected.
 	 */
-	if(!expr->_anonymous_type && HIDE_INNER_DEFS) {
+	if(!expr->_anonymous_type && HIDE_INNER_DEFS && !identifier_collides_with_ancestor(expr)) {
 		int saved_target2 = arg->target->target;
 		REDIR(OT_CODE);
 
