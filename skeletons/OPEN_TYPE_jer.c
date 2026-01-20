@@ -100,8 +100,13 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /*
-     * For CHOICE wrapper mode, we need to skip past the CHOICE key and colon.
-     * For direct type mode, we skip this since there's no wrapper.
+     * For CHOICE wrapper mode (elm->type->elements_count > 0), we need to
+     * skip past the CHOICE key and colon in the JSON.
+     * For direct type mode (elm->type->elements_count == 0), we skip this
+     * since there's no wrapper - the value is encoded directly.
+     *
+     * Example CHOICE wrapper: {"choiceName": value}
+     * Example direct type: value (no wrapper)
      */
     if(elm->type->elements_count > 0) {
         /*
