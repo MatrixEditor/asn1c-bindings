@@ -103,20 +103,24 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
      * Per ITU-T X.697 Clause 41: "The encoding of an open type value shall be
      * the encoding of the value of the contained type."
      * 
-     * For OPEN TYPE, the encoder does NOT add a CHOICE wrapper key, even if
-     * elm->type is internally structured as a CHOICE (elements_count > 0).
+     * For OPEN TYPE, the encoder does NOT add a CHOICE wrapper key in the JSON,
+     * even if elm->type is internally structured as a CHOICE (elements_count > 0).
      * The value is encoded directly as per the selected type.
      *
      * Therefore, the decoder should NOT try to parse a CHOICE key wrapper.
      * We proceed directly to decoding the value using the selected type descriptor.
      */
 
-    /* Compute inner_value based on CHOICE wrapper mode or direct type mode */
+    /*
+     * Compute inner_value pointer based on internal structure.
+     * Note: This handles the internal ASN.1 CHOICE structure representation,
+     * NOT JSON format (which has no CHOICE wrapper for OPEN TYPE).
+     */
     unsigned int memb_offset = 0;
     const asn_TYPE_member_t *variant_elm = NULL;
     
     if(elm->type->elements_count > 0) {
-        /* CHOICE wrapper mode: get variant element info */
+        /* Internal CHOICE structure mode: get variant element info */
         if(elm->type->elements && selected.presence_index > 0 
            && selected.presence_index <= elm->type->elements_count) {
             variant_elm = &elm->type->elements[selected.presence_index - 1];
@@ -159,11 +163,11 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
             if(CHOICE_variant_set_presence(elm->type, *memb_ptr2,
                                            selected.presence_index)
                == 0) {
-                /* CHOICE wrapper mode: for pointer variants, copy decoded pointer back to field */
+                /* Internal CHOICE structure: for pointer variants, copy decoded pointer back to field */
                 if(variant_elm && (variant_elm->flags & ATF_POINTER)) {
                     /*
                      * The decoder allocated a structure and stored pointer in inner_value.
-                     * Copy it back to the actual field in the CHOICE structure.
+                     * Copy it back to the actual field in the internal CHOICE structure.
                      */
                     void **variant_ptr = (void **)((char *)*memb_ptr2 + memb_offset);
                     *variant_ptr = inner_value;
