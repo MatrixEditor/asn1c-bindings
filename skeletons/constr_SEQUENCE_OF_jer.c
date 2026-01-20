@@ -41,6 +41,11 @@ SEQUENCE_OF_encode_jer(const asn_TYPE_descriptor_t *td, const asn_jer_constraint
             return tmper;
         }
         er.encoded += tmper.encoded;
+        /* Note: as_XMLValueList is for XER encoding, not JER.
+         * For JER (JSON), we should never add XML tag names to arrays.
+         * This check is kept for backwards compatibility with XER but should
+         * not affect JER since as_XMLValueList should not be set for JER.
+         */
         if(tmper.encoded == 0 && specs->as_XMLValueList) {
             const char *name = elm->type->xml_tag;
             size_t len = strlen(name);
