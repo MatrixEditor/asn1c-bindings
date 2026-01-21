@@ -123,6 +123,34 @@ int main() {
         goto cleanup;
     }
     
+    /* Test round-trip decode to ensure decoder can handle encoder output */
+    {
+        TestFrame_t *decoded_frame = NULL;
+        asn_dec_rval_t rval;
+        
+        rval = jer_decode(NULL, &asn_DEF_TestFrame, (void **)&decoded_frame, output, strlen(output));
+        
+        if(rval.code != RC_OK) {
+            fprintf(stderr, "FAIL: Failed to decode JER that we just encoded\n");
+            fprintf(stderr, "This indicates OPEN TYPE decoder doesn't handle encoder output\n");
+            fprintf(stderr, "Decode result: %d, consumed: %zu\n", rval.code, rval.consumed);
+            fprintf(stderr, "Output was: %s\n", output);
+            result = 1;
+            if(decoded_frame) ASN_STRUCT_FREE(asn_DEF_TestFrame, decoded_frame);
+            goto cleanup;
+        }
+        
+        /* Verify decoded data matches original */
+        if(decoded_frame->msgId != 42) {
+            fprintf(stderr, "FAIL: Decoded msgId doesn't match (got %ld, expected 42)\n", decoded_frame->msgId);
+            result = 1;
+            ASN_STRUCT_FREE(asn_DEF_TestFrame, decoded_frame);
+            goto cleanup;
+        }
+        
+        ASN_STRUCT_FREE(asn_DEF_TestFrame, decoded_frame);
+    }
+    
 cleanup:
     if(output) free(output);
     if(frame) ASN_STRUCT_FREE(asn_DEF_TestFrame, frame);
@@ -148,7 +176,7 @@ ${CC:-cc} -DASN_PDU_COLLECTION -I. -o test_program test_program.c libasncodec.a 
     exit 1
 }
 
-echo "JER Open Type test passed"
+echo "JER Open Type test passed (including round-trip decode)"
 cd ..
 rm -rf "${WORKDIR}"
 exit 0

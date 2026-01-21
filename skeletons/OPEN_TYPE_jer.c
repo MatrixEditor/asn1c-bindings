@@ -19,10 +19,6 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     void *inner_value;
     asn_dec_rval_t rv;
 
-    int jer_context = 0;
-    ssize_t ch_size;
-    pjer_chunk_type_e ch_type;
-
     if(!(elm->flags & ATF_OPEN_TYPE)) {
         ASN__DECODE_FAILED;
     }
@@ -100,56 +96,27 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /*
-     * Confirm wrapper.
+     * Per ITU-T X.697 Clause 41: "The encoding of an open type value shall be
+     * the encoding of the value of the contained type."
+     * 
+     * For OPEN TYPE, the encoder does NOT add a CHOICE wrapper key in the JSON,
+     * even if elm->type is internally structured as a CHOICE (elements_count > 0).
+     * The value is encoded directly as per the selected type.
+     *
+     * Therefore, the decoder should NOT try to parse a CHOICE key wrapper.
+     * We proceed directly to decoding the value using the selected type descriptor.
      */
-    for(;;) {
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if(ch_size < 0) {
-            ASN__DECODE_FAILED;
-        } else {
-            switch(ch_type) {
-            case PJER_WMORE:
-                ASN__DECODE_STARVED;
-            case PJER_TEXT:
-            case PJER_DLM:
-                ADVANCE(ch_size);
-                continue;
-            case PJER_KEY:
-            default:
-                break;
-            }
-            break;
-        }
-
-    }
 
     /*
-     * Wrapper value confirmed.
+     * Compute inner_value pointer based on internal structure.
+     * Note: This handles the internal ASN.1 CHOICE structure representation,
+     * NOT JSON format (which has no CHOICE wrapper for OPEN TYPE).
      */
-    switch(jer_check_sym(ptr, ch_size, NULL)) {
-    case JCK_UNKNOWN:
-        ADVANCE(ch_size);
-        break;
-    case JCK_BROKEN:
-    default:
-        ASN__DECODE_FAILED;
-    }
-
-
-    /* Skip colon */
-    ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-    if(ch_size < 0 || ch_type != PJER_TEXT)  {
-        ASN__DECODE_FAILED;
-    } else {
-        ADVANCE(ch_size);
-    }
-
-    /* Compute inner_value based on CHOICE wrapper mode or direct type mode */
     unsigned int memb_offset = 0;
     const asn_TYPE_member_t *variant_elm = NULL;
     
     if(elm->type->elements_count > 0) {
-        /* CHOICE wrapper mode: get variant element info */
+        /* Internal CHOICE structure mode: get variant element info */
         if(elm->type->elements && selected.presence_index > 0 
            && selected.presence_index <= elm->type->elements_count) {
             variant_elm = &elm->type->elements[selected.presence_index - 1];
@@ -192,11 +159,11 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
             if(CHOICE_variant_set_presence(elm->type, *memb_ptr2,
                                            selected.presence_index)
                == 0) {
-                /* CHOICE wrapper mode: for pointer variants, copy decoded pointer back to field */
+                /* Internal CHOICE structure: for pointer variants, copy decoded pointer back to field */
                 if(variant_elm && (variant_elm->flags & ATF_POINTER)) {
                     /*
                      * The decoder allocated a structure and stored pointer in inner_value.
-                     * Copy it back to the actual field in the CHOICE structure.
+                     * Copy it back to the actual field in the internal CHOICE structure.
                      */
                     void **variant_ptr = (void **)((char *)*memb_ptr2 + memb_offset);
                     *variant_ptr = inner_value;
@@ -235,41 +202,6 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
             }
         }
         return rv;
-    }
-
-
-    /*
-     * Finalize wrapper.
-     */
-    for(;;) {
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if(ch_size < 0) {
-            ASN__DECODE_FAILED;
-        } else {
-            switch(ch_type) {
-            case PJER_WMORE:
-                ASN__DECODE_STARVED;
-            case PJER_TEXT:
-                ADVANCE(ch_size);
-                continue;
-            default:
-                break;
-            }
-            break;
-        }
-    }
-
-    /*
-     * Wrapper value confirmed.
-     */
-    switch(jer_check_sym(ptr, ch_size, NULL)) {
-    case JCK_KEY:
-    case JCK_OEND:
-        ADVANCE(ch_size);
-        break;
-    case JCK_BROKEN:
-    default:
-        ASN__DECODE_FAILED;
     }
 
     rv.consumed += consumed_myself;
