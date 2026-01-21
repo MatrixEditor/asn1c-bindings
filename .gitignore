@@ -81,6 +81,12 @@ stamp-h*
 # /tests/tests-randomized
 /tests/tests-randomized/test-param-helper
 
+# /tests/f1ap-regression
+/tests/f1ap-regression/Makefile.am.asn1convert
+/tests/f1ap-regression/libasncodec.a
+/tests/f1ap-regression/test-jer-opentype.jer
+/tests/f1ap-regression/test-output.txt
+
 # /doc/docsrc
 doc/docsrc/*.aux
 doc/docsrc/*.dvi
