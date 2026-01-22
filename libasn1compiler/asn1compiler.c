@@ -16,7 +16,7 @@ static void asn1c_mark_ioc_table_dependencies(arg_t *arg, asn1p_ioc_table_t *ioc
 
 int
 asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_flags flags,
-		int argc, int optc, char **argv) {
+		int argc, int optc, char **argv, int complex_threshold) {
 	arg_t arg_s = {0};
 	arg_t *arg = &arg_s;
 	asn1p_module_t *mod;
@@ -35,6 +35,7 @@ asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_
 	arg->logger_cb = default_logger_cb;
 	arg->flags = flags;
 	arg->asn = asn;
+	arg->complex_threshold = complex_threshold;
 
 	/*
 	 * If -flist-deps is specified, list dependencies and exit
