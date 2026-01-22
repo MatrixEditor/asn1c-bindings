@@ -1450,7 +1450,7 @@ asn_TYPE_member_t asn_MBR_SetOfEnums_1[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member_2,
+		.type = &asn_DEF_Member,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1755,7 +1755,7 @@ asn_TYPE_member_t asn_MBR_NamedSetOfEnums_1[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_name_2,
+		.type = &asn_DEF_name,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -2493,7 +2493,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

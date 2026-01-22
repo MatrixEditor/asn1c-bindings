@@ -1,5 +1,14 @@
 1.3.2:
 	FIXES:
+	* Fixed incorrect type descriptor selection when the same member name appears
+	  in different parent types with different type definitions. When embedded types
+	  like ssb-PositionsInBurst appeared as CHOICE in one parent and SEQUENCE in 
+	  another, the decoder would incorrectly use the wrong type descriptor due to
+	  unsuffixed alias collisions at runtime. The fix ensures member table references
+	  always use suffixed type descriptors for embedded constructed types, avoiding
+	  ambiguity. Affects 3GPP RRC and similar specifications with duplicate member
+	  names across different parent structures.
+	  (Severity: high; Security impact: none)
 	* Fixed JER OPEN TYPE decoder to comply with ITU-T X.697 Clause 41. The decoder
 	  was incorrectly attempting to parse CHOICE-style key wrappers and consuming
 	  parent SEQUENCE delimiters, causing "Unexpected JSON key" and "Out of defined

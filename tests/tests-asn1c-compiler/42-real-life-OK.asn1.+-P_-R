@@ -161,7 +161,7 @@ static asn_TYPE_member_t asn_MBR_LogLine_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct LogLine, varsets),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_varsets,
+		.type = &asn_DEF_varsets_3,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -360,7 +360,7 @@ asn_TYPE_member_t asn_MBR_VariablePartSet_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct VariablePartSet, vparts),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_vparts,
+		.type = &asn_DEF_vparts_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -697,7 +697,7 @@ asn_TYPE_member_t asn_MBR_VariablePart_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct VariablePart, choice.vset),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (17 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_vset,
+		.type = &asn_DEF_vset_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -717,7 +717,7 @@ asn_TYPE_member_t asn_MBR_VariablePart_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct VariablePart, choice.vrange),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_vrange,
+		.type = &asn_DEF_vrange_4,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1105,7 +1105,7 @@ asn_TYPE_member_t asn_MBR_ActionItem_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct ActionItem, notify),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_notify,
+		.type = &asn_DEF_notify_7,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1395,7 +1395,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

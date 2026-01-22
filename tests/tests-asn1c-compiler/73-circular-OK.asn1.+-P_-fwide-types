@@ -111,7 +111,7 @@ asn_TYPE_member_t asn_MBR_Type_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Type, data),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_data,
+		.type = &asn_DEF_data_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -346,7 +346,7 @@ asn_TYPE_member_t asn_MBR_Epyt_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Epyt, stype),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (17 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_stype,
+		.type = &asn_DEF_stype_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -727,7 +727,7 @@ asn_TYPE_member_t asn_MBR_Ypet_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Ypet, senums),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (17 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_senums,
+		.type = &asn_DEF_senums_4,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1149,7 +1149,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

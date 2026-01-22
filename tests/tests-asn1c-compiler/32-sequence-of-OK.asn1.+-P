@@ -367,7 +367,7 @@ static asn_TYPE_member_t asn_MBR_SeqWithMandatory_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct SeqWithMandatory, seqOfMan),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_seqOfMan,
+		.type = &asn_DEF_seqOfMan_3,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -561,7 +561,7 @@ static asn_TYPE_member_t asn_MBR_SeqWithOptional_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct SeqWithOptional, seqOfOpt),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_seqOfOpt,
+		.type = &asn_DEF_seqOfOpt_3,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -851,7 +851,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

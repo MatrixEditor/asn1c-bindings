@@ -191,7 +191,7 @@ asn_TYPE_member_t asn_MBR_Test_structure_1_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Test_structure_1, t_member1),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (17 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_t_member1,
+		.type = &asn_DEF_t_member1_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -211,7 +211,7 @@ asn_TYPE_member_t asn_MBR_Test_structure_1_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Test_structure_1, t_member2),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_t_member2,
+		.type = &asn_DEF_t_member2_4,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -464,7 +464,7 @@ asn_TYPE_member_t asn_MBR_Choice_1_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Choice_1, choice.Or),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_or,
+		.type = &asn_DEF_or_3,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1019,7 +1019,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

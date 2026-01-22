@@ -777,7 +777,7 @@ asn_TYPE_member_t asn_MBR_Choice3_1[] = {
 	{ ATF_POINTER, 0, offsetof(struct Choice3, choice.a),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_a,
+		.type = &asn_DEF_a_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -817,7 +817,7 @@ asn_TYPE_member_t asn_MBR_Choice3_1[] = {
 	{ ATF_POINTER, 0, offsetof(struct Choice3, choice.c),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_c,
+		.type = &asn_DEF_c_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1079,7 +1079,7 @@ asn_TYPE_member_t asn_MBR_Set_1[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member_2,
+		.type = &asn_DEF_Member,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1496,7 +1496,7 @@ asn_TYPE_member_t asn_MBR_Alpha_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Alpha, b),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_b,
+		.type = &asn_DEF_b_3,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -2408,7 +2408,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

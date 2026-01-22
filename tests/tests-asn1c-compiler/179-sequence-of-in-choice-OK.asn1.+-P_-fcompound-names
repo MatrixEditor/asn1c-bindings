@@ -293,7 +293,7 @@ static asn_TYPE_member_t asn_MBR_TestMessage__content__type2Bit_3[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member_4,
+		.type = &asn_DEF_Member,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -437,7 +437,7 @@ static asn_TYPE_member_t asn_MBR_TestMessage__content__type4Bit_7[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member_8,
+		.type = &asn_DEF_Member,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -578,7 +578,7 @@ static asn_TYPE_member_t asn_MBR_TestMessage_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct TestMessage, content),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
-		.type = &asn_DEF_content,
+		.type = &asn_DEF_content_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -916,7 +916,7 @@ static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch1__items_4[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member_5,
+		.type = &asn_DEF_Member,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1125,7 +1125,7 @@ static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch2__items_9[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member_10,
+		.type = &asn_DEF_Member,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1331,7 +1331,7 @@ static asn_TYPE_member_t asn_MBR_DeepNesting_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DeepNesting, nested),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
-		.type = &asn_DEF_nested,
+		.type = &asn_DEF_nested_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -1620,7 +1620,7 @@ static asn_TYPE_member_t asn_MBR_EXTERNAL_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL, encoding),
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
-		.type = &asn_DEF_encoding,
+		.type = &asn_DEF_encoding_5,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
