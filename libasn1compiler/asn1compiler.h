@@ -144,7 +144,7 @@ enum asn1c_flags {
  * Compile the ASN.1 specification.
  */
 int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_flags,
-	int argc, int optc, char **argv);
+	int argc, int optc, char **argv, int complex_threshold);
 
 void asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags,
                              char **asn_type_names);
