@@ -49,7 +49,7 @@ __attribute__((constructor)) static void asn_DEF_data_2_alias_init(void) {
 
 /*** <<< STAT-DEFS [Type] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_data_2[] = {
+static asn_TYPE_member_t asn_MBR_Type__data_2[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -102,7 +102,7 @@ asn_TYPE_descriptor_t asn_DEF_data_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
-	asn_MBR_data_2,
+	asn_MBR_Type__data_2,
 	1,	/* Single element */
 	&asn_SPC_data_specs_2	/* Additional specs */
 };
@@ -284,7 +284,7 @@ __attribute__((constructor)) static void asn_DEF_stype_2_alias_init(void) {
 
 /*** <<< STAT-DEFS [Epyt] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_stype_2[] = {
+static asn_TYPE_member_t asn_MBR_Epyt__stype_2[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -337,7 +337,7 @@ asn_TYPE_descriptor_t asn_DEF_stype_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SET_OF_constraint
 	},
-	asn_MBR_stype_2,
+	asn_MBR_Epyt__stype_2,
 	1,	/* Single element */
 	&asn_SPC_stype_specs_2	/* Additional specs */
 };
@@ -624,7 +624,7 @@ static int asn_DFL_3_set_7(void **sptr) {
 	/* Install default value 7 */
 	return asn_long2INTEGER(st, 7);
 }
-static asn_TYPE_member_t asn_MBR_senums_4[] = {
+static asn_TYPE_member_t asn_MBR_Ypet__senums_4[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		.tag_mode = 0,
@@ -677,7 +677,7 @@ asn_TYPE_descriptor_t asn_DEF_senums_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SET_OF_constraint
 	},
-	asn_MBR_senums_4,
+	asn_MBR_Ypet__senums_4,
 	1,	/* Single element */
 	&asn_SPC_senums_specs_4	/* Additional specs */
 };
@@ -982,7 +982,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -1080,7 +1080,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

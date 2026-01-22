@@ -530,7 +530,7 @@ asn1c_lang_C_type_SEQUENCE_def(arg_t *arg, asn1c_ioc_table_and_objset_t *opt_ioc
 
 		if(!(expr->_type_referenced)) OUT("static ");
 		OUT("asn_TYPE_member_t asn_MBR_%s_%d[] = {\n",
-			c_name(arg).part_name, expr->_type_unique_index);
+			c_name(arg).compound_name, expr->_type_unique_index);
 
 		elements = 0;
 		roms_count = 0;
@@ -779,7 +779,7 @@ asn1c_lang_C_type_SET_def(arg_t *arg) {
 
 		if(!(expr->_type_referenced)) OUT("static ");
 		OUT("asn_TYPE_member_t asn_MBR_%s_%d[] = {\n",
-			c_name(arg).part_name, expr->_type_unique_index);
+			c_name(arg).compound_name, expr->_type_unique_index);
 
 		elements = 0;
 		INDENTED(TQ_FOR(v, &(expr->members), next) {
@@ -1147,7 +1147,7 @@ asn1c_lang_C_type_SEx_OF_def(arg_t *arg, int seq_of) {
 	 */
 	if(!(expr->_type_referenced)) OUT("static ");
 	OUT("asn_TYPE_member_t asn_MBR_%s_%d[] = {\n",
-	    c_name(arg).part_name, expr->_type_unique_index);
+	    c_name(arg).compound_name, expr->_type_unique_index);
 	INDENT(+1);
 	v = TQ_FIRST(&(expr->members));
 	if(!v->Identifier) {
@@ -1446,7 +1446,7 @@ asn1c_lang_C_type_CHOICE_def(arg_t *arg) {
 
 		if(!(expr->_type_referenced)) OUT("static ");
 		OUT("asn_TYPE_member_t asn_MBR_%s_%d[] = {\n",
-			c_name(arg).part_name, expr->_type_unique_index);
+			c_name(arg).compound_name, expr->_type_unique_index);
 
 		elements = 0;
 		INDENTED(TQ_FOR(v, &(expr->members), next) {
@@ -4205,7 +4205,7 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 			            expr_elements_count(arg, terminal));
 		        }
 	        } else {
-		        OUT("asn_MBR_%s_%d,\n", c_name(arg).part_name,
+		        OUT("asn_MBR_%s_%d,\n", c_name(arg).compound_name,
 		            expr->_type_unique_index);
 
 		        if(expr->expr_type == ASN_CONSTR_SEQUENCE_OF

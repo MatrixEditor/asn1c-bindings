@@ -625,7 +625,7 @@ memb_value_constraint_5(const asn_TYPE_descriptor_t *td, const void *sptr,
 
 /*** <<< STAT-DEFS [ProtocolIE-Field] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_value_4[] = {
+static asn_TYPE_member_t asn_MBR_SampleIEs__value_4[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct SampleIEs__value, choice.INTEGER),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
@@ -681,7 +681,7 @@ asn_TYPE_descriptor_t asn_DEF_value_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		OPEN_TYPE_constraint
 	},
-	asn_MBR_value_4,
+	asn_MBR_SampleIEs__value_4,
 	1,	/* Elements count */
 	&asn_SPC_value_specs_4	/* Additional specs */
 };
@@ -791,7 +791,7 @@ asn_TYPE_descriptor_t asn_DEF_SampleIEs = {
 	&asn_SPC_SampleIEs_specs_1	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_value_8[] = {
+static asn_TYPE_member_t asn_MBR_AnotherIEs__value_8[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct AnotherIEs__value, choice.BOOLEAN),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (1 << 2)),
 		.tag_mode = 0,
@@ -847,7 +847,7 @@ asn_TYPE_descriptor_t asn_DEF_value_8 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		OPEN_TYPE_constraint
 	},
-	asn_MBR_value_8,
+	asn_MBR_AnotherIEs__value_8,
 	1,	/* Elements count */
 	&asn_SPC_value_specs_8	/* Additional specs */
 };
@@ -1552,7 +1552,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL__encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -1650,7 +1650,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

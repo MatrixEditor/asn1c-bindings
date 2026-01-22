@@ -649,7 +649,7 @@ __attribute__((constructor)) static void asn_DEF_c_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [Choice3] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_a_2[] = {
+static asn_TYPE_member_t asn_MBR_Choice3__a_2[] = {
 	{ ATF_POINTER, 0, offsetof(struct a, aa),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -709,12 +709,12 @@ asn_TYPE_descriptor_t asn_DEF_a_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_a_2,
+	asn_MBR_Choice3__a_2,
 	1,	/* Elements count */
 	&asn_SPC_a_specs_2	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_c_5[] = {
+static asn_TYPE_member_t asn_MBR_Choice3__c_5[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = -1 /* Ambiguous tag (CHOICE?) */,
 		.tag_mode = 0,
@@ -768,7 +768,7 @@ asn_TYPE_descriptor_t asn_DEF_c_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
-	asn_MBR_c_5,
+	asn_MBR_Choice3__c_5,
 	1,	/* Single element */
 	&asn_SPC_c_specs_5	/* Additional specs */
 };
@@ -927,7 +927,7 @@ extern asn_TYPE_member_t asn_MBR_Set_1[1];
 
 /*** <<< STAT-DEFS [Set] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_Member_2[] = {
+static asn_TYPE_member_t asn_MBR_Set__Member_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Member, Int),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -1070,7 +1070,7 @@ asn_TYPE_descriptor_t asn_DEF_Member_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_Member_2,
+	asn_MBR_Set__Member_2,
 	5,	/* Elements count */
 	&asn_SPC_Member_specs_2	/* Additional specs */
 };
@@ -1407,7 +1407,7 @@ __attribute__((constructor)) static void asn_DEF_b_3_alias_init(void) {
 
 /*** <<< STAT-DEFS [Alpha] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_b_3[] = {
+static asn_TYPE_member_t asn_MBR_Alpha__b_3[] = {
 	{ ATF_POINTER, 1, offsetof(struct b, b),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -1467,7 +1467,7 @@ asn_TYPE_descriptor_t asn_DEF_b_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_b_3,
+	asn_MBR_Alpha__b_3,
 	1,	/* Elements count */
 	&asn_SPC_b_specs_3	/* Additional specs */
 };
@@ -2241,7 +2241,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -2339,7 +2339,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };
