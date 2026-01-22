@@ -141,7 +141,7 @@ static asn_TYPE_member_t asn_MBR_SeqWithNestedSOS__sos__Member__nested_sos_6[] =
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member,
+		.type = &asn_DEF_Member_7,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -285,7 +285,7 @@ static asn_TYPE_member_t asn_MBR_SeqWithNestedSOS__sos_3[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_Member,
+		.type = &asn_DEF_Member_4,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

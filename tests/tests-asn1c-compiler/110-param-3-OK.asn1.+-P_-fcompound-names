@@ -238,7 +238,7 @@ asn_TYPE_member_t asn_MBR_Flag_15P1_6[] = {
 	{ ATF_POINTER, 1, offsetof(struct Flag_15P1, field),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_field,
+		.type = &asn_DEF_field_7,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

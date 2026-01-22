@@ -279,7 +279,7 @@ static asn_TYPE_member_t asn_MBR_CodebookConfig_r18__codebookType__type2__typeII
 	{ ATF_NOFLAGS, 0, offsetof(struct CodebookConfig_r18__codebookType__type2__typeII_CJT_r18, restrictedCMR_Selection_r18),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
-		.type = &asn_DEF_restrictedCMR_Selection_r18,
+		.type = &asn_DEF_restrictedCMR_Selection_r18_6,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -423,7 +423,7 @@ static asn_TYPE_member_t asn_MBR_CodebookConfig_r18__codebookType__type2__typeII
 	{ ATF_NOFLAGS, 0, offsetof(struct CodebookConfig_r18__codebookType__type2__typeII_CJT_PortSelection_r18, restrictedCMR_Selection_r18),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
-		.type = &asn_DEF_restrictedCMR_Selection_r18,
+		.type = &asn_DEF_restrictedCMR_Selection_r18_10,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

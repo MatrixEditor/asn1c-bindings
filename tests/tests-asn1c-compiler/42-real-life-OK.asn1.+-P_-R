@@ -1085,7 +1085,7 @@ asn_TYPE_member_t asn_MBR_ActionItem_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct ActionItem, accept_as),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		.tag_mode = 0,
-		.type = &asn_DEF_accept_as,
+		.type = &asn_DEF_accept_as_2,
 		.type_selector = 0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

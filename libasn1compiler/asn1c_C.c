@@ -3844,10 +3844,9 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 		/* 
 		 * Use suffix when:
 		 * - It's an open type (always embedded with suffix)
-		 * - Member is embedded (has parent_expr) and not anonymous, as embedded
-		 *   types use static storage and need unique suffixes to avoid runtime
-		 *   ambiguity when same member name appears in different parents with
-		 *   different type definitions  
+		 * - Member is embedded (has parent_expr), as embedded types use static 
+		 *   storage and get suffixes to avoid runtime ambiguity when same member 
+		 *   name appears in different parents with different type definitions
 		 * - Global defs flag is set (all types get suffixes)
 		 * 
 		 * Note: We check expr->parent_expr instead of HIDE_INNER_DEFS because
@@ -3856,7 +3855,7 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 		 * was generated with static storage.
 		 */
 		if(is_open_type(arg, expr, opt_ioc) || (arg->flags & A1C_ALL_DEFS_GLOBAL) ||
-		   (expr->parent_expr && !expr->_anonymous_type && (expr->expr_type & ASN_CONSTR_MASK))) {
+		   (expr->parent_expr && ((expr->expr_type & ASN_CONSTR_MASK) || expr->expr_type == ASN_BASIC_ENUMERATED))) {
 			OUT("_%d", expr->_type_unique_index);
 		}
 		OUT(",\n");
