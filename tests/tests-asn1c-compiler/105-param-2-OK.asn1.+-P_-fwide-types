@@ -128,7 +128,7 @@ asn_TYPE_descriptor_t asn_DEF_SIGNED_16P0 = {
 	&asn_SPC_SIGNED_16P0_specs_1	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_signed_4[] = {
+static asn_TYPE_member_t asn_MBR_SIGNED_16P1__signed_4[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Signed, a),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
@@ -194,7 +194,7 @@ asn_TYPE_descriptor_t asn_DEF_signed_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SET_constraint
 	},
-	asn_MBR_signed_4,
+	asn_MBR_SIGNED_16P1__signed_4,
 	1,	/* Elements count */
 	&asn_SPC_signed_specs_4	/* Additional specs */
 };
@@ -443,7 +443,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -541,7 +541,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

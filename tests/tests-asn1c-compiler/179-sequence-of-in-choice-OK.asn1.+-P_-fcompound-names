@@ -204,7 +204,7 @@ __attribute__((constructor)) static void asn_DEF_content_2_alias_init(void) {
 
 /*** <<< STAT-DEFS [TestMessage] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_Member_4[] = {
+static asn_TYPE_member_t asn_MBR_TestMessage__content__type2Bit__Member_4[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct TestMessage__content__type2Bit__Member, value),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -284,12 +284,12 @@ asn_TYPE_descriptor_t asn_DEF_Member_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_Member_4,
+	asn_MBR_TestMessage__content__type2Bit__Member_4,
 	2,	/* Elements count */
 	&asn_SPC_Member_specs_4	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_type2Bit_3[] = {
+static asn_TYPE_member_t asn_MBR_TestMessage__content__type2Bit_3[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -343,12 +343,12 @@ asn_TYPE_descriptor_t asn_DEF_type2Bit_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
-	asn_MBR_type2Bit_3,
+	asn_MBR_TestMessage__content__type2Bit_3,
 	1,	/* Single element */
 	&asn_SPC_type2Bit_specs_3	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_Member_8[] = {
+static asn_TYPE_member_t asn_MBR_TestMessage__content__type4Bit__Member_8[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct TestMessage__content__type4Bit__Member, value),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -428,12 +428,12 @@ asn_TYPE_descriptor_t asn_DEF_Member_8 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_Member_8,
+	asn_MBR_TestMessage__content__type4Bit__Member_8,
 	2,	/* Elements count */
 	&asn_SPC_Member_specs_8	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_type4Bit_7[] = {
+static asn_TYPE_member_t asn_MBR_TestMessage__content__type4Bit_7[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -487,12 +487,12 @@ asn_TYPE_descriptor_t asn_DEF_type4Bit_7 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
-	asn_MBR_type4Bit_7,
+	asn_MBR_TestMessage__content__type4Bit_7,
 	1,	/* Single element */
 	&asn_SPC_type4Bit_specs_7	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_content_2[] = {
+static asn_TYPE_member_t asn_MBR_TestMessage__content_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct TestMessage__content, choice.type2Bit),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
@@ -569,7 +569,7 @@ asn_TYPE_descriptor_t asn_DEF_content_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_content_2,
+	asn_MBR_TestMessage__content_2,
 	2,	/* Elements count */
 	&asn_SPC_content_specs_2	/* Additional specs */
 };
@@ -827,7 +827,7 @@ __attribute__((constructor)) static void asn_DEF_nested_2_alias_init(void) {
 
 /*** <<< STAT-DEFS [DeepNesting] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_Member_5[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch1__items__Member_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DeepNesting__nested__branch1__items__Member, id),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -907,12 +907,12 @@ asn_TYPE_descriptor_t asn_DEF_Member_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_Member_5,
+	asn_MBR_DeepNesting__nested__branch1__items__Member_5,
 	2,	/* Elements count */
 	&asn_SPC_Member_specs_5	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_items_4[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch1__items_4[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -966,12 +966,12 @@ asn_TYPE_descriptor_t asn_DEF_items_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
-	asn_MBR_items_4,
+	asn_MBR_DeepNesting__nested__branch1__items_4,
 	1,	/* Single element */
 	&asn_SPC_items_specs_4	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_branch1_3[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch1_3[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DeepNesting__nested__branch1, items),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
@@ -1031,12 +1031,12 @@ asn_TYPE_descriptor_t asn_DEF_branch1_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_branch1_3,
+	asn_MBR_DeepNesting__nested__branch1_3,
 	1,	/* Elements count */
 	&asn_SPC_branch1_specs_3	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_Member_10[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch2__items__Member_10[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DeepNesting__nested__branch2__items__Member, id),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -1116,12 +1116,12 @@ asn_TYPE_descriptor_t asn_DEF_Member_10 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_Member_10,
+	asn_MBR_DeepNesting__nested__branch2__items__Member_10,
 	2,	/* Elements count */
 	&asn_SPC_Member_specs_10	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_items_9[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch2__items_9[] = {
 	{ ATF_POINTER, 0, 0,
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -1175,12 +1175,12 @@ asn_TYPE_descriptor_t asn_DEF_items_9 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
-	asn_MBR_items_9,
+	asn_MBR_DeepNesting__nested__branch2__items_9,
 	1,	/* Single element */
 	&asn_SPC_items_specs_9	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_branch2_8[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested__branch2_8[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DeepNesting__nested__branch2, items),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
@@ -1240,12 +1240,12 @@ asn_TYPE_descriptor_t asn_DEF_branch2_8 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_branch2_8,
+	asn_MBR_DeepNesting__nested__branch2_8,
 	1,	/* Elements count */
 	&asn_SPC_branch2_specs_8	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_nested_2[] = {
+static asn_TYPE_member_t asn_MBR_DeepNesting__nested_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DeepNesting__nested, choice.branch1),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
@@ -1322,7 +1322,7 @@ asn_TYPE_descriptor_t asn_DEF_nested_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_nested_2,
+	asn_MBR_DeepNesting__nested_2,
 	2,	/* Elements count */
 	&asn_SPC_nested_specs_2	/* Additional specs */
 };
@@ -1453,7 +1453,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL__encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -1551,7 +1551,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

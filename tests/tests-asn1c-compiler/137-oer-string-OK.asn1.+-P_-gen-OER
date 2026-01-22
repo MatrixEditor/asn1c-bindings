@@ -198,7 +198,7 @@ static asn_oer_constraints_t asn_OER_memb_con_universal_constr_9 CC_NOTUSED = {
 
 /*** <<< STAT-DEFS [T] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_unconstrained_2[] = {
+static asn_TYPE_member_t asn_MBR_T__unconstrained_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct unconstrained, unc_ia5),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (22 << 2)),
 		.tag_mode = 0,
@@ -299,12 +299,12 @@ asn_TYPE_descriptor_t asn_DEF_unconstrained_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_unconstrained_2,
+	asn_MBR_T__unconstrained_2,
 	3,	/* Elements count */
 	&asn_SPC_unconstrained_specs_2	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_constrained_6[] = {
+static asn_TYPE_member_t asn_MBR_T__constrained_6[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct constrained, con_ia5),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (22 << 2)),
 		.tag_mode = 0,
@@ -405,7 +405,7 @@ asn_TYPE_descriptor_t asn_DEF_constrained_6 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_constrained_6,
+	asn_MBR_T__constrained_6,
 	3,	/* Elements count */
 	&asn_SPC_constrained_specs_6	/* Additional specs */
 };
@@ -565,7 +565,7 @@ static asn_oer_constraints_t asn_OER_type_encoding_constr_5 CC_NOTUSED = {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -663,7 +663,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

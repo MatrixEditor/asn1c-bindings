@@ -103,7 +103,7 @@ __attribute__((constructor)) static void asn_DEF_criticalExtensions_3_alias_init
 
 /*** <<< STAT-DEFS [HandoverCommand] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_r8_4[] = {
+static asn_TYPE_member_t asn_MBR_HandoverCommand__criticalExtensions__r8_4[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct r8, data),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -163,12 +163,12 @@ asn_TYPE_descriptor_t asn_DEF_r8_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_r8_4,
+	asn_MBR_HandoverCommand__criticalExtensions__r8_4,
 	1,	/* Elements count */
 	&asn_SPC_r8_specs_4	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_r11_7[] = {
+static asn_TYPE_member_t asn_MBR_HandoverCommand__criticalExtensions__criticalExtensions__r11_7[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct r11, data2),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = -1,	/* IMPLICIT tag at current level */
@@ -228,7 +228,7 @@ asn_TYPE_descriptor_t asn_DEF_r11_7 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_r11_7,
+	asn_MBR_HandoverCommand__criticalExtensions__criticalExtensions__r11_7,
 	1,	/* Elements count */
 	&asn_SPC_r11_specs_7	/* Additional specs */
 };
@@ -272,7 +272,7 @@ asn_TYPE_descriptor_t asn_DEF_criticalExtensions_9 = {
 	&asn_SPC_criticalExtensions_specs_9	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_criticalExtensions_6[] = {
+static asn_TYPE_member_t asn_MBR_HandoverCommand__criticalExtensions__criticalExtensions_6[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct HandoverCommand__criticalExtensions__criticalExtensions, choice.r11),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
@@ -349,12 +349,12 @@ asn_TYPE_descriptor_t asn_DEF_criticalExtensions_6 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_criticalExtensions_6,
+	asn_MBR_HandoverCommand__criticalExtensions__criticalExtensions_6,
 	2,	/* Elements count */
 	&asn_SPC_criticalExtensions_specs_6	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_criticalExtensions_3[] = {
+static asn_TYPE_member_t asn_MBR_HandoverCommand__criticalExtensions_3[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct criticalExtensions, choice.r8),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = 0,
@@ -431,7 +431,7 @@ asn_TYPE_descriptor_t asn_DEF_criticalExtensions_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_criticalExtensions_3,
+	asn_MBR_HandoverCommand__criticalExtensions_3,
 	2,	/* Elements count */
 	&asn_SPC_criticalExtensions_specs_3	/* Additional specs */
 };
@@ -583,7 +583,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -681,7 +681,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

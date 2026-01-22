@@ -469,7 +469,7 @@ memb_value_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 
 /*** <<< STAT-DEFS [PrivateIE-Field] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_value_4[] = {
+static asn_TYPE_member_t asn_MBR_PrivateMessage_IEs__value_4[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct PrivateMessage_IEs__value, choice.INTEGER),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
@@ -525,7 +525,7 @@ asn_TYPE_descriptor_t asn_DEF_value_4 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		OPEN_TYPE_constraint
 	},
-	asn_MBR_value_4,
+	asn_MBR_PrivateMessage_IEs__value_4,
 	1,	/* Elements count */
 	&asn_SPC_value_specs_4	/* Additional specs */
 };
@@ -877,7 +877,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL__encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -975,7 +975,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

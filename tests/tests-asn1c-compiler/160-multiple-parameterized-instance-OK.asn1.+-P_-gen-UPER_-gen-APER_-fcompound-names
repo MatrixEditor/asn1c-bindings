@@ -712,7 +712,7 @@ static asn_per_constraints_t asn_PER_memb_value_constr_9 CC_NOTUSED = {
 
 /*** <<< STAT-DEFS [SpecializedContent] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_value_3[] = {
+static asn_TYPE_member_t asn_MBR_TotalRegionExtension__value_3[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct TotalRegionExtension__value, choice.INTEGER),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
@@ -876,7 +876,7 @@ asn_TYPE_descriptor_t asn_DEF_value_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		OPEN_TYPE_constraint
 	},
-	asn_MBR_value_3,
+	asn_MBR_TotalRegionExtension__value_3,
 	6,	/* Elements count */
 	&asn_SPC_value_specs_3	/* Additional specs */
 };
@@ -964,7 +964,7 @@ asn_TYPE_descriptor_t asn_DEF_TotalRegionExtension = {
 	&asn_SPC_TotalRegionExtension_specs_1	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_value_6[] = {
+static asn_TYPE_member_t asn_MBR_RegionalExtension3__value_6[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct RegionalExtension3__value, choice.OCTET_STRING),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
 		.tag_mode = 0,
@@ -1041,7 +1041,7 @@ asn_TYPE_descriptor_t asn_DEF_value_6 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		OPEN_TYPE_constraint
 	},
-	asn_MBR_value_6,
+	asn_MBR_RegionalExtension3__value_6,
 	2,	/* Elements count */
 	&asn_SPC_value_specs_6	/* Additional specs */
 };
@@ -1129,7 +1129,7 @@ asn_TYPE_descriptor_t asn_DEF_RegionalExtension3 = {
 	&asn_SPC_RegionalExtension3_specs_4	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_value_9[] = {
+static asn_TYPE_member_t asn_MBR_RegionalExtension4__value_9[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct RegionalExtension4__value, choice.INTEGER),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
@@ -1206,7 +1206,7 @@ asn_TYPE_descriptor_t asn_DEF_value_9 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		OPEN_TYPE_constraint
 	},
-	asn_MBR_value_9,
+	asn_MBR_RegionalExtension4__value_9,
 	2,	/* Elements count */
 	&asn_SPC_value_specs_9	/* Additional specs */
 };
@@ -1367,7 +1367,7 @@ static asn_per_constraints_t asn_PER_type_encoding_constr_5 CC_NOTUSED = {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EXTERNAL__encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -1465,7 +1465,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };

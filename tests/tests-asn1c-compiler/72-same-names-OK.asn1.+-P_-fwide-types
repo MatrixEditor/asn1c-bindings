@@ -32,7 +32,7 @@ extern asn_TYPE_descriptor_t asn_DEF_Type;
 
 /*** <<< STAT-DEFS [Type] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_Member_2[] = {
+static asn_TYPE_member_t asn_MBR_Type__Member_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Member, t1),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -113,7 +113,7 @@ asn_TYPE_descriptor_t asn_DEF_Member_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_Member_2,
+	asn_MBR_Type__Member_2,
 	2,	/* Elements count */
 	&asn_SPC_Member_specs_2	/* Additional specs */
 };
@@ -245,7 +245,7 @@ __attribute__((constructor)) static void asn_DEF_one_name_2_alias_init(void) {
 
 /*** <<< STAT-DEFS [Type1] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_another_name_3[] = {
+static asn_TYPE_member_t asn_MBR_Type1__one_name__another_name_3[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct another_name, a),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		.tag_mode = 0,
@@ -325,12 +325,12 @@ asn_TYPE_descriptor_t asn_DEF_another_name_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_another_name_3,
+	asn_MBR_Type1__one_name__another_name_3,
 	2,	/* Elements count */
 	&asn_SPC_another_name_specs_3	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_one_name_2[] = {
+static asn_TYPE_member_t asn_MBR_Type1__one_name_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct one_name, choice.another_name),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -386,7 +386,7 @@ asn_TYPE_descriptor_t asn_DEF_one_name_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_one_name_2,
+	asn_MBR_Type1__one_name_2,
 	1,	/* Elements count */
 	&asn_SPC_one_name_specs_2	/* Additional specs */
 };
@@ -640,7 +640,7 @@ __attribute__((constructor)) static void asn_DEF_two_name_7_alias_init(void) {
 
 /*** <<< STAT-DEFS [Type2] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_another_name_3[] = {
+static asn_TYPE_member_t asn_MBR_Type2__one_name__another_name_3[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct another_name, a),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)),
 		.tag_mode = 0,
@@ -720,12 +720,12 @@ asn_TYPE_descriptor_t asn_DEF_another_name_3 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_another_name_3,
+	asn_MBR_Type2__one_name__another_name_3,
 	2,	/* Elements count */
 	&asn_SPC_another_name_specs_3	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_one_name_2[] = {
+static asn_TYPE_member_t asn_MBR_Type2__one_name_2[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct one_name, another_name),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -784,12 +784,12 @@ asn_TYPE_descriptor_t asn_DEF_one_name_2 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_one_name_2,
+	asn_MBR_Type2__one_name_2,
 	1,	/* Elements count */
 	&asn_SPC_one_name_specs_2	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_another_name_8[] = {
+static asn_TYPE_member_t asn_MBR_Type2__two_name__another_name_8[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct another_name, a),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)),
 		.tag_mode = 0,
@@ -869,12 +869,12 @@ asn_TYPE_descriptor_t asn_DEF_another_name_8 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
-	asn_MBR_another_name_8,
+	asn_MBR_Type2__two_name__another_name_8,
 	2,	/* Elements count */
 	&asn_SPC_another_name_specs_8	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_two_name_7[] = {
+static asn_TYPE_member_t asn_MBR_Type2__two_name_7[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct two_name, another_name),
 		.tag = (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		.tag_mode = 0,
@@ -940,7 +940,7 @@ asn_TYPE_descriptor_t asn_DEF_two_name_7 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SET_constraint
 	},
-	asn_MBR_two_name_7,
+	asn_MBR_Type2__two_name_7,
 	1,	/* Elements count */
 	&asn_SPC_two_name_specs_7	/* Additional specs */
 };
@@ -1089,7 +1089,7 @@ __attribute__((constructor)) static void asn_DEF_encoding_5_alias_init(void) {
 
 /*** <<< STAT-DEFS [EXTERNAL] >>> ***/
 
-static asn_TYPE_member_t asn_MBR_encoding_5[] = {
+static asn_TYPE_member_t asn_MBR_EXTERNAL__encoding_5[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct encoding, choice.single_ASN1_type),
 		.tag = (ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		.tag_mode = +1,	/* EXPLICIT tag at current level */
@@ -1187,7 +1187,7 @@ asn_TYPE_descriptor_t asn_DEF_encoding_5 = {
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		CHOICE_constraint
 	},
-	asn_MBR_encoding_5,
+	asn_MBR_EXTERNAL__encoding_5,
 	3,	/* Elements count */
 	&asn_SPC_encoding_specs_5	/* Additional specs */
 };
