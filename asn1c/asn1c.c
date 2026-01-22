@@ -84,7 +84,7 @@ is_integer(const char *str, long *out_val) {
 static void usage(const char *av0); /* Print the Usage screen and exit */
 static int importStandardModules(asn1p_t *asn, const char *skeletons_dir);
 
-int complex_threshold = 4;  /* threshold after which complex_level is true (DIRTY HACK) */
+
 
 int
 main(int ac, char **av) {
@@ -105,6 +105,7 @@ main(int ac, char **av) {
     int ch;                         /* Command line character */
     int i;                          /* Index in some loops */
     int exit_code = 0;              /* Exit code */
+    int complex_threshold = 4;      /* Threshold for switching structures to ptrs */
 
     /*
      * Process command-line options.
@@ -492,7 +493,8 @@ main(int ac, char **av) {
      * of another language.
      */
     if(asn1_compile(asn, skeletons_dir, destdir ? destdir : "",
-                    asn1_compiler_flags, ac + optind, optind, av - optind)) {
+                    asn1_compiler_flags, ac + optind, optind, av - optind,
+                    complex_threshold)) {
         exit_code = EX_SOFTWARE;
     }
 
