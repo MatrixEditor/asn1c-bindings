@@ -3841,8 +3841,22 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 	 */
 	if(complex_contents) {
 		OUT("&asn_DEF_%s", MKID(expr));
-		/* Open Types are always generated with suffix since they're embedded */
-		if(is_open_type(arg, expr, opt_ioc) || HIDE_INNER_DEFS || (arg->flags & A1C_ALL_DEFS_GLOBAL)) {
+		/* 
+		 * Use suffix when:
+		 * - It's an open type (always embedded with suffix)
+		 * - Member is embedded (has parent_expr) and not anonymous, as embedded
+		 *   types use static storage and need unique suffixes to avoid runtime
+		 *   ambiguity when same member name appears in different parents with
+		 *   different type definitions  
+		 * - Global defs flag is set (all types get suffixes)
+		 * 
+		 * Note: We check expr->parent_expr instead of HIDE_INNER_DEFS because
+		 * member table emission happens after returning from embedded type
+		 * generation, so arg->embed is back to 0 even though the type descriptor
+		 * was generated with static storage.
+		 */
+		if(is_open_type(arg, expr, opt_ioc) || (arg->flags & A1C_ALL_DEFS_GLOBAL) ||
+		   (expr->parent_expr && !expr->_anonymous_type && (expr->expr_type & ASN_CONSTR_MASK))) {
 			OUT("_%d", expr->_type_unique_index);
 		}
 		OUT(",\n");
