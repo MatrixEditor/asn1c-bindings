@@ -1,5 +1,12 @@
 1.3.2:
 	FIXES:
+	* Moved complex_threshold from global variable to arg_t structure field.
+	  Applications linking to libasn1compiler no longer need to define their own
+	  version of the global complex_threshold variable. The variable is now properly
+	  encapsulated within the compiler's argument structure and passed through the
+	  asn1_compile() function. Default threshold value remains 4. Added test case
+	  for -fcomplex-threshold flag validation.
+	  (Severity: low; Security impact: none)
 	* Fixed JER OPEN TYPE decoder to comply with ITU-T X.697 Clause 41. The decoder
 	  was incorrectly attempting to parse CHOICE-style key wrappers and consuming
 	  parent SEQUENCE delimiters, causing "Unexpected JSON key" and "Out of defined
