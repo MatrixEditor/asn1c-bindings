@@ -1,5 +1,5 @@
 % asn1c(1) ASN.1 Compiler
-% Lev Walkin <vlm@lionet.info>, Mouse <mouse07410@noreply.GitHub.com>
+% Lev Walkin <vlm@lionet.info>, Mouse <5923577+mouse07410@users.noreply.github.com>
 % 2025-11-27
 
 # NAME

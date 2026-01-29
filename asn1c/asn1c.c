@@ -33,7 +33,7 @@
 
 #undef COPYRIGHT
 #define COPYRIGHT "Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.\n\
-Copyright (c) 2022-2026 Mouse <mouse07410@noreply.github.com> and contributors.\n"
+Copyright (c) 2022-2026 Mouse <5923577+mouse07410@users.noreply.github.com> and contributors.\n"
 
 #include <asn1parser.h>   /* Parse the ASN.1 file and build a tree */
 #include <asn1fix.h>      /* Fix the ASN.1 tree */
