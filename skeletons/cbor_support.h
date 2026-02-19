@@ -112,6 +112,14 @@ ssize_t cbor_encode_float64(double value,
  */
 ssize_t cbor_decode_float64(const uint8_t *buf, size_t size, double *value_out);
 
+/*
+ * Skip a complete CBOR data item starting at buf[0].
+ * Handles all major types recursively (arrays, maps, tags, integers,
+ * byte/text strings, floats, simple values).
+ * Returns total bytes consumed, or -1 on error/truncation.
+ */
+ssize_t cbor_skip_item(const uint8_t *buf, size_t size);
+
 #ifdef __cplusplus
 }
 #endif

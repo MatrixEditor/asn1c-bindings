@@ -179,3 +179,85 @@ cbor_decode_float64(const uint8_t *buf, size_t size, double *value_out) {
     memcpy(value_out, &bits, 8);
     return 9;
 }
+
+/*
+ * Skip a complete CBOR data item.
+ * Handles all CBOR major types recursively so that unknown extension
+ * fields (arrays, maps, integers, tags, floats, etc.) are fully consumed.
+ * Returns total bytes consumed, or -1 on error/truncation.
+ */
+ssize_t
+cbor_skip_item(const uint8_t *buf, size_t size) {
+    uint8_t major;
+    uint64_t arg;
+    ssize_t hlen;
+    ssize_t total;
+    uint64_t i;
+
+    if(size < 1) return -1;
+
+    hlen = cbor_decode_head(buf, size, &major, &arg);
+    if(hlen < 0) return -1;
+    total = hlen;
+
+    switch(major) {
+    case CBOR_MAJOR_UINT:    /* 0: unsigned integer — header only */
+    case CBOR_MAJOR_NEGINT:  /* 1: negative integer — header only */
+        break;
+
+    case CBOR_MAJOR_BYTES:   /* 2: byte string — arg bytes follow */
+    case CBOR_MAJOR_TEXT:    /* 3: text string — arg bytes follow */
+        if((size_t)total + (size_t)arg > size) return -1;
+        total += (ssize_t)arg;
+        break;
+
+    case CBOR_MAJOR_ARRAY:   /* 4: array of arg items */
+        for(i = 0; i < arg; i++) {
+            ssize_t n;
+            if((size_t)total >= size) return -1;
+            n = cbor_skip_item(buf + total, size - (size_t)total);
+            if(n < 0) return -1;
+            total += n;
+        }
+        break;
+
+    case CBOR_MAJOR_MAP:     /* 5: map of arg key/value pairs */
+        for(i = 0; i < arg; i++) {
+            ssize_t n;
+            /* key */
+            if((size_t)total >= size) return -1;
+            n = cbor_skip_item(buf + total, size - (size_t)total);
+            if(n < 0) return -1;
+            total += n;
+            /* value */
+            if((size_t)total >= size) return -1;
+            n = cbor_skip_item(buf + total, size - (size_t)total);
+            if(n < 0) return -1;
+            total += n;
+        }
+        break;
+
+    case CBOR_MAJOR_TAG:     /* 6: tag number + one tagged item */
+        {
+            ssize_t n;
+            if((size_t)total >= size) return -1;
+            n = cbor_skip_item(buf + total, size - (size_t)total);
+            if(n < 0) return -1;
+            total += n;
+        }
+        break;
+
+    case CBOR_MAJOR_SIMPLE:  /* 7: floats/simple — header already includes all bytes */
+        /*
+         * cbor_decode_head consumed the AI=24/25/26/27 argument bytes
+         * (which encode the float16/32/64 payload) as part of the header,
+         * so there are no additional bytes to skip here.
+         */
+        break;
+
+    default:
+        return -1;
+    }
+
+    return total;
+}

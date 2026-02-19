@@ -136,19 +136,12 @@ SET_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
             }
         }
         if(edx == td->elements_count) {
-            /* Skip unknown value */
-            uint8_t val_major;
-            uint64_t val_arg;
-            ssize_t val_hlen;
+            /* Unknown key: skip the value completely using recursive skip */
+            ssize_t skip_len;
             if(consumed >= size) ASN__DECODE_FAILED;
-            val_hlen = cbor_decode_head(buf + consumed, size - consumed,
-                                        &val_major, &val_arg);
-            if(val_hlen < 0) ASN__DECODE_FAILED;
-            consumed += (size_t)val_hlen;
-            if(val_major == CBOR_MAJOR_BYTES || val_major == CBOR_MAJOR_TEXT) {
-                if(size - consumed < val_arg) ASN__DECODE_FAILED;
-                consumed += (size_t)val_arg;
-            }
+            skip_len = cbor_skip_item(buf + consumed, size - consumed);
+            if(skip_len < 0) ASN__DECODE_FAILED;
+            consumed += (size_t)skip_len;
         }
     }
 
