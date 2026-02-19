@@ -72,6 +72,8 @@ oer_type_encoder_f OCTET_STRING_encode_oer;
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
 cbor_type_decoder_f OCTET_STRING_decode_cbor;
 cbor_type_encoder_f OCTET_STRING_encode_cbor;
+cbor_type_decoder_f OCTET_STRING_decode_cbor_utf8;  /* ASCII/UTF-8 */
+cbor_type_encoder_f OCTET_STRING_encode_cbor_utf8;
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
