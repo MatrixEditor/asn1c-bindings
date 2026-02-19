@@ -1,3 +1,20 @@
+1.3.3:
+	NEW FEATURES:
+	* Added complete CBOR (Concise Binary Object Representation, RFC 7049)
+	  codec support. CBOR generation is enabled by default; use -no-gen-CBOR
+	  to disable. New skeleton files: cbor_encoder.[ch], cbor_decoder.[ch],
+	  cbor_support.[ch], INTEGER_cbor.c, NativeInteger_cbor.c,
+	  OCTET_STRING_cbor.c, BIT_STRING_cbor.c, BOOLEAN_cbor.c, NULL_cbor.c,
+	  ENUMERATED_cbor.c, NativeEnumerated_cbor.c, REAL_cbor.c,
+	  NativeReal_cbor.c, constr_SEQUENCE_cbor.c, constr_SEQUENCE_OF_cbor.c,
+	  constr_SET_cbor.c, constr_SET_OF_cbor.c, constr_CHOICE_cbor.c,
+	  asn_codecs_prim_cbor.c. The SEQUENCE encoder correctly skips absent
+	  optional and default-valued members so the CBOR map header count always
+	  matches the number of encoded key/value pairs. INTEGER decoding handles
+	  CBOR bignum tags (2 and 3) for values exceeding the 64-bit signed range.
+	  New test: tests/tests-skeletons/check-CBOR.c with edge-case coverage for
+	  INTEGER, NativeInteger, BIT STRING, and OCTET STRING types.
+
 1.3.2:
 	FIXES:
 	* Fixed incorrect type descriptor selection when the same member name appears

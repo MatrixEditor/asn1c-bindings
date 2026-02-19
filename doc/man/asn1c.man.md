@@ -18,8 +18,8 @@ asn1c [**-E** [**-F**] | **-P** | **-R**] \
 # DESCRIPTION
 
 asn1c compiles ASN.1 specifications into a set of
-target language (C/C++) encoders and decoders for BER, DER, PER, XER, OER
-and other encoding rules.
+target language (C/C++) encoders and decoders for BER, DER, PER, XER, OER,
+CBOR and other encoding rules.
 
 # OPTIONS
 
@@ -152,6 +152,10 @@ and other encoding rules.
 -no-gen-OER
 :   Do not generate the Octet Encoding Rules (OER, X.696) support code
 
+-no-gen-CBOR
+:   Do not generate the Concise Binary Object Representation (CBOR, RFC 7049) support code.
+    By default, CBOR encoder and decoder support code is generated.
+
 -no-gen-UPER
 :   Do not generate the Unaligned Packed Encoding Rules (PER, X.691) support code
 
@@ -218,6 +222,8 @@ DER            der_encode()       DER, BER      ber_decode()
 CER            _not supported_    CER, BER      ber_decode()
 
 JER			   jer_encode()	      JER           jer_decode_
+
+CBOR           cbor_encode()      CBOR          cbor_decode()
 
 BASIC-OER      oer_encode()       *-OER         oer_decode()
 
