@@ -129,7 +129,7 @@ INTEGER_encode_cbor(const asn_TYPE_descriptor_t *td, const void *sptr,
         ASN__ENCODED_OK(er);
     }
 
-cb_failed:
+    /* This path is unreachable if all branches above are covered */
     ASN__ENCODE_FAILED;
 }
 

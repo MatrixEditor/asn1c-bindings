@@ -39,7 +39,6 @@ SET_OF_encode_cbor(const asn_TYPE_descriptor_t *td, const void *sptr,
     }
 
     ASN__ENCODED_OK(er);
-    ASN__ENCODE_FAILED;
 }
 
 asn_dec_rval_t
