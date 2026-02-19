@@ -85,6 +85,8 @@ asn1c__save_asn_config(arg_t *arg, const char *destdir,
         safe_fprintf(mkf, "#define ASN_DISABLE_RFILL_SUPPORT 1\n");
     if(!(arg->flags & A1C_GEN_JER))
         safe_fprintf(mkf, "#define ASN_DISABLE_JER_SUPPORT 1\n");
+    if(!(arg->flags & A1C_GEN_CBOR))
+        safe_fprintf(mkf, "#define ASN_DISABLE_CBOR_SUPPORT 1\n");
 
     fclose(mkf);
     safe_fprintf(stderr, "Generated %s%s\n", destdir, cfgfile_name);
@@ -200,7 +202,7 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 	safe_fprintf(
 		mkf,
 		"\n"
-		"ASN_MODULE_CFLAGS=%s%s%s%s%s%s%s",
+		"ASN_MODULE_CFLAGS=%s%s%s%s%s%s%s%s%s",
 		(arg->flags & A1C_GEN_BER) ? "" : "-DASN_DISABLE_BER_SUPPORT ",
 		(arg->flags & A1C_GEN_XER) ? "" : "-DASN_DISABLE_XER_SUPPORT ",
 		(arg->flags & A1C_GEN_OER) ? "" : "-DASN_DISABLE_OER_SUPPORT ",
@@ -208,7 +210,8 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 		(arg->flags & A1C_GEN_APER) ? "" : "-DASN_DISABLE_APER_SUPPORT ",
 		(arg->flags & A1C_GEN_PRINT) ? "" : "-DASN_DISABLE_PRINT_SUPPORT ",
 		(arg->flags & A1C_GEN_RFILL) ? "" : "-DASN_DISABLE_RFILL_SUPPORT ",
-		(arg->flags & A1C_GEN_JER) ? "" : "-DASN_DISABLE_JER_SUPPORT ");
+		(arg->flags & A1C_GEN_JER) ? "" : "-DASN_DISABLE_JER_SUPPORT ",
+		(arg->flags & A1C_GEN_CBOR) ? "" : "-DASN_DISABLE_CBOR_SUPPORT ");
 
 	safe_fprintf(
 		mkf,
@@ -361,7 +364,7 @@ asn1c__save_example_am_makefile(arg_t *arg, const asn1c_dep_chainset *deps, cons
 	safe_fprintf(mkf,
 	             "include %s%s\n\n"
 	             "bin_PROGRAMS += asn1convert\n"
-	             "asn1convert_CFLAGS = $(ASN_MODULE_CFLAGS) %s%s%s%s%s%s%s%s%s\n"
+	             "asn1convert_CFLAGS = $(ASN_MODULE_CFLAGS) %s%s%s%s%s%s%s%s%s%s\n"
 	             "asn1convert_CPPFLAGS = -I$(top_srcdir)/%s\n"
 	             "asn1convert_LDADD = libasncodec.la\n"
 	             "asn1convert_SOURCES = ",
@@ -375,6 +378,7 @@ asn1c__save_example_am_makefile(arg_t *arg, const asn1c_dep_chainset *deps, cons
                  (arg->flags & A1C_GEN_PRINT) ? "": "-DASN_DISABLE_PRINT_SUPPORT ",
                  (arg->flags & A1C_GEN_RFILL) ? "": "-DASN_DISABLE_RFILL_SUPPORT ",
                  (arg->flags & A1C_GEN_JER) ? "": "-DASN_DISABLE_JER_SUPPORT ",
+                 (arg->flags & A1C_GEN_CBOR) ? "": "-DASN_DISABLE_CBOR_SUPPORT ",
 	             need_to_generate_pdu_collection(arg) ? "-DASN_PDU_COLLECTION " : "", destdir);
 
 	if(dlist) {

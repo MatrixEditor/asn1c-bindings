@@ -106,6 +106,9 @@ libasn1cskeletons_la_SOURCES =                  \
     jer_encoder.c jer_encoder.h                 \
     xer_support.c xer_support.h                 \
     jer_support.c jer_support.h                 \
+    cbor_decoder.c cbor_decoder.h               \
+    cbor_encoder.c cbor_encoder.h               \
+    cbor_support.c cbor_support.h               \
     ANY_aper.c                                  \
     ANY_ber.c                                   \
     ANY_uper.c                                  \
@@ -240,7 +243,23 @@ libasn1cskeletons_la_SOURCES =                  \
     constr_SET_print.c                          \
     constr_SET_rfill.c                          \
     constr_SET_xer.c                            \
-    constr_SET_jer.c
+    constr_SET_jer.c                            \
+    asn_codecs_prim_cbor.c                      \
+    BIT_STRING_cbor.c                           \
+    BOOLEAN_cbor.c                              \
+    ENUMERATED_cbor.c                           \
+    INTEGER_cbor.c                              \
+    NULL_cbor.c                                 \
+    NativeEnumerated_cbor.c                     \
+    NativeInteger_cbor.c                        \
+    NativeReal_cbor.c                           \
+    OCTET_STRING_cbor.c                         \
+    REAL_cbor.c                                 \
+    constr_CHOICE_cbor.c                        \
+    constr_SEQUENCE_OF_cbor.c                   \
+    constr_SEQUENCE_cbor.c                      \
+    constr_SET_OF_cbor.c                        \
+    constr_SET_cbor.c
 
 check_PROGRAMS =                    \
     check-converter_example         \

@@ -138,6 +138,11 @@ enum asn1c_flags {
 	 * List PDU dependencies without generating code
 	 */
 	A1C_LIST_DEPS                   = 0x400000000,
+	/*
+	 * -gen-CBOR / -no-gen-CBOR
+	 * Generate CBOR (Concise Binary Object Representation) support code
+	 */
+	A1C_GEN_CBOR                    = 0x800000000,
 };
 
 /*
