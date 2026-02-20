@@ -131,6 +131,8 @@ ats_simple_name(enum asn_transfer_syntax syntax) {
         return "XER";
     case ATS_JER:
       return "JER";
+    case ATS_CBOR:
+        return "CBOR";
     case ATS_UNALIGNED_BASIC_PER:
     case ATS_UNALIGNED_CANONICAL_PER:
         return "PER";
@@ -165,6 +167,8 @@ static syntax_selector input_encodings[] = {
      "Input is in XER (XML Encoding Rules)"},
     {"jer", ATS_JER, CODEC_OFFSET(jer_decoder),
      "Input is in JER (JSON Encoding Rules)"},
+    {"cbor", ATS_CBOR, CODEC_OFFSET(cbor_decoder),
+     "Input is in CBOR (Concise Binary Object Representation)"},
     {0, ATS_INVALID, 0, 0}};
 
 static syntax_selector output_encodings[] = {
@@ -182,6 +186,8 @@ static syntax_selector output_encodings[] = {
      "Output as XER (XML Encoding Rules)"},
     {"jer", ATS_JER, CODEC_OFFSET(jer_encoder),
      "Output as JER (JSON Encoding Rules)"},
+    {"cbor", ATS_CBOR, CODEC_OFFSET(cbor_encoder),
+     "Output as CBOR (Concise Binary Object Representation)"},
     {"text", ATS_NONSTANDARD_PLAINTEXT, CODEC_OFFSET(print_struct),
      "Output as plain semi-structured text"},
     {"null", ATS_INVALID, CODEC_OFFSET(print_struct),

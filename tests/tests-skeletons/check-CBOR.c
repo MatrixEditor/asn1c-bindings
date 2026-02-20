@@ -412,6 +412,101 @@ test_octet_string_cbor_edge_cases(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Generic asn_encode / asn_decode dispatch via ATS_CBOR                */
+/* ------------------------------------------------------------------ */
+static void
+test_asn_encode_decode_cbor_dispatch(void) {
+    printf("test_asn_encode_decode_cbor_dispatch\n");
+
+    /* Use INTEGER round-trip through the generic API */
+    {
+        INTEGER_t orig, *decoded = NULL;
+        struct buffer_acc enc;
+        asn_enc_rval_t er;
+        asn_dec_rval_t dr;
+        intmax_t result;
+
+        memset(&orig, 0, sizeof(orig));
+        memset(&enc, 0, sizeof(enc));
+
+        if(asn_imax2INTEGER(&orig, 12345)) {
+            fprintf(stderr, "FAIL: asn_imax2INTEGER\n");
+            exit(1);
+        }
+
+        er = asn_encode(NULL, ATS_CBOR, &asn_DEF_INTEGER, &orig,
+                        buf_append, &enc);
+        if(er.encoded < 0) {
+            fprintf(stderr, "FAIL: asn_encode(ATS_CBOR, INTEGER)\n");
+            exit(1);
+        }
+
+        dr = asn_decode(NULL, ATS_CBOR, &asn_DEF_INTEGER,
+                        (void **)&decoded, enc.data, enc.len);
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr, "FAIL: asn_decode(ATS_CBOR, INTEGER) code=%d\n",
+                    dr.code);
+            exit(1);
+        }
+
+        if(asn_INTEGER2imax(decoded, &result) || result != 12345) {
+            fprintf(stderr, "FAIL: dispatch round-trip mismatch: %jd\n", result);
+            exit(1);
+        }
+
+        ASN_STRUCT_FREE(asn_DEF_INTEGER, decoded);
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &orig);
+        buf_free(&enc);
+        printf("  ✓ asn_encode/asn_decode dispatch: ATS_CBOR INTEGER\n");
+    }
+
+    /* Use OCTET STRING round-trip through the generic API */
+    {
+        OCTET_STRING_t orig, *decoded = NULL;
+        struct buffer_acc enc;
+        asn_enc_rval_t er;
+        asn_dec_rval_t dr;
+        static const uint8_t payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
+
+        memset(&orig, 0, sizeof(orig));
+        memset(&enc, 0, sizeof(enc));
+
+        orig.buf = (uint8_t *)malloc(sizeof(payload));
+        assert(orig.buf);
+        memcpy(orig.buf, payload, sizeof(payload));
+        orig.size = sizeof(payload);
+
+        er = asn_encode(NULL, ATS_CBOR, &asn_DEF_OCTET_STRING, &orig,
+                        buf_append, &enc);
+        if(er.encoded < 0) {
+            fprintf(stderr, "FAIL: asn_encode(ATS_CBOR, OCTET_STRING)\n");
+            exit(1);
+        }
+
+        dr = asn_decode(NULL, ATS_CBOR, &asn_DEF_OCTET_STRING,
+                        (void **)&decoded, enc.data, enc.len);
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr, "FAIL: asn_decode(ATS_CBOR, OCTET_STRING) code=%d\n",
+                    dr.code);
+            exit(1);
+        }
+
+        if((size_t)decoded->size != sizeof(payload)
+           || memcmp(decoded->buf, payload, sizeof(payload)) != 0) {
+            fprintf(stderr, "FAIL: dispatch OCTET_STRING data mismatch\n");
+            exit(1);
+        }
+
+        ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, decoded);
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_OCTET_STRING, &orig);
+        buf_free(&enc);
+        printf("  ✓ asn_encode/asn_decode dispatch: ATS_CBOR OCTET_STRING\n");
+    }
+
+    printf("PASSED: test_asn_encode_decode_cbor_dispatch\n\n");
+}
+
+/* ------------------------------------------------------------------ */
 /* main                                                                 */
 /* ------------------------------------------------------------------ */
 int
@@ -422,6 +517,7 @@ main(void) {
     test_native_integer_cbor_edge_cases();
     test_bit_string_cbor_edge_cases();
     test_octet_string_cbor_edge_cases();
+    test_asn_encode_decode_cbor_dispatch();
 
     printf("=== ALL CBOR TESTS PASSED ===\n");
     return 0;
