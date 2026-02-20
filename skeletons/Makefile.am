@@ -186,6 +186,7 @@ libasn1cskeletons_la_SOURCES =                  \
     OCTET_STRING_jer.c                          \
     OPEN_TYPE_aper.c                            \
     OPEN_TYPE_ber.c                             \
+    OPEN_TYPE_cbor.c                            \
     OPEN_TYPE_print.c                           \
     OPEN_TYPE_uper.c                            \
     OPEN_TYPE_xer.c                             \

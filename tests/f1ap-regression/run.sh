@@ -33,3 +33,42 @@ echo "Attempt to build converter-example"
 make -f converter-example.mk
 
 echo "F1AP test PASSED: Code generated and compiled successfully"
+
+# Test CBOR conversion with OPEN TYPE members (regression for CBOR OPEN TYPE bug)
+echo "Testing CBOR conversion with OPEN TYPE members..."
+
+cat > /tmp/f1ap-test.xer << 'XEOF'
+<F1AP-PDU>
+ <initiatingMessage>
+  <procedureCode>1</procedureCode>
+  <criticality><reject/></criticality>
+  <value>
+   <F1SetupRequest>
+    <protocolIEs>
+     <F1SetupRequestIEs>
+      <id>78</id>
+      <criticality><reject/></criticality>
+      <value>
+       <TransactionID>1</TransactionID>
+      </value>
+     </F1SetupRequestIEs>
+    </protocolIEs>
+   </F1SetupRequest>
+  </value>
+ </initiatingMessage>
+</F1AP-PDU>
+XEOF
+
+./converter-example -p F1AP-PDU -ixer -ocbor /tmp/f1ap-test.xer > /tmp/f1ap-test.cbor 2>/tmp/f1ap-test.err
+if [ $? -ne 0 ]; then
+  echo "FAILED: CBOR conversion of F1AP message with OPEN TYPE failed"
+  cat /tmp/f1ap-test.err >&2
+  exit 1
+fi
+
+if [ ! -s /tmp/f1ap-test.cbor ]; then
+  echo "FAILED: CBOR output is empty"
+  exit 1
+fi
+
+echo "CBOR conversion test PASSED: F1AP-PDU with OPEN TYPE encoded to CBOR successfully"
