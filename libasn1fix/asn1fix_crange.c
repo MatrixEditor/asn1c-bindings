@@ -1050,7 +1050,7 @@ asn1constraint_compute_constraint_range(
      * SIZE constraints on restricted character string types
      * which are not known-multiplier are not OER-visible.
      */
-	if(requested_ct_type == ACT_CT_SIZE && (expr_type & ASN_STRING_NKM_MASK))
+    if(requested_ct_type == ACT_CT_SIZE && (expr_type & ASN_STRING_NKM_MASK))
 		range->not_OER_visible = 1;
 
     if(!ct
@@ -1151,7 +1151,7 @@ asn1constraint_compute_constraint_range(
 			}
 
 			if(tmp->not_OER_visible
-			&& (cpr_flags & CPR_strict_OER_visibility)) {
+			   && (cpr_flags & CPR_strict_OER_visibility)) {
                 /*
                  * Ignore not OER-visible
                  */
@@ -1160,7 +1160,7 @@ asn1constraint_compute_constraint_range(
 			}
 
 			if(tmp->not_PER_visible
-			&& (cpr_flags & CPR_strict_PER_visibility)) {
+			   && (cpr_flags & CPR_strict_PER_visibility)) {
 				if(ct->type == ACT_CA_SET) {
 					/*
 					 * X.691, #9.3.18:
@@ -1177,7 +1177,7 @@ asn1constraint_compute_constraint_range(
 			}
 
 			if(tmp->not_JER_visible
-			&& (cpr_flags & CPR_strict_JER_visibility)) {
+			   && (cpr_flags & CPR_strict_JER_visibility)) {
                 /*
                  * Ignore not JER-visible
                  */
