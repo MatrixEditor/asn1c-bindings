@@ -133,12 +133,33 @@ OPEN_TYPE_cbor_get(const asn_codec_ctx_t *opt_codec_ctx,
         /* Fall through */
     case RC_FAIL:
     case RC_WMORE:
-        if(*memb_ptr2) {
-            if(elm->flags & ATF_POINTER) {
-                ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
-                *memb_ptr2 = NULL;
-            } else {
-                ASN_STRUCT_RESET(*selected.type_descriptor, inner_value);
+        if(elm->type->elements_count > 0) {
+            /*
+             * CHOICE-wrapper mode: *memb_ptr2 points to the CHOICE wrapper
+             * (type elm->type). Do not free inner_value directly — it may
+             * refer to embedded storage inside the wrapper. Free or reset
+             * the wrapper as a whole instead.
+             */
+            if(*memb_ptr2) {
+                if(elm->flags & ATF_POINTER) {
+                    ASN_STRUCT_FREE(*elm->type, *memb_ptr2);
+                    *memb_ptr2 = NULL;
+                } else {
+                    ASN_STRUCT_RESET(*elm->type, *memb_ptr2);
+                }
+            }
+        } else {
+            /*
+             * Direct type mode: inner_value is the instance of the selected
+             * type. Clean it up using selected.type_descriptor.
+             */
+            if(inner_value) {
+                if(elm->flags & ATF_POINTER) {
+                    ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
+                    *memb_ptr2 = NULL;
+                } else {
+                    ASN_STRUCT_RESET(*selected.type_descriptor, inner_value);
+                }
             }
         }
         return rv;

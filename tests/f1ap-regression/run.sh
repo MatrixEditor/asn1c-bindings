@@ -37,7 +37,14 @@ echo "F1AP test PASSED: Code generated and compiled successfully"
 # Test CBOR conversion with OPEN TYPE members (regression for CBOR OPEN TYPE bug)
 echo "Testing CBOR conversion with OPEN TYPE members..."
 
-cat > /tmp/f1ap-test.xer << 'XEOF'
+# Use mktemp to avoid /tmp name collisions during concurrent test runs
+TMPDIR="${TMPDIR:-/tmp}"
+f1ap_xer=$(mktemp "${TMPDIR}/f1ap-test-XXXXXX.xer")
+f1ap_cbor=$(mktemp "${TMPDIR}/f1ap-test-XXXXXX.cbor")
+f1ap_err=$(mktemp "${TMPDIR}/f1ap-test-XXXXXX.err")
+trap 'rm -f "${f1ap_xer}" "${f1ap_cbor}" "${f1ap_err}"' EXIT
+
+cat > "${f1ap_xer}" << 'XEOF'
 <F1AP-PDU>
  <initiatingMessage>
   <procedureCode>1</procedureCode>
@@ -59,14 +66,13 @@ cat > /tmp/f1ap-test.xer << 'XEOF'
 </F1AP-PDU>
 XEOF
 
-./converter-example -p F1AP-PDU -ixer -ocbor /tmp/f1ap-test.xer > /tmp/f1ap-test.cbor 2>/tmp/f1ap-test.err
-if [ $? -ne 0 ]; then
+if ! ./converter-example -p F1AP-PDU -ixer -ocbor "${f1ap_xer}" > "${f1ap_cbor}" 2>"${f1ap_err}"; then
   echo "FAILED: CBOR conversion of F1AP message with OPEN TYPE failed"
-  cat /tmp/f1ap-test.err >&2
+  cat "${f1ap_err}" >&2
   exit 1
 fi
 
-if [ ! -s /tmp/f1ap-test.cbor ]; then
+if [ ! -s "${f1ap_cbor}" ]; then
   echo "FAILED: CBOR output is empty"
   exit 1
 fi
