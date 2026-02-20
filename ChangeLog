@@ -14,6 +14,10 @@
 	  CBOR bignum tags (2 and 3) for values exceeding the 64-bit signed range.
 	  New test: tests/tests-skeletons/check-CBOR.c with edge-case coverage for
 	  INTEGER, NativeInteger, BIT STRING, and OCTET STRING types.
+	* Added ATS_CBOR to asn_transfer_syntax enum and wired CBOR encode/decode
+	  into asn_encode()/asn_decode() dispatch in asn_application.c. Added
+	  -icbor and -ocbor switches to converter-example.c so that generated
+	  converter applications can read and write CBOR-encoded data.
 
 1.3.2:
 	FIXES:
