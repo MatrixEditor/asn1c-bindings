@@ -68,7 +68,14 @@ asn_TYPE_operation_t asn_OP_BOOLEAN = {
 #else
     0,
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    BOOLEAN_decode_cbor,
+    BOOLEAN_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 };
 asn_TYPE_descriptor_t asn_DEF_BOOLEAN = {
     "BOOLEAN",

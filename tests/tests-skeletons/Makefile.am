@@ -20,6 +20,7 @@ check_PROGRAMS =                \
     check-XER-formatting-regression \
     check-XER-CHOICE-formatting \
     check-JER                   \
+    check-CBOR                  \
     check-OER-support           \
     check-OER-INTEGER           \
     check-OER-NativeEnumerated  \
@@ -143,6 +144,8 @@ check_32_UPER_INTEGER_semiconstrained_SOURCES=check-UPER-INTEGER-semiconstrained
 
 LDADD_32 = -lm $(top_builddir)/skeletons/libasn1cskeletons_c89_32.la
 endif
+
+check_CBOR_SOURCES=check-CBOR.c
 
 #Filter out the coverage options from CFLAGS as we don't need
 #code coverage data for the tests executables

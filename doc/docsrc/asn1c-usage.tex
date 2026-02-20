@@ -574,6 +574,7 @@ may produce a shorter executable.}\\
 {\ttfamily -no-gen-BER} & {\small Do not generate the Basic Encoding Rules (BER, X.690) support code.}\\
 {\ttfamily -no-gen-XER} & {\small Do not generate the XML Encoding Rules (XER, X.693) support code.}\\
 {\ttfamily -no-gen-OER} & {\small Do not generate the Octet Encoding Rules (OER, X.696) support code.}\\
+{\ttfamily -no-gen-CBOR} & {\small Do not generate the Concise Binary Object Representation (CBOR, RFC~7049) support code. By default, CBOR support code is generated.}\\
 {\ttfamily -no-gen-UPER} & {\small Do not generate the Unaligned Packed Encoding Rules (PER, X.691) support code.}\\
 {\ttfamily -no-gen-APER} & {\small Do not generate the Aligned Packed Encoding Rules (PER, X.691) support code.}\\
 {\ttfamily -no-gen-print} & {\small Do not generate the print code.}\\
@@ -1523,6 +1524,72 @@ xer_fprint(stdout, &asn_DEF_Rectangle, rect);
 
 \subsection*{See also}
 \seealso{sec:asn_fprint}{asn_fprint()}.
+
+\chapter{API usage examples}
+
+\apisection{sec:cbor_decode}{cbor\_decode()}
+
+\subsection*{Synopsis}
+\begin{signature}
+asn_dec_rval_t cbor_decode(
+    const asn_codec_ctx_t *opt_codec_ctx,   /* Optional codec context */
+    const asn_TYPE_descriptor_t *type_descriptor,
+    void **struct_ptr,  /* Pointer to a target structure's pointer */
+    const void *buffer, /* Data to be decoded */
+    size_t size         /* Size of data buffer */
+);
+\end{signature}
+
+\subsection*{Description}
+
+The \code{cbor_decode()} function decodes a CBOR-encoded (Concise Binary
+Object Representation, RFC~7049) data stream into the target ASN.1 structure.
+
+CBOR provides a compact, self-describing binary encoding format.
+The decoder follows canonical CBOR rules: only definite-length items are
+accepted. Integer values are decoded from CBOR major type 0 (unsigned) and
+major type 1 (negative), with bignum tags (2 and 3) used for values that
+exceed the 64-bit range. SEQUENCE and SET types are decoded from CBOR maps,
+SEQUENCE~OF and SET~OF from CBOR arrays, and CHOICE from a single-entry
+CBOR map.
+
+\subsection*{Return values}
+
+\begin{tabular}[h!]{rl}
+RC\_OK & Structure decoded successfully \\
+RC\_WMORE & More data needed to decode \\
+RC\_FAIL & Decoding failed
+\end{tabular}
+
+\apisection{sec:cbor_encode}{cbor\_encode()}
+
+\subsection*{Synopsis}
+\begin{signature}
+asn_enc_rval_t cbor_encode(
+    const asn_TYPE_descriptor_t *type_descriptor,
+    const void *struct_ptr,             /* Structure to be encoded */
+    asn_app_consume_bytes_f *consume_bytes_cb, /* Callback */
+    void *app_key                       /* Arbitrary callback argument */
+);
+\end{signature}
+
+\subsection*{Description}
+
+The \code{cbor_encode()} function serializes the given structure into a
+canonical CBOR (Concise Binary Object Representation, RFC~7049) byte stream.
+
+The encoder produces canonical (DER-like) output: integers use the shortest
+possible CBOR encoding, all lengths are definite, and SEQUENCE fields are
+encoded in definition order. Absent optional and default-valued fields are
+skipped so that the CBOR map header count always matches the number of encoded
+key/value pairs.
+
+\subsection*{Return values}
+
+\begin{tabular}[h!]{rl}
+er.encoded $\geq 0$ & Number of bytes produced \\
+er.encoded $= -1$ & Encoding failed; \code{er.failed\_type} identifies the culprit
+\end{tabular}
 
 \chapter{API usage examples}
 

@@ -1900,6 +1900,10 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
         if(arg->flags & A1C_GEN_JER) {
             OUT("jer_type_encoder_f %s_encode_jer;\n", p);
         }
+        if(arg->flags & A1C_GEN_CBOR) {
+            OUT("cbor_type_decoder_f %s_decode_cbor;\n", p);
+            OUT("cbor_type_encoder_f %s_encode_cbor;\n", p);
+        }
 		if(arg->flags & A1C_GEN_OER) {
 			OUT("oer_type_decoder_f %s_decode_oer;\n", p);
 			OUT("oer_type_encoder_f %s_encode_oer;\n", p);
@@ -2606,7 +2610,20 @@ emit_custom_operation_structure(arg_t *arg, asn1p_expr_t *expr) {
     OUT("0,\n");
     OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */\n");
     
-    OUT("0\t/* No outmost tag fetcher */\n");
+    OUT("0,\t/* No outmost tag fetcher */\n");
+    
+    OUT_NOINDENT("#if !defined(ASN_DISABLE_CBOR_SUPPORT)\n");
+    if(arg->flags & A1C_GEN_CBOR) {
+        OUT("%s_decode_cbor,\n", base_type);
+        OUT("%s_encode_cbor,\n", base_type);
+    } else {
+        OUT("0,\n");
+        OUT("0,\n");
+    }
+    OUT_NOINDENT("#else\n");
+    OUT("0,\n");
+    OUT("0,\n");
+    OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */\n");
     
     INDENT(-1);
     OUT("};\n");
