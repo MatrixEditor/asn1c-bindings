@@ -31,6 +31,7 @@ OCTET_STRING_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
                          void **sptr, const void *buf_ptr, size_t size) {
     OCTET_STRING_t *st = (OCTET_STRING_t *)*sptr;
     const uint8_t *buf = (const uint8_t *)buf_ptr;
+    ssize_t tag_skip;
     uint8_t major;
     uint64_t bstr_len;
     ssize_t hlen;
@@ -47,24 +48,29 @@ OCTET_STRING_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
 
     if(size < 1) ASN__DECODE_FAILED;
 
-    hlen = cbor_decode_head(buf, size, &major, &bstr_len);
+    /* Skip any leading CBOR tags (RFC 8949 §3.4) */
+    tag_skip = cbor_skip_tags(buf, size);
+    if(tag_skip < 0) ASN__DECODE_FAILED;
+
+    hlen = cbor_decode_head(buf + tag_skip, size - (size_t)tag_skip,
+                            &major, &bstr_len);
     if(hlen < 0 || major != CBOR_MAJOR_BYTES) ASN__DECODE_FAILED;
 
-    if(size - (size_t)hlen < bstr_len) ASN__DECODE_FAILED;
+    if(size - (size_t)tag_skip - (size_t)hlen < bstr_len) ASN__DECODE_FAILED;
 
     /* Allocate and copy data */
     uint8_t *p = (uint8_t *)MALLOC(bstr_len + 1);
     if(!p) ASN__DECODE_FAILED;
 
     if(bstr_len > 0)
-        memcpy(p, buf + hlen, bstr_len);
+        memcpy(p, buf + tag_skip + hlen, bstr_len);
     p[bstr_len] = '\0';
 
     FREEMEM(st->buf);
     st->buf = p;
     st->size = (int)bstr_len;
 
-    rval.consumed = (size_t)hlen + (size_t)bstr_len;
+    rval.consumed = (size_t)tag_skip + (size_t)hlen + (size_t)bstr_len;
     rval.code = RC_OK;
     return rval;
 }

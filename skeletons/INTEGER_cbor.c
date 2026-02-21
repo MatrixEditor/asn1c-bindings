@@ -158,13 +158,39 @@ INTEGER_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
 
     if(size < 1) ASN__DECODE_FAILED;
 
+    /*
+     * Skip any leading CBOR tags that are NOT bignum tags (2/3).
+     * Tags 2 and 3 carry semantic meaning for INTEGER (bignum encoding),
+     * so they are handled explicitly below.  All other tags (e.g., tag 1
+     * for epoch timestamps, tag 100 for calendar dates) are optional
+     * metadata and should be ignored per RFC 8949 §3.4.
+     */
+    {
+        size_t tag_skip = 0;
+        for(;;) {
+            uint8_t m;
+            uint64_t a;
+            ssize_t h;
+            if(tag_skip >= size) ASN__DECODE_FAILED;
+            h = cbor_decode_head(buf + tag_skip, size - tag_skip, &m, &a);
+            if(h < 0) ASN__DECODE_FAILED;
+            if(m != CBOR_MAJOR_TAG) break;
+            if(a == CBOR_TAG_POSINT_BIGNUM || a == CBOR_TAG_NEGINT_BIGNUM)
+                break;  /* bignum tag: handle below */
+            tag_skip += (size_t)h;
+        }
+        buf  += tag_skip;
+        size -= tag_skip;
+        rval.consumed = tag_skip;  /* will be added to inner consumed */
+    }
+
     hlen = cbor_decode_head(buf, size, &major, &argument);
     if(hlen < 0) ASN__DECODE_FAILED;
 
     if(major == CBOR_MAJOR_UINT) {
         /* Positive integer: argument is the value */
         if(asn_umax2INTEGER(st, (uintmax_t)argument)) ASN__DECODE_FAILED;
-        rval.consumed = (size_t)hlen;
+        rval.consumed += (size_t)hlen;
         rval.code = RC_OK;
         return rval;
     } else if(major == CBOR_MAJOR_NEGINT) {
@@ -248,7 +274,7 @@ INTEGER_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
             st->size = ber_len;
             memcpy(st->buf, ber, ber_len);
         }
-        rval.consumed = (size_t)hlen;
+        rval.consumed += (size_t)hlen;
         rval.code = RC_OK;
         return rval;
     } else if(major == CBOR_MAJOR_TAG) {
@@ -330,7 +356,7 @@ INTEGER_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
             st->size = ber_len;
         }
 
-        rval.consumed = (size_t)hlen + (size_t)bstr_hlen + (size_t)bstr_len;
+        rval.consumed += (size_t)hlen + (size_t)bstr_hlen + (size_t)bstr_len;
         rval.code = RC_OK;
         return rval;
     }

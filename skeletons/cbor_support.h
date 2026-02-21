@@ -41,10 +41,28 @@ extern "C" {
 #define CBOR_SV_UNDEF       0xF7  /* simple value: undefined */
 
 /*
- * CBOR tags (RFC 7049 section 2.4)
+ * CBOR tags (RFC 8949 section 3.4 and IANA CBOR Tags Registry).
+ * Full list: https://www.iana.org/assignments/cbor-tags/
  */
-#define CBOR_TAG_POSINT_BIGNUM  2   /* positive bignum */
-#define CBOR_TAG_NEGINT_BIGNUM  3   /* negative bignum */
+#define CBOR_TAG_DATETIME_STRING    0   /* Standard date/time string (text) */
+#define CBOR_TAG_EPOCH_DATETIME     1   /* Epoch-based date/time (number) */
+#define CBOR_TAG_POSINT_BIGNUM      2   /* Positive bignum (bytes) */
+#define CBOR_TAG_NEGINT_BIGNUM      3   /* Negative bignum (bytes) */
+#define CBOR_TAG_DECIMAL_FRACTION   4   /* Decimal fraction [exp, mantissa] */
+#define CBOR_TAG_BIGFLOAT           5   /* Bigfloat [exp, mantissa] */
+#define CBOR_TAG_BASE64URL          21  /* Expected base64url encoding hint */
+#define CBOR_TAG_BASE64             22  /* Expected base64 encoding hint */
+#define CBOR_TAG_BASE16             23  /* Expected base16 encoding hint */
+#define CBOR_TAG_ENCODED_CBOR       24  /* Encoded CBOR data item (bytes) */
+#define CBOR_TAG_URI                32  /* URI (text) */
+#define CBOR_TAG_BASE64URL_STR      33  /* Base64url string (text) */
+#define CBOR_TAG_BASE64_STR         34  /* Base64 string (text) */
+#define CBOR_TAG_REGEX              35  /* Regular expression (text) */
+#define CBOR_TAG_MIME_MESSAGE       36  /* MIME message (text) */
+#define CBOR_TAG_UUID               37  /* Binary UUID (bytes, 16 octets) */
+#define CBOR_TAG_CBOR_SEQ           63  /* CBOR sequence (bytes) */
+#define CBOR_TAG_NETWORK_ADDR      260  /* Network address (IPv4/IPv6/MAC) */
+#define CBOR_TAG_SELF_DESCRIBED  55799  /* Self-described CBOR marker */
 
 /*
  * Encode a CBOR item header (major type + argument) into the stream.
@@ -92,6 +110,19 @@ ssize_t cbor_encode_text(const char *str, size_t len,
  */
 ssize_t cbor_encode_tag(uint64_t tag,
                         asn_app_consume_bytes_f *cb, void *app_key);
+
+/*
+ * Skip any leading CBOR tag headers from the buffer.
+ * CBOR tags (major type 6) are optional semantic annotations that precede
+ * a data item. Tag-transparent decoders call this function to strip tags
+ * before decoding the underlying value.
+ *
+ * Returns the total number of bytes consumed by leading tags (>= 0), or
+ * -1 on error (truncated input).  A return value of 0 means no tags were
+ * present.  The caller must add the returned value to the final consumed
+ * count so that tags are correctly accounted for in the input stream.
+ */
+ssize_t cbor_skip_tags(const uint8_t *buf, size_t size);
 
 /*
  * Encode a CBOR simple value (true, false, null, float64, etc.).

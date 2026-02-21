@@ -153,7 +153,7 @@ CBOR and other encoding rules.
 :   Do not generate the Octet Encoding Rules (OER, X.696) support code
 
 -no-gen-CBOR
-:   Do not generate the Concise Binary Object Representation (CBOR, RFC 7049) support code.
+:   Do not generate the Concise Binary Object Representation (CBOR, RFC 8949) support code.
     By default, CBOR encoder and decoder support code is generated.
 
 -no-gen-UPER
@@ -243,6 +243,26 @@ CANONICAL-XER  xer_encode         *-XER         xer_decode()
 
 *) Asterisk means both BASIC and CANONICAL variants.
 
+# CBOR TAGS
+
+CBOR (RFC 8949) supports *tags* (major type 6) as optional semantic
+annotations on any data item.  A tag consists of a tag number followed
+by the tagged value.  Common tag numbers are registered by IANA at:
+<https://www.iana.org/assignments/cbor-tags/>
+
+**Encoding:** Call `cbor_encode_tag(tag_number, cb, app_key)` immediately
+before encoding the value to prepend a tag header.  Symbolic constants
+for well-known tags (e.g., `CBOR_TAG_DATETIME_STRING`, `CBOR_TAG_URI`,
+`CBOR_TAG_SELF_DESCRIBED`) are defined in `cbor_support.h`.
+
+**Decoding:** All asn1c CBOR decoders are *tag-transparent*: any number
+of leading tag headers are silently consumed before the underlying value
+is decoded.  No application changes are required to accept tagged data.
+The helper `cbor_skip_tags(buf, size)` (in `cbor_support.h`) returns the
+number of bytes occupied by leading tag headers, or -1 on error.
+
+**Bignum tags:** Tags 2 and 3 are used internally by the INTEGER encoder
+and decoder for values that exceed the 64-bit signed range, per RFC 8949.
 
 # SEE ALSO
 

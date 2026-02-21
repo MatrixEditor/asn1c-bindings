@@ -574,7 +574,7 @@ may produce a shorter executable.}\\
 {\ttfamily -no-gen-BER} & {\small Do not generate the Basic Encoding Rules (BER, X.690) support code.}\\
 {\ttfamily -no-gen-XER} & {\small Do not generate the XML Encoding Rules (XER, X.693) support code.}\\
 {\ttfamily -no-gen-OER} & {\small Do not generate the Octet Encoding Rules (OER, X.696) support code.}\\
-{\ttfamily -no-gen-CBOR} & {\small Do not generate the Concise Binary Object Representation (CBOR, RFC~7049) support code. By default, CBOR support code is generated.}\\
+{\ttfamily -no-gen-CBOR} & {\small Do not generate the Concise Binary Object Representation (CBOR, RFC~8949) support code. By default, CBOR support code is generated.}\\
 {\ttfamily -no-gen-UPER} & {\small Do not generate the Unaligned Packed Encoding Rules (PER, X.691) support code.}\\
 {\ttfamily -no-gen-APER} & {\small Do not generate the Aligned Packed Encoding Rules (PER, X.691) support code.}\\
 {\ttfamily -no-gen-print} & {\small Do not generate the print code.}\\
@@ -1543,7 +1543,7 @@ asn_dec_rval_t cbor_decode(
 \subsection*{Description}
 
 The \code{cbor_decode()} function decodes a CBOR-encoded (Concise Binary
-Object Representation, RFC~7049) data stream into the target ASN.1 structure.
+Object Representation, RFC~8949) data stream into the target ASN.1 structure.
 
 CBOR provides a compact, self-describing binary encoding format.
 The decoder follows canonical CBOR rules: only definite-length items are
@@ -1552,6 +1552,13 @@ major type 1 (negative), with bignum tags (2 and 3) used for values that
 exceed the 64-bit range. SEQUENCE and SET types are decoded from CBOR maps,
 SEQUENCE~OF and SET~OF from CBOR arrays, and CHOICE from a single-entry
 CBOR map.
+
+The decoder is \emph{tag-transparent}: any number of leading CBOR tag headers
+(major type~6, RFC~8949 \S3.4) are silently skipped before the underlying
+value is decoded. This means that tagged CBOR data items produced by other
+implementations---such as self-described CBOR (tag~55799), epoch-based
+timestamps (tag~1), or URI-annotated byte strings (tag~32)---are accepted
+without changes to the application code.
 
 \subsection*{Return values}
 
@@ -1576,7 +1583,7 @@ asn_enc_rval_t cbor_encode(
 \subsection*{Description}
 
 The \code{cbor_encode()} function serializes the given structure into a
-canonical CBOR (Concise Binary Object Representation, RFC~7049) byte stream.
+canonical CBOR (Concise Binary Object Representation, RFC~8949) byte stream.
 
 The encoder produces canonical (DER-like) output: integers use the shortest
 possible CBOR encoding, all lengths are definite, and SEQUENCE fields are
@@ -1590,6 +1597,102 @@ key/value pairs.
 er.encoded $\geq 0$ & Number of bytes produced \\
 er.encoded $= -1$ & Encoding failed; \code{er.failed\_type} identifies the culprit
 \end{tabular}
+
+\apisection{sec:cbor_tags}{CBOR Tags}
+
+\subsection*{Overview}
+
+CBOR tags (RFC~8949 \S3.4, major type~6) are optional semantic annotations
+that precede a data item.  A tag consists of a tag number---an unsigned
+integer identifying the semantic type---followed by exactly one tagged
+data item.  Tags do not alter the binary representation of the wrapped
+value; they add out-of-band meaning for applications and interchange.
+
+The complete list of registered tag numbers is maintained by IANA:
+\begin{center}
+\url{https://www.iana.org/assignments/cbor-tags/}
+\end{center}
+
+\subsection*{Encoding with tags}
+
+The \code{cbor\_support.h} header defines symbolic constants for frequently
+used tags:
+
+\begin{tabular}[h!]{lrl}
+\textbf{Constant} & \textbf{Tag\#} & \textbf{Semantics (RFC~8949 / IANA)} \\
+\hline
+\code{CBOR\_TAG\_DATETIME\_STRING}  & 0     & Standard date/time text string \\
+\code{CBOR\_TAG\_EPOCH\_DATETIME}   & 1     & Epoch-based date/time number \\
+\code{CBOR\_TAG\_POSINT\_BIGNUM}    & 2     & Positive bignum (used internally) \\
+\code{CBOR\_TAG\_NEGINT\_BIGNUM}    & 3     & Negative bignum (used internally) \\
+\code{CBOR\_TAG\_DECIMAL\_FRACTION} & 4     & Decimal fraction \\
+\code{CBOR\_TAG\_BIGFLOAT}          & 5     & Bigfloat \\
+\code{CBOR\_TAG\_BASE64URL}         & 21    & Expected base64url encoding hint \\
+\code{CBOR\_TAG\_BASE64}            & 22    & Expected base64 encoding hint \\
+\code{CBOR\_TAG\_BASE16}            & 23    & Expected base16 encoding hint \\
+\code{CBOR\_TAG\_ENCODED\_CBOR}     & 24    & Encoded CBOR data item \\
+\code{CBOR\_TAG\_URI}               & 32    & URI text string \\
+\code{CBOR\_TAG\_REGEX}             & 35    & Regular expression text string \\
+\code{CBOR\_TAG\_UUID}              & 37    & Binary UUID (16 bytes) \\
+\code{CBOR\_TAG\_NETWORK\_ADDR}     & 260   & IPv4/IPv6/MAC network address \\
+\code{CBOR\_TAG\_SELF\_DESCRIBED}   & 55799 & Self-described CBOR marker \\
+\end{tabular}
+
+To prepend a CBOR tag to any encoded value, call \code{cbor\_encode\_tag()}
+before encoding the value.  The following example emits the self-described
+CBOR marker (tag~55799) followed by an INTEGER value:
+
+\begin{codesample}
+#include <cbor_support.h>
+#include <cbor_encoder.h>
+#include <INTEGER.h>
+
+static int my_write(const void *data, size_t size, void *key) {
+    /* write data to output stream */
+    return fwrite(data, 1, size, (FILE *)key) == size ? 0 : -1;
+}
+
+void encode_tagged_integer(INTEGER_t *val, FILE *out) {
+    /* Emit self-described CBOR tag (55799) first */
+    cbor_encode_tag(CBOR_TAG_SELF_DESCRIBED, my_write, out);
+    /* Then encode the INTEGER value */
+    cbor_encode(&asn_DEF_INTEGER, val, my_write, out);
+}
+\end{codesample}
+
+Arbitrary tag numbers not listed above can be passed directly to
+\code{cbor\_encode\_tag()} as a \code{uint64\_t}.
+
+\subsection*{Decoding tagged data}
+
+All asn1c CBOR decoders are \emph{tag-transparent}: any number of leading
+tag headers are automatically consumed before the underlying value is decoded.
+No special handling is needed in application code; tagged and untagged data
+items are decoded identically.
+
+The helper function \code{cbor\_skip\_tags()} (declared in
+\code{cbor\_support.h}) is also available for applications that inspect raw
+CBOR buffers directly:
+
+\begin{codesample}
+#include <cbor_support.h>
+
+/*
+ * Returns the number of bytes occupied by leading tag headers,
+ * or -1 on error.  After the call, buf + n points to the
+ * first non-tag byte.
+ */
+ssize_t cbor_skip_tags(const uint8_t *buf, size_t size);
+\end{codesample}
+
+\subsection*{Bignum tags}
+
+CBOR tags~2 and~3 are treated specially by the INTEGER decoder.
+They encode arbitrarily large positive (tag~2) and negative (tag~3)
+integers as byte strings, allowing ASN.1 INTEGER values that exceed the
+64-bit signed range to be represented in CBOR.  These tags are emitted
+automatically by the INTEGER encoder when the value requires more than
+64 bits.
 
 \chapter{API usage examples}
 

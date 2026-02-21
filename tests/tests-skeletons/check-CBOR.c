@@ -597,6 +597,420 @@ test_oid_cbor_roundtrip(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* CBOR tag encoding and tag-transparent decoding tests (RFC 8949 §3.4) */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Build a CBOR-tagged item in a local buffer: tag_header + inner_buf.
+ * Returns total length written into out_buf (must be at least
+ * 9 + inner_len bytes).
+ */
+static size_t
+prepend_tag(uint64_t tag, const uint8_t *inner, size_t inner_len,
+            uint8_t *out, size_t out_cap) {
+    struct buffer_acc acc;
+    asn_enc_rval_t er;
+
+    /* Reuse the cbor_encode_tag primitive to write the tag header */
+    memset(&acc, 0, sizeof(acc));
+    er.encoded = (ssize_t)cbor_encode_tag(tag, buf_append, &acc);
+    if(er.encoded < 0 || acc.len + inner_len > out_cap) {
+        buf_free(&acc);
+        return 0;
+    }
+    memcpy(out, acc.data, acc.len);
+    memcpy(out + acc.len, inner, inner_len);
+    size_t total = acc.len + inner_len;
+    buf_free(&acc);
+    return total;
+}
+
+static void
+test_cbor_tag_encoding(void) {
+    printf("test_cbor_tag_encoding\n");
+
+    /* Verify cbor_encode_tag produces the correct byte sequence */
+
+    /* Tag 0 (datetime): 0xC0 */
+    {
+        struct buffer_acc acc;
+        memset(&acc, 0, sizeof(acc));
+        ssize_t ret = cbor_encode_tag(CBOR_TAG_DATETIME_STRING, buf_append, &acc);
+        assert(ret == 1 && acc.len == 1 && acc.data[0] == 0xC0);
+        buf_free(&acc);
+        printf("  ✓ cbor_encode_tag(CBOR_TAG_DATETIME_STRING=0) -> 0xC0\n");
+    }
+
+    /* Tag 1 (epoch datetime): 0xC1 */
+    {
+        struct buffer_acc acc;
+        memset(&acc, 0, sizeof(acc));
+        ssize_t ret = cbor_encode_tag(CBOR_TAG_EPOCH_DATETIME, buf_append, &acc);
+        assert(ret == 1 && acc.len == 1 && acc.data[0] == 0xC1);
+        buf_free(&acc);
+        printf("  ✓ cbor_encode_tag(CBOR_TAG_EPOCH_DATETIME=1) -> 0xC1\n");
+    }
+
+    /* Tag 2 (positive bignum): 0xC2 */
+    {
+        struct buffer_acc acc;
+        memset(&acc, 0, sizeof(acc));
+        ssize_t ret = cbor_encode_tag(CBOR_TAG_POSINT_BIGNUM, buf_append, &acc);
+        assert(ret == 1 && acc.len == 1 && acc.data[0] == 0xC2);
+        buf_free(&acc);
+        printf("  ✓ cbor_encode_tag(CBOR_TAG_POSINT_BIGNUM=2) -> 0xC2\n");
+    }
+
+    /* Tag 32 (URI): 0xD8 0x20 */
+    {
+        struct buffer_acc acc;
+        memset(&acc, 0, sizeof(acc));
+        ssize_t ret = cbor_encode_tag(CBOR_TAG_URI, buf_append, &acc);
+        assert(ret == 2 && acc.len == 2);
+        assert(acc.data[0] == 0xD8 && acc.data[1] == 0x20);
+        buf_free(&acc);
+        printf("  ✓ cbor_encode_tag(CBOR_TAG_URI=32) -> 0xD8 0x20\n");
+    }
+
+    /* Tag 55799 (self-described CBOR): 0xD9 0xD9 0xF7 */
+    {
+        struct buffer_acc acc;
+        memset(&acc, 0, sizeof(acc));
+        ssize_t ret = cbor_encode_tag(CBOR_TAG_SELF_DESCRIBED, buf_append, &acc);
+        assert(ret == 3 && acc.len == 3);
+        assert(acc.data[0] == 0xD9 && acc.data[1] == 0xD9 && acc.data[2] == 0xF7);
+        buf_free(&acc);
+        printf("  ✓ cbor_encode_tag(CBOR_TAG_SELF_DESCRIBED=55799) -> 0xD9 0xD9 0xF7\n");
+    }
+
+    printf("PASSED: test_cbor_tag_encoding\n\n");
+}
+
+static void
+test_cbor_skip_tags(void) {
+    printf("test_cbor_skip_tags\n");
+
+    /* No tag: should return 0 */
+    {
+        uint8_t buf[] = {0x42};  /* major 2, len 2 */
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == 0);
+        printf("  ✓ cbor_skip_tags: no tag -> 0\n");
+    }
+
+    /* Single tag 0 (0xC0): returns 1 */
+    {
+        uint8_t buf[] = {0xC0, 0x42};
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == 1);
+        printf("  ✓ cbor_skip_tags: single tag 0 -> 1\n");
+    }
+
+    /* Tag 32 (0xD8 0x20): returns 2 */
+    {
+        uint8_t buf[] = {0xD8, 0x20, 0x60};
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == 2);
+        printf("  ✓ cbor_skip_tags: tag 32 -> 2\n");
+    }
+
+    /* Two nested tags: tag1(0xC1) + tag0(0xC0) + value */
+    {
+        uint8_t buf[] = {0xC1, 0xC0, 0x60};
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == 2);
+        printf("  ✓ cbor_skip_tags: two nested tags -> 2\n");
+    }
+
+    /* Truncated tag: returns -1 */
+    {
+        uint8_t buf[] = {0xD8};  /* tag major, needs 1 more byte */
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == -1);
+        printf("  ✓ cbor_skip_tags: truncated tag -> -1\n");
+    }
+
+    /* Self-described CBOR tag 55799 (0xD9 0xD9 0xF7): returns 3 */
+    {
+        uint8_t buf[] = {0xD9, 0xD9, 0xF7, 0x01};
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == 3);
+        printf("  ✓ cbor_skip_tags: tag 55799 (3-byte header) -> 3\n");
+    }
+
+    printf("PASSED: test_cbor_skip_tags\n\n");
+}
+
+/* Helper: prepend a tag header to an existing encoded buffer and decode */
+static void
+test_tag_transparent_integer(uint64_t tag, intmax_t val, const char *label) {
+    INTEGER_t orig, *decoded = NULL;
+    struct buffer_acc inner;
+    asn_enc_rval_t er;
+    asn_dec_rval_t dr;
+    intmax_t result;
+    uint8_t tagged[32];
+    size_t tagged_len;
+
+    memset(&orig, 0, sizeof(orig));
+    memset(&inner, 0, sizeof(inner));
+
+    if(asn_imax2INTEGER(&orig, val)) {
+        fprintf(stderr, "FAIL: asn_imax2INTEGER(%s)\n", label);
+        exit(1);
+    }
+
+    er = cbor_encode(&asn_DEF_INTEGER, &orig, buf_append, &inner);
+    if(er.encoded < 0) {
+        fprintf(stderr, "FAIL: encode %s\n", label);
+        exit(1);
+    }
+
+    /* Prepend tag header */
+    tagged_len = prepend_tag(tag, inner.data, inner.len, tagged, sizeof(tagged));
+    assert(tagged_len > 0);
+
+    dr = cbor_decode(NULL, &asn_DEF_INTEGER, (void **)&decoded,
+                     tagged, tagged_len);
+    if(dr.code != RC_OK || !decoded) {
+        fprintf(stderr, "FAIL: tag-transparent INTEGER decode %s (code=%d)\n",
+                label, dr.code);
+        exit(1);
+    }
+
+    if(asn_INTEGER2imax(decoded, &result) || result != val) {
+        fprintf(stderr, "FAIL: tag-transparent mismatch %s: got %jd want %jd\n",
+                label, result, val);
+        exit(1);
+    }
+
+    /* Verify all bytes were consumed */
+    if(dr.consumed != tagged_len) {
+        fprintf(stderr, "FAIL: consumed=%zu but tagged_len=%zu for %s\n",
+                dr.consumed, tagged_len, label);
+        exit(1);
+    }
+
+    ASN_STRUCT_FREE(asn_DEF_INTEGER, decoded);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &orig);
+    buf_free(&inner);
+    printf("  ✓ tag %llu transparent decode: INTEGER %s\n",
+           (unsigned long long)tag, label);
+}
+
+static void
+test_cbor_tag_transparent_decode(void) {
+    printf("test_cbor_tag_transparent_decode\n");
+
+    /* ---- INTEGER: decode through various metadata tags ---- */
+    /* Tag 1 = epoch-based datetime wrapping an integer */
+    test_tag_transparent_integer(CBOR_TAG_EPOCH_DATETIME, 0, "zero");
+    test_tag_transparent_integer(CBOR_TAG_EPOCH_DATETIME, 1700000000LL,
+                                 "epoch_timestamp");
+    test_tag_transparent_integer(CBOR_TAG_EPOCH_DATETIME, -1, "minus_one");
+    /* Tag 100: another calendar tag */
+    test_tag_transparent_integer(100, INT32_MAX, "INT32_MAX");
+    /* Self-described CBOR (tag 55799) wrapping an integer */
+    test_tag_transparent_integer(CBOR_TAG_SELF_DESCRIBED, 42, "self_described_42");
+
+    /* ---- OCTET STRING: decode through URI tag (tag 32 is "just a hint") ---- */
+    {
+        static const uint8_t payload[] = {0x68, 0x65, 0x6C, 0x6C, 0x6F}; /* "hello" */
+        uint8_t inner_buf[16], tagged[32];
+        size_t tagged_len;
+        OCTET_STRING_t *decoded = NULL;
+        asn_dec_rval_t dr;
+        struct buffer_acc inner_acc;
+
+        memset(&inner_acc, 0, sizeof(inner_acc));
+        {
+            OCTET_STRING_t orig;
+            asn_enc_rval_t er;
+            memset(&orig, 0, sizeof(orig));
+            orig.buf = (uint8_t *)(uintptr_t)payload;
+            orig.size = sizeof(payload);
+            er = cbor_encode(&asn_DEF_OCTET_STRING, &orig, buf_append, &inner_acc);
+            assert(er.encoded > 0);
+            (void)inner_buf;
+        }
+
+        tagged_len = prepend_tag(CBOR_TAG_BASE64, inner_acc.data, inner_acc.len,
+                                 tagged, sizeof(tagged));
+        assert(tagged_len > 0);
+
+        dr = cbor_decode(NULL, &asn_DEF_OCTET_STRING, (void **)&decoded,
+                         tagged, tagged_len);
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr, "FAIL: tag-transparent OCTET_STRING decode (code=%d)\n",
+                    dr.code);
+            exit(1);
+        }
+        if((size_t)decoded->size != sizeof(payload)
+           || memcmp(decoded->buf, payload, sizeof(payload)) != 0) {
+            fprintf(stderr, "FAIL: tag-transparent OCTET_STRING data mismatch\n");
+            exit(1);
+        }
+        assert(dr.consumed == tagged_len);
+        ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, decoded);
+        buf_free(&inner_acc);
+        printf("  ✓ tag %d (base64 hint) transparent decode: OCTET_STRING\n",
+               CBOR_TAG_BASE64);
+    }
+
+    /* ---- NativeInteger: decode through tag 1 ---- */
+    {
+        long orig_val = 9999, result = 0;
+        long *decoded = NULL;
+        struct buffer_acc inner_acc;
+        uint8_t tagged[32];
+        size_t tagged_len;
+        asn_enc_rval_t er;
+        asn_dec_rval_t dr;
+
+        memset(&inner_acc, 0, sizeof(inner_acc));
+        er = cbor_encode(&asn_DEF_NativeInteger, &orig_val, buf_append, &inner_acc);
+        assert(er.encoded > 0);
+
+        tagged_len = prepend_tag(CBOR_TAG_EPOCH_DATETIME,
+                                 inner_acc.data, inner_acc.len,
+                                 tagged, sizeof(tagged));
+        assert(tagged_len > 0);
+
+        dr = cbor_decode(NULL, &asn_DEF_NativeInteger, (void **)&decoded,
+                         tagged, tagged_len);
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr,
+                    "FAIL: tag-transparent NativeInteger decode (code=%d)\n",
+                    dr.code);
+            exit(1);
+        }
+        result = *decoded;
+        free(decoded);
+        buf_free(&inner_acc);
+        if(result != orig_val) {
+            fprintf(stderr, "FAIL: tag-transparent NativeInteger mismatch: "
+                    "got %ld want %ld\n", result, orig_val);
+            exit(1);
+        }
+        printf("  ✓ tag %d transparent decode: NativeInteger\n",
+               CBOR_TAG_EPOCH_DATETIME);
+    }
+
+    /* ---- BIT STRING: decode through self-described tag ---- */
+    {
+        uint8_t bits[] = {0xAB, 0xCD};
+        BIT_STRING_t orig, *decoded = NULL;
+        struct buffer_acc inner_acc;
+        uint8_t tagged[32];
+        size_t tagged_len;
+        asn_enc_rval_t er;
+        asn_dec_rval_t dr;
+
+        memset(&orig, 0, sizeof(orig));
+        memset(&inner_acc, 0, sizeof(inner_acc));
+        orig.buf = bits;
+        orig.size = 2;
+        orig.bits_unused = 0;
+
+        er = cbor_encode(&asn_DEF_BIT_STRING, &orig, buf_append, &inner_acc);
+        assert(er.encoded > 0);
+
+        tagged_len = prepend_tag(CBOR_TAG_SELF_DESCRIBED,
+                                 inner_acc.data, inner_acc.len,
+                                 tagged, sizeof(tagged));
+        assert(tagged_len > 0);
+
+        dr = cbor_decode(NULL, &asn_DEF_BIT_STRING, (void **)&decoded,
+                         tagged, tagged_len);
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr,
+                    "FAIL: tag-transparent BIT_STRING decode (code=%d)\n",
+                    dr.code);
+            exit(1);
+        }
+        if(decoded->size != 2 || decoded->bits_unused != 0
+           || memcmp(decoded->buf, bits, 2) != 0) {
+            fprintf(stderr, "FAIL: tag-transparent BIT_STRING data mismatch\n");
+            exit(1);
+        }
+        assert(dr.consumed == tagged_len);
+        ASN_STRUCT_FREE(asn_DEF_BIT_STRING, decoded);
+        buf_free(&inner_acc);
+        printf("  ✓ tag %d (self-described) transparent decode: BIT_STRING\n",
+               CBOR_TAG_SELF_DESCRIBED);
+    }
+
+    printf("PASSED: test_cbor_tag_transparent_decode\n\n");
+}
+
+/*
+ * Test nested (multiple) CBOR tags on a single value.
+ * RFC 8949 §3.4 allows any number of consecutive tag wrappers.
+ */
+static void
+test_cbor_nested_tags(void) {
+    printf("test_cbor_nested_tags\n");
+
+    /* Manually construct: tag(55799) + tag(1) + integer(42)
+     * 0xD9 0xD9 0xF7  (tag 55799)
+     * 0xC1             (tag 1)
+     * 0x18 0x2A        (uint 42)
+     */
+    {
+        uint8_t buf[] = {0xD9, 0xD9, 0xF7, 0xC1, 0x18, 0x2A};
+        INTEGER_t *decoded = NULL;
+        asn_dec_rval_t dr = cbor_decode(NULL, &asn_DEF_INTEGER,
+                                        (void **)&decoded,
+                                        buf, sizeof(buf));
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr, "FAIL: nested tags INTEGER decode (code=%d)\n",
+                    dr.code);
+            exit(1);
+        }
+        intmax_t result;
+        if(asn_INTEGER2imax(decoded, &result) || result != 42) {
+            fprintf(stderr, "FAIL: nested tags INTEGER value: got %jd want 42\n",
+                    result);
+            exit(1);
+        }
+        assert(dr.consumed == sizeof(buf));
+        ASN_STRUCT_FREE(asn_DEF_INTEGER, decoded);
+        printf("  ✓ nested tags (55799 + 1) decode: INTEGER 42\n");
+    }
+
+    /* Manually construct: tag(22) + tag(32) + bytes("hi")
+     * Tag numbers 0-23 use a single-byte header (major 6, arg inline):
+     *   0xD6 = 0xC0 | 22   (tag 22, base64 hint – compact form)
+     * Tag numbers 24-255 use a two-byte header:
+     *   0xD8 0x20 = tag 32  (URI hint – extended 1-byte form)
+     * 0x42 0x68 0x69        (bytes "hi", length 2)
+     */
+    {
+        uint8_t buf[] = {0xD6, 0xD8, 0x20, 0x42, 0x68, 0x69};
+        OCTET_STRING_t *decoded = NULL;
+        asn_dec_rval_t dr = cbor_decode(NULL, &asn_DEF_OCTET_STRING,
+                                        (void **)&decoded,
+                                        buf, sizeof(buf));
+        if(dr.code != RC_OK || !decoded) {
+            fprintf(stderr,
+                    "FAIL: nested tags OCTET_STRING decode (code=%d)\n",
+                    dr.code);
+            exit(1);
+        }
+        if(decoded->size != 2 || decoded->buf[0] != 0x68
+           || decoded->buf[1] != 0x69) {
+            fprintf(stderr, "FAIL: nested tags OCTET_STRING data mismatch\n");
+            exit(1);
+        }
+        assert(dr.consumed == sizeof(buf));
+        ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, decoded);
+        printf("  ✓ nested tags (22 + 32) decode: OCTET_STRING \"hi\"\n");
+    }
+
+    printf("PASSED: test_cbor_nested_tags\n\n");
+}
+
+/* ------------------------------------------------------------------ */
 /* main                                                                 */
 /* ------------------------------------------------------------------ */
 int
@@ -609,6 +1023,10 @@ main(void) {
     test_octet_string_cbor_edge_cases();
     test_asn_encode_decode_cbor_dispatch();
     test_oid_cbor_roundtrip();
+    test_cbor_tag_encoding();
+    test_cbor_skip_tags();
+    test_cbor_tag_transparent_decode();
+    test_cbor_nested_tags();
 
     printf("=== ALL CBOR TESTS PASSED ===\n");
     return 0;
