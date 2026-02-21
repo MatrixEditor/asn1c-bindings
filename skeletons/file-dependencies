@@ -291,6 +291,7 @@ NULL.h NULL_cbor.c
 NativeEnumerated.h NativeEnumerated_cbor.c
 NativeInteger.h NativeInteger_cbor.c
 NativeReal.h NativeReal_cbor.c
+OBJECT_IDENTIFIER.h OCTET_STRING_cbor.c
 OCTET_STRING.h OCTET_STRING_cbor.c
 REAL.h REAL_cbor.c
 asn_codecs_prim.h asn_codecs_prim_cbor.c

@@ -18,6 +18,7 @@
 #include <NativeInteger.h>
 #include <OCTET_STRING.h>
 #include <BIT_STRING.h>
+#include <OBJECT_IDENTIFIER.h>
 #include <cbor_encoder.h>
 #include <cbor_decoder.h>
 #include <cbor_support.h>
@@ -507,6 +508,95 @@ test_asn_encode_decode_cbor_dispatch(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* OBJECT IDENTIFIER round-trip                                         */
+/* ------------------------------------------------------------------ */
+static void
+test_oid_roundtrip(const uint8_t *der_bytes, size_t der_len, const char *label) {
+    OBJECT_IDENTIFIER_t orig, *decoded = NULL;
+    struct buffer_acc enc;
+    asn_enc_rval_t er;
+    asn_dec_rval_t dr;
+
+    memset(&orig, 0, sizeof(orig));
+    memset(&enc, 0, sizeof(enc));
+
+    if(der_len > 0) {
+        orig.buf = (uint8_t *)malloc(der_len);
+        assert(orig.buf);
+        memcpy(orig.buf, der_bytes, der_len);
+    }
+    orig.size = (int)der_len;
+
+    er = cbor_encode(&asn_DEF_OBJECT_IDENTIFIER, &orig, buf_append, &enc);
+    if(er.encoded < 0) {
+        fprintf(stderr, "FAIL: OBJECT_IDENTIFIER encode %s\n", label);
+        exit(1);
+    }
+
+    dr = cbor_decode(NULL, &asn_DEF_OBJECT_IDENTIFIER, (void **)&decoded,
+                     enc.data, enc.len);
+    if(dr.code != RC_OK || !decoded) {
+        fprintf(stderr, "FAIL: OBJECT_IDENTIFIER decode %s (code=%d)\n",
+                label, dr.code);
+        exit(1);
+    }
+
+    if((size_t)decoded->size != der_len) {
+        fprintf(stderr, "FAIL: OBJECT_IDENTIFIER size mismatch %s: "
+                "got %zu, want %zu\n", label, (size_t)decoded->size, der_len);
+        exit(1);
+    }
+    if(der_len > 0 && memcmp(decoded->buf, der_bytes, der_len) != 0) {
+        fprintf(stderr, "FAIL: OBJECT_IDENTIFIER data mismatch %s\n", label);
+        exit(1);
+    }
+
+    ASN_STRUCT_FREE(asn_DEF_OBJECT_IDENTIFIER, decoded);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_OBJECT_IDENTIFIER, &orig);
+    buf_free(&enc);
+    printf("  ✓ OBJECT_IDENTIFIER round-trip: %s (len=%zu)\n", label, der_len);
+}
+
+static void
+test_oid_cbor_roundtrip(void) {
+    printf("test_oid_cbor_roundtrip\n");
+
+    /* OID 1.2.840.10045.4.3.2 (ecdsaWithSHA256): DER value bytes */
+    {
+        /* 1.2.840.10045.4.3.2 -> 2a 86 48 ce 3d 04 03 02 */
+        static const uint8_t oid_sha256[] = {
+            0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02
+        };
+        test_oid_roundtrip(oid_sha256, sizeof(oid_sha256), "ecdsaWithSHA256");
+    }
+
+    /* OID 2.5.4.3 (commonName): DER value bytes */
+    {
+        /* 2.5.4.3 -> 55 04 03 */
+        static const uint8_t oid_cn[] = {0x55, 0x04, 0x03};
+        test_oid_roundtrip(oid_cn, sizeof(oid_cn), "commonName");
+    }
+
+    /* OID 1.2.840.10045.2.1 (ecPublicKey): DER value bytes */
+    {
+        /* 1.2.840.10045.2.1 -> 2a 86 48 ce 3d 02 01 */
+        static const uint8_t oid_ec[] = {
+            0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01
+        };
+        test_oid_roundtrip(oid_ec, sizeof(oid_ec), "ecPublicKey");
+    }
+
+    /* OID 2.5.29.19 (basicConstraints): DER value bytes */
+    {
+        /* 2.5.29.19 -> 55 1d 13 */
+        static const uint8_t oid_bc[] = {0x55, 0x1d, 0x13};
+        test_oid_roundtrip(oid_bc, sizeof(oid_bc), "basicConstraints");
+    }
+
+    printf("PASSED: test_oid_cbor_roundtrip\n\n");
+}
+
+/* ------------------------------------------------------------------ */
 /* main                                                                 */
 /* ------------------------------------------------------------------ */
 int
@@ -518,6 +608,7 @@ main(void) {
     test_bit_string_cbor_edge_cases();
     test_octet_string_cbor_edge_cases();
     test_asn_encode_decode_cbor_dispatch();
+    test_oid_cbor_roundtrip();
 
     printf("=== ALL CBOR TESTS PASSED ===\n");
     return 0;
