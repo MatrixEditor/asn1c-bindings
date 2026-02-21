@@ -4,6 +4,7 @@
  */
 #include <asn_internal.h>
 #include <constr_SEQUENCE.h>
+#include <OPEN_TYPE.h>
 #include <cbor_encoder.h>
 #include <cbor_decoder.h>
 #include <cbor_support.h>
@@ -66,8 +67,12 @@ SEQUENCE_encode_cbor(const asn_TYPE_descriptor_t *td, const void *sptr,
         er.encoded += ret;
 
         /* Encode value */
-        if(!elm->type->op->cbor_encoder) ASN__ENCODE_FAILED;
-        tmper = elm->type->op->cbor_encoder(elm->type, memb_ptr, cb, app_key);
+        if(elm->flags & ATF_OPEN_TYPE) {
+            tmper = OPEN_TYPE_cbor_put(td, sptr, elm, cb, app_key);
+        } else {
+            if(!elm->type->op->cbor_encoder) ASN__ENCODE_FAILED;
+            tmper = elm->type->op->cbor_encoder(elm->type, memb_ptr, cb, app_key);
+        }
         if(tmper.encoded < 0) return tmper;
         er.encoded += tmper.encoded;
     }
@@ -135,10 +140,16 @@ SEQUENCE_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
                     memb_ptr2 = &memb_ptr;
                 }
 
-                if(!elm->type->op->cbor_decoder) ASN__DECODE_FAILED;
-                tmprval = elm->type->op->cbor_decoder(
-                    opt_codec_ctx, elm->type, memb_ptr2,
-                    buf + consumed, size - consumed);
+                if(elm->flags & ATF_OPEN_TYPE) {
+                    tmprval = OPEN_TYPE_cbor_get(opt_codec_ctx, td, st,
+                                                 elm, buf + consumed,
+                                                 size - consumed);
+                } else {
+                    if(!elm->type->op->cbor_decoder) ASN__DECODE_FAILED;
+                    tmprval = elm->type->op->cbor_decoder(
+                        opt_codec_ctx, elm->type, memb_ptr2,
+                        buf + consumed, size - consumed);
+                }
                 if(tmprval.code != RC_OK) ASN__DECODE_FAILED;
                 consumed += tmprval.consumed;
                 break;

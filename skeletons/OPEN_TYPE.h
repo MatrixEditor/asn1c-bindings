@@ -159,6 +159,22 @@ asn_dec_rval_t OPEN_TYPE_aper_unknown_type_discard_bytes(
     asn_per_data_t *pd);
 #endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+asn_dec_rval_t OPEN_TYPE_cbor_get(
+    const asn_codec_ctx_t *opt_codec_ctx,
+    const asn_TYPE_descriptor_t *parent_type,
+    void *parent_structure,
+    const asn_TYPE_member_t *element,
+    const void *ptr, size_t size);
+#define OPEN_TYPE_decode_cbor NULL
+#define OPEN_TYPE_encode_cbor CHOICE_encode_cbor
+asn_enc_rval_t OPEN_TYPE_cbor_put(
+    const asn_TYPE_descriptor_t *parent_type,
+    const void *parent_structure,
+    const asn_TYPE_member_t *element,
+    asn_app_consume_bytes_f *consume_bytes_cb, void *app_key);
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
+
 extern asn_TYPE_operation_t asn_OP_OPEN_TYPE;
 
 #ifdef __cplusplus
