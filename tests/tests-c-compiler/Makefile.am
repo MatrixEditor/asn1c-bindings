@@ -64,6 +64,7 @@ TESTS += check-src/check-158.-fcompound-names.c
 TESTS += check-src/check-159.c
 TESTS += check-src/check-164.c
 TESTS += check-src/check-201.c
+TESTS += check-src/check-202.-gen-CBOR.c
 
 if TEST_64BIT
 TESTS += check-src/check64-134.-gen-UPER.c
@@ -77,6 +78,7 @@ EXTRA_DIST =    \
     data-70     \
     data-119    \
     data-126    \
+    data-202    \
     check-src/check64-134.-gen-UPER.c    \
     check-src/check64-136.-gen-OER.c
 
