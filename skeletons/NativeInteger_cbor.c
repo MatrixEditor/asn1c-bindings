@@ -40,6 +40,7 @@ NativeInteger_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     const uint8_t *buf = (const uint8_t *)buf_ptr;
+    ssize_t tag_skip;
     uint8_t major;
     uint64_t argument;
     ssize_t hlen;
@@ -56,7 +57,12 @@ NativeInteger_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
 
     if(size < 1) ASN__DECODE_FAILED;
 
-    hlen = cbor_decode_head(buf, size, &major, &argument);
+    /* Skip any leading CBOR tags (RFC 8949 §3.4) */
+    tag_skip = cbor_skip_tags(buf, size);
+    if(tag_skip < 0) ASN__DECODE_FAILED;
+
+    hlen = cbor_decode_head(buf + tag_skip, size - (size_t)tag_skip,
+                            &major, &argument);
     if(hlen < 0) ASN__DECODE_FAILED;
 
     if(major == CBOR_MAJOR_UINT) {
@@ -75,7 +81,7 @@ NativeInteger_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
         ASN__DECODE_FAILED;
     }
 
-    rval.consumed = (size_t)hlen;
+    rval.consumed = (size_t)tag_skip + (size_t)hlen;
     rval.code = RC_OK;
     return rval;
 }

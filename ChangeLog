@@ -1,3 +1,31 @@
+1.3.4:
+	NEW FEATURES:
+	* Added CBOR tag support (RFC 8949 §3.4, major type 6).
+	  - All CBOR decoders are now tag-transparent: any number of leading
+	    tag headers are silently skipped before decoding the underlying
+	    value.  Tagged data from external producers (self-described CBOR
+	    tag 55799, epoch timestamps tag 1, URI hints tag 32, etc.) is
+	    accepted without application-level changes.
+	  - New cbor_skip_tags() helper in cbor_support.[ch] peels off
+	    consecutive leading CBOR tag headers from a raw buffer.
+	  - Added well-known CBOR tag constants to cbor_support.h:
+	    CBOR_TAG_DATETIME_STRING (0), CBOR_TAG_EPOCH_DATETIME (1),
+	    CBOR_TAG_DECIMAL_FRACTION (4), CBOR_TAG_BIGFLOAT (5),
+	    CBOR_TAG_BASE64URL (21), CBOR_TAG_BASE64 (22), CBOR_TAG_BASE16 (23),
+	    CBOR_TAG_ENCODED_CBOR (24), CBOR_TAG_URI (32), CBOR_TAG_REGEX (35),
+	    CBOR_TAG_UUID (37), CBOR_TAG_NETWORK_ADDR (260),
+	    CBOR_TAG_SELF_DESCRIBED (55799).
+	  - Extended check-CBOR test suite with comprehensive tag tests:
+	    cbor_encode_tag() output verification, cbor_skip_tags() unit tests,
+	    tag-transparent decode tests for INTEGER, OCTET STRING, NativeInteger,
+	    and BIT STRING types, and nested multi-tag decode tests.
+	  - Updated asn1c-usage.tex: added "CBOR Tags" API section documenting
+	    encoding with cbor_encode_tag(), tag-transparent decoding, and
+	    bignum tags. Added IANA CBOR Tags Registry reference.
+	    Updated CBOR references from RFC 7049 to RFC 8949 (successor).
+	  - Updated asn1c.man.md: added CBOR TAGS section and updated RFC
+	    reference from RFC 7049 to RFC 8949.
+
 1.3.3:
 	NEW FEATURES:
 	* Added complete CBOR (Concise Binary Object Representation, RFC 7049)

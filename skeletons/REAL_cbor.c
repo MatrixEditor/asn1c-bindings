@@ -33,6 +33,7 @@ REAL_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
                  void **sptr, const void *buf_ptr, size_t size) {
     REAL_t *st = (REAL_t *)*sptr;
     const uint8_t *buf = (const uint8_t *)buf_ptr;
+    ssize_t tag_skip;
     double d;
     ssize_t consumed;
     asn_dec_rval_t rval = {RC_FAIL, 0};
@@ -46,12 +47,16 @@ REAL_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
         *sptr = st;
     }
 
-    consumed = cbor_decode_float64(buf, size, &d);
+    /* Skip any leading CBOR tags (RFC 8949 §3.4) */
+    tag_skip = cbor_skip_tags(buf, size);
+    if(tag_skip < 0) ASN__DECODE_FAILED;
+
+    consumed = cbor_decode_float64(buf + tag_skip, size - (size_t)tag_skip, &d);
     if(consumed < 0) ASN__DECODE_FAILED;
 
     if(asn_double2REAL(st, d)) ASN__DECODE_FAILED;
 
-    rval.consumed = (size_t)consumed;
+    rval.consumed = (size_t)tag_skip + (size_t)consumed;
     rval.code = RC_OK;
     return rval;
 }

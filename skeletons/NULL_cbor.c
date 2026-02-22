@@ -29,6 +29,7 @@ NULL_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
                  void **sptr, const void *buf_ptr, size_t size) {
     NULL_t *st = (NULL_t *)*sptr;
     const uint8_t *buf = (const uint8_t *)buf_ptr;
+    ssize_t tag_skip;
     asn_dec_rval_t rval = {RC_FAIL, 0};
 
     (void)opt_codec_ctx;
@@ -40,9 +41,15 @@ NULL_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
         *sptr = st;
     }
 
-    if(size < 1 || buf[0] != CBOR_SV_NULL) ASN__DECODE_FAILED;
+    if(size < 1) ASN__DECODE_FAILED;
 
-    rval.consumed = 1;
+    /* Skip any leading CBOR tags (RFC 8949 §3.4) */
+    tag_skip = cbor_skip_tags(buf, size);
+    if(tag_skip < 0) ASN__DECODE_FAILED;
+    if(size - (size_t)tag_skip < 1) ASN__DECODE_FAILED;
+    if(buf[tag_skip] != CBOR_SV_NULL) ASN__DECODE_FAILED;
+
+    rval.consumed = (size_t)tag_skip + 1;
     rval.code = RC_OK;
     return rval;
 }

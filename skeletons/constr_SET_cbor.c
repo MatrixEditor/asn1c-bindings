@@ -91,7 +91,14 @@ SET_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
 
     if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx)) ASN__DECODE_FAILED;
 
-    hlen = cbor_decode_head(buf, size, &major, &map_count);
+    /* Skip any leading CBOR tags (RFC 8949 §3.4) */
+    {
+        ssize_t tag_skip = cbor_skip_tags(buf, size);
+        if(tag_skip < 0) ASN__DECODE_FAILED;
+        consumed += (size_t)tag_skip;
+    }
+
+    hlen = cbor_decode_head(buf + consumed, size - consumed, &major, &map_count);
     if(hlen < 0 || major != CBOR_MAJOR_MAP) ASN__DECODE_FAILED;
     consumed += (size_t)hlen;
 

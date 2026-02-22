@@ -136,6 +136,46 @@ cbor_encode_tag(uint64_t tag, asn_app_consume_bytes_f *cb, void *app_key) {
     return cbor_encode_head(CBOR_MAJOR_TAG, tag, cb, app_key);
 }
 
+/*
+ * Skip any leading CBOR tag headers.
+ * Tags (major type 6) are optional semantic annotations; they carry a tag
+ * number followed by exactly one tagged data item.  This function peels off
+ * every consecutive tag header so that the caller can decode the underlying
+ * value without knowing which tags are present.
+ *
+ * Returns total bytes consumed by tags (>= 0), or -1 on truncation/error.
+ */
+ssize_t
+cbor_skip_tags(const uint8_t *buf, size_t size) {
+    size_t total = 0;
+
+    for(;;) {
+        uint8_t major;
+        uint64_t arg;
+        ssize_t hlen;
+
+        if(total >= size) {
+            /*
+             * End of input while still expecting the tagged item.
+             * If we consumed at least one tag header, the stream is
+             * truncated (a tag without a following data item is invalid).
+             * If no tags were seen yet, the caller may have passed an
+             * empty slice – return 0 so the caller's own size check fires.
+             */
+            return (total > 0) ? -1 : 0;
+        }
+
+        hlen = cbor_decode_head(buf + total, size - total, &major, &arg);
+        if(hlen < 0)
+            return -1;
+
+        if(major != CBOR_MAJOR_TAG)
+            return (ssize_t)total;  /* non-tag item – stop here */
+
+        total += (size_t)hlen;
+    }
+}
+
 ssize_t
 cbor_encode_simple(uint8_t simple_val,
                    asn_app_consume_bytes_f *cb, void *app_key) {

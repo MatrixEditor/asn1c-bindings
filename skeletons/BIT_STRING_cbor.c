@@ -58,6 +58,7 @@ BIT_STRING_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
                        void **sptr, const void *buf_ptr, size_t size) {
     BIT_STRING_t *st = (BIT_STRING_t *)*sptr;
     const uint8_t *buf = (const uint8_t *)buf_ptr;
+    ssize_t tag_skip;
     uint8_t major;
     uint64_t bstr_len;
     ssize_t hlen;
@@ -74,14 +75,19 @@ BIT_STRING_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
 
     if(size < 1) ASN__DECODE_FAILED;
 
-    hlen = cbor_decode_head(buf, size, &major, &bstr_len);
+    /* Skip any leading CBOR tags (RFC 8949 §3.4) */
+    tag_skip = cbor_skip_tags(buf, size);
+    if(tag_skip < 0) ASN__DECODE_FAILED;
+
+    hlen = cbor_decode_head(buf + tag_skip, size - (size_t)tag_skip,
+                            &major, &bstr_len);
     if(hlen < 0 || major != CBOR_MAJOR_BYTES) ASN__DECODE_FAILED;
-    if(size - (size_t)hlen < bstr_len) ASN__DECODE_FAILED;
+    if(size - (size_t)tag_skip - (size_t)hlen < bstr_len) ASN__DECODE_FAILED;
 
     /* Minimum 1 byte for unused bits indicator */
     if(bstr_len < 1) ASN__DECODE_FAILED;
 
-    const uint8_t *data = buf + hlen;
+    const uint8_t *data = buf + tag_skip + hlen;
     uint8_t bits_unused = data[0];
     size_t data_len = (size_t)bstr_len - 1;
 
@@ -102,7 +108,7 @@ BIT_STRING_decode_cbor(const asn_codec_ctx_t *opt_codec_ctx,
     st->size = (int)data_len;
     st->bits_unused = bits_unused;
 
-    rval.consumed = (size_t)hlen + (size_t)bstr_len;
+    rval.consumed = (size_t)tag_skip + (size_t)hlen + (size_t)bstr_len;
     rval.code = RC_OK;
     return rval;
 }
