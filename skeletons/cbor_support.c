@@ -154,8 +154,16 @@ cbor_skip_tags(const uint8_t *buf, size_t size) {
         uint64_t arg;
         ssize_t hlen;
 
-        if(total >= size)
-            return (ssize_t)total;  /* end of input – caller will handle */
+        if(total >= size) {
+            /*
+             * End of input while still expecting the tagged item.
+             * If we consumed at least one tag header, the stream is
+             * truncated (a tag without a following data item is invalid).
+             * If no tags were seen yet, the caller may have passed an
+             * empty slice – return 0 so the caller's own size check fires.
+             */
+            return (total > 0) ? -1 : 0;
+        }
 
         hlen = cbor_decode_head(buf + total, size - total, &major, &arg);
         if(hlen < 0)

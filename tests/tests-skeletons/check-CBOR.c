@@ -730,6 +730,14 @@ test_cbor_skip_tags(void) {
         printf("  ✓ cbor_skip_tags: truncated tag -> -1\n");
     }
 
+    /* Complete tag header with no following item (EOF after tag): returns -1 */
+    {
+        uint8_t buf[] = {0xC0};  /* tag 0, complete header but no tagged item */
+        ssize_t n = cbor_skip_tags(buf, sizeof(buf));
+        assert(n == -1);
+        printf("  ✓ cbor_skip_tags: tag header with no item -> -1\n");
+    }
+
     /* Self-described CBOR tag 55799 (0xD9 0xD9 0xF7): returns 3 */
     {
         uint8_t buf[] = {0xD9, 0xD9, 0xF7, 0x01};
@@ -813,10 +821,10 @@ test_cbor_tag_transparent_decode(void) {
     /* Self-described CBOR (tag 55799) wrapping an integer */
     test_tag_transparent_integer(CBOR_TAG_SELF_DESCRIBED, 42, "self_described_42");
 
-    /* ---- OCTET STRING: decode through URI tag (tag 32 is "just a hint") ---- */
+    /* ---- OCTET STRING: decode through Base64 hint tag (tag 22 is "just a hint") ---- */
     {
         static const uint8_t payload[] = {0x68, 0x65, 0x6C, 0x6C, 0x6F}; /* "hello" */
-        uint8_t inner_buf[16], tagged[32];
+        uint8_t tagged[32];
         size_t tagged_len;
         OCTET_STRING_t *decoded = NULL;
         asn_dec_rval_t dr;
@@ -831,7 +839,6 @@ test_cbor_tag_transparent_decode(void) {
             orig.size = sizeof(payload);
             er = cbor_encode(&asn_DEF_OCTET_STRING, &orig, buf_append, &inner_acc);
             assert(er.encoded > 0);
-            (void)inner_buf;
         }
 
         tagged_len = prepend_tag(CBOR_TAG_BASE64, inner_acc.data, inner_acc.len,
