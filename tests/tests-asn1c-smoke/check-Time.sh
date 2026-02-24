@@ -7,6 +7,11 @@ top_builddir=${top_builddir:-../..}
 top_srcdir=${top_srcdir:-../..}
 
 testdir=test-Time
+cleanup() {
+    rm -rf "$testdir"
+}
+trap cleanup EXIT
+
 rm -rf "$testdir"
 mkdir "$testdir"
 cd "$testdir"
@@ -33,6 +38,3 @@ test ! -f Time.h
 test ! -f Time.c
 grep -F '#include "asn1c_time.h"' ./asn1c_time.c
 grep -R "\"asn1c_time.h\"" ./*.h
-
-cd ..
-rm -rf "$testdir"

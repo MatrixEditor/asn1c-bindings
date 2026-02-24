@@ -55,7 +55,6 @@ static const char *generate_pdu_C_definition(void);
 static void asn1c__cleanup_pdu_type(void);
 static int generate_constant_file(arg_t *arg, const char *destdir);
 static void warn_if_conflicts_with_system_headers(const char *filename, const char *typename);
-static const char *disambiguate_generated_filename(const char *filename);
 
 static int
 asn1c__save_asn_config(arg_t *arg, const char *destdir,
@@ -122,9 +121,9 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 			if(asn1_lang_map[arg->expr->meta_type]
 				[arg->expr->expr_type].type_cb &&
 				(arg->expr->meta_type != AMT_VALUE)) {
-                const char *filename = disambiguate_generated_filename(
+                const char *filename = asn1c_disambiguate_generated_filename(
                     asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
-                                          arg->expr, 0));
+                                          arg->expr, (char *)0));
 				safe_fprintf(mkf, "\t\\\n\t%s%s.c", destdir, filename);
 			}
 		}
@@ -143,9 +142,9 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 			if(asn1_lang_map[arg->expr->meta_type]
 				[arg->expr->expr_type].type_cb &&
 				(arg->expr->meta_type != AMT_VALUE)) {
-                const char *filename = disambiguate_generated_filename(
+                const char *filename = asn1c_disambiguate_generated_filename(
                     asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
-                                          arg->expr, 0));
+                                          arg->expr, (char *)0));
                 safe_fprintf(mkf, "\t\\\n\t%s%s.h", destdir, filename);
             }
 		}
@@ -630,7 +629,7 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
 		return -1;
 	}
 
-	filename = strdup(disambiguate_generated_filename(
+	filename = strdup(asn1c_disambiguate_generated_filename(
         asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, expr,
                               (char *)0)));
 	
@@ -1111,38 +1110,6 @@ include_type_to_pdu_collection(arg_t *arg) {
     return 0;
 }
 
-static const char *
-disambiguate_generated_filename(const char *filename) {
-    static const char *system_headers[] = {
-        "time",   "string", "assert", "errno", "stdio",  "stdlib",
-        "stdint", "stddef", "stdbool", "limits", "math", "memory",
-        "setjmp", "signal", "unistd",
-    };
-    static char disambiguated[64];
-
-    if(asn1c_prefix_get()[0] != '\0') {
-        return filename;
-    }
-
-    for(size_t i = 0; i < sizeof(system_headers) / sizeof(system_headers[0]); i++) {
-        const char *hdr = system_headers[i];
-        const unsigned char *f = (const unsigned char *)filename;
-        const unsigned char *h = (const unsigned char *)hdr;
-
-        while(*f && *h && tolower(*f) == tolower(*h)) {
-            f++;
-            h++;
-        }
-
-        if(*f == '\0' && *h == '\0') {
-            snprintf(disambiguated, sizeof(disambiguated), "asn1c_%s", hdr);
-            return disambiguated;
-        }
-    }
-
-    return filename;
-}
-
 /*
  * Check if a generated filename might conflict with common system headers
  * on case-insensitive filesystems. Issue a warning with suggestion to use -fprefix.
@@ -1237,7 +1204,7 @@ generate_constant_collection(arg_t *arg) {
 
             if(arg->expr->meta_type == AMT_VALUE) {
                 abuf_printf(buf, "#define %s (%s)\n",
-                            asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
+                            asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                             asn1p_itoa(arg->expr->value->value.v_integer));
                 empty_file = 0;
             }
@@ -1247,10 +1214,10 @@ generate_constant_collection(arg_t *arg) {
                     if(arg->expr->constraints->el_count == 1 &&
                        arg->expr->constraints->elements[0]->type == ACT_EL_RANGE) {
                         abuf_printf(buf, "#define min_val_%s (%s)\n",
-                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
+                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                                     asn1p_itoa(arg->expr->constraints->elements[0]->range_start->value.v_integer));
                         abuf_printf(buf, "#define max_val_%s (%s)\n",
-                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
+                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                                     asn1p_itoa(arg->expr->constraints->elements[0]->range_stop->value.v_integer));
                         empty_file = 0;
                     } 

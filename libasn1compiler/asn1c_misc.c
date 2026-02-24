@@ -245,7 +245,7 @@ asn1c_make_identifier(enum ami_flags_e flags, asn1p_expr_t *expr, ...) {
 	return storage;
 }
 
-static const char *
+const char *
 asn1c_disambiguate_generated_filename(const char *name) {
     static const char *system_header_names[] = {
         "time",   "string", "assert", "errno", "stdio",  "stdlib",
@@ -466,7 +466,7 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
             const char *filename = asn1c_make_identifier(
                 AMI_MASK_ONLY_SPACES | AMI_NODELIMITER, 0, prefix,
                 MODULE_NAME_OF(exprid), exprid ? exprid->Identifier : typename,
-                0);
+                (char *)0);
             const char *include_filename = stdname
                                                ? filename
                                                : asn1c_disambiguate_generated_filename(
@@ -476,7 +476,7 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
                      include_filename);
             return asn1c_make_identifier(
                 AMI_MASK_ONLY_SPACES | AMI_NODELIMITER, 0, open,
-                filename_storage, close, 0);
+                filename_storage, close, (char *)0);
         }
 	case TNF_SAFE:
 		return asn1c_make_identifier(stdname ? 0 : AMI_USE_PREFIX, exprid, typename, (char*)0);
