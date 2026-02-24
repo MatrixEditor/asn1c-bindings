@@ -42,8 +42,8 @@ asn_TYPE_operation_t asn_OP_ANY = {
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-    0,
-    0,
+    OCTET_STRING_decode_oer,
+    OCTET_STRING_encode_oer,
 #else
     0,
     0,

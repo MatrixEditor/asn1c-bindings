@@ -34,9 +34,10 @@ jobs:
         make regen-makefile
         # Build the x509dump tool (compiles all generated codecs)
         make x509dump
-        # Run full roundtrip tests for BER and XER formats
-        # (check-oer, check-per, check-aper are skipped: PKIX uses unconstrained ANY fields
-        #  in certificate extensions, which are not encodable in OER, PER, or APER)
+        # Run full roundtrip tests for all formats with sample files:
+        # BER, XER, OER (COER), UPER, APER are all verified with encode/decode roundtrips
+        # and fault injection tests.  The sample-Certificate-1.{coer,per,aper} files
+        # activate the corresponding check-oer, check-per, check-aper targets.
         make check
         # Test CBOR encoding/decoding roundtrip
         ./x509dump -p Certificate -iber -ocbor sample-Certificate-1.der > /tmp/cert-1.cbor
@@ -47,4 +48,4 @@ jobs:
         # Test JER encoding (JER decode of PKIX is not supported due to ANY open types)
         ./x509dump -p Certificate -iber -ojer sample-Certificate-1.der > /tmp/cert-1.jer
         test -s /tmp/cert-1.jer
-        echo "PKIX1 codec test passed: BER, XER, CBOR, JER(encode-only) verified"
+        echo "PKIX1 codec test passed: BER, XER, OER, UPER, APER, CBOR, JER(encode-only) verified"
