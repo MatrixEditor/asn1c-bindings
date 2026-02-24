@@ -20,6 +20,7 @@ TESTS += check-UTF8String.sh
 TESTS += check-REAL.sh
 TESTS += check-SET_OF_INTEGER.sh
 TESTS += check-SEQUENCE_OF_INTEGER.sh
+TESTS += check-Time.sh
 TESTS += check-JER-open-type.sh
 TESTS += check-JER-enumerated-opentype.sh
 
@@ -29,4 +30,3 @@ EXTRA_DIST = README $(srcdir)/check-*.sh
 
 clean-local:
 	rm -rf test-*
-

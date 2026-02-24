@@ -566,7 +566,7 @@ manually. }\\
 {\ttfamily -fno-constraints} & {\small Do not generate the ASN.1 subtype constraint checking code. This
 may produce a shorter executable.}\\
 {\ttfamily -fno-include-deps} & {\small Do not generate the courtesy \#include lines for non-critical dependencies.}\\
-{\ttfamily -fprefix=\emph{<prefix>}} & {\small Add the specified prefix to all generated type names and filenames. This helps avoid naming conflicts in several scenarios: (1) \textbf{System header conflicts}: On case-insensitive filesystems (macOS HFS+, Windows), ASN.1 types like \texttt{Time} generate \texttt{Time.h}, which can conflict with system header \texttt{<time.h>}. Using \texttt{-fprefix=ASN1\_} generates \texttt{ASN1\_Time.h} instead. The compiler will warn when generating files that might conflict with common system headers. (2) \textbf{Multiple ASN.1 modules}: When generating code for multiple ASN.1 syntaxes with type name clashes, a prefix prevents symbol collisions. (3) \textbf{Integration with existing code}: Prefixes help avoid conflicts with existing types in your codebase. When used with \texttt{-pdu} options, the prefix is automatically applied to PDU definitions in \texttt{converter-example.mk}. For example, \texttt{-fprefix=ASN1\_ -pdu=Certificate} generates \texttt{-DPDU=ASN1\_Certificate}. With \texttt{-pdu=all} or \texttt{-pdu=auto}, the generated \texttt{converter-example.mk} includes instructions for selecting specific prefixed PDU types.}\\
+{\ttfamily -fprefix=\emph{<prefix>}} & {\small Add the specified prefix to all generated type names and filenames. This helps avoid naming conflicts in several scenarios: (1) \textbf{System header conflicts}: On case-insensitive filesystems (macOS HFS+, Windows), ASN.1 types like \texttt{Time} may collide with system header \texttt{<time.h>}. asn1c now automatically disambiguates these generated filenames (for example, \texttt{Time.h} becomes \texttt{asn1c\_time.h} when no explicit prefix is set). Using \texttt{-fprefix=ASN1\_} still generates \texttt{ASN1\_Time.h} when a project-specific namespace is desired. (2) \textbf{Multiple ASN.1 modules}: When generating code for multiple ASN.1 syntaxes with type name clashes, a prefix prevents symbol collisions. (3) \textbf{Integration with existing code}: Prefixes help avoid conflicts with existing types in your codebase. When used with \texttt{-pdu} options, the prefix is automatically applied to PDU definitions in \texttt{converter-example.mk}. For example, \texttt{-fprefix=ASN1\_ -pdu=Certificate} generates \texttt{-DPDU=ASN1\_Certificate}. With \texttt{-pdu=all} or \texttt{-pdu=auto}, the generated \texttt{converter-example.mk} includes instructions for selecting specific prefixed PDU types.}\\
 {\ttfamily -funnamed-unions} & {\small Enable  unnamed  unions in the definitions of target language's structures.}\\
 {\ttfamily -fwide-types} & {\small Use the wide integer types (INTEGER\_t, REAL\_t) instead of machine's native data types (long, double). }\\\\
 \textbf{Codecs Generation Options} & \textbf{Description}\\
@@ -2531,17 +2531,20 @@ On macOS or Windows, this may produce errors like:
 warning: non-portable path to file '<Time.h>'
 \end{verbatim}
 
-\textbf{Solution:}
+\textbf{Default behavior:}
+\begin{bash}
+asn1c rfc3280.asn1
+\end{bash}
+The generated conflicting filename is automatically disambiguated (for example,
+\texttt{asn1c\_time.h} instead of \texttt{Time.h}).
+
+\textbf{Optional custom namespace:}
 \begin{bash}
 asn1c -fprefix=ASN1_ rfc3280.asn1
 cc -I. -o myprogram *.c
 \end{bash}
 
 This generates \texttt{ASN1\_Time.h} instead of \texttt{Time.h}, avoiding the conflict.
-
-\textbf{Automatic Warning:} The compiler will warn you when generating files that might 
-conflict with common system headers (time.h, string.h, stdio.h, etc.) on case-insensitive 
-filesystems, suggesting the use of \texttt{-fprefix}.
 
 \subsection*{Using \texttt{-fprefix} with PDU Options}
 

@@ -25,6 +25,13 @@
 	    Updated CBOR references from RFC 7049 to RFC 8949 (successor).
 	  - Updated asn1c.man.md: added CBOR TAGS section and updated RFC
 	    reference from RFC 7049 to RFC 8949.
+	FIXES:
+	* Fixed generated filename collisions with system headers on
+	  case-insensitive filesystems (notably macOS/Windows). ASN.1 types
+	  whose generated filenames match common system headers are now
+	  disambiguated automatically (e.g., Time.h -> asn1c_time.h),
+	  preventing accidental inclusion of generated headers when source
+	  files include <time.h>. Added smoke-test coverage for the Time case.
 
 1.3.3:
 	NEW FEATURES:
@@ -797,4 +804,3 @@ SECURITY IMPACT.
             injection could possibly be carried by the attack.
     high:   The remote shellcode injection is possible, or the bug is
             otherwise remotely exploitable for most specifications.
-

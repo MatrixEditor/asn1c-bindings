@@ -245,6 +245,39 @@ asn1c_make_identifier(enum ami_flags_e flags, asn1p_expr_t *expr, ...) {
 	return storage;
 }
 
+static const char *
+asn1c_disambiguate_generated_filename(const char *name) {
+    static const char *system_header_names[] = {
+        "time",   "string", "assert", "errno", "stdio",  "stdlib",
+        "stdint", "stddef", "stdbool", "limits", "math", "memory",
+        "setjmp", "signal", "unistd",
+    };
+    static char storage[64];
+
+    if(asn1c_prefix_get()[0] != '\0') {
+        return name;
+    }
+
+    for(size_t i = 0; i < sizeof(system_header_names) / sizeof(system_header_names[0]);
+        i++) {
+        const char *sysname = system_header_names[i];
+        const unsigned char *n = (const unsigned char *)name;
+        const unsigned char *s = (const unsigned char *)sysname;
+
+        while(*n && *s && tolower(*n) == tolower(*s)) {
+            n++;
+            s++;
+        }
+
+        if(*n == '\0' && *s == '\0') {
+            snprintf(storage, sizeof(storage), "asn1c_%s", sysname);
+            return storage;
+        }
+    }
+
+    return name;
+}
+
 const char *
 asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
 	asn1p_expr_t *exprid = 0;
@@ -417,17 +450,34 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
 
 	switch(_format) {
 	case TNF_UNMODIFIED:
-		return asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_NODELIMITER | (stdname ? 0 : AMI_USE_PREFIX),
-			0, prefix, MODULE_NAME_OF(exprid), exprid ? exprid->Identifier : typename, (char*)0);
+        return asn1c_make_identifier(
+            AMI_MASK_ONLY_SPACES | AMI_NODELIMITER | (stdname ? 0 : AMI_USE_PREFIX), 0,
+            prefix, MODULE_NAME_OF(exprid), exprid ? exprid->Identifier : typename,
+            (char *)0);
 	case TNF_INCLUDE:
-		return asn1c_make_identifier(
-			AMI_MASK_ONLY_SPACES | AMI_NODELIMITER,
-			0, ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED))
-				? "\"" : "<"),
-			prefix, MODULE_NAME_OF(exprid),
-			exprid ? exprid->Identifier : typename,
-			((!stdname || (arg->flags & A1C_INCLUDES_QUOTED))
-				? ".h\"" : ".h>"), (char*)0);
+        {
+            char *open = ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED))
+                              ? "\""
+                              : "<");
+            char *close = ((!stdname || (arg->flags & A1C_INCLUDES_QUOTED))
+                               ? ".h\""
+                               : ".h>");
+            char filename_storage[PATH_MAX];
+            const char *filename = asn1c_make_identifier(
+                AMI_MASK_ONLY_SPACES | AMI_NODELIMITER, 0, prefix,
+                MODULE_NAME_OF(exprid), exprid ? exprid->Identifier : typename,
+                0);
+            const char *include_filename = stdname
+                                               ? filename
+                                               : asn1c_disambiguate_generated_filename(
+                                                     filename);
+
+            snprintf(filename_storage, sizeof(filename_storage), "%s",
+                     include_filename);
+            return asn1c_make_identifier(
+                AMI_MASK_ONLY_SPACES | AMI_NODELIMITER, 0, open,
+                filename_storage, close, 0);
+        }
 	case TNF_SAFE:
 		return asn1c_make_identifier(stdname ? 0 : AMI_USE_PREFIX, exprid, typename, (char*)0);
 	case TNF_CTYPE:	/* C type */
