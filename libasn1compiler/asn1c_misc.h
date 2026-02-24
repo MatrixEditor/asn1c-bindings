@@ -28,6 +28,7 @@ enum tnfmt {
 	TNF_RSAFE	= 0x60,	/* Recursion-safe C type format */
 };
 const char *asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format);
+const char *asn1c_disambiguate_generated_filename(const char *name);
 
 /*
  * Check whether the specified INTEGER or ENUMERATED type can be represented

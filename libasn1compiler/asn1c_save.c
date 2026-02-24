@@ -121,8 +121,10 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 			if(asn1_lang_map[arg->expr->meta_type]
 				[arg->expr->expr_type].type_cb &&
 				(arg->expr->meta_type != AMT_VALUE)) {
-				safe_fprintf(mkf, "\t\\\n\t%s%s.c", destdir,
-				asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, arg->expr, 0));
+                const char *filename = asn1c_disambiguate_generated_filename(
+                    asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
+                                          arg->expr, (char *)0));
+				safe_fprintf(mkf, "\t\\\n\t%s%s.c", destdir, filename);
 			}
 		}
 	}
@@ -140,9 +142,10 @@ asn1c__save_library_makefile(arg_t *arg, const asn1c_dep_chainset *deps,
 			if(asn1_lang_map[arg->expr->meta_type]
 				[arg->expr->expr_type].type_cb &&
 				(arg->expr->meta_type != AMT_VALUE)) {
-                safe_fprintf(
-                    mkf, "\t\\\n\t%s%s.h", destdir,
-                    asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, arg->expr, 0));
+                const char *filename = asn1c_disambiguate_generated_filename(
+                    asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
+                                          arg->expr, (char *)0));
+                safe_fprintf(mkf, "\t\\\n\t%s%s.h", destdir, filename);
             }
 		}
 	}
@@ -626,8 +629,9 @@ asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps, const char *destdir,
 		return -1;
 	}
 
-	filename = strdup(asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
-						expr, (char*)0));
+	filename = strdup(asn1c_disambiguate_generated_filename(
+        asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, expr,
+                              (char *)0)));
 	
 	/* Warn if filename might conflict with system headers on case-insensitive filesystems */
 	/* Only warn if no prefix is being used (prefix would avoid the conflict) */
@@ -1200,7 +1204,7 @@ generate_constant_collection(arg_t *arg) {
 
             if(arg->expr->meta_type == AMT_VALUE) {
                 abuf_printf(buf, "#define %s (%s)\n",
-                            asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
+                            asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                             asn1p_itoa(arg->expr->value->value.v_integer));
                 empty_file = 0;
             }
@@ -1210,10 +1214,10 @@ generate_constant_collection(arg_t *arg) {
                     if(arg->expr->constraints->el_count == 1 &&
                        arg->expr->constraints->elements[0]->type == ACT_EL_RANGE) {
                         abuf_printf(buf, "#define min_val_%s (%s)\n",
-                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
+                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                                     asn1p_itoa(arg->expr->constraints->elements[0]->range_start->value.v_integer));
                         abuf_printf(buf, "#define max_val_%s (%s)\n",
-                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
+                                    asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                                     asn1p_itoa(arg->expr->constraints->elements[0]->range_stop->value.v_integer));
                         empty_file = 0;
                     } 

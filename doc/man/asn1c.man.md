@@ -114,7 +114,10 @@ CBOR and other encoding rules.
 	
 	* **System header conflicts**: On case-insensitive filesystems (macOS HFS+, Windows),
 	  ASN.1 types like "Time" would generate `Time.h`, which can conflict with 
-	  system header `<time.h>`. Using `-fprefix=ASN1_` generates `ASN1_Time.h` instead.
+	  system header `<time.h>`. asn1c now automatically disambiguates these generated
+	  filenames (for example, `Time.h` becomes `asn1c_time.h` when no explicit prefix
+	  is set). Using `-fprefix=ASN1_` still generates `ASN1_Time.h` when you need a
+	  project-specific naming convention.
 	
 	* **Multiple ASN.1 modules**: When generating code for multiple ASN.1 syntaxes
 	  that have type name clashes, a prefix prevents symbol collisions.
@@ -122,9 +125,8 @@ CBOR and other encoding rules.
 	* **Integration with existing code**: Prefixes help avoid conflicts with
 	  existing types in your codebase.
 	
-	**Important**: asn1c will warn when generating files that might conflict with
-	common system headers (e.g., time.h, string.h) on case-insensitive filesystems.
-	In such cases, use this flag to avoid compilation issues.
+	**Important**: use this flag when you want a consistent custom namespace for all
+	generated symbols and filenames, especially when integrating multiple schemas.
 	
 	Example: `asn1c -fprefix=PKIX_ rfc3280.asn1`
 
@@ -267,4 +269,3 @@ and decoder for values that exceed the 64-bit signed range, per RFC 8949.
 # SEE ALSO
 
 `unber`(1), `enber`(1).
-
