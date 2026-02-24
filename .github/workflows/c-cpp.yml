@@ -26,11 +26,26 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
-    - name: test PKIX1 example
+    - name: test PKIX1 example - generate codecs and test all supported formats
       run: |
         cd examples/sample.source.PKIX1
+        # Generate C codecs from PKIX1 ASN.1 schemas for all supported encoding formats:
+        # BER/DER, XER, OER, PER/UPER, APER, JER, CBOR
         make regen-makefile
-        make
-        ./x509dump -iber -oxer sample-Certificate-1.der > /tmp/test-output.xml
-        test -s /tmp/test-output.xml
-        echo "PKIX1 example test passed"
+        # Build the x509dump tool (compiles all generated codecs)
+        make x509dump
+        # Run full roundtrip tests for all formats with sample files:
+        # BER, XER, OER (COER), UPER, APER are all verified with encode/decode roundtrips
+        # and fault injection tests.  The sample-Certificate-1.{coer,per,aper} files
+        # activate the corresponding check-oer, check-per, check-aper targets.
+        make check
+        # Test CBOR encoding/decoding roundtrip
+        ./x509dump -p Certificate -iber -ocbor sample-Certificate-1.der > /tmp/cert-1.cbor
+        test -s /tmp/cert-1.cbor
+        ./x509dump -p Certificate -icbor -oxer /tmp/cert-1.cbor > /tmp/cert-1-cbor-xer.xml
+        ./x509dump -p Certificate -iber  -oxer sample-Certificate-1.der > /tmp/cert-1-ber-xer.xml
+        diff /tmp/cert-1-ber-xer.xml /tmp/cert-1-cbor-xer.xml
+        # Test JER encoding (JER decode of PKIX is not supported due to ANY open types)
+        ./x509dump -p Certificate -iber -ojer sample-Certificate-1.der > /tmp/cert-1.jer
+        test -s /tmp/cert-1.jer
+        echo "PKIX1 codec test passed: BER, XER, OER, UPER, APER, CBOR, JER(encode-only) verified"
