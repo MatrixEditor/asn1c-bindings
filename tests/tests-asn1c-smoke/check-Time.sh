@@ -31,6 +31,7 @@ test -f asn1c_time.h
 test -f asn1c_time.c
 test ! -f Time.h
 test ! -f Time.c
+grep -F '#include "asn1c_time.h"' ./asn1c_time.c
 grep -R "\"asn1c_time.h\"" ./*.h
 
 cd ..
