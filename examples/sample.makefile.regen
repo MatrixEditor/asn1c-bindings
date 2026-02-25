@@ -168,7 +168,8 @@ test -n "$TITLE" && EXTRA_CFLAGS="-DASN_CONVERTER_TITLE=\"$TITLE\" ${EXTRA_CFLAG
 	echo '	rm -f $(ASN_MODULE_SRCS)'
 	echo '	rm -f $(ASN_MODULE_HDRS)'
 	echo '	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)'
-	echo "	rm -f converter-example.mk"
+	echo "	rm -f Makefile.am.* asn_*.[ch] ASN*.[ch]"
+	echo "	rm -f converter-example.mk ASN1*.[ch] asn_*.[ch]"
 } > Makefile
 
 echo
