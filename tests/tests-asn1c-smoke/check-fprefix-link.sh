@@ -5,8 +5,7 @@ set -o pipefail
 
 top_builddir=${top_builddir:-../..}
 top_srcdir=${top_srcdir:-../..}
-basepath=$(dirname "$0")
-cd "$basepath"
+srcdir=$(cd "$(dirname "$0")" && pwd)
 
 testdir=test-fprefix-link
 cleanup() {
@@ -18,7 +17,7 @@ rm -rf "$testdir"
 mkdir "$testdir"
 cd "$testdir"
 
-cp ../data/fprefix-link.asn test.asn
+cp "${srcdir}/data/fprefix-link.asn" test.asn
 
 for prefix in A_ B_; do
     mkdir "$prefix"
