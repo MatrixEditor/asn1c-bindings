@@ -21,7 +21,8 @@ cp "${srcdir}/data/fprefix-link.asn" test.asn
 
 for prefix in A_ B_; do
     mkdir "$prefix"
-    ../"${top_builddir}"/asn1c/asn1c test.asn -fprefix="$prefix" -D "$prefix"
+    ../"${top_builddir}"/asn1c/asn1c -S ../"${top_srcdir}"/skeletons -flink-skeletons \
+        test.asn -fprefix="$prefix" -D "$prefix"
 
     grep -F "asn_MBR_${prefix}Cause_" "${prefix}/${prefix}Cause.c"
     grep -F "asn_MBR_Cause_" "${prefix}/${prefix}Cause.c" && exit 1
