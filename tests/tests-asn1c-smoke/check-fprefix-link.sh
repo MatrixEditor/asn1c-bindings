@@ -31,8 +31,6 @@ for prefix in A_ B_; do
         "${prefix}/${prefix}Cause.c" -o "${prefix}.o"
 done
 
-ld -r \
-    A_.o B_.o \
-    -o combined.o
+"${CC:-cc}" -r A_.o B_.o -o combined.o
 
 test -f combined.o

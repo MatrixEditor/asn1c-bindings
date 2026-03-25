@@ -1,6 +1,7 @@
 TESTS_ENVIRONMENT= MAKE=${MAKE}                     \
                     top_builddir=${top_builddir}    \
-                    top_srcdir=${top_srcdir}
+                    top_srcdir=${top_srcdir}        \
+                    CC="${CC}"
 
 TESTS =
 TESTS += check-INTEGER.sh
@@ -27,7 +28,7 @@ TESTS += check-fprefix-link.sh
 
 CLEANFILES = Makefile.am.* *.[acho] check-*.log check-*.trs
 
-EXTRA_DIST = README $(srcdir)/check-*.sh
+EXTRA_DIST = README $(srcdir)/check-*.sh $(srcdir)/data/fprefix-link.asn
 
 clean-local:
 	rm -rf test-*
