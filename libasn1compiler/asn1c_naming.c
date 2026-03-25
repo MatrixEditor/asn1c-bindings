@@ -147,6 +147,7 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
     static abuf b_presence_name;
     static abuf b_members_enum;
     static abuf b_members_name;
+    static abuf b_compound_name;
 
     abuf_clear(&b_type_asn_name);
     abuf_clear(&b_type_part_name);
@@ -163,6 +164,7 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
     abuf_clear(&b_presence_name);
     abuf_clear(&b_members_enum);
     abuf_clear(&b_members_name);
+    abuf_clear(&b_compound_name);
 
     abuf_str(&b_type_asn_name, asn1c_type_name(arg, expr, TNF_UNMODIFIED));
     abuf_str(&b_type_part_name, asn1c_type_name(arg, expr, TNF_SAFE));
@@ -231,6 +233,7 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
         abuf_printf(&b_presence_name, "%s_PR", tmp_compoundable_part_name.buffer);
         abuf_printf(&b_members_enum, "enum %s", b_base_name.buffer);
         abuf_printf(&b_members_name, "e_%s", tmp_compoundable_part_name.buffer);
+        abuf_printf(&b_compound_name, "%s", compound_part_name.buffer);
    } else {
         if(!expr->_anonymous_type) {
             if(arg->embed) {
@@ -244,6 +247,7 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
         abuf_printf(&b_presence_name, "%s%s_PR", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
         abuf_printf(&b_members_enum, "enum %s%s", asn1c_prefix_get(), b_base_name.buffer);
         abuf_printf(&b_members_name, "e_%s%s", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
+        abuf_printf(&b_compound_name, "%s%s", asn1c_prefix_get(), compound_part_name.buffer);
     }
 
     names.type.asn_name = b_type_asn_name.buffer;
@@ -261,7 +265,7 @@ c_name_impl(arg_t *arg, asn1p_expr_t *expr, int avoid_keywords) {
     names.presence_name = b_presence_name.buffer;
     names.members_enum = b_members_enum.buffer;
     names.members_name = b_members_name.buffer;
-    names.compound_name = compound_part_name.buffer;
+    names.compound_name = b_compound_name.buffer;
 
     /* A _subset_ of names is checked against being globally unique */
     register_global_name(expr, names.base_name);
