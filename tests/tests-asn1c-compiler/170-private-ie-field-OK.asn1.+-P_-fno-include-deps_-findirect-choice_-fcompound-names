@@ -341,12 +341,11 @@ extern asn_TYPE_member_t asn_MBR_PrivateMessage_IEs_1[3];
 static const long asn_VAL_PrivateMessage_IEs_1_1 = 1;
 static const long asn_VAL_PrivateMessage_IEs_1_reject = 0;
 static const long asn_VAL_PrivateMessage_IEs_1_mandatory = 2;
-static asn_TYPE_descriptor_t asn_DEF_INTEGER_1;
 
 static const asn_ioc_cell_t asn_IOS_PrivateMessage_IEs_1_rows[] = {
 	{ "&id", aioc__value, &asn_DEF_NativeInteger, &asn_VAL_PrivateMessage_IEs_1_1 },
 	{ "&criticality", aioc__value, &asn_DEF_NativeEnumerated, &asn_VAL_PrivateMessage_IEs_1_reject },
-	{ "&Value", aioc__type, &asn_DEF_INTEGER_1 },
+	{ "&Value", aioc__type, &asn_DEF_NativeInteger },
 	{ "&presence", aioc__value, &asn_DEF_NativeEnumerated, &asn_VAL_PrivateMessage_IEs_1_mandatory }
 };
 static const asn_ioc_set_t asn_IOS_PrivateMessage_IEs_1[] = {

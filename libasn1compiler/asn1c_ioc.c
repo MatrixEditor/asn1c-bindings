@@ -343,9 +343,12 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell, asn1p_expr_t *objset) 
 
 /*
  * Emit a single IOC cell initializer.
- * FIX: for TYPE cells, resolve to the concrete descriptor symbol using TNF_RSAFE
- *      so we reference e.g. &asn_DEF_SEQUENCE_OF_CommTxPDU_1 instead of
- *      the non-descriptor placeholder &asn_DEF_SEQUENCE_OF.
+ *
+ * TYPE cells need two behaviors:
+ *  - Constructed anonymous types (SEQUENCE OF, etc.) use a concrete
+ *    suffixed descriptor generated in this TU: asn_DEF_<id>_<n>.
+ *  - Built-in inline-constrained types (e.g. OCTET STRING (SIZE(3)))
+ *    must use the base built-in descriptor: asn_DEF_OCTET_STRING.
  */
 static int
 emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell, asn1p_expr_t *objset) {
@@ -365,30 +368,33 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell, asn1p_expr_t *objset) {
         OUT("&asn_VAL_%s_%d_%s", objset_name, cell->value->_type_unique_index, MKID(cell->value));
         free(objset_name);
 
-    /* } else if(cell->value->meta_type == AMT_TYPE) { */
-    /*     /\* Anonymous / constructed type (e.g., SEQUENCE OF CommTxPDU): */
-    /*      * reference the concrete, suffixed descriptor defined in this TU. *\/ */
-    /*     GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE)); */
-    /*     OUT("aioc__type, &asn_DEF_%s_%d", */
-    /*         MKID(cell->value), cell->value->_type_unique_index); */
-
-    /* } else if(cell->value->meta_type == AMT_TYPEREF) { */
-    /*     /\* Named type reference: use SAFE so we get the proper (usually */
-    /*      * unsuffixed) descriptor symbol defined in its own TU. *\/ */
-    /*     GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE)); */
-    /*     OUT("aioc__type, &asn_DEF_%s", */
-    /*         asn1c_type_name(arg, cell->value, TNF_SAFE)); */
-
     } else if(cell->value->meta_type == AMT_TYPEREF) {
-        /* Named type reference: use SAFE for the standard descriptor name */
+        /* Named type reference (X.680 §14): defined in its own TU,
+         * use SAFE for the canonical descriptor symbol. */
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
         OUT("aioc__type, &asn_DEF_%s", asn1c_type_name(arg, cell->value, TNF_SAFE));
     } else if(cell->value->meta_type == AMT_TYPE) {
-        /* Anonymous/constructed type: reference the suffixed descriptor */
+        /*
+         * Anonymous inline type in an IOC TYPE field (X.681 §9.3).
+         *
+         * Constructed types (SEQUENCE, SEQUENCE OF, …) get a local
+         * asn_TYPE_descriptor_t with a unique suffix emitted in this TU;
+         * reference the suffixed symbol.
+         *
+         * Built-in / string types with subtype constraints (X.680 §49,
+         * e.g. OCTET STRING (SIZE(3))) share the base type's encoding
+         * and don't get a local descriptor; reference the skeleton
+         * descriptor directly (asn_DEF_OCTET_STRING, etc.).
+         */
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        OUT("aioc__type, &asn_DEF_%s_%d", 
-            MKID(cell->value), cell->value->_type_unique_index);
-        
+        if(cell->value->expr_type & ASN_CONSTR_MASK) {
+            OUT("aioc__type, &asn_DEF_%s_%d",
+                MKID(cell->value), cell->value->_type_unique_index);
+        } else {
+            OUT("aioc__type, &asn_DEF_%s",
+                asn1c_type_name(arg, cell->value, TNF_SAFE));
+        }
+
     } else {
         return -1;
     }
@@ -399,25 +405,9 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell, asn1p_expr_t *objset) {
 }
 
 /*
- * Refer to skeletons/asn_ioc.h
+ * Emit the Information Object Set table (X.681 §11).
+ * Refer to skeletons/asn_ioc.h for the runtime representation.
  */
-/* ============================================================================
- * COMPLETE FIX - Replace emit_ioc_table() in asn1c_ioc.c
- * 
- * The Problem: Forward declarations were always using "extern" but definitions
- * could be "static", causing a storage class mismatch.
- * 
- * The Solution: Forward declarations must match the storage class that will be
- * used in the actual definition. This depends on:
- * - A1C_ALL_DEFS_GLOBAL flag: if set, all defs are non-static (extern)
- * - Otherwise, anonymous/constructed types are static
- * ============================================================================ */
-
-/* ============================================================================
- * PART 1: Fix in asn1c_ioc.c - emit_ioc_table()
- * This fixes the IOC table type forward declarations
- * ============================================================================ */
-
 int
 emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t ioc_tao) {
     size_t columns = 0;
@@ -445,10 +435,10 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
     if(ioc_tao.ioct->rows == 0)
         return 0;
 
-    /* Forward-declare concrete descriptors referenced by TYPE cells.
-     * 
-     * IOC table types are ALWAYS embedded (anonymous members), so:
-     * - They're static UNLESS A1C_ALL_DEFS_GLOBAL is set
+    /* Forward-declare only constructed anonymous TYPE cell descriptors
+     * (X.681 §9.3 TypeFieldSpec).  Built-in types with subtype constraints
+     * (X.680 §49) use the globally-defined skeleton descriptor and must not
+     * get a suffixed forward (no matching definition would be emitted).
      */
     
     for(size_t rn = 0; rn < ioc_tao.ioct->rows; rn++) {
@@ -456,8 +446,9 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
         for(size_t cn = 0; cn < row->columns; cn++) {
             struct asn1p_ioc_cell_s *cell = &row->column[cn];
             
-            if(cell->value && cell->value->meta_type == AMT_TYPE) {
-                /* Anonymous/constructed type - will be static unless A1C_ALL_DEFS_GLOBAL */
+            if(cell->value && cell->value->meta_type == AMT_TYPE
+               && (cell->value->expr_type & ASN_CONSTR_MASK)) {
+                /* Constructed anonymous type: static unless -fall-defs-global. */
                 if(arg->flags & A1C_ALL_DEFS_GLOBAL) {
                     OUT("extern asn_TYPE_descriptor_t asn_DEF_%s_%d;\n",
                         MKID(cell->value), cell->value->_type_unique_index);
