@@ -128,9 +128,9 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                     /* Offset must not be negative */
                     ASN__DECODE_FAILED;
                 } else {
-                    uintmax_t max_offset =
-                        (uintmax_t)ct->upper_bound - (uintmax_t)ct->lower_bound;
-                    if((uintmax_t)value > max_offset) {
+                    intmax_t range = ct->upper_bound - ct->lower_bound;
+                    if(range < 0) ASN__DECODE_FAILED;
+                    if((uintmax_t)value > (uintmax_t)range) {
                         ASN__DECODE_FAILED;
                     }
                 }
