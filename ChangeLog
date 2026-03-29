@@ -1,3 +1,10 @@
+1.3.5:
+	FIXES:
+	* Prevent unsigned underflow in APER constrained INTEGER decoding when
+	  reading length-octets for ranges wider than 16 bits. The decoder now
+	  rejects zero-length determinants and avoids size_t wraparound flagged
+	  by UBSan on macOS builds. Reported by @mouse07410.
+
 1.3.4:
 	NEW FEATURES:
 	* Added CBOR tag support (RFC 8949 §3.4, major type 6).

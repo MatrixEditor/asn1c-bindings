@@ -108,11 +108,17 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 
                 if(aper_get_align(pd) < 0) ASN__DECODE_FAILED;
 
-                while(len-- > 0) {
+                if(len == 0) {
+                    /* Length determinant for constrained INTEGER must be > 0 */
+                    ASN__DECODE_FAILED;
+                }
+
+                while(len > 0) {
                     int buf = per_get_few_bits(pd, 8);
                     if(buf < 0) ASN__DECODE_STARVED;
                     if(value > (INTMAX_MAX >> 8)) ASN__DECODE_FAILED;
                     value = (value << 8) | buf;
+                    len--;
                 }
 
                 if(ct->upper_bound < ct->lower_bound) {
