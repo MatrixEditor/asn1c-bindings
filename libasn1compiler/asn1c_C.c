@@ -939,6 +939,17 @@ generate_typedef_for_constructed_member(arg_t *arg, asn1p_expr_t *expr, int targ
 	/* Generate members */
 	asn1p_expr_t *memb;
 	TQ_FOR(memb, &(expr->members), next) {
+
+	/*
+	 * Detect recursive/circular references in members before generating
+	 * the struct body. Without this, expr_break_recursion runs later
+	 * (during DEPENDENCIES in the default callback), causing EM_INDIRECT
+	 * to be set after the struct has already been emitted with value form.
+	 * This produces mismatched struct definitions (value form) and member
+	 * tables (ATF_POINTER), and missing include.
+	 */
+
+	 	expr_break_recursion(&tmp, memb);
 		EMBED(memb);
 	}
 	
