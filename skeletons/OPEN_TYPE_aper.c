@@ -17,6 +17,7 @@ OPEN_TYPE_aper_get(const asn_codec_ctx_t *opt_codec_ctx,
     void **memb_ptr2; /* Pointer to that pointer */
     void *inner_value;
     asn_dec_rval_t rv;
+    int choice_wrapper_allocated = 0;
 
     if(!(elm->flags & ATF_OPEN_TYPE)) {
         ASN__DECODE_FAILED;
@@ -37,6 +38,11 @@ OPEN_TYPE_aper_get(const asn_codec_ctx_t *opt_codec_ctx,
 
     selected = elm->type_selector(td, sptr);
     if(!selected.presence_index) {
+        ASN__DECODE_FAILED;
+    }
+    if(!selected.type_descriptor) {
+        ASN_DEBUG("Open Type %s->%s: selected type descriptor is NULL",
+                  td->name, elm->name);
         ASN__DECODE_FAILED;
     }
 
@@ -85,6 +91,7 @@ OPEN_TYPE_aper_get(const asn_codec_ctx_t *opt_codec_ctx,
             if(*memb_ptr2 == NULL) {
                 ASN__DECODE_FAILED;
             }
+            choice_wrapper_allocated = 1;
         } else {
             /* Make sure we reset the structure first before decoding */
             if(CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0)
@@ -177,13 +184,38 @@ OPEN_TYPE_aper_get(const asn_codec_ctx_t *opt_codec_ctx,
     case RC_WMORE:
     case RC_FAIL:
         ASN_DEBUG("Cleaning up after failure, code=%d", rv.code);
-        if(*memb_ptr2) {
+        if(elm->type->elements_count > 0) {
+            /*
+             * CHOICE wrapper mode.  For indirect CHOICE variants,
+             * aper_open_type_get() may allocate inner_value before the
+             * decoded pointer is copied back into the actual CHOICE field.
+             * If decoding fails at that point, the parent tree cannot see
+             * inner_value, so it must be released here.
+             */
+            if(variant_elm && (variant_elm->flags & ATF_POINTER)) {
+                if(inner_value)
+                    ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
+            } else {
+                if(inner_value)
+                    ASN_STRUCT_RESET(*selected.type_descriptor, inner_value);
+            }
+
+            if(*memb_ptr2)
+                CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0);
+
+            if(choice_wrapper_allocated && *memb_ptr2) {
+                ASN_STRUCT_FREE(*elm->type, *memb_ptr2);
+                *memb_ptr2 = NULL;
+            }
+        } else {
+            /* Direct type mode. */
             if(elm->flags & ATF_POINTER) {
-                ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
+                if(inner_value)
+                    ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
                 *memb_ptr2 = NULL;
             } else {
-                ASN_STRUCT_RESET(*selected.type_descriptor,
-                                              inner_value);
+                if(inner_value)
+                    ASN_STRUCT_RESET(*selected.type_descriptor, inner_value);
             }
         }
     }
