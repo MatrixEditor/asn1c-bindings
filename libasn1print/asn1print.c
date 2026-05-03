@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 
 #include <asn1_buffer.h>
 #include <asn1_namespace.h>
@@ -857,6 +858,7 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 				tc->ioc_table->rows,
 				tc->ioc_table->rows==1 ? "y" : "ies");
 		maxidlen = asn1p_ioc_table_max_identifier_length(tc->ioc_table);
+		int ioc_col_width = (maxidlen > (size_t)INT_MAX) ? INT_MAX : (int)maxidlen;
 		for(ssize_t r = -1; r < (ssize_t)tc->ioc_table->rows; r++) {
 			asn1p_ioc_row_t *row;
 			row = tc->ioc_table->row[r<0?0:r];
@@ -867,15 +869,15 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 				struct asn1p_ioc_cell_s *cell;
 				cell = &row->column[col];
 				if(r < 0) {
-					safe_printf("[%*s]", (int)maxidlen,
+					safe_printf("[%*s]", ioc_col_width,
 						cell->field->Identifier);
 					continue;
 				}
 				if(!cell->value) {
-					safe_printf(" %*s ", (int)maxidlen, "<no entry>");
+					safe_printf(" %*s ", ioc_col_width, "<no entry>");
 					continue;
 				}
-				safe_printf(" %*s ", (int)maxidlen,
+				safe_printf(" %*s ", ioc_col_width,
 					cell->value->Identifier);
 			}
 			safe_printf("\n");
