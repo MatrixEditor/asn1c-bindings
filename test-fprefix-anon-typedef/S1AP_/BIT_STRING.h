@@ -1,1 +1,0 @@
-.././skeletons/BIT_STRING.h

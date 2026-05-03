@@ -1,1 +1,0 @@
-.././skeletons/GraphicString.c

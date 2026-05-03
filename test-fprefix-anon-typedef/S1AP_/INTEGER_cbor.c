@@ -1,1 +1,0 @@
-.././skeletons/INTEGER_cbor.c

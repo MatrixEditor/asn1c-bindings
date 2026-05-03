@@ -1,1 +1,0 @@
-.././skeletons/constr_CHOICE_xer.c

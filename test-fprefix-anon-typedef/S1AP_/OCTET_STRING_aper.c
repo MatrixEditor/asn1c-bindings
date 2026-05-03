@@ -1,1 +1,0 @@
-.././skeletons/OCTET_STRING_aper.c

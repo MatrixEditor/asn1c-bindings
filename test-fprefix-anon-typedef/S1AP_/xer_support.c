@@ -1,1 +1,0 @@
-.././skeletons/xer_support.c

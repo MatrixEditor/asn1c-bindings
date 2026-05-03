@@ -1,1 +1,0 @@
-.././skeletons/der_encoder.h

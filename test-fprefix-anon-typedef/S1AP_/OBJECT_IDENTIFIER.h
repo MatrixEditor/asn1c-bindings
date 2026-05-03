@@ -1,1 +1,0 @@
-.././skeletons/OBJECT_IDENTIFIER.h

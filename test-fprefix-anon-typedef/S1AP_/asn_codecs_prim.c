@@ -1,1 +1,0 @@
-.././skeletons/asn_codecs_prim.c

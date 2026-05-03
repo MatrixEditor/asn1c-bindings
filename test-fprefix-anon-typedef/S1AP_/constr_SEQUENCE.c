@@ -1,1 +1,0 @@
-.././skeletons/constr_SEQUENCE.c

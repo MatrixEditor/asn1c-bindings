@@ -1,1 +1,0 @@
-.././skeletons/OPEN_TYPE_xer.c

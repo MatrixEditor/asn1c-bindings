@@ -131,3 +131,6 @@ doc/docsrc/*.xdv
 asn1c-*/
 *.tar.gz
 asn1c/tmp/
+
+# Test artifact directories created when smoke tests are run from repo root
+/test-*/

@@ -1,1 +1,0 @@
-.././skeletons/asn_bit_data.c
