@@ -33,6 +33,11 @@ for ref in ${top_srcdir}/tests/tests-asn1c-compiler/*.asn1.+*; do
 	oldversion=${template}.old
 	newversion=${template}.new
 	PROCESSING="$ref (from $src)"
+	# Strip the version-dependent parts before comparing:
+	#  - "found in <path>" varies between build environments
+	#  - "asn1c-<version> (<url>)" changes with every commit
+	# Both the reference file and the fresh compiler output are normalised
+	# identically, so a version-string-only difference does not cause a failure.
 	LC_ALL=C sed -e 's/^found in .*/found in .../' -e 's/asn1c-[^ ]* ([^)]*)/asn1c/g' -e 's/asn1c-[^ >]*/asn1c/g' < "$ref" > "$oldversion"
 	ec=0
 	(${top_builddir}/asn1c/asn1c -S ${top_srcdir}/skeletons -no-gen-OER -no-gen-UPER -no-gen-APER -no-gen-JER $flags "$src" | LC_ALL=C sed -e 's/^found in .*/found in .../' -e 's/asn1c-[^ ]* ([^)]*)/asn1c/g' -e 's/asn1c-[^ >]*/asn1c/g' > "$newversion") || ec=$?
