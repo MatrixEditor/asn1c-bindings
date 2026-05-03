@@ -848,6 +848,7 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 
 	if(flags & APF_PRINT_CLASS_MATRIX) do {
 		size_t col, maxidlen;
+		int width;
 		if(tc->ioc_table == NULL) {
             if(tc->expr_type == A1TC_CLASSDEF) {
                 safe_printf("\n-- Information Object Class table is empty");
@@ -858,7 +859,7 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 				tc->ioc_table->rows,
 				tc->ioc_table->rows==1 ? "y" : "ies");
 		maxidlen = asn1p_ioc_table_max_identifier_length(tc->ioc_table);
-		int width = (maxidlen > (size_t)INT_MAX) ? INT_MAX : (int)maxidlen;
+		width = (maxidlen > (size_t)INT_MAX) ? INT_MAX : (int)maxidlen;
 		for(ssize_t r = -1; r < (ssize_t)tc->ioc_table->rows; r++) {
 			asn1p_ioc_row_t *row;
 			row = tc->ioc_table->row[r<0?0:r];
