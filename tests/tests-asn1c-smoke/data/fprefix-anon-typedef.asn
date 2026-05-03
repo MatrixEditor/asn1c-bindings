@@ -1,0 +1,10 @@
+TestModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+InitiatingMessage ::= SEQUENCE {
+  value SEQUENCE {
+    id INTEGER,
+    payload OCTET STRING
+  }
+}
+
+END

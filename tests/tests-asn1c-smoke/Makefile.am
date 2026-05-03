@@ -26,10 +26,12 @@ TESTS += check-JER-open-type.sh
 TESTS += check-JER-enumerated-opentype.sh
 TESTS += check-APER-inline-constrained-ioc.sh
 TESTS += check-fprefix-link.sh
+TESTS += check-fprefix-anon-typedef.sh
 
 CLEANFILES = Makefile.am.* *.[acho] check-*.log check-*.trs
 
-EXTRA_DIST = README $(srcdir)/check-*.sh $(srcdir)/data/fprefix-link.asn
+EXTRA_DIST = README $(srcdir)/check-*.sh $(srcdir)/data/fprefix-link.asn \
+	$(srcdir)/data/fprefix-anon-typedef.asn
 
 clean-local:
 	rm -rf test-*
