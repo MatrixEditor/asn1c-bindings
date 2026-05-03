@@ -867,15 +867,15 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 				struct asn1p_ioc_cell_s *cell;
 				cell = &row->column[col];
 				if(r < 0) {
-					safe_printf("[%*s]", maxidlen,
+					safe_printf("[%*s]", (int)maxidlen,
 						cell->field->Identifier);
 					continue;
 				}
 				if(!cell->value) {
-					safe_printf(" %*s ", maxidlen, "<no entry>");
+					safe_printf(" %*s ", (int)maxidlen, "<no entry>");
 					continue;
 				}
-				safe_printf(" %*s ", maxidlen,
+				safe_printf(" %*s ", (int)maxidlen,
 					cell->value->Identifier);
 			}
 			safe_printf("\n");
