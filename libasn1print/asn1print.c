@@ -853,7 +853,7 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
             }
 			break;
 		}
-		safe_printf("\n-- Information Object Set has %lu entr%s:\n",
+		safe_printf("\n-- Information Object Set has %zu entr%s:\n",
 				tc->ioc_table->rows,
 				tc->ioc_table->rows==1 ? "y" : "ies");
 		maxidlen = asn1p_ioc_table_max_identifier_length(tc->ioc_table);
