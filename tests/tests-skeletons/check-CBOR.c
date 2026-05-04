@@ -361,7 +361,7 @@ test_octet_string_roundtrip(const uint8_t *data, size_t len, const char *label) 
 
     if((size_t)decoded->size != len) {
         fprintf(stderr, "FAIL: OCTET_STRING size mismatch %s: "
-                "got %d, want %zu\n", label, (size_t)decoded->size, len);
+                "got %zu, want %zu\n", label, (size_t)decoded->size, len);
         exit(1);
     }
     if(len > 0 && memcmp(decoded->buf, data, len) != 0) {
