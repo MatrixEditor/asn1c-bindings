@@ -276,7 +276,7 @@ test_bit_string_roundtrip(const uint8_t *bits, int nbytes, int bits_unused,
 
     if(decoded->size != nbytes || decoded->bits_unused != bits_unused) {
         fprintf(stderr, "FAIL: BIT_STRING mismatch %s: "
-                "size=%d (want %d), unused=%d (want %d)\n",
+                "size=%zu (want %d), unused=%d (want %d)\n",
                 label, decoded->size, nbytes,
                 decoded->bits_unused, bits_unused);
         exit(1);
