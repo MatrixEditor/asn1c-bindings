@@ -865,7 +865,7 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 			row = tc->ioc_table->row[r<0?0:r];
 			if(r < 0) safe_printf("--    %s", r > 9 ? " " : "");
             else
-                safe_printf("-- [%*d]", (tc->ioc_table->rows > 9) + 1, r + 1);
+                safe_printf("-- [%*zd]", (tc->ioc_table->rows > 9) + 1, r + 1);
             for(col = 0; col < row->columns; col++) {
 				struct asn1p_ioc_cell_s *cell;
 				cell = &row->column[col];
