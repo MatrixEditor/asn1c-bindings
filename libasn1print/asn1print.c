@@ -848,6 +848,7 @@ asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc, enum asn1pri
 
 	if(flags & APF_PRINT_CLASS_MATRIX) do {
 		size_t col, maxidlen;
+        int maxidlen_printf;
 		if(tc->ioc_table == NULL) {
             if(tc->expr_type == A1TC_CLASSDEF) {
                 safe_printf("\n-- Information Object Class table is empty");
