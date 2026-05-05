@@ -9,6 +9,8 @@
 
 /* Workaround for https://github.com/vlm/asn1c/issues/321 */
 #pragma GCC diagnostic ignored "-Wsign-compare"
+/* Suppress misleading-indentation warnings in flex-generated code */
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
 
 int asn1p_lex(void);
 void asn1p_lexer_hack_push_opaque_state(void);		/* Used in .y */
