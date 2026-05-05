@@ -8,20 +8,6 @@
 #include <asn1_namespace.h>
 
 /*
- * Helper function to get string name for encoding type (for debug messages)
- */
-static const char *
-encoding_type_name(enum asn1p_encoding_control_type_e type) {
-    switch(type) {
-    case EC_XER_HEXADECIMAL: return "hexadecimal";
-    case EC_XER_BASE64: return "base64";
-    case EC_XER_UTF8: return "utf8";
-    case EC_NONE:
-    default: return "none";
-    }
-}
-
-/*
  * Apply encoding controls from ENCODING-CONTROL sections to type definitions.
  * 
  * This function iterates through module members to find encoding instructions
