@@ -14,6 +14,20 @@ The ASN.1 family of standards is large and complex, and no open source
 compiler supports it in its entirety.
 The asn1c is arguably the most evolved open source ASN.1 compiler.
 
+## Latest release
+
+Current release: **1.4.2**
+
+This release includes post-v1.4 fixes across APER/UPER/OER decoding,
+PER size constraint handling, `-fprefix` generation for anonymous typedefs
+and member symbols, parser/compiler warning cleanup, circular-reference
+include fixes, and multiple code-scanning fixes. It also addresses security
+vulnerabilities, including formatting-related code scanning findings and
+hardening of integer decoder edge cases.
+
+See [ChangeLog](ChangeLog) for the complete release history and
+[release-notes/v1.4.md](release-notes/v1.4.md) for the v1.4 release notes.
+
 # ASN.1 Transfer Syntaxes
 <details>
 <summary>ASN.1 encodings interoperability table</summary>
