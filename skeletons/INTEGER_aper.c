@@ -189,6 +189,7 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /* X.691, #12.2.3, #12.2.4 */
+    size_t bytes_received = 0;  /* Actual content bytes decoded from stream */
     do {
         ssize_t len;
         void *p;
@@ -205,8 +206,14 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         ret = per_get_many_bits(pd, &st->buf[st->size], 0, 8 * len);
         if(ret < 0) ASN__DECODE_STARVED;
         st->size += len;
+        bytes_received += (size_t)len;
     } while(repeat);
     st->buf[st->size] = 0;  /* JIC */
+
+    /* INTEGER must have at least one content octet (X.691 §12.2.3) */
+    if(bytes_received == 0) {
+        ASN__DECODE_FAILED;
+    }
 
     /* #12.2.3 */
     if(ct && ct->lower_bound) {

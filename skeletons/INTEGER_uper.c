@@ -91,6 +91,7 @@ INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /* X.691, #12.2.3, #12.2.4 */
+    size_t bytes_received = 0;  /* Actual content bytes decoded from stream */
     do {
         ssize_t len = 0;
         void *p = NULL;
@@ -107,8 +108,14 @@ INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         ret = per_get_many_bits(pd, &st->buf[st->size], 0, 8 * len);
         if(ret < 0) ASN__DECODE_STARVED;
         st->size += len;
+        bytes_received += (size_t)len;
     } while(repeat);
     st->buf[st->size] = 0;  /* JIC */
+
+    /* INTEGER must have at least one content octet (X.691 §12.2.3) */
+    if(bytes_received == 0) {
+        ASN__DECODE_FAILED;
+    }
 
     /* 
      * Canonical UPER validation: X.691 11.3.6 - minimum octet encoding check.

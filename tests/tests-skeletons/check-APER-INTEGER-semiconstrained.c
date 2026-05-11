@@ -194,6 +194,49 @@ test_semiconstrained_unsigned_encode_decode(int lineno, unsigned long value, lon
 #define TEST_UNSIGNED(value, lbound) \
     test_semiconstrained_unsigned_encode_decode(__LINE__, value, lbound)
 
+static void
+test_zero_length_body_aper(int lineno, int semi_constrained, long lbound) {
+    INTEGER_t *st = NULL;
+    struct asn_per_constraints_s cts;
+    asn_dec_rval_t dec_rval;
+    asn_per_data_t pd;
+    /*
+     * Craft a zero-length INTEGER body: in APER unconstrained short-form,
+     * the length byte is read after alignment; 0x00 means length = 0.
+     */
+    uint8_t buf[1] = { 0x00 };
+
+    printf("%d: Testing zero-length APER body (%s, lbound=%ld)\n",
+           lineno, semi_constrained ? "semi-constrained" : "unconstrained", lbound);
+
+    memset(&pd, 0, sizeof(pd));
+    pd.buffer = buf;
+    pd.nboff = 0;
+    pd.nbits = 8;
+
+    if(semi_constrained) {
+        memset(&cts, 0, sizeof(cts));
+        cts.value.flags = APC_SEMI_CONSTRAINED;
+        cts.value.range_bits = -1;
+        cts.value.effective_bits = -1;
+        cts.value.lower_bound = lbound;
+        dec_rval = INTEGER_decode_aper(0, &asn_DEF_INTEGER, &cts, (void **)&st, &pd);
+    } else {
+        dec_rval = INTEGER_decode_aper(0, &asn_DEF_INTEGER, NULL, (void **)&st, &pd);
+    }
+
+    if(dec_rval.code != RC_FAIL) {
+        fprintf(stderr, "%d: Expected RC_FAIL for zero-length body, got %d\n",
+                lineno, (int)dec_rval.code);
+        assert(!"Zero-length INTEGER body must be rejected");
+    }
+    printf("  PASS: zero-length body correctly rejected\n");
+    ASN_STRUCT_FREE(asn_DEF_INTEGER, st);
+}
+
+#define TEST_ZERO_LENGTH(semi_constrained, lbound) \
+    test_zero_length_body_aper(__LINE__, semi_constrained, lbound)
+
 int main() {
     printf("=== Testing APER semi-constrained INTEGER encoding ===\n\n");
 
@@ -228,6 +271,12 @@ int main() {
     TEST_UNSIGNED(100, 1);
     TEST_UNSIGNED(65535, 1);
     TEST_UNSIGNED(1000000, 1);
+
+    printf("\n--- Test zero-length APER INTEGER body (malformed input) ---\n");
+    /* Zero-length body must be rejected for both unconstrained and semi-constrained */
+    TEST_ZERO_LENGTH(0, 0); /* unconstrained (ct=NULL) */
+    TEST_ZERO_LENGTH(1, 0); /* semi-constrained, lbound=0 */
+    TEST_ZERO_LENGTH(1, 1); /* semi-constrained, lbound=1 */
 
     printf("\n=== All semi-constrained INTEGER tests passed! ===\n");
     return 0;
