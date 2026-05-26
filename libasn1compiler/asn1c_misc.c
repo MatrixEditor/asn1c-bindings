@@ -5,6 +5,8 @@
 #include <asn1fix_crange.h>	/* constraint groker from libasn1fix */
 #include <asn1fix_export.h>	/* other exportable stuff from libasn1fix */
 
+static int asn1c_type_is_uint64_range(asn1p_expr_t *expr);
+
 /*
  * Checks that the given string is not a reserved C/C++ keyword [1],[2].
  * _* keywords not included, since asn1 identifiers cannot begin with hyphen [3]
@@ -422,11 +424,11 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
 		/* uint64 range: low >= 0 and high > INT64_MAX — use UInteger */
 		if(expr->expr_type == ASN_BASIC_INTEGER) {
 			int u64 = asn1c_type_is_uint64_range(expr);
-			if(u64) {
-				if(u64 == 2)
-					WARNING("INTEGER constraint at line %d: upper bound "
-					        "exceeds UINT64_MAX; using UInteger (best effort)",
-					        expr->_lineno);
+			if(u64 == 2) {
+				FATAL("INTEGER constraint at line %d: upper bound "
+				      "exceeds UINT64_MAX; cannot generate constrained UPER",
+				      expr->_lineno);
+			} else if(u64) {
 				stdname = 1;
 				exprid = NULL;
 				typename = "UInteger";
@@ -679,7 +681,7 @@ asn1c_type_fits_long(arg_t *arg, asn1p_expr_t *expr) {
 	return FL_FITS_SIGNED;
 }
 
-int
+static int
 asn1c_type_is_uint64_range(asn1p_expr_t *expr) {
     asn1cnst_range_t *range;
     asn1cnst_edge_t left, right;

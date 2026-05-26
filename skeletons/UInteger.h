@@ -1,7 +1,6 @@
-/*
- * Unsigned INTEGER_t: identical to INTEGER_t but asn_DEF_UInteger carries
- * field_unsigned=1 in its specifics.  Used for INTEGER (low..high) where
- * low >= 0 and high > INT64_MAX (value fits in uint64_t but not int64_t).
+/*-
+ * Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * Redistribution and modifications are permitted subject to BSD license.
  */
 #ifndef _UINTEGER_H_
 #define _UINTEGER_H_
