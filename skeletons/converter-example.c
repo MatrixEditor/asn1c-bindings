@@ -589,7 +589,7 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
     if(bytes == 0) return;
 
     DEBUG("=> add_bytes(%" ASN_PRI_SIZE ") { o=%" ASN_PRI_SIZE
-          " l=%" ASN_PRI_SIZE " sb=%" ASN_PRI_SIZE ", s=%" ASN_PRI_SIZE " }",
+          " l=%" ASN_PRI_SIZE " sb=%d, s=%" ASN_PRI_SIZE " }",
         bytes,
         DynamicBuffer.offset,
         DynamicBuffer.length,
@@ -635,7 +635,7 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
     DynamicBuffer.length += bytes;
 
     DEBUG("<= add_bytes(%" ASN_PRI_SIZE ") { o=%" ASN_PRI_SIZE
-          " l=%" ASN_PRI_SIZE " sb=%" ASN_PRI_SIZE ", s=%" ASN_PRI_SIZE " }",
+          " l=%" ASN_PRI_SIZE " sb=%d, s=%" ASN_PRI_SIZE " }",
         bytes,
         DynamicBuffer.offset,
         DynamicBuffer.length,
