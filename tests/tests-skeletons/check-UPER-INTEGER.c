@@ -155,7 +155,13 @@ check_uinteger_uint64_full_range(int lineno, uint64_t value) {
     cts.value.range_bits = 64;
     cts.value.effective_bits = 64;
     cts.value.lower_bound = 0;
+#if UINT64_MAX <= INTMAX_MAX
     cts.value.upper_bound = (intmax_t)UINT64_MAX;
+#else
+    printf("%d: Skipped UInteger full-range test, unsupported intmax_t\n",
+           lineno);
+    return;
+#endif
 
     assert(asn_umax2INTEGER(&st, (uintmax_t)value) == 0);
 

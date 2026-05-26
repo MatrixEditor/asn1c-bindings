@@ -370,7 +370,8 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
 	case ASN_BASIC_ENUMERATED:
 	case ASN_BASIC_REAL:
 		/* uint64 range: low >= 0 and high > INT64_MAX — use UInteger */
-		if(expr->expr_type == ASN_BASIC_INTEGER) {
+		if(expr->expr_type == ASN_BASIC_INTEGER
+		   && (arg->flags & (A1C_GEN_UPER | A1C_GEN_APER))) {
 			int u64 = asn1c_type_is_uint64_range(expr);
 			if(u64 == 2) {
 				FATAL("INTEGER constraint at line %d: upper bound "
