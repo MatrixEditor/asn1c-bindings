@@ -575,7 +575,7 @@ static struct dynamic_buffer {
     uint8_t *data;        /* Pointer to the data bytes */
     size_t offset;        /* Offset from the start */
     size_t length;        /* Length of meaningful contents */
-    size_t skip_bits;     /* Bits to skip at the start (PER sub-byte offset) */
+    int skip_bits;        /* Bits to skip at the start (PER sub-byte offset, 0..7) */
     size_t allocated;    /* Allocated memory for data */
     int    nreallocs;    /* Number of data reallocations */
     off_t  bytes_shifted;    /* Number of bytes ever shifted */
@@ -600,7 +600,7 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
        >= (DynamicBuffer.offset + DynamicBuffer.length + bytes)) {
         DEBUG("\tNo buffer reallocation is necessary");
     } else if(bytes <= DynamicBuffer.offset) {
-        DEBUG("\tContents shifted by %ld", DynamicBuffer.offset);
+        DEBUG("\tContents shifted by %" ASN_PRI_SIZE, DynamicBuffer.offset);
 
         /* Shift the buffer contents */
         memmove(DynamicBuffer.data,
@@ -625,7 +625,7 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
         DynamicBuffer.offset = 0;
         DynamicBuffer.allocated = newsize;
         DynamicBuffer.nreallocs++;
-        DEBUG("\tBuffer reallocated to %ld (%d time)",
+        DEBUG("\tBuffer reallocated to %" ASN_PRI_SIZE " (%d time)",
             newsize, DynamicBuffer.nreallocs);
     }
 
@@ -846,7 +846,7 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
             if(rval.code != RC_FAIL && rval.consumed < rd) {
                 add_bytes_to_buffer(fbuf + rval.consumed,
                     rd - rval.consumed);
-                DynamicBuffer.bytes_shifted += rval.consumed;
+                DynamicBuffer.bytes_shifted += (off_t)rval.consumed;
                 rval.consumed = 0;
                 /* ecbits preserved; skip_bits set in RC_OK below */
             }
@@ -859,24 +859,24 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
             DynamicBuffer.offset += rval.consumed;
             DynamicBuffer.length -= rval.consumed;
         } else {
-            DynamicBuffer.bytes_shifted += rval.consumed;
+            DynamicBuffer.bytes_shifted += (off_t)rval.consumed;
         }
 
         switch(rval.code) {
         case RC_OK:
             DynamicBuffer.skip_bits = ecbits;
-            DEBUG("RC_OK, finishing up with %ld+%d",
-                (long)rval.consumed, ecbits);
+            DEBUG("RC_OK, finishing up with %" ASN_PRI_SIZE "+%d",
+                rval.consumed, ecbits);
             return structure;
         case RC_WMORE:
-            DEBUG("RC_WMORE, continuing read=%ld, cons=%ld "
-                " with %ld..%ld-%ld..%ld",
-                (long)rd,
-                (long)rval.consumed,
-                (long)DynamicBuffer.offset,
-                (long)DynamicBuffer.length,
-                (long)DynamicBuffer.skip_bits,
-                (long)DynamicBuffer.allocated);
+            DEBUG("RC_WMORE, continuing read=%" ASN_PRI_SSIZE ", cons=%" ASN_PRI_SIZE
+                " with %" ASN_PRI_SIZE "..%" ASN_PRI_SIZE "-%d..%" ASN_PRI_SIZE,
+                rd,
+                rval.consumed,
+                DynamicBuffer.offset,
+                DynamicBuffer.length,
+                DynamicBuffer.skip_bits,
+                DynamicBuffer.allocated);
             if(!rd) tolerate_eof--;
             continue;
         case RC_FAIL:
@@ -919,23 +919,23 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
         }
 #endif
 
-        DEBUG("ofp %d, no=%ld, oo=%ld, dbl=%ld",
-            on_first_pdu, (long)new_offset, (long)old_offset,
-            (long)DynamicBuffer.length);
+        DEBUG("ofp %d, no=%" ASN_PRI_SIZE ", oo=%" ASN_PRI_SIZE ", dbl=%" ASN_PRI_SIZE,
+            on_first_pdu, new_offset, old_offset,
+            DynamicBuffer.length);
         
         /* Provide detailed error information */
         if(rval.consumed > 0) {
             /* We have position information about where the failure occurred */
             fprintf(stderr, "%s: "
-                "Decode failed at byte %ld: %s\n",
-                name, (long)(new_offset + rval.consumed),
+                "Decode failed at byte %" ASN_PRI_SIZE ": %s\n",
+                name, new_offset + rval.consumed,
                 (rval.code == RC_WMORE)
                     ? "Unexpected end of input"
                     : "Input processing error");
         } else {
             fprintf(stderr, "%s: "
-                "Decode failed past byte %ld: %s\n",
-                name, (long)new_offset,
+                "Decode failed past byte %" ASN_PRI_SIZE ": %s\n",
+                name, new_offset,
                 (rval.code == RC_WMORE)
                     ? "Unexpected end of input"
                     : "Input processing error");
