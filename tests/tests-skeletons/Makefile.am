@@ -35,6 +35,7 @@ check_PROGRAMS =                \
     check-APER-INTEGER-x691-range \
     check-UPER-support          \
     check-UPER-UniversalString  \
+    check-UPER-PrintableString  \
     check-UPER-INTEGER          \
     check-UPER-INTEGER-semiconstrained \
     check-recursive-overflow
