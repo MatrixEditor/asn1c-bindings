@@ -74,6 +74,15 @@ asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
 		}
 	}
 
+	if(flags & A1F_PREFER_IMPORT_SOURCE) {
+		arg.flags |= A1F_PREFER_IMPORT_SOURCE;
+		flags &= ~A1F_PREFER_IMPORT_SOURCE;
+		if(arg.debug) {
+			arg.debug(-1,
+				"IMPORTS resolution: require explicit xp_members match");
+		}
+	}
+
 	a1f_replace_me_with_proper_interface_arg = arg;
 
 	/*
@@ -111,6 +120,9 @@ asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
     }
 
     memset(&a1f_replace_me_with_proper_interface_arg, 0, sizeof(arg_t));
+    a1f_replace_me_with_proper_interface_arg.eh    = arg.eh;
+    a1f_replace_me_with_proper_interface_arg.debug = arg.debug;
+    a1f_replace_me_with_proper_interface_arg.flags = arg.flags;
 
 	/*
 	 * Compute a return value.
