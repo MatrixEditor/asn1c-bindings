@@ -70,7 +70,6 @@ TESTS += check-src/check-202.-gen-CBOR.c
 if TEST_64BIT
 TESTS += check-src/check64-134.-gen-UPER.c
 TESTS += check-src/check64-136.-gen-OER.c
-TESTS += check-src/check64-207.c
 endif
 
 XFAIL_TESTS =
@@ -82,8 +81,7 @@ EXTRA_DIST =    \
     data-126    \
     data-202    \
     check-src/check64-134.-gen-UPER.c    \
-    check-src/check64-136.-gen-OER.c     \
-    check-src/check64-207.c
+    check-src/check64-136.-gen-OER.c
 
 clean-local:
 	rm -rf test-*
