@@ -16,9 +16,11 @@ The asn1c is arguably the most evolved open source ASN.1 compiler.
 
 ## Latest release
 
-Current release: **1.4.2**
+Current release: **1.4.3**
 
-This release includes post-v1.4 fixes across APER/UPER/OER decoding,
+This release adds the `-fprefer-import-source` flag, which fixes incorrect type
+binding when two modules export identically-named types and a consumer imports
+one from each. It also includes post-v1.4 fixes across APER/UPER/OER decoding,
 PER size constraint handling, `-fprefix` generation for anonymous typedefs
 and member symbols, parser/compiler warning cleanup, circular-reference
 include fixes, and multiple code-scanning fixes. It also addresses security
