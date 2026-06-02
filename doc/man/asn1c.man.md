@@ -148,6 +148,19 @@ CBOR and other encoding rules.
 :   Use the unbounded size data types (`INTEGER_t`, `ENUMERATED_t`, `REAL_t`)
     by default, instead of using the native machine's data types (long, double).
 
+-finteger-native-type=*mode*
+:   Select the fixed-width native C storage policy for constrained ASN.1
+    INTEGER types.  *mode* is one of `auto`, `int32`, `uint32`, `int64`, or
+    `uint64`; the default is `auto`.  `int32`/`uint32` permit `int32_t`/
+    `uint32_t` storage for ranges that fit signed/unsigned 32-bit;
+    `int64`/`uint64` permit `int64_t`/`uint64_t` for ranges that fit
+    signed/unsigned 64-bit; `auto` selects the smallest safe fixed-width type
+    (`int32_t`, then `uint32_t`, `int64_t`, `uint64_t`).  Values that do not
+    fit the selected native policy are generated as `INTEGER_t`.  Unsigned
+    upper bounds such as `18446744073709551615` are preserved without signed
+    wraparound, and bounds beyond 64 bits are stored as static
+    arbitrary-precision constraint values.
+
 ## Codecs Generation Options
 
 -fgen-only-pdu-deps

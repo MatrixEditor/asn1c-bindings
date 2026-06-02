@@ -167,6 +167,21 @@ structures.
 Use the unbounded size data types (\f[CR]INTEGER_t\f[R],
 \f[CR]ENUMERATED_t\f[R], \f[CR]REAL_t\f[R]) by default, instead of using
 the native machine\(cqs data types (long, double).
+.TP
+\-finteger\-native\-type=\f[I]mode\f[R]
+Select the fixed\-width native C storage policy for constrained ASN.1
+INTEGER types.
+\f[I]mode\f[R] is one of \f[CR]auto\f[R], \f[CR]int32\f[R],
+\f[CR]uint32\f[R], \f[CR]int64\f[R], or \f[CR]uint64\f[R]; the default is
+\f[CR]auto\f[R].
+\f[CR]int32\f[R]/\f[CR]uint32\f[R] permit \f[CR]int32_t\f[R]/\f[CR]uint32_t\f[R]
+storage for ranges that fit signed/unsigned 32\-bit;
+\f[CR]int64\f[R]/\f[CR]uint64\f[R] permit \f[CR]int64_t\f[R]/\f[CR]uint64_t\f[R]
+for ranges that fit signed/unsigned 64\-bit; \f[CR]auto\f[R] selects the
+smallest safe fixed\-width type, then \f[CR]INTEGER_t\f[R].
+Unsigned upper bounds such as 18446744073709551615 are preserved without
+signed wraparound, and bounds beyond 64 bits are stored as static
+arbitrary\-precision constraint values.
 .SS Codecs Generation Options
 .TP
 \-fgen\-only\-pdu\-deps
