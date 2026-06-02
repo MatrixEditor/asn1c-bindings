@@ -119,10 +119,11 @@ asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
         arg.ns = 0;
     }
 
-    memset(&a1f_replace_me_with_proper_interface_arg, 0, sizeof(arg_t));
-    a1f_replace_me_with_proper_interface_arg.eh    = arg.eh;
-    a1f_replace_me_with_proper_interface_arg.debug = arg.debug;
-    a1f_replace_me_with_proper_interface_arg.flags = arg.flags;
+	a1f_replace_me_with_proper_interface_arg = (arg_t){
+		.eh = arg.eh,
+		.debug = arg.debug,
+		.flags = arg.flags,
+	};
 
 	/*
 	 * Compute a return value.
