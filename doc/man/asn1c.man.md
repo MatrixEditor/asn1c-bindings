@@ -107,7 +107,18 @@ CBOR and other encoding rules.
 -fno-include-deps
 :   Do not generate courtesy #include lines for non-critical type dependencies.
     Helps prevent namespace collisions.
-    
+
+-fprefer-import-source
+:   Require an explicit name listing in the IMPORTS group (`xp_members`) for
+    a symbol to be considered as imported from that group.
+    Without this option, the resolver falls back to scanning the whole body of
+    the FROM module when the name is not found in the group's member list.
+    That fallback can silently bind a symbol to the wrong module when two
+    different modules export identically-named types and a consumer imports one
+    from each.
+    Enable this option to suppress the fallback and ensure each imported name
+    resolves only to the module explicitly named in the IMPORTS declaration.
+
 -fprefix=*prefix*
 :	Add the specified prefix to all generated type names and filenames.
 	This helps avoid naming conflicts in several scenarios:
