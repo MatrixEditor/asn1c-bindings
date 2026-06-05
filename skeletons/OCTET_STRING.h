@@ -23,6 +23,12 @@ typedef struct OCTET_STRING {
 		int bits_collected;          /* Number of bits in accumulated_value */
 		int padding_seen;            /* Whether padding was encountered */
 		int decoder_initialized;     /* Whether decoder state is valid */
+		/*
+		 * Format pinned by the first non-whitespace chunk so that all
+		 * subsequent chunks of the same value use the same converter.
+		 * 0 = undecided, 1 = hex, 2 = base64.
+		 */
+		int format_decided;
 	} _xer_decode_state;
 } OCTET_STRING_t;
 

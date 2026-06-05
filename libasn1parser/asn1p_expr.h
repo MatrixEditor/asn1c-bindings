@@ -211,7 +211,7 @@ typedef struct asn1p_expr_s {
 			EC_NONE = 0,
 			/* XER encoding controls */
 			EC_XER_HEXADECIMAL,          /* Force hex encoding for OCTET STRING */
-			EC_XER_BASE64,               /* Force Base64 encoding (default) */
+			EC_XER_BASE64,               /* Force Base64 encoding (opt-in; hex is default) */
 			EC_XER_UTF8,                 /* Force UTF-8 text encoding */
 			/* Future: Additional encoding controls can be added here */
 		} encoding_type;

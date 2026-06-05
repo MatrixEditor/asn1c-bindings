@@ -17,7 +17,15 @@ struct asn_TYPE_descriptor_s;	/* Forward declaration */
 enum xer_encoder_flags_e {
 	/* Mode of encoding */
 	XER_F_BASIC	= 0x01,	/* BASIC-XER (pretty-printing) */
-	XER_F_CANONICAL	= 0x02	/* Canonical XER (strict rules) */
+	XER_F_CANONICAL	= 0x02,	/* Canonical XER (strict rules) */
+	/*
+	 * Request Base64 output for OCTET STRING values instead of the default
+	 * hex (xmlhstring) encoding.  Applies to OCTET STRING only; ignored for
+	 * all other types.  IGNORED when XER_F_CANONICAL is also set: CXER
+	 * mandates upper-case contiguous hex per X.693 §9.4.
+	 * Flags propagate to nested members automatically.
+	 */
+	XER_F_BASE64	= 0x04
 };
 
 /*

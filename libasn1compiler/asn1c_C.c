@@ -2411,11 +2411,11 @@ type_needs_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
     
     /* Check if encoding control is set */
     switch(expr->encoding_control.encoding_type) {
-    case EC_XER_HEXADECIMAL:
-    case EC_XER_UTF8:
-        /* These need custom encoders (Base64 is default) */
-        return 1;
     case EC_XER_BASE64:
+    case EC_XER_UTF8:
+        /* These need custom encoders (hex is the default) */
+        return 1;
+    case EC_XER_HEXADECIMAL:
     case EC_NONE:
     default:
         return 0;
@@ -2458,62 +2458,29 @@ emit_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
     INDENT(-1);
     
     INDENT(+1);
-    OUT("const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;\n");
-    OUT("asn_enc_rval_t er = {0,0,0};\n");
-    OUT("\n");
-    
-    OUT("(void)td;  /* Unused parameter */\n");
-    OUT("(void)ilevel;  /* Unused in this implementation */\n");
-    OUT("(void)flags;  /* Unused in this implementation */\n");
-    OUT("\n");
-    
-    OUT("if(!st || (!st->buf && st->size)) {\n");
-    INDENT(+1);
-    OUT("ASN__ENCODE_FAILED;\n");
-    INDENT(-1);
-    OUT("}\n");
-    OUT("\n");
-    
+
     switch(enc_type) {
-    case EC_XER_HEXADECIMAL:
-        OUT("/* Hexadecimal encoding per ENCODING-CONTROL */\n");
-        OUT("{\n");
-        INDENT(+1);
-        OUT("const char * const h2c = \"0123456789ABCDEF\";\n");
-        OUT("char *hexbuf;\n");
-        OUT("size_t i;\n");
-        OUT("\n");
-        OUT("hexbuf = (char *)MALLOC(st->size * 2 + 1);\n");
-        OUT("if(!hexbuf) ASN__ENCODE_FAILED;\n");
-        OUT("\n");
-        OUT("for(i = 0; i < st->size; i++) {\n");
-        INDENT(+1);
-        OUT("hexbuf[i*2] = h2c[(st->buf[i] >> 4) & 0x0F];\n");
-        OUT("hexbuf[i*2 + 1] = h2c[st->buf[i] & 0x0F];\n");
-        INDENT(-1);
-        OUT("}\n");
-        OUT("hexbuf[st->size * 2] = 0;\n");
-        OUT("\n");
-        OUT("er.encoded = cb(hexbuf, st->size * 2, app_key);\n");
-        OUT("FREEMEM(hexbuf);\n");
-        OUT("if(er.encoded < 0) ASN__ENCODE_FAILED;\n");
-        INDENT(-1);
-        OUT("}\n");
+    case EC_XER_BASE64:
+        /*
+         * Base64 encoding pinned by ENCODING-CONTROL.  Unlike XER_F_BASE64
+         * (the runtime flag), this instruction is not overridden by
+         * XER_F_CANONICAL — the schema defines the encoding of this type.
+         */
+        OUT("/* Base64 encoding per ENCODING-CONTROL XER ... ::= base64 */\n");
+        OUT("return OCTET_STRING_encode_xer_base64(td, sptr, ilevel, flags, cb, app_key);\n");
         break;
-        
+
     case EC_XER_UTF8:
         OUT("/* UTF-8 text encoding per ENCODING-CONTROL */\n");
         OUT("return OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags, cb, app_key);\n");
         break;
-        
+
     default:
-        OUT("/* Fallback to default encoding */\n");
+        OUT("/* Fallback to default hex encoding */\n");
         OUT("return OCTET_STRING_encode_xer(td, sptr, ilevel, flags, cb, app_key);\n");
         break;
     }
-    
-    OUT("\n");
-    OUT("return er;\n");
+
     INDENT(-1);
     OUT("}\n");
     OUT("\n");
@@ -2545,14 +2512,19 @@ emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr) {
     INDENT(+1);
     
     switch(enc_type) {
-    case EC_XER_HEXADECIMAL:
-        OUT("/* Hexadecimal decoding per ENCODING-CONTROL */\n");
-        OUT("return OCTET_STRING_decode_xer_hex(opt_codec_ctx, td, sptr,\n");
+    case EC_XER_BASE64:
+        /*
+         * Pin the decoder to Base64: a value like "ABCD" is also valid hex,
+         * so the auto-detector would misclassify it.  Schema knowledge (the
+         * ENCODING-CONTROL instruction) beats content heuristics here.
+         */
+        OUT("/* Base64 decoder pinned per ENCODING-CONTROL */\n");
+        OUT("return OCTET_STRING_decode_xer_base64(opt_codec_ctx, td, sptr,\n");
         INDENT(+1);
         OUT("opt_mname, buf_ptr, size);\n");
         INDENT(-1);
         break;
-        
+
     case EC_XER_UTF8:
         OUT("/* UTF-8 text decoding per ENCODING-CONTROL */\n");
         OUT("return OCTET_STRING_decode_xer_utf8(opt_codec_ctx, td, sptr,\n");
@@ -2560,10 +2532,10 @@ emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr) {
         OUT("opt_mname, buf_ptr, size);\n");
         INDENT(-1);
         break;
-        
+
     default:
-        OUT("/* Fallback to default decoder */\n");
-        OUT("return OCTET_STRING_decode_xer(opt_codec_ctx, td, sptr,\n");
+        OUT("/* Default: auto-detecting hex/Base64 decoder */\n");
+        OUT("return OCTET_STRING_decode_xer_auto(opt_codec_ctx, td, sptr,\n");
         INDENT(+1);
         OUT("opt_mname, buf_ptr, size);\n");
         INDENT(-1);
