@@ -144,6 +144,16 @@ static asn1p_module_t *currentModule;
 		char *name;
 		struct asn1p_type_tag_s tag;
 	} tv_nametag;
+	/*
+	 * Combined tag + XER encoding instruction prefix.
+	 * Used by optTagOrEncoding to carry both in one production,
+	 * avoiding the shift/reduce conflict that arises when both
+	 * optTag and an explicit [BASE64] alternative start with '['.
+	 */
+	struct {
+		struct asn1p_type_tag_s tag;
+		int enc;	/* enum asn1p_encoding_control_type_e */
+	} tv_tag_enc;
 };
 
 %destructor { asn1p_delete($$); } <a_grammar>
@@ -379,6 +389,7 @@ static asn1p_module_t *currentModule;
 %type	<a_tag>			Tag 		/* [UNIVERSAL 0] IMPLICIT */
 %type	<a_tag>			TagClass TagTypeValue TagPlicit
 %type	<a_tag>			optTag		/* [UNIVERSAL 0] IMPLICIT */
+%type	<tv_tag_enc>		optTagOrEncoding	/* tag and/or [BASE64] prefix */
 %type	<a_constr>		optConstraint
 %type	<a_constr>		optManyConstraints  /* Only for Type */
 %type	<a_constr>		ManyConstraints
@@ -1505,43 +1516,15 @@ ExtensionAndException:
 Type: TaggedType;
 
 TaggedType:
-    optTag UntaggedType {
+    optTagOrEncoding UntaggedType {
         $$ = $2;
-        $$->tag = $1;
-    }
-    /*
-     * EXTENDED-XER encoding instruction prefix per X.693 §21.
-     * [BASE64] OCTET STRING  — canonical form (module has XER INSTRUCTIONS).
-     * [XER:BASE64] OCTET STRING — qualified form (works in any module).
-     * These alternatives are syntactically disjoint from tags because tags
-     * always contain a TOK_number; capitalreferences never appear in tags.
-     */
-    | '[' TOK_capitalreference ']' UntaggedType {
-        $$ = $4;
-        if(strcmp($2, "BASE64") == 0) {
-            $$->encoding_control.encoding_type = EC_XER_BASE64;
+        $$->tag = $1.tag;
+        if($1.enc != EC_NONE) {
+            $$->encoding_control.encoding_type =
+                (enum asn1p_encoding_control_type_e)$1.enc;
             if(!$$->encoding_control.encoding_reference)
                 $$->encoding_control.encoding_reference = strdup("XER");
-        } else {
-            fprintf(stderr,
-                "WARNING: Unknown XER encoding instruction [%s] at %s:%d, ignored\n",
-                $2, ASN_FILENAME, yylineno);
         }
-        free($2);
-    }
-    | '[' TOK_capitalreference ':' TOK_capitalreference ']' UntaggedType {
-        $$ = $6;
-        if(strcmp($2, "XER") == 0 && strcmp($4, "BASE64") == 0) {
-            $$->encoding_control.encoding_type = EC_XER_BASE64;
-            if(!$$->encoding_control.encoding_reference)
-                $$->encoding_control.encoding_reference = strdup("XER");
-        } else {
-            fprintf(stderr,
-                "WARNING: Unknown XER encoding instruction [%s:%s] at %s:%d, ignored\n",
-                $2, $4, ASN_FILENAME, yylineno);
-        }
-        free($2);
-        free($4);
     }
     ;
 
@@ -1592,10 +1575,15 @@ UntaggedType:
 	;
 
 MaybeIndirectTaggedType:
-    optTag MaybeIndirectTypeDeclaration optManyConstraints {
+    optTagOrEncoding MaybeIndirectTypeDeclaration optManyConstraints {
 		$$ = $2;
-		$$->tag = $1;
-        /* (see note on [BASE64] in TaggedType above) */
+		$$->tag = $1.tag;
+		if($1.enc != EC_NONE) {
+			$$->encoding_control.encoding_type =
+				(enum asn1p_encoding_control_type_e)$1.enc;
+			if(!$$->encoding_control.encoding_reference)
+				$$->encoding_control.encoding_reference = strdup("XER");
+		}
 		/*
 		 * Outer constraint for SEQUENCE OF and SET OF applies
 		 * to the inner type.
@@ -1606,45 +1594,13 @@ MaybeIndirectTaggedType:
 			TQ_FIRST(&($$->members))->constraints = $3;
 		} else {
 			if($$->constraints) {
-				assert(!$2);
-				/* Check this : optManyConstraints is not used ?! */
+				assert(!$3);
 				asn1p_constraint_free($3);
 			} else {
 				$$->constraints = $3;
 			}
 		}
 	}
-    | '[' TOK_capitalreference ']' MaybeIndirectTypeDeclaration optManyConstraints {
-        /* [BASE64] member-type form */
-        $$ = $4;
-        if(strcmp($2, "BASE64") == 0) {
-            $$->encoding_control.encoding_type = EC_XER_BASE64;
-            if(!$$->encoding_control.encoding_reference)
-                $$->encoding_control.encoding_reference = strdup("XER");
-        } else {
-            fprintf(stderr,
-                "WARNING: Unknown XER encoding instruction [%s] at %s:%d, ignored\n",
-                $2, ASN_FILENAME, yylineno);
-        }
-        free($2);
-        if($5) $$->constraints = $5;
-    }
-    | '[' TOK_capitalreference ':' TOK_capitalreference ']' MaybeIndirectTypeDeclaration optManyConstraints {
-        /* [XER:BASE64] member-type form */
-        $$ = $6;
-        if(strcmp($2, "XER") == 0 && strcmp($4, "BASE64") == 0) {
-            $$->encoding_control.encoding_type = EC_XER_BASE64;
-            if(!$$->encoding_control.encoding_reference)
-                $$->encoding_control.encoding_reference = strdup("XER");
-        } else {
-            fprintf(stderr,
-                "WARNING: Unknown XER encoding instruction [%s:%s] at %s:%d, ignored\n",
-                $2, $4, ASN_FILENAME, yylineno);
-        }
-        free($2);
-        free($4);
-        if($7) $$->constraints = $7;
-    }
     ;
 
 NSTD_IndirectMarker:
@@ -2719,6 +2675,59 @@ RealValue:
 optTag:
 	{ memset(&$$, 0, sizeof($$)); }
 	| Tag { $$ = $1; }
+	;
+
+/*
+ * Combined tag + XER encoding instruction prefix for use in TaggedType and
+ * MaybeIndirectTaggedType.  Replaces the separate optTag in those two rules
+ * to avoid the shift/reduce conflict that would arise if both optTag and an
+ * explicit '[' capitalreference ']' alternative compete for the '[' token.
+ *
+ * Disambiguation after '[' is 1-token-lookahead-safe:
+ *   TOK_number or TOK_UNIVERSAL/APPLICATION/PRIVATE -> tag
+ *   TOK_capitalreference                            -> XER encoding prefix
+ * since capitalreferences never appear inside tag productions (tags need a
+ * TOK_number; the class keywords UNIVERSAL/APPLICATION/PRIVATE are separate
+ * keyword tokens, not capitalreferences).
+ */
+optTagOrEncoding:
+	{
+		memset(&$$, 0, sizeof($$));
+		$$.enc = EC_NONE;
+	}
+	| Tag {
+		$$.tag = $1;
+		$$.enc = EC_NONE;
+	}
+	| '[' TOK_capitalreference ']' {
+		/* [BASE64] — canonical E-XER form (X.693 §21) */
+		memset(&$$, 0, sizeof($$));
+		if(strcmp($2, "BASE64") == 0) {
+			$$.enc = EC_XER_BASE64;
+		} else {
+			fprintf(stderr,
+				"WARNING: Unknown XER encoding instruction [%s]"
+				" at %s:%d, ignored\n",
+				$2, ASN_FILENAME, yylineno);
+			$$.enc = EC_NONE;
+		}
+		free($2);
+	}
+	| '[' TOK_capitalreference ':' TOK_capitalreference ']' {
+		/* [XER:BASE64] — qualified form, valid in any module */
+		memset(&$$, 0, sizeof($$));
+		if(strcmp($2, "XER") == 0 && strcmp($4, "BASE64") == 0) {
+			$$.enc = EC_XER_BASE64;
+		} else {
+			fprintf(stderr,
+				"WARNING: Unknown XER encoding instruction"
+				" [%s:%s] at %s:%d, ignored\n",
+				$2, $4, ASN_FILENAME, yylineno);
+			$$.enc = EC_NONE;
+		}
+		free($2);
+		free($4);
+	}
 	;
 
 Tag:
