@@ -2432,9 +2432,17 @@ type_needs_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
     switch(expr->encoding_control.encoding_type) {
     case EC_XER_BASE64:
     case EC_XER_UTF8:
-        /* These need custom encoders (hex is the default) */
+        /* These need custom encoders (hex is the default). */
         return 1;
     case EC_XER_HEXADECIMAL:
+        /*
+         * Hex is the default, but we still generate a thin custom encoder
+         * that masks XER_F_BASE64 out of the flags.  Without this, a caller
+         * passing XER_F_BASE64 at runtime would silently override a schema-
+         * level ENCODING-CONTROL XER ::= hexadecimal instruction.
+         * Schema intent beats runtime convenience flags.
+         */
+        return 1;
     case EC_NONE:
     default:
         return 0;
@@ -2479,6 +2487,20 @@ emit_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
     INDENT(+1);
 
     switch(enc_type) {
+    case EC_XER_HEXADECIMAL:
+        /*
+         * Hex is the default, but the schema instruction must not be
+         * overridden by a runtime XER_F_BASE64 flag.  Mask the flag so
+         * OCTET_STRING_encode_xer always produces hex for this type.
+         */
+        OUT("/* Hexadecimal encoding per ENCODING-CONTROL — masks XER_F_BASE64 */\n");
+        OUT("return OCTET_STRING_encode_xer(td, sptr, ilevel,\n");
+        INDENT(+1);
+        OUT("(enum xer_encoder_flags_e)(flags & ~XER_F_BASE64),\n");
+        OUT("cb, app_key);\n");
+        INDENT(-1);
+        break;
+
     case EC_XER_BASE64:
         /*
          * Base64 encoding pinned by ENCODING-CONTROL.  Unlike XER_F_BASE64
@@ -2531,11 +2553,23 @@ emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr) {
     INDENT(+1);
     
     switch(enc_type) {
+    case EC_XER_HEXADECIMAL:
+        /*
+         * Pin to hex decoder so that a value like "ABCD" (ambiguous — valid
+         * hex AND valid Base64) is always decoded as hex for this type.
+         */
+        OUT("/* Hexadecimal decoder pinned per ENCODING-CONTROL */\n");
+        OUT("return OCTET_STRING_decode_xer_hex(opt_codec_ctx, td, sptr,\n");
+        INDENT(+1);
+        OUT("opt_mname, buf_ptr, size);\n");
+        INDENT(-1);
+        break;
+
     case EC_XER_BASE64:
         /*
          * Pin the decoder to Base64: a value like "ABCD" is also valid hex,
-         * so the auto-detector would misclassify it.  Schema knowledge (the
-         * ENCODING-CONTROL instruction) beats content heuristics here.
+         * so the auto-detector would misclassify it.  Schema knowledge beats
+         * content heuristics here.
          */
         OUT("/* Base64 decoder pinned per ENCODING-CONTROL */\n");
         OUT("return OCTET_STRING_decode_xer_base64(opt_codec_ctx, td, sptr,\n");

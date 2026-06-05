@@ -2,10 +2,10 @@
  * Tests for the updated XER OCTET STRING hex/Base64 handling (issue #538).
  *
  * Covers:
- *  17a. Default xer_encode emits contiguous upper-case hex for XER_F_BASIC
- *       and XER_F_CANONICAL.
+ *  17a. Default OCTET_STRING XER encoder (OCTET_STRING_encode_xer) emits
+ *       contiguous upper-case hex for XER_F_BASIC and XER_F_CANONICAL.
  *  17b. XER_F_BASIC|XER_F_BASE64 emits Base64; XER_F_CANONICAL|XER_F_BASE64
- *       emits hex (canonical wins).
+ *       emits hex (canonical overrides XER_F_BASE64).
  *  17c. Regression #538: "0x6B" treated as Base64, not hex (no 0x heuristic).
  *  17d. Liberal hex: lower-case digits, internal whitespace, H'aAbB'.
  *  17e. Odd-length pure-hex-alphabet string decoded as Base64.

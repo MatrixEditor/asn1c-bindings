@@ -1018,14 +1018,12 @@ OCTET_STRING__convert_auto(void *sptr, const void *chunk_buf,
         p++;
     }
 
-    /* Nothing but whitespace in this chunk — cannot decide yet */
-    if(p >= pend) {
-        /* If format was already pinned to Base64, pass the whitespace through
-         * so the Base64 decoder can skip it internally. */
-        if(st->_xer_decode_state.format_decided == 2)
-            return OCTET_STRING__convert_base64(sptr, chunk_buf, chunk_size, have_more);
-        return (ssize_t)chunk_size;  /* whitespace consumed, no data yet */
-    }
+    /* Nothing but whitespace in this chunk — nothing to convert yet.
+     * Both hex and Base64 converters already skip XML whitespace, so there
+     * is no need to delegate: consuming now avoids an unnecessary realloc
+     * inside the Base64 converter when the chunk carries no actual data. */
+    if(p >= pend)
+        return (ssize_t)chunk_size;
 
     /* Check for explicit H' / h' prefix (nonstandard; X.693 does not define
      * this for OCTET STRING, but we accept it liberally). */
