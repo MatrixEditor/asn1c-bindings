@@ -1923,6 +1923,25 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
 		tv_mode, tags_count, all_tags_count);
 
 	/*
+	 * Semantic check: XER encoding instructions (BASE64, UTF8, HEXADECIMAL)
+	 * may only be applied to OCTET STRING.  A [BASE64] prefix on an INTEGER
+	 * or any other type is a hard compile error per X.693 applicability rules.
+	 */
+	if(expr->encoding_control.encoding_type != EC_NONE) {
+		asn1p_expr_type_e etype = expr_get_type(arg, expr);
+		if(etype != ASN_BASIC_OCTET_STRING && etype != A1TC_REFERENCE) {
+			fprintf(stderr,
+				"ERROR: XER encoding instruction '%s' at %s:%d "
+				"may only be applied to OCTET STRING, not to %s\n",
+				encoding_type_description(expr->encoding_control.encoding_type),
+				expr->module ? expr->module->source_file_name : "?",
+				expr->_lineno,
+				ASN_EXPR_TYPE2STR(expr->expr_type));
+			return -1;
+		}
+	}
+
+	/*
 	 * Emit custom XER encoder/decoder if type has encoding controls
 	 */
 	if(type_needs_custom_xer_encoder(arg, expr)) {

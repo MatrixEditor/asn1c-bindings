@@ -1,0 +1,9 @@
+
+-- Negative test: [BASE64] applied to INTEGER must produce a compile error.
+-- Expected: compilation fails with "may only be applied to OCTET STRING".
+
+TestBase64MisappliedInt DEFINITIONS XER INSTRUCTIONS AUTOMATIC TAGS ::= BEGIN
+
+BadType ::= [BASE64] INTEGER
+
+END

@@ -793,6 +793,41 @@ EncodingInstruction:
 		
 		free($5);
 	}
+	/*
+	 * Standard X.693 §21 form: BASE64 TypeName
+	 * (in the ENCODING-CONTROL XER section, all identifiers return
+	 * TOK_typereference from the encoding_control lexer state)
+	 */
+	| TOK_typereference TOK_typereference
+	{
+		$$ = NULL;
+		if(strcmp($1, "BASE64") == 0) {
+			/* BASE64 TypeName */
+			$$ = NEW_EXPR();
+			checkmem($$);
+			$$->Identifier = $2;
+			$$->meta_type = AMT_TYPE;
+			$$->expr_type = ASN_BASIC_OCTET_STRING;
+			$$->_mark = TM_ENCODING_INSTRUCTION;
+			$$->encoding_control.encoding_type = EC_XER_BASE64;
+			$$->encoding_control.encoding_reference = strdup("XER");
+			free($1);
+		} else if(strcmp($1, "GLOBAL-DEFAULTS") == 0
+		       && strcmp($2, "MODIFIED-ENCODINGS") == 0) {
+			/* GLOBAL-DEFAULTS MODIFIED-ENCODINGS — record, no-op beyond parsing */
+			fprintf(stderr,
+				"NOTE: GLOBAL-DEFAULTS MODIFIED-ENCODINGS at %s:%d (accepted)\n",
+				ASN_FILENAME, yylineno);
+			free($1);
+			free($2);
+		} else {
+			fprintf(stderr,
+				"WARNING: Unknown ENCODING-CONTROL directive '%s %s' at %s:%d\n",
+				$1, $2, ASN_FILENAME, yylineno);
+			free($1);
+			free($2);
+		}
+	}
 	| error
 	{
 		/* Error recovery - skip malformed instruction */
@@ -1474,6 +1509,40 @@ TaggedType:
         $$ = $2;
         $$->tag = $1;
     }
+    /*
+     * EXTENDED-XER encoding instruction prefix per X.693 §21.
+     * [BASE64] OCTET STRING  — canonical form (module has XER INSTRUCTIONS).
+     * [XER:BASE64] OCTET STRING — qualified form (works in any module).
+     * These alternatives are syntactically disjoint from tags because tags
+     * always contain a TOK_number; capitalreferences never appear in tags.
+     */
+    | '[' TOK_capitalreference ']' UntaggedType {
+        $$ = $4;
+        if(strcmp($2, "BASE64") == 0) {
+            $$->encoding_control.encoding_type = EC_XER_BASE64;
+            if(!$$->encoding_control.encoding_reference)
+                $$->encoding_control.encoding_reference = strdup("XER");
+        } else {
+            fprintf(stderr,
+                "WARNING: Unknown XER encoding instruction [%s] at %s:%d, ignored\n",
+                $2, ASN_FILENAME, yylineno);
+        }
+        free($2);
+    }
+    | '[' TOK_capitalreference ':' TOK_capitalreference ']' UntaggedType {
+        $$ = $6;
+        if(strcmp($2, "XER") == 0 && strcmp($4, "BASE64") == 0) {
+            $$->encoding_control.encoding_type = EC_XER_BASE64;
+            if(!$$->encoding_control.encoding_reference)
+                $$->encoding_control.encoding_reference = strdup("XER");
+        } else {
+            fprintf(stderr,
+                "WARNING: Unknown XER encoding instruction [%s:%s] at %s:%d, ignored\n",
+                $2, $4, ASN_FILENAME, yylineno);
+        }
+        free($2);
+        free($4);
+    }
     ;
 
 DefinedUntaggedType:
@@ -1526,6 +1595,7 @@ MaybeIndirectTaggedType:
     optTag MaybeIndirectTypeDeclaration optManyConstraints {
 		$$ = $2;
 		$$->tag = $1;
+        /* (see note on [BASE64] in TaggedType above) */
 		/*
 		 * Outer constraint for SEQUENCE OF and SET OF applies
 		 * to the inner type.
@@ -1544,6 +1614,37 @@ MaybeIndirectTaggedType:
 			}
 		}
 	}
+    | '[' TOK_capitalreference ']' MaybeIndirectTypeDeclaration optManyConstraints {
+        /* [BASE64] member-type form */
+        $$ = $4;
+        if(strcmp($2, "BASE64") == 0) {
+            $$->encoding_control.encoding_type = EC_XER_BASE64;
+            if(!$$->encoding_control.encoding_reference)
+                $$->encoding_control.encoding_reference = strdup("XER");
+        } else {
+            fprintf(stderr,
+                "WARNING: Unknown XER encoding instruction [%s] at %s:%d, ignored\n",
+                $2, ASN_FILENAME, yylineno);
+        }
+        free($2);
+        if($5) $$->constraints = $5;
+    }
+    | '[' TOK_capitalreference ':' TOK_capitalreference ']' MaybeIndirectTypeDeclaration optManyConstraints {
+        /* [XER:BASE64] member-type form */
+        $$ = $6;
+        if(strcmp($2, "XER") == 0 && strcmp($4, "BASE64") == 0) {
+            $$->encoding_control.encoding_type = EC_XER_BASE64;
+            if(!$$->encoding_control.encoding_reference)
+                $$->encoding_control.encoding_reference = strdup("XER");
+        } else {
+            fprintf(stderr,
+                "WARNING: Unknown XER encoding instruction [%s:%s] at %s:%d, ignored\n",
+                $2, $4, ASN_FILENAME, yylineno);
+        }
+        free($2);
+        free($4);
+        if($7) $$->constraints = $7;
+    }
     ;
 
 NSTD_IndirectMarker:
