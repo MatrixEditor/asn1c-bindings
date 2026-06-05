@@ -46,16 +46,27 @@ static int collect(const void *buf, size_t size, void *key) {
     return 0;
 }
 
+/* Build a mutable OCTET_STRING_t from a const buffer for encoding.
+ * Encoders only READ buf, but the field is uint8_t* (non-const). */
+static OCTET_STRING_t
+make_os(const uint8_t *data, size_t len) {
+    OCTET_STRING_t os;
+    memset(&os, 0, sizeof(os));
+    os.buf = malloc(len ? len : 1);
+    assert(os.buf);
+    memcpy(os.buf, data, len);
+    os.size = len;
+    return os;
+}
+
 /* Encode via OCTET_STRING_encode_xer, return the result string. */
 static const char *
 hex_encode(const uint8_t *data, size_t len, enum xer_encoder_flags_e flags) {
-    OCTET_STRING_t os;
-    memset(&os, 0, sizeof(os));
-    os.buf = (uint8_t *)data;
-    os.size = len;
+    OCTET_STRING_t os = make_os(data, len);
     enc_off = 0;
     asn_enc_rval_t er = OCTET_STRING_encode_xer(
         &asn_DEF_OCTET_STRING, &os, 0, flags, collect, NULL);
+    free(os.buf);
     assert(er.encoded >= 0);
     enc_buf[enc_off] = '\0';
     return enc_buf;
@@ -64,13 +75,11 @@ hex_encode(const uint8_t *data, size_t len, enum xer_encoder_flags_e flags) {
 /* Encode via OCTET_STRING_encode_xer_base64. */
 static const char *
 b64_encode(const uint8_t *data, size_t len, enum xer_encoder_flags_e flags) {
-    OCTET_STRING_t os;
-    memset(&os, 0, sizeof(os));
-    os.buf = (uint8_t *)data;
-    os.size = len;
+    OCTET_STRING_t os = make_os(data, len);
     enc_off = 0;
     asn_enc_rval_t er = OCTET_STRING_encode_xer_base64(
         &asn_DEF_OCTET_STRING, &os, 0, flags, collect, NULL);
+    free(os.buf);
     assert(er.encoded >= 0);
     enc_buf[enc_off] = '\0';
     return enc_buf;

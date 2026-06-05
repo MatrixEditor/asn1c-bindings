@@ -40,9 +40,14 @@ static const char *
 encode_os(const uint8_t *data, size_t len, enum xer_encoder_flags_e flags) {
     OCTET_STRING_t os;
     asn_enc_rval_t er;
+    /* Copy to a mutable buffer: OCTET_STRING_t.buf is uint8_t* (non-const)
+     * and the encoder only reads it, but the cast would drop const. */
+    uint8_t *buf_copy = malloc(len ? len : 1);
+    assert(buf_copy);
+    memcpy(buf_copy, data, len);
 
     memset(&os, 0, sizeof(os));
-    os.buf = (uint8_t *)data;
+    os.buf = buf_copy;
     os.size = len;
 
     enc_off = 0;
@@ -50,6 +55,7 @@ encode_os(const uint8_t *data, size_t len, enum xer_encoder_flags_e flags) {
 
     er = OCTET_STRING_encode_xer(&asn_DEF_OCTET_STRING, &os,
                                  0, flags, collect, NULL);
+    free(buf_copy);
     assert(er.encoded >= 0);
     enc_buf[enc_off] = '\0';
     return enc_buf;
@@ -229,46 +235,58 @@ static void
 test_17g_chunked(void) {
     /*
      * "AABB" is an ambiguous body (pure hex alphabet, even count).
-     * Split it across two chunks: "AA" then "BB".
-     * The first chunk "AA" classifies as AMBIGUOUS_HEX, pins to hex.
-     * The second chunk "BB" must use the pinned hex converter.
-     * Result: {0xAA, 0xBB}.
+     * We split it at the body level: first feed "<tag>AA" so that
+     * body_receiver gets "AA", classifies it as AMBIGUOUS_HEX and pins
+     * format_decided=1 (hex).  Then feed "BB</tag>" so body_receiver
+     * gets "BB" using the pinned hex converter.
+     * Expected result: {0xAA, 0xBB}.
+     *
+     * NOTE: The XER tokeniser (pxml) needs at least a complete XML token
+     * to make progress.  Feeding 1 byte at a time produces consumed=0
+     * (PXER_WMORE) for partial tokens, which would stall.  We split at
+     * real token boundaries instead, using the advancing-pointer API that
+     * the XER decoder is designed for.
      */
     static const uint8_t expected[] = {0xAA, 0xBB};
-    static const char xml[] = "<tag>AABB</tag>";
+    /* chunk1 contains the opening tag plus the first 2 body bytes.
+     * chunk2 contains the remaining 2 body bytes plus the closing tag. */
+    static const char chunk1[] = "<tag>AA";     /* 7 bytes */
+    static const char chunk2[] = "BB</tag>";    /* 8 bytes */
     OCTET_STRING_t *st = NULL;
     asn_dec_rval_t dr;
-    size_t consumed = 0;
 
-    printf("17g: Chunked decode — format pinned by first chunk\n");
+    printf("17g: Chunked decode — format pinned by first body chunk\n");
 
-    /* Feed byte-by-byte to force the chunked path */
-    while(consumed < strlen(xml)) {
-        dr = OCTET_STRING_decode_xer_auto(NULL, &asn_DEF_OCTET_STRING,
-                                          (void **)&st, "tag",
-                                          xml + consumed, 1);
-        if(dr.code == RC_OK) {
-            consumed += dr.consumed;
-            break;
-        } else if(dr.code == RC_WMORE) {
-            consumed += dr.consumed ? dr.consumed : 1;
-        } else {
-            printf("  ERROR: Decode failed at byte %zu, code=%d\n",
-                   consumed, dr.code);
-            if(st) ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, st);
-            assert(0);
-        }
+    /* First chunk: opening tag + first 2 body bytes */
+    dr = OCTET_STRING_decode_xer_auto(NULL, &asn_DEF_OCTET_STRING,
+                                      (void **)&st, "tag",
+                                      chunk1, sizeof(chunk1) - 1);
+    if(dr.code != RC_WMORE) {
+        printf("  ERROR: Expected RC_WMORE after chunk1, got %d\n", dr.code);
+        if(st) ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, st);
+        assert(0);
+    }
+    printf("     After chunk1 (%s): RC_WMORE, consumed=%zu\n",
+           chunk1, dr.consumed);
+
+    /* Second chunk: remaining body bytes + closing tag */
+    dr = OCTET_STRING_decode_xer_auto(NULL, &asn_DEF_OCTET_STRING,
+                                      (void **)&st, "tag",
+                                      chunk2, sizeof(chunk2) - 1);
+    if(dr.code != RC_OK) {
+        printf("  ERROR: Expected RC_OK after chunk2, got %d\n", dr.code);
+        if(st) ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, st);
+        assert(0);
     }
 
-    assert(dr.code == RC_OK);
     assert(st != NULL);
-    printf("     Result: %zu byte(s): ", st->size);
-    for(size_t i = 0; i < st->size; i++) printf("%02X ", st->buf[i]);
+    printf("     After chunk2 (%s): RC_OK, result %zu byte(s):", chunk2, st->size);
+    for(size_t i = 0; i < st->size; i++) printf(" %02X", st->buf[i]);
     printf("\n");
     assert(st->size == sizeof(expected));
     assert(memcmp(st->buf, expected, sizeof(expected)) == 0);
     ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, st);
-    printf("     Chunked hex round-trip: OK\n");
+    printf("     Format pinned to hex across chunks: OK\n");
 }
 
 /* ------------------------------------------------------------------ */
