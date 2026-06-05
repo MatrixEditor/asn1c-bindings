@@ -2493,7 +2493,7 @@ emit_custom_xer_encoder(arg_t *arg, asn1p_expr_t *expr) {
          * overridden by a runtime XER_F_BASE64 flag.  Mask the flag so
          * OCTET_STRING_encode_xer always produces hex for this type.
          */
-        OUT("/* Hexadecimal encoding per ENCODING-CONTROL — masks XER_F_BASE64 */\n");
+        OUT("/* Hexadecimal encoding per ENCODING-CONTROL; XER_F_BASE64 masked */\n");
         OUT("return OCTET_STRING_encode_xer(td, sptr, ilevel,\n");
         INDENT(+1);
         OUT("(enum xer_encoder_flags_e)(flags & ~XER_F_BASE64),\n");
@@ -2558,7 +2558,7 @@ emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr) {
          * Pin to hex decoder so that a value like "ABCD" (ambiguous — valid
          * hex AND valid Base64) is always decoded as hex for this type.
          */
-        OUT("/* Hexadecimal decoder pinned per ENCODING-CONTROL */\n");
+        OUT("/* Hexadecimal decoding per ENCODING-CONTROL */\n");
         OUT("return OCTET_STRING_decode_xer_hex(opt_codec_ctx, td, sptr,\n");
         INDENT(+1);
         OUT("opt_mname, buf_ptr, size);\n");

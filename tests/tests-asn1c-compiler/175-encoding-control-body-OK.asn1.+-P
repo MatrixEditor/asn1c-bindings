@@ -168,7 +168,7 @@ static asn_enc_rval_t
 HexData_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
 	int ilevel, enum xer_encoder_flags_e flags,
 	asn_app_consume_bytes_f *cb, void *app_key) {
-	/* Hexadecimal encoding per ENCODING-CONTROL — masks XER_F_BASE64 */
+	/* Hexadecimal encoding per ENCODING-CONTROL; XER_F_BASE64 masked */
 	return OCTET_STRING_encode_xer(td, sptr, ilevel,
 		(enum xer_encoder_flags_e)(flags & ~XER_F_BASE64),
 		cb, app_key);
@@ -180,7 +180,7 @@ static asn_dec_rval_t
 HexData_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
 	const asn_TYPE_descriptor_t *td, void **sptr,
 	const char *opt_mname, const void *buf_ptr, size_t size) {
-	/* Hexadecimal decoder pinned per ENCODING-CONTROL */
+	/* Hexadecimal decoding per ENCODING-CONTROL */
 	return OCTET_STRING_decode_xer_hex(opt_codec_ctx, td, sptr,
 		opt_mname, buf_ptr, size);
 }
