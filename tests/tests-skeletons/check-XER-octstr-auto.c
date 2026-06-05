@@ -18,6 +18,7 @@
 #include <stdlib.h>
 
 #include <OCTET_STRING.h>
+#include <xer_decoder.h>
 #include <xer_encoder.h>
 
 /* ------------------------------------------------------------------ */
@@ -82,12 +83,31 @@ decode_auto(const char *xml, uint8_t **out_buf, size_t *out_size) {
     return 0;
 }
 
+static int
+decode_default(const char *xml, uint8_t **out_buf, size_t *out_size) {
+    OCTET_STRING_t *st = NULL;
+    asn_dec_rval_t dr;
+
+    dr = xer_decode(NULL, &asn_DEF_OCTET_STRING, (void **)&st,
+                    xml, strlen(xml));
+    if(dr.code != RC_OK) {
+        if(st) ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, st);
+        return -1;
+    }
+    *out_buf  = st->buf;
+    *out_size = st->size;
+    st->buf = NULL;
+    ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, st);
+    return 0;
+}
+
 /* ------------------------------------------------------------------ */
 /* 17a: Default encoder emits contiguous upper-case hex                 */
 /* ------------------------------------------------------------------ */
 static void
 test_17a_default_encoder_hex(void) {
     static const uint8_t data[] = {0xD3, 0x1E, 0x81};
+    static const uint8_t extn_value[] = {0x03, 0x02, 0x01, 0xC6};
     const char *got;
 
     printf("17a: Default encoder emits upper-case hex\n");
@@ -108,6 +128,14 @@ test_17a_default_encoder_hex(void) {
         assert(decode_auto("<tag>D31E81</tag>", &out, &out_sz) == 0);
         assert(out_sz == sizeof(data));
         assert(memcmp(out, data, sizeof(data)) == 0);
+        free(out);
+    }
+    {
+        uint8_t *out; size_t out_sz;
+        assert(decode_default("<OCTET_STRING>030201C6</OCTET_STRING>",
+                              &out, &out_sz) == 0);
+        assert(out_sz == sizeof(extn_value));
+        assert(memcmp(out, extn_value, sizeof(extn_value)) == 0);
         free(out);
     }
     printf("     Round-trip: OK\n");

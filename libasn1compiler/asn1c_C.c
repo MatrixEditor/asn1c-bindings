@@ -2004,7 +2004,8 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
             OUT("ber_type_decoder_f %s_decode_ber;\n", p);
             OUT("der_type_encoder_f %s_encode_der;\n", p);
         }
-        if(arg->flags & A1C_GEN_XER) {
+        if(arg->flags & A1C_GEN_XER
+           && !type_needs_custom_xer_encoder(arg, expr)) {
             OUT("xer_type_decoder_f %s_decode_xer;\n", p);
             OUT("xer_type_encoder_f %s_encode_xer;\n", p);
         }
@@ -2630,6 +2631,7 @@ emit_custom_operation_structure(arg_t *arg, asn1p_expr_t *expr) {
     INDENT(+1);
     
     /* Use OCTET_STRING base operations except for XER */
+    OUT(".kind = ASN_KIND_PRIMITIVE,\n");
     OUT("%s_free,\n", base_type);
     
     OUT_NOINDENT("#if !defined(ASN_DISABLE_PRINT_SUPPORT)\n");
@@ -2674,11 +2676,14 @@ emit_custom_operation_structure(arg_t *arg, asn1p_expr_t *expr) {
     
     OUT_NOINDENT("#if !defined(ASN_DISABLE_JER_SUPPORT)\n");
     if(arg->flags & A1C_GEN_JER) {
+        OUT("%s_decode_jer_hex,\n", base_type);
         OUT("%s_encode_jer,\n", base_type);
     } else {
         OUT("0,\n");
+        OUT("0,\n");
     }
     OUT_NOINDENT("#else\n");
+    OUT("0,\n");
     OUT("0,\n");
     OUT_NOINDENT("#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */\n");
     

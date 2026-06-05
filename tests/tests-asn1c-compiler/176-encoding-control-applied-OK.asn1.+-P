@@ -122,8 +122,6 @@ asn_struct_print_f BinaryData_print;
 asn_constr_check_f BinaryData_constraint;
 ber_type_decoder_f BinaryData_decode_ber;
 der_type_encoder_f BinaryData_encode_der;
-xer_type_decoder_f BinaryData_decode_xer;
-xer_type_encoder_f BinaryData_encode_xer;
 cbor_type_decoder_f BinaryData_decode_cbor;
 cbor_type_encoder_f BinaryData_encode_cbor;
 
@@ -168,6 +166,7 @@ BinaryData_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
  * Reference: XER
  */
 asn_TYPE_operation_t asn_OP_BinaryData = {
+	.kind = ASN_KIND_PRIMITIVE,
 	OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
 	OCTET_STRING_print,
@@ -192,7 +191,9 @@ asn_TYPE_operation_t asn_OP_BinaryData = {
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 	0,
+	0,
 #else
+	0,
 	0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -274,8 +275,6 @@ asn_struct_print_f TextData_print;
 asn_constr_check_f TextData_constraint;
 ber_type_decoder_f TextData_decode_ber;
 der_type_encoder_f TextData_encode_der;
-xer_type_decoder_f TextData_decode_xer;
-xer_type_encoder_f TextData_encode_xer;
 cbor_type_decoder_f TextData_decode_cbor;
 cbor_type_encoder_f TextData_encode_cbor;
 
@@ -318,6 +317,7 @@ TextData_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
  * Reference: XER
  */
 asn_TYPE_operation_t asn_OP_TextData = {
+	.kind = ASN_KIND_PRIMITIVE,
 	OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
 	OCTET_STRING_print,
@@ -342,7 +342,9 @@ asn_TYPE_operation_t asn_OP_TextData = {
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 	0,
+	0,
 #else
+	0,
 	0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
