@@ -1988,9 +1988,6 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
 				expr->module ? expr->module->source_file_name : "?",
 				expr->_lineno,
 				ASN_EXPR_TYPE2STR(expr->expr_type));
-				expr->module ? expr->module->source_file_name : "?",
-				expr->_lineno,
-				ASN_EXPR_TYPE2STR(expr->expr_type));
 			return -1;
 		}
 	}
