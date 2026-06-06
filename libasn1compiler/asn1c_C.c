@@ -1982,9 +1982,12 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
 		}
 		if(!ok) {
 			fprintf(stderr,
-				"ERROR: XER encoding instruction '%s' at %s:%d "
+				"ERROR: encoding instruction '%s' at %s:%d "
 				"is not applicable to %s\n",
 				encoding_type_description(expr->encoding_control.encoding_type),
+				expr->module ? expr->module->source_file_name : "?",
+				expr->_lineno,
+				ASN_EXPR_TYPE2STR(expr->expr_type));
 				expr->module ? expr->module->source_file_name : "?",
 				expr->_lineno,
 				ASN_EXPR_TYPE2STR(expr->expr_type));
