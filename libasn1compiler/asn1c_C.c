@@ -2711,7 +2711,9 @@ emit_custom_xer_decoder(arg_t *arg, asn1p_expr_t *expr) {
         OUT("BIT_STRING_t *st = (BIT_STRING_t *)sptr;\n");
         OUT("const char *p = (const char *)chunk_buf;\n");
         OUT("const char *end = p + chunk_size;\n");
-        OUT("int any = 1;\n");
+        OUT("size_t max_bit = 0;\n");
+        OUT("int any = 0;\n");
+        OUT("(void)td;\n");
         TQ_FOR(v, &(expr->members), next) {
             if(v->expr_type != A1TC_UNIVERVAL) continue;
             OUT("if(max_bit < %ld) max_bit = %ld;\n",
