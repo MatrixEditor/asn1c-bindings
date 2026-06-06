@@ -8,7 +8,7 @@
  *       emits hex (canonical overrides XER_F_BASE64).
  *  17c. Regression #538: "0x6B" treated as Base64, not hex (no 0x heuristic).
  *  17d. Liberal hex: lower-case digits, internal whitespace, H'aAbB'.
- *  17e. Odd-length pure-hex-alphabet string decoded as Base64.
+ *  17e. Odd-length pure-hex-alphabet string decoded as liberal hex.
  *  17f. Garbage input → RC_FAIL.
  *  17g. Chunked auto-decode: format pinned by first non-ws chunk.
  */
@@ -220,21 +220,20 @@ test_17d_liberal_hex(void) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 17e: Odd-length pure-hex-alphabet string decoded as Base64          */
+/* 17e: Odd-length pure-hex-alphabet string decoded as liberal hex     */
 /* ------------------------------------------------------------------ */
 static void
 test_17e_odd_length_as_base64(void) {
-    /* "ABC" has 3 characters, all in hex alphabet, but odd count → Base64.
-     * Base64 "ABC" = 0x00 0x10 0x83 padded (partial group of 3). */
+    /* "ABC" has 3 characters in hex alphabet; liberal hex decoding accepts
+     * odd nibble counts by treating the trailing nibble as high 4 bits. */
+    static const uint8_t expected[] = {0xAB, 0xC0};
     uint8_t *out; size_t out_sz;
 
-    printf("17e: Odd-length hex-alphabet string decoded as Base64\n");
+    printf("17e: Odd-length hex-alphabet string decoded as liberal hex\n");
     assert(decode_auto("<tag>ABC</tag>", &out, &out_sz) == 0);
     printf("     \"ABC\" → %zu byte(s)\n", out_sz);
-    /* Must NOT be decoded as if it were 3 hex nibbles (invalid hex anyway). */
-    /* It should decode as Base64 and produce 2 bytes (3 chars ≈ 2.25 bytes
-     * rounded down to 2).  We just verify the decode succeeds and is ≠ error. */
-    assert(out_sz >= 1);
+    assert(out_sz == sizeof(expected));
+    assert(memcmp(out, expected, sizeof(expected)) == 0);
     free(out);
 }
 

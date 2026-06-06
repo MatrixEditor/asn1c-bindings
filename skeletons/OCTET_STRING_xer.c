@@ -920,8 +920,6 @@ typedef enum {
  *                 count.  Lower-case a-f and internal whitespace are accepted
  *                 (liberal decoding per X.693 §7.3) and logged via ASN_DEBUG.
  *  - BASE64     : contains any character in [G-Zg-z+/=] — impossible in hex.
- *                 Also: odd non-ws count when all chars are in the hex
- *                 alphabet (could still be valid Base64).
  *  - AMBIGUOUS  : all characters in [0-9A-Fa-f] plus whitespace AND even
  *                 non-ws count.  Standard default is hex; callers treat this
  *                 identically to HEX.
@@ -978,14 +976,8 @@ OCTET_STRING__classify(const void *chunk_buf, size_t chunk_size) {
     if(ws_inside)
         ASN_DEBUG("XER OCTET STRING: whitespace inside value accepted (liberal)");
 
-    if(non_ws_count & 1) {
-        /*
-         * Odd count: invalid hex (requires even number of nibbles), but the
-         * alphabet is a subset of Base64 so treat it as Base64.
-         */
-        ASN_DEBUG("XER OCTET STRING: odd digit count — decoded as Base64");
-        return OCTET_STRING_FMT_BASE64;
-    }
+    if(non_ws_count & 1)
+        ASN_DEBUG("XER OCTET STRING: odd hex digit count accepted (liberal)");
 
     /*
      * Even count, only hex-alphabet characters: value is simultaneously
