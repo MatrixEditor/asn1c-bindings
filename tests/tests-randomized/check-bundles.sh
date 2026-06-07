@@ -428,7 +428,7 @@ while :; do
             continue
             ;;
         -e) encodings="${encodings} -e $2"; shift 2; continue;;
-        -j) parallelism="$1"; shift 2; continue;;
+        -j) parallelism="$2"; shift 2; continue;;
         -t)
             test_drive verify_asn_type "full" "$2" "(command line)" || exit 1 ;;
         "")
