@@ -108,6 +108,20 @@ jobs:
       if: always()
       run: ccache -s
 
+    - name: Print failing test logs to console
+      if: failure()
+      run: |
+        # Automake's test-suite.log embeds the full per-test log of every
+        # failed test.  Print them so failure details are readable directly
+        # in the CI console, without downloading the artifact.
+        find . -name 'test-suite.log' 2>/dev/null | while read -r f; do
+          if grep -q -E '^# +(FAIL|ERROR): +[1-9]' "$f"; then
+            echo "::group::${f}"
+            cat "$f"
+            echo "::endgroup::"
+          fi
+        done
+
     - name: Upload test logs on failure
       if: failure()
       uses: actions/upload-artifact@v4
@@ -164,6 +178,20 @@ jobs:
     - name: ccache statistics
       if: always()
       run: ccache -s
+
+    - name: Print failing test logs to console
+      if: failure()
+      run: |
+        # Automake's test-suite.log embeds the full per-test log of every
+        # failed test.  Print them so failure details are readable directly
+        # in the CI console, without downloading the artifact.
+        find . -name 'test-suite.log' 2>/dev/null | while read -r f; do
+          if grep -q -E '^# +(FAIL|ERROR): +[1-9]' "$f"; then
+            echo "::group::${f}"
+            cat "$f"
+            echo "::endgroup::"
+          fi
+        done
 
     - name: Upload test logs on failure
       if: failure()
@@ -226,6 +254,20 @@ jobs:
     - name: ccache statistics
       if: always()
       run: ccache -s
+
+    - name: Print failing test logs to console
+      if: failure()
+      run: |
+        # Automake's test-suite.log embeds the full per-test log of every
+        # failed test.  Print them so failure details are readable directly
+        # in the CI console, without downloading the artifact.
+        find . -name 'test-suite.log' 2>/dev/null | while read -r f; do
+          if grep -q -E '^# +(FAIL|ERROR): +[1-9]' "$f"; then
+            echo "::group::${f}"
+            cat "$f"
+            echo "::endgroup::"
+          fi
+        done
 
     - name: Upload test logs on failure
       if: failure()

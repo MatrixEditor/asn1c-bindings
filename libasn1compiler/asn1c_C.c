@@ -4589,6 +4589,58 @@ identifier_collides_with_ancestor(asn1p_expr_t *expr) {
 }
 
 /*
+ * Count, in the subtree rooted at `node`, the named (non-anonymous) types
+ * carrying the given identifier.
+ */
+static void
+identifier_count_in_subtree(asn1p_expr_t *node, const char *ident, int *count) {
+	asn1p_expr_t *child;
+
+	if(!node) return;
+
+	if(node->Identifier && !node->_anonymous_type
+	    && strcmp(node->Identifier, ident) == 0) {
+		(*count)++;
+	}
+
+	TQ_FOR(child, &(node->members), next) {
+		identifier_count_in_subtree(child, ident, count);
+	}
+}
+
+/*
+ * Check if an expression's identifier is ambiguous within its compilation
+ * unit, i.e. the subtree rooted at its top-level type, which all ends up
+ * in a single generated .c file.  With -fcompound-names two SIBLING (or
+ * cousin) inner types may carry the same name (e.g. one-name.another-name
+ * and two-name.another-name): the suffixed descriptors are unique, but
+ * emitting an unsuffixed convenience alias for each would define the same
+ * alias symbol twice in one translation unit.  GCC happens to tolerate the
+ * duplicate weak alias; clang rejects it with "error: redefinition", and
+ * the non-ELF fallback would silently pick whichever constructor ran last.
+ * In such ambiguous cases the unsuffixed alias must not be emitted at all.
+ */
+static int
+identifier_ambiguous_in_unit(asn1p_expr_t *expr) {
+	asn1p_expr_t *root;
+	int count = 0;
+
+	if(!expr || !expr->Identifier) {
+		return 0;
+	}
+
+	/* Find the top-level type this expression belongs to. */
+	root = expr;
+	while(root->parent_expr) {
+		root = root->parent_expr;
+	}
+
+	identifier_count_in_subtree(root, expr->Identifier, &count);
+
+	return count > 1;  /* Ambiguous if the name occurs more than once */
+}
+
+/*
  * Generate "asn_DEF_XXX" type definition.
  */
 static int
@@ -4856,10 +4908,15 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 	 * Only for named (non-anonymous) types.
 	 * 
 	 * Skip generating the weak alias if the identifier collides with an ancestor's
-	 * identifier, as this would create multiple weak aliases to the same name,
-	 * causing runtime issues where the wrong type descriptor is selected.
+	 * identifier, or occurs more than once anywhere in this compilation unit
+	 * (e.g. same-named siblings/cousins under -fcompound-names), as this would
+	 * create multiple definitions of the same alias symbol: clang rejects that
+	 * outright, and the fallback path would select the wrong type descriptor
+	 * at runtime.
 	 */
-	if(!expr->_anonymous_type && HIDE_INNER_DEFS && !identifier_collides_with_ancestor(expr)) {
+	if(!expr->_anonymous_type && HIDE_INNER_DEFS
+	    && !identifier_collides_with_ancestor(expr)
+	    && !identifier_ambiguous_in_unit(expr)) {
 		int saved_target2 = arg->target->target;
 		REDIR(OT_CODE);
 
