@@ -68,6 +68,7 @@ TESTS += check-src/check-184.c
 TESTS += check-src/check-185.c
 TESTS += check-src/check-201.c
 TESTS += check-src/check-202.-gen-CBOR.c
+TESTS += check-src/check-203.c
 
 if TEST_64BIT
 TESTS += check-src/check64-134.-gen-UPER.c
@@ -82,6 +83,7 @@ EXTRA_DIST =    \
     data-119    \
     data-126    \
     data-202    \
+    data-203    \
     check-src/check64-134.-gen-UPER.c    \
     check-src/check64-136.-gen-OER.c
 

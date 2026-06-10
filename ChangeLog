@@ -1,4 +1,32 @@
-1.4.3:
+1.5.0:
+	SECURITY FIXES:
+	* Fixed BER CHOICE decoding infinite loop on malformed indefinite-length
+	  end-of-contents (CWE-835, DoS on attacker-controlled input).  A leading
+	  0x00 byte followed by a non-zero byte fell through an unhandled branch
+	  in constr_CHOICE_ber.c without returning or advancing the buffer,
+	  causing the decoder to spin forever.  The missing branch now returns
+	  RC_FAIL, matching constr_SEQUENCE_ber.c / constr_SET_ber.c /
+	  constr_SET_OF_ber.c behavior.  Added regression test
+	  (203-ber-indef-loop-OK.asn1, check-203.c) covering all four
+	  indefinite-length BER decoders, plus a libFuzzer harness and seed
+	  corpus (data-203).  Ported from upstream vlm/asn1c PR #518; originally
+	  reported by John Bradley (Credex).
+	  (Severity: high; Security impact: low)
+
+	FIXES:
+	* Keyed the single definition of `asn_debug_indent` in asn_internal.c
+	  off a macro (ASN__DEBUG_INDENT_NEEDS_DEFINITION) set by asn_internal.h
+	  under exactly the configuration which declares the variable extern.
+	  Previously the definition's guard did not account for an external
+	  ASN_DEBUG override, so building with -DASN_EMIT_DEBUG=1 plus a custom
+	  -DASN_DEBUG=... failed to compile asn_internal.c.  Aligned with
+	  upstream vlm/asn1c PR #520.
+	* tests: instrument generated codec libraries with libFuzzer coverage
+	  counters (-fsanitize=fuzzer-no-link) so fuzzing gets feedback from the
+	  ASN.1 codec itself, and seed fuzzer runs from a scratch corpus copy so
+	  discoveries are not written back into the source tree.  Ported from
+	  upstream vlm/asn1c PR #518.
+
 	NEW FEATURES:
 	* Added schema-level XER/JER encoding instruction support for the
 	  implemented subset of X.693/X.697-style controls.  The parser now
