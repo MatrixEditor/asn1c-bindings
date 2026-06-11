@@ -87,6 +87,7 @@ xer_token_name_equals_normalized(const void *buf, ssize_t len, const char *name)
         i++;
         /* Continue - we DO want to match closing tags */
     }
+    if(i >= len) return 0;
 
     /* Compare character-by-character, treating space in name as hyphen in token */
     for(; i < len && *q; i++, q++) {

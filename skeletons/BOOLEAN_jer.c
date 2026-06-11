@@ -18,12 +18,11 @@ BOOLEAN__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
     const char *p = (const char *)chunk_buf;
 
     (void)td;
-    (void)chunk_size;
 
-    if(p[0] == 't' /* 'true' */) {
+    if(chunk_size == 4 && memcmp(p, "true", 4) == 0) {
         *st = 1;
         return JPBD_BODY_CONSUMED;
-    } else if (p[0] == 'f' /* 'false' */) {
+    } else if(chunk_size == 5 && memcmp(p, "false", 5) == 0) {
         *st = 0;
         return JPBD_BODY_CONSUMED;
     } else {

@@ -6,6 +6,9 @@ set -Eeuo pipefail
 # Examples:
 #   scripts/run-local-fuzzer-check.sh
 #   CPUS=12 FUZZ_TIME=60 scripts/run-local-fuzzer-check.sh
+#   RANDOMIZED_FUZZ_MODE=all scripts/run-local-fuzzer-check.sh
+#   RANDOMIZED_FUZZ_MODE=all RANDOMIZED_FUZZ_MAX_CORPUS_BYTES=0 scripts/run-local-fuzzer-check.sh
+#   FUZZER_FALLBACK_CC=/opt/local/bin/clang-mp-22 FUZZER_FALLBACK_CXX=/opt/local/bin/clang++-mp-22 scripts/run-local-fuzzer-check.sh
 #   BUILD=/tmp/asn1c-fuzz-build RUN_ROOT=/tmp/asn1c-fuzz-runs scripts/run-local-fuzzer-check.sh
 #
 # Results are written under /tmp/asn1c-fuzzer-local/runs/<timestamp>/ by default.
@@ -14,6 +17,17 @@ set -Eeuo pipefail
 
 CPUS="${CPUS:-12}"
 FUZZ_TIME="${FUZZ_TIME:-60}"
+RANDOMIZED_FUZZ_TIME="${RANDOMIZED_FUZZ_TIME:-${FUZZ_TIME}}"
+# tests-randomized can otherwise fuzz every generated corpus for every
+# one-line case. "rotate" keeps all cases but fuzzes one corpus per case,
+# round-robin. "all" fuzzes every generated corpus for every case; set
+# RANDOMIZED_FUZZ_MAX_CORPUS_BYTES=0 too for the fully uncapped old behavior.
+RANDOMIZED_FUZZ_MODE="${RANDOMIZED_FUZZ_MODE:-rotate}"
+RANDOMIZED_FUZZ_TARGETS="${RANDOMIZED_FUZZ_TARGETS:-der jer oer uper xer}"
+RANDOMIZED_FUZZ_MAX_CORPUS_BYTES="${RANDOMIZED_FUZZ_MAX_CORPUS_BYTES:-262144}"
+FUZZ_ASAN_OPTIONS="${FUZZ_ASAN_OPTIONS:-detect_leaks=0:quarantine_size_mb=64:malloc_context_size=5:allocator_may_return_null=1:max_allocation_size_mb=2048}"
+FUZZER_FALLBACK_CC="${FUZZER_FALLBACK_CC:-/opt/local/bin/clang-mp-22}"
+FUZZER_FALLBACK_CXX="${FUZZER_FALLBACK_CXX:-/opt/local/bin/clang++-mp-22}"
 CC_WAS_SET=0
 CXX_WAS_SET=0
 if [[ -n "${CC+x}" ]]; then
@@ -98,7 +112,7 @@ select_fuzzer_compiler() {
         candidates+=("clang:clang++")
     fi
 
-    candidates+=("/opt/local/bin/clang-mp-22:/opt/local/bin/clang++-mp-22")
+    candidates+=("${FUZZER_FALLBACK_CC}:${FUZZER_FALLBACK_CXX}")
 
     for pair in "${candidates[@]}"; do
         candidate_cc="${pair%%:*}"
@@ -112,11 +126,26 @@ select_fuzzer_compiler() {
 
     echo "Could not find a Clang that can link a -fsanitize=fuzzer test program."
     echo "On this host Apple clang may not ship libclang_rt.fuzzer_osx.a."
-    echo "Try installing LLVM and rerun with CC=/path/to/clang CXX=/path/to/clang++."
+    echo "Try installing LLVM and rerun with CC=/path/to/clang CXX=/path/to/clang++,"
+    echo "or set FUZZER_FALLBACK_CC=/path/to/clang FUZZER_FALLBACK_CXX=/path/to/clang++."
     exit 2
 }
 
 select_fuzzer_compiler
+
+case "${RANDOMIZED_FUZZ_MODE}" in
+    all|rotate) ;;
+    *)
+        echo "RANDOMIZED_FUZZ_MODE must be 'rotate' or 'all'."
+        exit 2
+        ;;
+esac
+
+read -r -a randomized_targets <<< "${RANDOMIZED_FUZZ_TARGETS}"
+if [[ "${RANDOMIZED_FUZZ_MODE}" == "rotate" && "${#randomized_targets[@]}" -eq 0 ]]; then
+    echo "RANDOMIZED_FUZZ_TARGETS must name at least one corpus when RANDOMIZED_FUZZ_MODE=rotate."
+    exit 2
+fi
 
 mkdir -p "${WORK_ROOT}" "${BUILD}" "${LOGDIR}"
 exec > >(tee "${LOGDIR}/driver.log") 2>&1
@@ -128,6 +157,10 @@ echo "build:     ${BUILD}"
 echo "logs:      ${LOGDIR}"
 echo "cpus:      ${CPUS}"
 echo "fuzz time: ${FUZZ_TIME}s per libFuzzer target"
+echo "randomized fuzz: ${RANDOMIZED_FUZZ_MODE}; ${RANDOMIZED_FUZZ_TIME}s per selected target; targets: ${RANDOMIZED_FUZZ_TARGETS}"
+echo "randomized corpus cap: ${RANDOMIZED_FUZZ_MAX_CORPUS_BYTES} bytes (0 disables)"
+echo "asan:      ${FUZZ_ASAN_OPTIONS}"
+echo "fallback compiler: ${FUZZER_FALLBACK_CC} / ${FUZZER_FALLBACK_CXX}"
 echo "compiler:  ${CC} / ${CXX}"
 
 if [[ "${SOURCE}" == "${ROOT}" && -e "${ROOT}/config.status" ]]; then
@@ -225,7 +258,9 @@ for dir in \
     doc
 do
     run_check "${dir//\//-}" \
-        make -C "${BUILD}/${dir}" -j "${CPUS}" check FUZZ_TIME="${FUZZ_TIME}"
+        make -C "${BUILD}/${dir}" -j "${CPUS}" check \
+            FUZZ_TIME="${FUZZ_TIME}" \
+            FUZZ_ASAN_OPTIONS="${FUZZ_ASAN_OPTIONS}"
 done
 
 for dir in \
@@ -238,7 +273,9 @@ for dir in \
     f1ap-regression
 do
     run_check "tests-${dir}" \
-        make -C "${BUILD}/tests/${dir}" -j "${CPUS}" check FUZZ_TIME="${FUZZ_TIME}"
+        make -C "${BUILD}/tests/${dir}" -j "${CPUS}" check \
+            FUZZ_TIME="${FUZZ_TIME}" \
+            FUZZ_ASAN_OPTIONS="${FUZZ_ASAN_OPTIONS}"
 done
 
 echo
@@ -246,11 +283,14 @@ echo "== prepare split randomized cases =="
 RND_BUILD="${BUILD}/tests/tests-randomized"
 CASE_DIR="${RND_BUILD}/.tmp.fuzzcases"
 rm -rf "${CASE_DIR}"
-find "${RND_BUILD}" -maxdepth 1 -type d -name '.tmp.fuzzcase-*' -exec rm -rf {} +
+find "${RND_BUILD}" -maxdepth 1 -type d -name '.tmp.fuzzcase-*' -exec rm -rf '{}' +
 mkdir -p "${CASE_DIR}"
 
 case_tests=()
+case_targets=()
 case_no=0
+target_map="${LOGDIR}/randomized-fuzz-targets.tsv"
+: >"${target_map}"
 for bundle in "${SOURCE}"/tests/tests-randomized/bundles/*bundle.txt; do
     base="$(basename "${bundle}" .txt)"
     line_no=0
@@ -264,18 +304,51 @@ for bundle in "${SOURCE}"/tests/tests-randomized/bundles/*bundle.txt; do
         printf -v case_name 'fuzzcase-%04d-%s-L%d.test' \
             "${case_no}" "${base}" "${line_no}"
         printf '%s\n' "${line}" >"${CASE_DIR}/${case_name}"
-        case_tests+=(".tmp.fuzzcases/${case_name}")
+        case_path=".tmp.fuzzcases/${case_name}"
+        case_tests+=("${case_path}")
+        if [[ "${RANDOMIZED_FUZZ_MODE}" == "rotate" ]]; then
+            target="${randomized_targets[$((case_no % ${#randomized_targets[@]}))]}"
+            case_targets+=("${target}")
+            printf '%s\t%s\n' "${case_path}" "${target}" >>"${target_map}"
+        fi
         case_no=$((case_no + 1))
     done < "${bundle}"
 done
 
 printf '%s\n' "${case_tests[@]}" >"${LOGDIR}/randomized-tests.list"
 echo "created ${#case_tests[@]} one-line randomized test cases"
+if [[ "${RANDOMIZED_FUZZ_MODE}" == "rotate" ]]; then
+    echo "rotating one fuzz corpus per randomized case; target map: ${target_map}"
+    for target in "${randomized_targets[@]}"; do
+        tests_for_target=()
+        for index in "${!case_tests[@]}"; do
+            if [[ "${case_targets[${index}]}" == "${target}" ]]; then
+                tests_for_target+=("${case_tests[${index}]}")
+            fi
+        done
 
-run_check "tests-randomized-split" \
-    make -C "${RND_BUILD}" -j "${CPUS}" check \
-        FUZZ_TIME="${FUZZ_TIME}" \
-        TESTS="${case_tests[*]}"
+        if [[ "${#tests_for_target[@]}" -eq 0 ]]; then
+            continue
+        fi
+
+        echo "${target}: ${#tests_for_target[@]} randomized case(s)"
+        run_check "tests-randomized-split-${target}" \
+            make -C "${RND_BUILD}" -j "${CPUS}" check \
+                FUZZ_TIME="${RANDOMIZED_FUZZ_TIME}" \
+                FUZZ_TARGETS="${target}" \
+                FUZZ_MAX_CORPUS_BYTES="${RANDOMIZED_FUZZ_MAX_CORPUS_BYTES}" \
+                FUZZ_ASAN_OPTIONS="${FUZZ_ASAN_OPTIONS}" \
+                TESTS="${tests_for_target[*]}"
+    done
+else
+    run_check "tests-randomized-split" \
+        make -C "${RND_BUILD}" -j "${CPUS}" check \
+            FUZZ_TIME="${RANDOMIZED_FUZZ_TIME}" \
+            FUZZ_TARGETS="all" \
+            FUZZ_MAX_CORPUS_BYTES="${RANDOMIZED_FUZZ_MAX_CORPUS_BYTES}" \
+            FUZZ_ASAN_OPTIONS="${FUZZ_ASAN_OPTIONS}" \
+            TESTS="${case_tests[*]}"
+fi
 
 summary="${LOGDIR}/problem-summary.txt"
 {
@@ -283,12 +356,22 @@ summary="${LOGDIR}/problem-summary.txt"
     echo "Root: ${ROOT}"
     echo "Build: ${BUILD}"
     echo "FUZZ_TIME: ${FUZZ_TIME}"
+    echo "RANDOMIZED_FUZZ_TIME: ${RANDOMIZED_FUZZ_TIME}"
+    echo "RANDOMIZED_FUZZ_MODE: ${RANDOMIZED_FUZZ_MODE}"
+    echo "RANDOMIZED_FUZZ_TARGETS: ${RANDOMIZED_FUZZ_TARGETS}"
+    echo "RANDOMIZED_FUZZ_MAX_CORPUS_BYTES: ${RANDOMIZED_FUZZ_MAX_CORPUS_BYTES}"
+    echo "FUZZ_ASAN_OPTIONS: ${FUZZ_ASAN_OPTIONS}"
     echo "CPUS: ${CPUS}"
     echo
     echo "Problem-pattern matches:"
-    grep -R -n -E \
-        'ERROR: AddressSanitizer|ERROR: UndefinedBehaviorSanitizer|AddressSanitizer:|UndefinedBehaviorSanitizer:|runtime error:|SUMMARY:|ERROR: libFuzzer|Test unit written|LeakSanitizer|FAIL:|ERROR:' \
-        "${LOGDIR}" || true
+    {
+        find "${LOGDIR}" "${BUILD}" -type f \( -name '*.log' -o -name '*.trs' \) -print0 |
+        while IFS= read -r -d '' file; do
+            grep -n -E \
+                'ERROR: AddressSanitizer|ERROR: UndefinedBehaviorSanitizer|AddressSanitizer:|UndefinedBehaviorSanitizer:|runtime error:|SUMMARY:|ERROR: libFuzzer|Test unit written|LeakSanitizer|FAIL:|ERROR:' \
+                "${file}" | sed "s#^#${file}:#" || true
+        done
+    } | grep -v -E '# (XFAIL|FAIL|ERROR):[[:space:]]+0$' || true
     echo
     echo "Fuzzer artifacts:"
     find "${BUILD}" \( \

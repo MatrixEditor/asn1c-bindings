@@ -317,6 +317,27 @@ static void test_rt8_canonical_overrides_base64_flag(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* RT9: invalid or unsafe numeric entity references are rejected       */
+/* ------------------------------------------------------------------ */
+static void test_rt9_rejects_invalid_numeric_entrefs(void) {
+    uint8_t *out; size_t out_sz;
+    printf("RT9: Reject invalid or unsafe numeric entity references\n");
+
+    assert(decode_xml(OCTET_STRING_decode_xer_utf8,
+                      "something&#;PDU>", &out, &out_sz) == -1);
+    assert(decode_xml(OCTET_STRING_decode_xer_utf8,
+                      "something&#0;here", &out, &out_sz) == -1);
+    assert(decode_xml(OCTET_STRING_decode_xer_utf8,
+                      "something&#x00;here", &out, &out_sz) == -1);
+    assert(decode_xml(OCTET_STRING_decode_xer_utf8,
+                      "something&#xD800;here", &out, &out_sz) == -1);
+    assert(decode_xml(OCTET_STRING_decode_xer_utf8,
+                      "something&#A;here", &out, &out_sz) == -1);
+
+    printf("     Invalid numeric character references rejected: OK\n");
+}
+
+/* ------------------------------------------------------------------ */
 /* main                                                                 */
 /* ------------------------------------------------------------------ */
 int main(void) {
@@ -330,6 +351,7 @@ int main(void) {
     test_rt6_base64_annotation_ignores_canonical();
     test_rt7_auto_decode_after_b64();
     test_rt8_canonical_overrides_base64_flag();
+    test_rt9_rejects_invalid_numeric_entrefs();
 
     printf("\n=== All round-trip tests passed ===\n");
     return 0;
