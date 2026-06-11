@@ -33,11 +33,15 @@ asn_dec_rval_t OCTET_STRING_decode_jer_utf8(
 
 static void
 test_jer_decode_boolean_literals(void) {
-    static const char *valid[] = {"true", "false"};
+    static const char *valid[] = {
+        "true", "false",
+        "true\n", "false\n",
+        " true ", "\tfalse\r\n"
+    };
     static const char *invalid[] = {
         "", "t", "tr", "tru",
         "f", "fa", "fal", "fals",
-        "\"true\""
+        "\"true\"", "truex", "falsehood", "true false"
     };
     size_t i;
 

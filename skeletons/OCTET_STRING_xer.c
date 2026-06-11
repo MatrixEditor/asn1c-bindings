@@ -532,7 +532,11 @@ OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
             *ret_value = (int32_t)val;
             return (p - buf) + 1;
         } else {
-            return -1;  /* Character set error */
+            if(!seen_digit) return -1;
+            if(val <= 0 || val > last_unicode_codepoint) return -1;
+            if(val >= 0xd800 && val <= 0xdfff) return -1;
+            *ret_value = (int32_t)val;
+            return p - buf;
         }
 
         if(digit >= base) return -1;
@@ -599,7 +603,10 @@ OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf,
                 ASN_DEBUG("XER OCTET STRING: invalid numeric character reference rejected");
                 return -1;
             }
-            if(!len || pval[len-1] != 0x3b) goto want_more;
+            if(!len) goto want_more;
+            if(pval[len-1] != 0x3b) {
+                ASN_DEBUG("XER OCTET STRING: numeric character reference without semicolon accepted");
+            }
             p += (pval - p) + len - 1;  /* Advance past entref */
 
             if(val < 0x80) {
