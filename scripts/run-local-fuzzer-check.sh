@@ -15,6 +15,28 @@ set -Eeuo pipefail
 # A clean source snapshot and build tree are kept under /tmp/asn1c-fuzzer-local/
 # by default, so the active checkout can remain configured in-tree.
 
+if [[ -z "${RUN_LOCAL_FUZZER_CHECK_ORIGINAL:-}" ]]; then
+    original_script="${BASH_SOURCE[0]}"
+    if [[ "${original_script}" != */* ]]; then
+        original_script="$(command -v "${original_script}")"
+    fi
+    if [[ "${original_script}" != /* ]]; then
+        original_script="$(cd "$(dirname "${original_script}")" && pwd)/$(basename "${original_script}")"
+    fi
+
+    self_copy="$(mktemp "${TMPDIR:-/tmp}/run-local-fuzzer-check.XXXXXX")"
+    cp -p "${original_script}" "${self_copy}"
+    chmod +x "${self_copy}"
+
+    export RUN_LOCAL_FUZZER_CHECK_ORIGINAL="${original_script}"
+    export RUN_LOCAL_FUZZER_CHECK_SELF_COPY="${self_copy}"
+    exec "${BASH:-bash}" "${self_copy}" "$@"
+fi
+
+if [[ -n "${RUN_LOCAL_FUZZER_CHECK_SELF_COPY:-}" ]]; then
+    trap 'rm -f "${RUN_LOCAL_FUZZER_CHECK_SELF_COPY}"' EXIT
+fi
+
 CPUS="${CPUS:-12}"
 FUZZ_TIME="${FUZZ_TIME:-60}"
 RANDOMIZED_FUZZ_TIME="${RANDOMIZED_FUZZ_TIME:-${FUZZ_TIME}}"
@@ -23,7 +45,7 @@ RANDOMIZED_FUZZ_TIME="${RANDOMIZED_FUZZ_TIME:-${FUZZ_TIME}}"
 # round-robin. "all" fuzzes every generated corpus for every case; set
 # RANDOMIZED_FUZZ_MAX_CORPUS_BYTES=0 too for the fully uncapped old behavior.
 RANDOMIZED_FUZZ_MODE="${RANDOMIZED_FUZZ_MODE:-rotate}"
-RANDOMIZED_FUZZ_TARGETS="${RANDOMIZED_FUZZ_TARGETS:-der jer oer uper xer}"
+RANDOMIZED_FUZZ_TARGETS="${RANDOMIZED_FUZZ_TARGETS:-ber der oer per uper aper xer jer}"
 RANDOMIZED_FUZZ_MAX_CORPUS_BYTES="${RANDOMIZED_FUZZ_MAX_CORPUS_BYTES:-262144}"
 FUZZ_ASAN_OPTIONS="${FUZZ_ASAN_OPTIONS:-detect_leaks=0:quarantine_size_mb=64:malloc_context_size=5:allocator_may_return_null=1:max_allocation_size_mb=2048}"
 FUZZER_FALLBACK_CC="${FUZZER_FALLBACK_CC:-/opt/local/bin/clang-mp-22}"
@@ -39,7 +61,8 @@ fi
 CC="${CC:-}"
 CXX="${CXX:-}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="${RUN_LOCAL_FUZZER_CHECK_ORIGINAL:-${BASH_SOURCE[0]}}"
+SCRIPT_DIR="$(cd "$(dirname "${SCRIPT_PATH}")" && pwd)"
 ROOT="${ROOT:-$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel)}"
 WORK_ROOT="${WORK_ROOT:-/tmp/asn1c-fuzzer-local}"
 SOURCE="${SOURCE:-${WORK_ROOT}/source}"

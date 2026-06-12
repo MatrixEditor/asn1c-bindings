@@ -71,6 +71,7 @@ TESTS += check-src/check-185.c
 TESTS += check-src/check-201.c
 TESTS += check-src/check-202.-gen-CBOR.c
 TESTS += check-src/check-203.c
+TESTS += check-src/check-204.c
 
 if TEST_64BIT
 TESTS += check-src/check64-134.-gen-UPER.c

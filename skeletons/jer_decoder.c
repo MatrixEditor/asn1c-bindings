@@ -261,6 +261,9 @@ jer_decode_general(const asn_codec_ctx_t *opt_codec_ctx,
 			}
 		}
 
+        if(consumed_myself == 0)
+            RETURN(RC_FAIL);
+
         ctx->phase = 2;	/* Phase out */
         RETURN(RC_OK);
 
