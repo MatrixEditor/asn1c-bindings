@@ -170,6 +170,10 @@ main() {
 	check_xer(UTF8, "z", "<z>a&#5000000000;b</z>", 0);
 	check_xer(UTF8, "z", "<z>a&#300</z>", "a&#300");
 	check_xer(UTF8, "z", "<z>a&#-300;</z>", 0);
+	check_xer_bin(UTF8, "z", "<z>a&#0;b</z>", "a\0b", 3);
+	check_xer_bin(UTF8, "z", "<z>a&#x0;b</z>", "a\0b", 3);
+	check_xer(UTF8, "z", "<z>a&#;b</z>", 0);
+	check_xer(UTF8, "z", "<z>a&#x;b</z>", 0);
 	check_xer(UTF8, "z", "<z>a<ff/>b</z>", "a\014b");
 	check_xer(UTF8, "z", "<z>a<soh/>b</z>", "a\001b");
 	check_xer(UTF8, "z", "<z>a<bel/></z>", "a\007");

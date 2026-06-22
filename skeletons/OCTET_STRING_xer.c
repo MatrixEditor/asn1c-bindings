@@ -527,13 +527,13 @@ OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
             digit = ch - 0x61 + 10;
         } else if(ch == 0x3b /* ';' */) {
             if(!seen_digit) return -1;
-            if(val <= 0 || val > last_unicode_codepoint) return -1;
+            if(val > last_unicode_codepoint) return -1;
             if(val >= 0xd800 && val <= 0xdfff) return -1;
             *ret_value = (int32_t)val;
             return (p - buf) + 1;
         } else {
             if(!seen_digit) return -1;
-            if(val <= 0 || val > last_unicode_codepoint) return -1;
+            if(val > last_unicode_codepoint) return -1;
             if(val >= 0xd800 && val <= 0xdfff) return -1;
             *ret_value = (int32_t)val;
             return p - buf;
@@ -601,6 +601,7 @@ OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf,
             len = OS__strtoent(base, pval, p + len, &val);
             if(len == -1) {
                 ASN_DEBUG("XER OCTET STRING: invalid numeric character reference rejected");
+                st->buf[st->size] = 0;
                 return -1;
             }
             if(!len) goto want_more;
