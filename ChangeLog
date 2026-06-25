@@ -5,11 +5,11 @@
 	  key field.  The generated selector now validates both the constraining
 	  cell and selected type cell before dereferencing type descriptors or
 	  compare callbacks, preventing NULL dereferences on malicious input.
-	  OPEN TYPE encoder paths for BER/OER/UPER/APER/XER were also hardened
-	  to reject NULL selected descriptors before debug logging or encoding.
+	  OPEN TYPE encoder and printer paths were also hardened to reject NULL
+	  selected descriptors before debug logging, encoding, or printing.
 	  Regression test 211 now covers the crash packet pattern and
-	  BER/DER/OER/UPER/APER/XER/JER/CBOR round trips through the same
-	  selector edge case.
+	  BER/DER/OER/UPER/APER/XER/JER/CBOR round trips plus plaintext
+	  printing through the same selector edge case.
 	  (Severity: high; Security impact: low)
 	* Fixed CBOR unknown-field skipping so recursive arrays, maps, and tags
 	  are covered by the decoder stack limit.  SEQUENCE and SET decoders use
@@ -32,6 +32,15 @@
 	  (Severity: high; Security impact: low)
 
 	FIXES:
+	* Fixed tests/tests-asn1c-compiler subdirectory checks so they build
+	  asn1c before running scripts that invoke it.  This prevents
+	  check-parsing.sh from comparing references against empty output when
+	  the compiler has not already been built by a top-level make.
+	* Fixed Darwin libtool configuration when `sysctl -n kern.argmax` is
+	  denied by the host environment.  configure now seeds libtool's command
+	  line length cache from `getconf ARG_MAX`, avoiding empty max_cmd_len
+	  values and noisy "integer expression expected" diagnostics while
+	  linking skeleton archives.
 	* Ported upstream OPEN TYPE and option validation fixes.  Decoders now
 	  reject information object rows whose selector has no type descriptor
 	  instead of dereferencing NULL, and OER OPEN TYPE failure cleanup resets

@@ -158,6 +158,23 @@ roundtrip_message_all_syntaxes(void) {
     roundtrip_message_syntax(ATS_CBOR, "CBOR");
 }
 
+static void
+print_message_plaintext(void) {
+    Message_t source;
+    asn_encode_to_new_buffer_result_t encoded;
+
+    fill_message(&source);
+
+    encoded = asn_encode_to_new_buffer(NULL, ATS_NONSTANDARD_PLAINTEXT,
+                                       &asn_DEF_Message, &source);
+    assert(encoded.result.encoded > 0);
+    assert(encoded.buffer);
+
+    free(encoded.buffer);
+    ASN_STRUCT_RESET(asn_DEF_Message, &source);
+    printf("  OK: Message OPEN TYPE plaintext print\n");
+}
+
 int
 main(void) {
     /*
@@ -190,6 +207,7 @@ main(void) {
     decode_oer_valid_and_truncated();
     decode_message_with_undefined_key_row();
     roundtrip_message_all_syntaxes();
+    print_message_plaintext();
 
     printf("OK: OPEN TYPE typeless row regressions decoded without crashing.\n");
     return 0;
