@@ -32,4 +32,26 @@ BEGIN
 
 	Payload ::= BOOLEAN
 
+	Message ::= SEQUENCE {
+		procedureCode PROC.&procedureCode({PROC-SET}),
+		msgValue PROC.&Value({PROC-SET}{@procedureCode})
+	}
+
+	PROC ::= CLASS {
+		&procedureCode Id UNIQUE,
+		&Value
+	} WITH SYNTAX {
+		[CODE &procedureCode]
+		VALUE &Value
+	}
+
+	PROC-SET PROC ::= {
+		{ VALUE PayloadSeq } |
+		{ CODE 1 VALUE PayloadSeq }
+	}
+
+	PayloadSeq ::= SEQUENCE {
+		n INTEGER (0..255)
+	}
+
 END

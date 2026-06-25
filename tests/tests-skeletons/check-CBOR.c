@@ -23,6 +23,17 @@
 #include <cbor_decoder.h>
 #include <cbor_support.h>
 
+#if defined(__SANITIZE_ADDRESS__)
+#define TEST_ASN_STACK_CHECK_DISABLED 1
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define TEST_ASN_STACK_CHECK_DISABLED 1
+#endif
+#endif
+#if defined(ASN_DISABLE_STACK_OVERFLOW_CHECK)
+#define TEST_ASN_STACK_CHECK_DISABLED 1
+#endif
+
 /* ------------------------------------------------------------------ */
 /* Buffer accumulator for encoding output                               */
 /* ------------------------------------------------------------------ */
@@ -749,6 +760,47 @@ test_cbor_skip_tags(void) {
     printf("PASSED: test_cbor_skip_tags\n\n");
 }
 
+static void
+test_cbor_skip_item_stack_limit(void) {
+    enum { tag_depth = 512 };
+    uint8_t nested_tags[tag_depth + 1];
+    ssize_t n;
+    int i;
+
+    printf("test_cbor_skip_item_stack_limit\n");
+
+    /*
+     * Build tag(0) wrappers around integer 0:
+     *   C0 C0 ... C0 00
+     * cbor_skip_item() recurses through every tag wrapper.
+     */
+    for(i = 0; i < tag_depth; i++) {
+        nested_tags[i] = 0xC0;
+    }
+    nested_tags[tag_depth] = 0x00;
+
+    n = cbor_skip_item(nested_tags, sizeof(nested_tags));
+    assert(n == (ssize_t)sizeof(nested_tags));
+    printf("  ✓ compatibility cbor_skip_item skips nested tags\n");
+
+#if !defined(TEST_ASN_STACK_CHECK_DISABLED)
+    {
+        asn_codec_ctx_t ctx;
+
+        memset(&ctx, 0, sizeof(ctx));
+        ctx.max_stack_size = 4096;
+
+        n = cbor_skip_item_with_ctx(&ctx, nested_tags, sizeof(nested_tags));
+        assert(n == -1);
+        printf("  ✓ cbor_skip_item_with_ctx rejects deep nesting at stack limit\n");
+    }
+#else
+    printf("  - stack-limit assertion skipped for sanitizer/no-stack-check build\n");
+#endif
+
+    printf("PASSED: test_cbor_skip_item_stack_limit\n\n");
+}
+
 /* Helper: prepend a tag header to an existing encoded buffer and decode */
 static void
 test_tag_transparent_integer(uint64_t tag, intmax_t val, const char *label) {
@@ -1032,6 +1084,7 @@ main(void) {
     test_oid_cbor_roundtrip();
     test_cbor_tag_encoding();
     test_cbor_skip_tags();
+    test_cbor_skip_item_stack_limit();
     test_cbor_tag_transparent_decode();
     test_cbor_nested_tags();
 

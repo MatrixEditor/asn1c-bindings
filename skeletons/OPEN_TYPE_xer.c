@@ -349,6 +349,18 @@ OPEN_TYPE_xer_put(const asn_TYPE_descriptor_t *td, const void *sptr,
     if(!selected.presence_index) {
         ASN__ENCODE_FAILED;
     }
+    if(!selected.type_descriptor) {
+        ASN_DEBUG("Open Type %s->%s: type_selector returned NULL type descriptor",
+                  td->name, elm->name);
+        ASN__ENCODE_FAILED;
+    }
+    if(!selected.type_descriptor->op
+       || (!elm->type->elements_count
+           && !selected.type_descriptor->op->xer_encoder)) {
+        ASN_DEBUG("Open Type %s->%s: selected type %s has no XER encoder",
+                  td->name, elm->name, selected.type_descriptor->name);
+        ASN__ENCODE_FAILED;
+    }
 
     ASN_DEBUG("OPEN_TYPE_xer_put: elm->type=%s, elements=%p, elements_count=%u, selected.presence_index=%u, selected.type=%s",
               elm->type->name, (void*)elm->type->elements, elm->type->elements_count,

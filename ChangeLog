@@ -1,5 +1,23 @@
 1.5.0:
 	SECURITY FIXES:
+	* Fixed generated OPEN TYPE selector code for Information Object Sets
+	  whose rows define the selected open type but omit the constraining
+	  key field.  The generated selector now validates both the constraining
+	  cell and selected type cell before dereferencing type descriptors or
+	  compare callbacks, preventing NULL dereferences on malicious input.
+	  OPEN TYPE encoder paths for BER/OER/UPER/APER/XER were also hardened
+	  to reject NULL selected descriptors before debug logging or encoding.
+	  Regression test 211 now covers the crash packet pattern and
+	  BER/DER/OER/UPER/APER/XER/JER/CBOR round trips through the same
+	  selector edge case.
+	  (Severity: high; Security impact: low)
+	* Fixed CBOR unknown-field skipping so recursive arrays, maps, and tags
+	  are covered by the decoder stack limit.  SEQUENCE and SET decoders use
+	  the new cbor_skip_item_with_ctx() helper when skipping unknown CBOR
+	  map values; the original cbor_skip_item() remains as a compatibility
+	  wrapper for callers without decoder context.  Added check-CBOR
+	  regression coverage for deeply nested tag wrappers.
+	  (Severity: medium; Security impact: low)
 	* Fixed BER CHOICE decoding infinite loop on malformed indefinite-length
 	  end-of-contents (CWE-835, DoS on attacker-controlled input).  A leading
 	  0x00 byte followed by a non-zero byte fell through an unhandled branch
@@ -14,6 +32,29 @@
 	  (Severity: high; Security impact: low)
 
 	FIXES:
+	* Ported upstream OPEN TYPE and option validation fixes.  Decoders now
+	  reject information object rows whose selector has no type descriptor
+	  instead of dereferencing NULL, and OER OPEN TYPE failure cleanup resets
+	  the OPEN TYPE CHOICE wrapper instead of using the selected primitive
+	  type size.  Added regression test 211 for typeless information object
+	  rows and truncated OPEN TYPE payloads.  The compiler now rejects
+	  -fno-constraints with -gen-OER, -gen-UPER, or -gen-APER because those
+	  encoders/decoders require constraint metadata.
+	* Fixed additional fuzzer-discovered decoder issues:
+	  - JER BIT STRING now rejects invalid length metadata instead of
+	    accepting lengths larger than the decoded bit buffer or with more
+	    than seven unused bits.
+	  - APER SEQUENCE frees extension presence maps on starvation paths.
+	  - APER NativeReal and OCTET STRING reject malformed length/range
+	    cases found by fuzzing.
+	  - JER and XER SET OF decoding now treats zero-progress member decodes
+	    as failure, preventing loops on malformed input.
+	  - The JER decoder and randomized/fuzzer test runners now handle
+	    malformed or truncated inputs without writing discoveries back into
+	    source-tree corpora.
+	* Fixed XER OCTET STRING entity-reference handling so Unicode U+0000 is
+	  accepted while out-of-range and surrogate numeric character references
+	  fail cleanly with a terminated working buffer.
 	* Keyed the single definition of `asn_debug_indent` in asn_internal.c
 	  off a macro (ASN__DEBUG_INDENT_NEEDS_DEFINITION) set by asn_internal.h
 	  under exactly the configuration which declares the variable extern.

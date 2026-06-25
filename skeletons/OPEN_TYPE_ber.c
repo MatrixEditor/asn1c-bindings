@@ -217,6 +217,14 @@ OPEN_TYPE_ber_put(const asn_TYPE_descriptor_t *parent_type,
         er.structure_ptr = parent_structure;
         return er;
     }
+    if(!selector_result.type_descriptor->op
+       || !selector_result.type_descriptor->op->der_encoder) {
+        ASN_DEBUG("OPEN_TYPE_ber_put: selected type has no DER encoder");
+        er.encoded = -1;
+        er.failed_type = parent_type;
+        er.structure_ptr = parent_structure;
+        return er;
+    }
 
     /* Get pointer to member data */
     if(element->flags & ATF_POINTER) {

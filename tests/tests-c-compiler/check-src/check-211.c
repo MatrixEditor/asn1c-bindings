@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <Message.h>
 #include <T.h>
 
 static void
@@ -76,6 +77,87 @@ decode_oer_valid_and_truncated(void) {
     ASN_STRUCT_RESET(asn_DEF_T, &source);
 }
 
+static void
+decode_message_with_undefined_key_row(void) {
+    /*
+     * The first PROC-SET row has VALUE but no CODE, so its constraining
+     * procedureCode cell is undefined while its value type cell is defined.
+     * The generated selector must skip that row without dereferencing the
+     * missing constraining cell descriptor, then match CODE 1.
+     */
+    static const uint8_t packet[] = {
+        0x30, 0x0a, 0x80, 0x01, 0x01, 0xa1, 0x05, 0x30, 0x03, 0x80, 0x01, 0x07
+    };
+    Message_t *decoded = NULL;
+    asn_dec_rval_t rv;
+
+    rv = ber_decode(0, &asn_DEF_Message, (void **)&decoded,
+                    packet, sizeof(packet));
+    assert(rv.code == RC_OK);
+    assert(decoded);
+    assert(decoded->procedureCode == 1);
+    assert(decoded->msgValue.present == msgValue_PR_PayloadSeq_1);
+    assert(decoded->msgValue.choice.PayloadSeq_1.n == 7);
+    ASN_STRUCT_FREE(asn_DEF_Message, decoded);
+}
+
+static void
+fill_message(Message_t *msg) {
+    memset(msg, 0, sizeof(*msg));
+    msg->procedureCode = 1;
+    msg->msgValue.present = msgValue_PR_PayloadSeq_1;
+    msg->msgValue.choice.PayloadSeq_1.n = 7;
+}
+
+static void
+check_decoded_message(const Message_t *decoded) {
+    assert(decoded);
+    assert(decoded->procedureCode == 1);
+    assert(decoded->msgValue.present == msgValue_PR_PayloadSeq_1);
+    assert(decoded->msgValue.choice.PayloadSeq_1.n == 7);
+}
+
+static void
+roundtrip_message_syntax(enum asn_transfer_syntax syntax, const char *name) {
+    Message_t source;
+    Message_t *decoded = NULL;
+    asn_encode_to_new_buffer_result_t encoded;
+    asn_dec_rval_t rv;
+
+    fill_message(&source);
+
+    encoded = asn_encode_to_new_buffer(NULL, syntax, &asn_DEF_Message, &source);
+    assert(encoded.result.encoded > 0);
+    assert(encoded.buffer);
+
+    rv = asn_decode(NULL, syntax, &asn_DEF_Message, (void **)&decoded,
+                    encoded.buffer, (size_t)encoded.result.encoded);
+    assert(rv.code == RC_OK);
+    check_decoded_message(decoded);
+
+    ASN_STRUCT_FREE(asn_DEF_Message, decoded);
+    free(encoded.buffer);
+    ASN_STRUCT_RESET(asn_DEF_Message, &source);
+    printf("  OK: Message OPEN TYPE round-trip via %s\n", name);
+}
+
+static void
+roundtrip_message_all_syntaxes(void) {
+    roundtrip_message_syntax(ATS_BER, "BER");
+    roundtrip_message_syntax(ATS_DER, "DER");
+    roundtrip_message_syntax(ATS_BASIC_OER, "BASIC-OER");
+    roundtrip_message_syntax(ATS_CANONICAL_OER, "CANONICAL-OER");
+    roundtrip_message_syntax(ATS_UNALIGNED_BASIC_PER, "BASIC-UPER");
+    roundtrip_message_syntax(ATS_UNALIGNED_CANONICAL_PER, "CANONICAL-UPER");
+    roundtrip_message_syntax(ATS_ALIGNED_BASIC_PER, "BASIC-APER");
+    roundtrip_message_syntax(ATS_ALIGNED_CANONICAL_PER, "CANONICAL-APER");
+    roundtrip_message_syntax(ATS_BASIC_XER, "BASIC-XER");
+    roundtrip_message_syntax(ATS_CANONICAL_XER, "CANONICAL-XER");
+    roundtrip_message_syntax(ATS_JER, "JER");
+    roundtrip_message_syntax(ATS_JER_MINIFIED, "JER-MINIFIED");
+    roundtrip_message_syntax(ATS_CBOR, "CBOR");
+}
+
 int
 main(void) {
     /*
@@ -106,6 +188,8 @@ main(void) {
     decode_ber_once(defined_ber, sizeof(defined_ber), 1);
     decode_ber_once(truncated_ber, sizeof(truncated_ber), 0);
     decode_oer_valid_and_truncated();
+    decode_message_with_undefined_key_row();
+    roundtrip_message_all_syntaxes();
 
     printf("OK: OPEN TYPE typeless row regressions decoded without crashing.\n");
     return 0;
