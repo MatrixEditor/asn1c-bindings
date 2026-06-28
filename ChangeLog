@@ -11,6 +11,11 @@
 	  BER/DER/OER/UPER/APER/XER/JER/CBOR round trips plus plaintext
 	  printing through the same selector edge case.
 	  (Severity: high; Security impact: low)
+	* Hardened CVE-2025-32893 handling for parameterized Information Object
+	  Sets by safely comparing VALUESET constraint references without
+	  dereferencing optional constraint fields, and added regression test 212
+	  to verify distinct value sets produce distinct open-type validation.
+	  (Severity: medium; Security impact: medium)
 	* Fixed CBOR unknown-field skipping so recursive arrays, maps, and tags
 	  are covered by the decoder stack limit.  SEQUENCE and SET decoders use
 	  the new cbor_skip_item_with_ctx() helper when skipping unknown CBOR
