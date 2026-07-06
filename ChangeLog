@@ -37,6 +37,15 @@
 	  (Severity: high; Security impact: low)
 
 	FIXES:
+	* Restored the X.691 section 13.2.6 constrained length determinant
+	  for APER constrained INTEGER values whose range is greater than
+	  65536.  A previous fix for wide INTEGER constraint handling changed
+	  this path to the general APER length determinant, producing and
+	  expecting non-conformant encodings such as 01 20 instead of 00 20
+	  for INTEGER (0..4294967295) ::= 32.  The decoder and encoder now
+	  use the constrained len-1 bit field followed by octet alignment
+	  while preserving the unsigned offset accumulation and negative lower
+	  bound checks needed for 64-bit ranges.
 	* Fixed tests/tests-asn1c-compiler subdirectory checks so they build
 	  asn1c before running scripts that invoke it.  This prevents
 	  check-parsing.sh from comparing references against empty output when
