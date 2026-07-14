@@ -1,4 +1,32 @@
 1.5.0:
+	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#547):
+	* Corrected UPER/OER forward-compatible handling of unknown CHOICE and
+	  ENUMERATED extensions, including lossless ENUMERATED relay and the
+	  optional ASN_REJECT_UNKNOWN_EXTENSIONS strict compatibility mode.
+	* Corrected UPER normally-small long-form encoding, extensible constraint
+	  construction, DEFAULT extension omission, SET canonical ordering, and
+	  ENUMERATED automatic numbering/map layout.
+	* Corrected OER open-type skipping to consume both its length determinant
+	  and content, and added regression schemas and runtime tests for malformed,
+	  truncated, boundary, cross-version, and canonical-encoding cases.
+	* PR #539's 24-bit open-type skip defect was not present in this fork: its
+	  existing bit-at-a-time skipper already consumed every payload length. The
+	  upstream regression test was retained to lock in that behavior.
+	* Fixed codec-disabled builds of NativeEnumerated by applying the UPER
+	  extension-range consistency check only when the UPER limit constant is
+	  available. This restores the all-codecs-disabled smoke-test variant.
+	* Fixed generated UPER projects to include constr_SET_uper.c, and hardened
+	  non-empty SET OF / SEQUENCE OF decoding against missing element codecs.
+	  Empty collections remain valid because they do not invoke an element
+	  codec.
+	* Corrected PER-visible extensible SIZE roots so named extension additions
+	  are excluded from the root while remaining accepted by runtime constraint
+	  checks. Plain BIT STRING values below an extensible root are encoded as
+	  extensions instead of being padded into a different abstract value.
+	* Routed NamedBitList-specific BIT STRING descriptors through top-level
+	  aliases and inline members, including compound-name output, while plain
+	  BIT STRING values continue to preserve trailing zero bits.
+
 	SECURITY FIXES:
 	* Fixed generated OPEN TYPE selector code for Information Object Sets
 	  whose rows define the selected open type but omit the constraining

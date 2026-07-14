@@ -245,7 +245,25 @@ asn1c_lang_C_type_common_INTEGER(arg_t *arg) {
 
 		OUT("static const asn_INTEGER_enum_map_t asn_MAP_%s_value2enum_%d[] = {\n",
 			MKID(expr), expr->_type_unique_index);
-		qsort(v2e, el_count, sizeof(v2e[0]), compar_enumMap_byValue);
+		/*
+		 * Root members and extension additions occupy disjoint
+		 * segments of value2enum, delimited by map_extensions - 1
+		 * (see below). Sort each segment independently by value
+		 * so that the runtime's extension-boundary index (based on
+		 * declaration order) keeps pointing at the segment split
+		 * regardless of how root/extension values interleave
+		 * numerically (X.691 #14.1: root and extension additions
+		 * are indexed independently).
+		 */
+		if(map_extensions) {
+			int root_count = map_extensions - 1;
+			qsort(v2e, root_count, sizeof(v2e[0]),
+				compar_enumMap_byValue);
+			qsort(v2e + root_count, el_count - root_count,
+				sizeof(v2e[0]), compar_enumMap_byValue);
+		} else {
+			qsort(v2e, el_count, sizeof(v2e[0]), compar_enumMap_byValue);
+		}
 		for(eidx = 0; eidx < el_count; eidx++) {
 			v2e[eidx].idx = eidx;
 			OUT("\t{ %s,\t%ld,\t\"%s\" }%s\n",
@@ -413,6 +431,26 @@ asn1c_lang_C_type_BIT_STRING(arg_t *arg) {
 		}
 		OUT("} %s;\n", c_name(arg).members_name);
 		assert(eidx == el_count);
+
+		/*
+		 * X.680 #22.7 permits treating trailing 0 bits as
+		 * insignificant only for BIT STRING types which have a
+		 * NamedBitList. Emit a per-type specifics structure so the
+		 * UPER encoder (BIT_STRING_encode_uper) can tell this type
+		 * apart from a plain BIT STRING, which must preserve
+		 * trailing 0 bits verbatim.
+		 */
+		REDIR(OT_STAT_DEFS);
+		if(!(expr->_type_referenced)) OUT("static ");
+		OUT("const asn_OCTET_STRING_specifics_t asn_SPC_%s_specs_%d = {\n",
+			c_name(arg).part_name, expr->_type_unique_index);
+		INDENT(+1);
+		OUT("sizeof(BIT_STRING_t),\n");
+		OUT("offsetof(BIT_STRING_t, _asn_ctx),\n");
+		OUT("ASN_OSUBV_BIT,\n");
+		OUT("1\t/* Has NamedBitList: trailing 0 bits are insignificant */\n");
+		INDENT(-1);
+		OUT("};\n");
 	}
 
 	REDIR(saved_target);
@@ -1874,6 +1912,8 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
 		&& expr->encoding_control.encoding_type == EC_XER_TEXT)
 	|| fits_unsigned_integer
 	|| asn1c_REAL_fits(arg, expr) == RL_FITS_FLOAT32
+	|| (expr->expr_type == ASN_BASIC_BIT_STRING
+		&& expr_elements_count(arg, expr))
 	)
 		etd_spec = ETD_HAS_SPECIFICS;
 	else
@@ -2044,6 +2084,10 @@ asn1c_lang_C_type_SIMPLE_TYPE(arg_t *arg) {
             if((expr->expr_type == ASN_BASIC_ENUMERATED)
                || (expr->expr_type == ASN_BASIC_INTEGER)) {
                 OUT("extern const asn_INTEGER_specifics_t "
+                    "asn_SPC_%s_specs_%d;\n",
+                    MKID(expr), expr->_type_unique_index);
+            } else if(expr->expr_type == ASN_BASIC_BIT_STRING) {
+                OUT("extern const asn_OCTET_STRING_specifics_t "
                     "asn_SPC_%s_specs_%d;\n",
                     MKID(expr), expr->_type_unique_index);
             } else {
@@ -3592,7 +3636,7 @@ emit_member_PER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
 	} else if(etype & ASN_STRING_KM_MASK) {
 		range = asn1constraint_compute_PER_range(expr->Identifier, etype,
 				expr->combined_constraints, ACT_CT_FROM,
-				0, 0, 0);
+				0, 0, CPR_ignore_extension_additions);
 		DEBUG("Emitting FROM constraint for %s", expr->Identifier);
 
 		if((range->left.type == ARE_MIN && range->right.type == ARE_MAX)
@@ -3622,7 +3666,7 @@ emit_member_PER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
 	} else {
 		range = asn1constraint_compute_PER_range(expr->Identifier, etype,
 				expr->combined_constraints, ACT_EL_RANGE,
-				0, 0, 0);
+				0, 0, CPR_ignore_extension_additions);
 		if(emit_single_member_PER_constraint(arg, range, 0, 0))
 			return -1;
 		asn1constraint_range_free(range);
@@ -3630,7 +3674,8 @@ emit_member_PER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
 	OUT(",\n");
 
 	range = asn1constraint_compute_PER_range(expr->Identifier, etype,
-			expr->combined_constraints, ACT_CT_SIZE, 0, 0, 0);
+			expr->combined_constraints, ACT_CT_SIZE, 0, 0,
+			CPR_ignore_extension_additions);
 
 	/*
 	 * UTF8String (SIZE(lb..ub, ...)) has no PER-visible alphabet
@@ -4408,7 +4453,9 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 		|| (0 /* -- prohibited by X.693:8.3.4 */
 			&& expr->expr_type == ASN_BASIC_INTEGER
 			&& expr_elements_count(arg, expr))
-		|| fits_unsigned_integer;
+		|| fits_unsigned_integer
+		|| (expr->expr_type == ASN_BASIC_BIT_STRING
+			&& expr_elements_count(arg, expr));
 
 	if(C99_MODE) OUT(".type = ");
 	/*
@@ -4437,7 +4484,9 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 		   || type_needs_custom_jer_encoder(arg, expr)
 		   || (expr->parent_expr
 		       && ((expr->expr_type & ASN_CONSTR_MASK)
-		           || expr->expr_type == ASN_BASIC_ENUMERATED))
+		           || expr->expr_type == ASN_BASIC_ENUMERATED
+		           || (expr->expr_type == ASN_BASIC_BIT_STRING
+		               && expr_elements_count(arg, expr))))
 		   || (expr->_anonymous_type && fits_unsigned_integer)) {
 			OUT("_%d", expr->_type_unique_index);
 		}
@@ -4885,7 +4934,9 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 	            ((terminal->expr_type & ASN_CONSTR_MASK) ||
 	             (terminal->expr_type == ASN_BASIC_ENUMERATED) ||
 	             ((terminal->expr_type == ASN_BASIC_INTEGER) &&
-	              asn1c_int_has_native_specifics(arg, terminal)))) {
+	              asn1c_int_has_native_specifics(arg, terminal)) ||
+	             ((terminal->expr_type == ASN_BASIC_BIT_STRING) &&
+	              expr_elements_count(arg, terminal)))) {
 		        OUT("&asn_SPC_%s_specs_%d\t/* Additional specs */\n",
 		            c_expr_name(arg, terminal).part_name,
 		            terminal->_type_unique_index);
