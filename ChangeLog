@@ -1,5 +1,13 @@
 1.5.0:
-	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#547):
+	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#548):
+	* Corrected UPER known-multiplier character strings with extensible SIZE
+	  constraints to retain their effective permitted-alphabet width outside
+	  the size root, as required by X.691:2021 sections 30.4 and 30.5.2.
+	  Also corrected the section 30.5.4 direct-value boundary, supported
+	  zero-bit single-character alphabets, and rejected length arithmetic
+	  overflow before allocation. Regression test 550 covers exact root and
+	  extension encodings, round trips, malformed alphabet values, forward
+	  decoding, empty strings, and a following-field cursor check.
 	* Corrected UPER/OER forward-compatible handling of unknown CHOICE and
 	  ENUMERATED extensions, including lossless ENUMERATED relay and the
 	  optional ASN_REJECT_UNKNOWN_EXTENSIONS strict compatibility mode.
