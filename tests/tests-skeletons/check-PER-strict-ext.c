@@ -4,19 +4,20 @@
  * -DASN_REJECT_UNKNOWN_EXTENSIONS defined (and linked against the
  * skeletons library variant compiled the same way, libasn1cskeletons_strict.la
  * -- see tests/tests-skeletons/Makefile.am and skeletons/Makefile.am), so
- * that the three unknown-extension decode sites it exercises are actually
+ * that the four unknown-extension decode sites it exercises are actually
  * compiled with the macro:
  *
- *   1. constr_CHOICE.c   CHOICE_decode_uper()  -- unknown extension alternative
+ *   1. constr_CHOICE.c    CHOICE_decode_uper()  -- unknown extension alternative
  *   2. NativeEnumerated.c NativeEnumerated_decode_uper() -- unknown ext value
  *   3. constr_CHOICE_oer.c CHOICE_decode_oer() -- unknown extension alternative
+ *   4. NativeEnumerated.c NativeEnumerated_decode_aper() -- unknown ext value
  *
  * Each wire below is a genuine, complete encoding of "a newer peer selected
  * an extension addition this (older, strict) decoder does not know about."
  * Without the macro (see git history / HANDOFF.md), each of these decodes
  * RC_OK (skipping or relaying the unknown material for forward
  * compatibility, per X.691/X.696). With ASN_REJECT_UNKNOWN_EXTENSIONS
- * defined, all three must cleanly RC_FAIL instead.
+ * defined, all four must cleanly RC_FAIL instead.
  */
 #undef NDEBUG
 #include <assert.h>
@@ -77,7 +78,40 @@ check_NativeEnumerated_strict(void) {
     rv = NativeEnumerated_decode_uper(NULL, &td, &ne_ext_constraints,
                                        (void **)&value_ptr, &pd);
     fprintf(stderr,
-            "NativeEnumerated strict: wire 0x%02x => code %d (want RC_FAIL)\n",
+            "NativeEnumerated UPER strict: wire 0x%02x => code %d (want RC_FAIL)\n",
+            wire[0], (int)rv.code);
+    assert(rv.code == RC_FAIL);
+}
+
+/* ===================================================================== *
+ * Site 4: NativeEnumerated_decode_aper(), unknown extension value.
+ * Same base_specs and wire as site 2 -- the APER encoding of
+ * "extension bit + nsnnwn index 0" happens to be byte-identical to the
+ * UPER encoding for this small ordinal (0x80).  Without the macro this
+ * decodes RC_OK, storing LONG_MAX (see check-APER-NativeEnumerated.c).
+ * ===================================================================== */
+static void
+check_NativeEnumerated_aper_strict(void) {
+    asn_TYPE_descriptor_t td;
+    asn_per_data_t pd;
+    asn_dec_rval_t rv;
+    long value = -1;
+    long *value_ptr = &value;
+    static const uint8_t wire[1] = { 0x80 }; /* ext bit + nsnnwn index 0 */
+
+    memset(&td, 0, sizeof(td));
+    td.name = "E";
+    td.specifics = &ne_base_specs;
+
+    memset(&pd, 0, sizeof(pd));
+    pd.buffer = wire;
+    pd.nboff = 0;
+    pd.nbits = 8 * sizeof(wire);
+
+    rv = NativeEnumerated_decode_aper(NULL, &td, &ne_ext_constraints,
+                                       (void **)&value_ptr, &pd);
+    fprintf(stderr,
+            "NativeEnumerated APER strict: wire 0x%02x => code %d (want RC_FAIL)\n",
             wire[0], (int)rv.code);
     assert(rv.code == RC_FAIL);
 }
@@ -199,6 +233,7 @@ check_CHOICE_oer_strict(void) {
 int
 main(void) {
     check_NativeEnumerated_strict();
+    check_NativeEnumerated_aper_strict();
     check_CHOICE_uper_strict();
     check_CHOICE_oer_strict();
     printf("Finished OK\n");
