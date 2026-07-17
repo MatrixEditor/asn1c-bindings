@@ -43,6 +43,7 @@ check_PROGRAMS =                \
     check-recursive-overflow     \
     check-PER-opentype          \
     check-PER-NativeEnumerated  \
+    check-APER-NativeEnumerated \
     check-PER-nsnnwn            \
     check-PER-strict-ext
 
