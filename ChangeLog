@@ -1,5 +1,7 @@
 1.5.0:
 	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#548):
+	* The original fixes were authored by @shakespark (this notice is placed
+	  here upon his request).
 	* Corrected UPER known-multiplier character strings with extensible SIZE
 	  constraints to retain their effective permitted-alphabet width outside
 	  the size root, as required by X.691:2021 sections 30.4 and 30.5.2.
