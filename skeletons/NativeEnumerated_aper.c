@@ -110,8 +110,18 @@ NativeEnumerated_encode_aper(const asn_TYPE_descriptor_t *td,
     native = *(const long *)sptr;
 
     key.nat_value = native;
-    kf = bsearch(&key, specs->value2enum, specs->map_count,
-                 sizeof(key), NativeEnumerated__compar_value2enum);
+    if(specs->extension) {
+        int root_count = specs->extension - 1;
+        kf = bsearch(&key, specs->value2enum, root_count,
+                     sizeof(key), NativeEnumerated__compar_value2enum);
+        if(!kf)
+            kf = bsearch(&key, specs->value2enum + root_count,
+                         specs->map_count - root_count, sizeof(key),
+                         NativeEnumerated__compar_value2enum);
+    } else {
+        kf = bsearch(&key, specs->value2enum, specs->map_count,
+                     sizeof(key), NativeEnumerated__compar_value2enum);
+    }
     if(!kf) {
         ASN_DEBUG("No element corresponds to %ld", native);
         ASN__ENCODE_FAILED;

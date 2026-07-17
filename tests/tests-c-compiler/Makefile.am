@@ -75,6 +75,7 @@ TESTS += check-src/check-545.-gen-UPER.c
 TESTS += check-src/check-546.-gen-UPER.c
 TESTS += check-src/check-547.c
 TESTS += check-src/check-548.-gen-UPER.c
+TESTS += check-src/check-548.-gen-APER.c
 TESTS += check-src/check-550.-gen-UPER.c
 TESTS += check-src/check-173.-findirect-choice.-fcompound-names.-gen-UPER.-gen-APER.c
 TESTS += check-src/check-184.c
