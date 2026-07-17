@@ -233,7 +233,10 @@ the error occurred:
 
 For more details, see [PARTIAL_DECODING.md](PARTIAL_DECODING.md).
 
-
+Also note (by @shakespark): Decoding behavior for unknown extensions has changed 
+from "fail" to "skip/relay". Evaluate the impact on your application before
+upgrading; define ASN_REJECT_UNKNOWN_EXTENSIONS to restore the previous 
+strict behavior.
 -- 
 Mouse and Lev Walkin
 <none>    vlm@lionet.info
