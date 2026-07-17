@@ -1,4 +1,13 @@
 1.5.0:
+	IMPORTANT UPGRADE NOTICE:
+	* Decoding behavior for unknown extensions has changed from "fail" to
+	  "skip/relay". Evaluate the impact on your application before upgrading;
+	  define ASN_REJECT_UNKNOWN_EXTENSIONS when compiling the decoder skeletons
+	  to restore the previous strict behavior. This change can affect input-
+	  validation gates and protocol state machines that treated RC_FAIL as a
+	  protocol error.
+	  Compatibility warning contributed by <shakespark@gmail.com>.
+
 	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#548 and #550):
 	* The original fixes were authored by @shakespark (this notice is placed
 	  here upon his request).

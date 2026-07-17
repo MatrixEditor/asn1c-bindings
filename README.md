@@ -27,6 +27,21 @@ include fixes, and multiple code-scanning fixes. It also addresses security
 vulnerabilities, including formatting-related code scanning findings and
 hardening of integer decoder edge cases.
 
+### Upgrade warning: unknown extensions
+
+> **Important:** Decoding behavior for unknown extensions has changed from
+> "fail" to "skip/relay". Evaluate the impact on your application before
+> upgrading; define `ASN_REJECT_UNKNOWN_EXTENSIONS` to restore the previous
+> strict behavior.
+
+This forward-compatible default applies to unknown alternatives of extensible
+UPER/OER `CHOICE` values and unknown additions of extensible UPER `ENUMERATED`
+values. Existing deployments may rely on the old `RC_FAIL` result as an
+implicit input-validation gate or as a protocol error in a state machine.
+Compile all decoder skeleton objects with the macro and perform a clean rebuild;
+defining it only in application code does not change an already-built runtime
+library. Compatibility warning contributed by <shakespark@gmail.com>.
+
 See [ChangeLog](ChangeLog) for the complete release history and
 [release-notes/v1.4.md](release-notes/v1.4.md) for the v1.4 release notes.
 
@@ -233,10 +248,6 @@ the error occurred:
 
 For more details, see [PARTIAL_DECODING.md](PARTIAL_DECODING.md).
 
-Also note (by @shakespark): Decoding behavior for unknown extensions has changed 
-from "fail" to "skip/relay". Evaluate the impact on your application before
-upgrading; define ASN_REJECT_UNKNOWN_EXTENSIONS to restore the previous 
-strict behavior.
 -- 
 Mouse and Lev Walkin
 <none>    vlm@lionet.info
