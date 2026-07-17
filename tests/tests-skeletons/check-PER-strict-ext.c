@@ -7,10 +7,10 @@
  * that the four unknown-extension decode sites it exercises are actually
  * compiled with the macro:
  *
- *   1. constr_CHOICE.c    CHOICE_decode_uper()  -- unknown extension alternative
- *   2. NativeEnumerated.c NativeEnumerated_decode_uper() -- unknown ext value
- *   3. constr_CHOICE_oer.c CHOICE_decode_oer() -- unknown extension alternative
- *   4. NativeEnumerated.c NativeEnumerated_decode_aper() -- unknown ext value
+ *   1. constr_CHOICE.c         CHOICE_decode_uper()  -- unknown extension alternative
+ *   2. NativeEnumerated_uper.c NativeEnumerated_decode_uper() -- unknown ext value
+ *   3. constr_CHOICE_oer.c     CHOICE_decode_oer() -- unknown extension alternative
+ *   4. NativeEnumerated_aper.c NativeEnumerated_decode_aper() -- unknown ext value
  *
  * Each wire below is a genuine, complete encoding of "a newer peer selected
  * an extension addition this (older, strict) decoder does not know about."
