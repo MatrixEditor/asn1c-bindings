@@ -1,7 +1,14 @@
 1.5.0:
-	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#548):
+	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#548 and #550):
 	* The original fixes were authored by @shakespark (this notice is placed
 	  here upon his request).
+	* Ported vlm/asn1c PR #550 so generated permitted-alphabet constraint
+	  checks accept a buffer-less empty string without NULL-pointer arithmetic
+	  and deterministically reject malformed values whose buffer is NULL while
+	  their size is non-zero. Runtime regression coverage exercises both empty
+	  representations plus malformed, in-alphabet, and out-of-alphabet values;
+	  generated permitted-alphabet helpers now include complete docblocks.
+	  Co-authored-by: libo <shakespark@gmail.com>
 	* Corrected UPER known-multiplier character strings with extensible SIZE
 	  constraints to retain their effective permitted-alphabet width outside
 	  the size root, as required by X.691:2021 sections 30.4 and 30.5.2.
@@ -75,6 +82,11 @@
 	  (Severity: high; Security impact: low)
 
 	FIXES:
+	* Reduced randomized sanitizer CI compile time by applying each case's
+	  ASN1_TEXT definition only to random-test-driver.o. Shared generated codec
+	  objects now have stable command lines that ccache can reuse across bundle
+	  cases. Standard CI explicitly disables the opt-in LibFuzzer mode and caps
+	  every ordinary CI job, as well as each make-check step, at 40 minutes.
 	* Restored the X.691 section 13.2.6 constrained length determinant
 	  for APER constrained INTEGER values whose range is greater than
 	  65536.  A previous fix for wide INTEGER constraint handling changed
