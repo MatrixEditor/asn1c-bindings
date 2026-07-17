@@ -1,4 +1,6 @@
-# Evaluation of vlm/asn1c PRs #539-#547
+# Evaluation of vlm/asn1c PRs #539-#547 
+
+The original PRs were authored by @shakespark.
 
 This fork was compared with the topic commits behind upstream pull requests
 539 through 547. The upstream branches share an integration base, so only
