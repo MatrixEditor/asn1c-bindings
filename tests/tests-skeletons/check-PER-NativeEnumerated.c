@@ -135,25 +135,31 @@ encode_uper(const asn_INTEGER_specifics_t *specs,
 
     er = NativeEnumerated_encode_uper(&td, ct, &value, &po);
     if(er.encoded < 0) return -1;
+    /* Normalize: asn_put_few_bits() does not flush po.nboff into po.buffer
+     * between calls, so nboff can accumulate to > 8 by the end.  Fold any
+     * complete bytes out of nboff before computing the byte count. */
+    if(po.nboff >= 8) {
+        po.buffer += (po.nboff >> 3);
+        po.nboff   &= 0x07;
+    }
     nbytes = (po.buffer - po.tmpspace) + (po.nboff ? 1 : 0);
     if(out) memcpy(out, po.tmpspace, nbytes);
     return (ssize_t)nbytes;
 }
 
-/* Decode "wire", then re-encode; assert the byte-identical round trip. */
+/* Decode "wire" (nbytes bytes), then re-encode; assert byte-identical round trip. */
 static long
 relay_ok(int lineno, const asn_INTEGER_specifics_t *specs,
-         unsigned char wire, long expect_value) {
-    unsigned char in = wire;
+         const uint8_t *wire, size_t nbytes, long expect_value) {
     uint8_t out[8];
     ssize_t n;
-    long v = decode_uper(lineno, specs, &ext_constraints, RC_OK, &in, 1);
+    long v = decode_uper(lineno, specs, &ext_constraints, RC_OK, wire, nbytes);
     assert(v == expect_value);
     n = encode_uper(specs, &ext_constraints, v, out);
-    fprintf(stderr, "%d: relay 0x%02x => value %ld => re-encode %zd byte 0x%02x\n",
-            lineno, wire, v, n, n > 0 ? out[0] : 0);
-    assert(n == 1);
-    assert(out[0] == wire);
+    fprintf(stderr, "%d: relay [%02x...] => value %ld => re-encode %zd byte [%02x...]\n",
+            lineno, wire[0], v, n, n > 0 ? out[0] : 0);
+    assert(n == (ssize_t)nbytes);
+    assert(memcmp(out, wire, (size_t)n) == 0);
     return v;
 }
 
@@ -175,19 +181,69 @@ main(void) {
 
     /*
      * ------- Unknown extension values: lossless relay. -------
-     * A newer peer's ee3/ee4/ee6 arrive as extension indices 0/1/3. They must
-     * decode (RC_OK) into LONG_MAX-index (distinct per index, no aliasing) and
-     * re-encode to the identical byte.
+     * A newer peer's ee3/ee4/ee6 arrive as extension indices 0/1/3/63. They
+     * must decode (RC_OK) into LONG_MAX-index (distinct per index, no aliasing)
+     * and re-encode to the identical bytes.
+     *
+     * Short-form UPER wire (one byte each):
+     *   ext_bit=1 | nsnnwn_short_indicator=0 | 6-bit ordinal
+     *   index  0: 1_0_000000 = 0x80
+     *   index  1: 1_0_000001 = 0x81
+     *   index  3: 1_0_000011 = 0x83
+     *   index 63: 1_0_111111 = 0xBF
      */
-    relay_ok(__LINE__, &base_specs, 0x80, LONG_MAX);    /* ext index 0 */
-    relay_ok(__LINE__, &base_specs, 0x81, LONG_MAX - 1);/* ext index 1 */
-    relay_ok(__LINE__, &base_specs, 0x83, LONG_MAX - 3);/* ext index 3 (ee6) */
+    {
+        static const uint8_t w0[]  = { 0x80 };
+        static const uint8_t w1[]  = { 0x81 };
+        static const uint8_t w3[]  = { 0x83 };
+        static const uint8_t w63[] = { 0xBF };
+        relay_ok(__LINE__, &base_specs, w0,  1, LONG_MAX);       /* index 0 */
+        relay_ok(__LINE__, &base_specs, w1,  1, LONG_MAX - 1);   /* index 1 */
+        relay_ok(__LINE__, &base_specs, w3,  1, LONG_MAX - 3);   /* index 3 */
+        relay_ok(__LINE__, &base_specs, w63, 1, LONG_MAX - 63);  /* index 63 */
+    }
+
+    /*
+     * UPER long-form nsnnwn: for ordinals >= 64, uper_put_nsnnwn() emits a
+     * 1-bit flag (1), then a full 8-bit byte-count determinant, then the
+     * value bytes (no alignment padding, unlike APER).
+     *
+     * index 64 (3 bytes, 18 bits):
+     *   ext=1 | flag=1 | count=00000001 | value=01000000
+     *   = 11_00000001_01000000 -> 0xC0 0x50 0x00
+     * index 65535 (4 bytes, 26 bits):
+     *   ext=1 | flag=1 | count=00000010 | value=1111111111111111
+     *   = 11_00000010_1111111111111111 -> 0xC0 0xBF 0xFF 0xC0
+     */
+    {
+        static const uint8_t w64[]    = { 0xC0, 0x50, 0x00 };
+        static const uint8_t w65535[] = { 0xC0, 0xBF, 0xFF, 0xC0 };
+        relay_ok(__LINE__, &base_specs, w64,    3, LONG_MAX - 64);
+        relay_ok(__LINE__, &base_specs, w65535, 4, LONG_MAX - 65535);
+    }
 
     /* The stored value is recognised as an unknown-extension placeholder. */
     assert(ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(LONG_MAX));
     assert(ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(LONG_MAX - 3));
+    assert(ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(LONG_MAX - 63));
+    assert(ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(LONG_MAX - 65535));
     assert(!ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(0));
     assert(!ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(LONG_MAX - 70000));
+
+    /*
+     * ------- Raw-ordinal trap: value is LONG_MAX - raw_wire_index. -------
+     * base (root=2, extension=3) receives nsnnwn=0 (wire 0x80).  If the
+     * decoder erroneously applied the root-count offset *before* the
+     * unknown-extension check it would compute 0+(3-1)=2, check 2>=map_count(2)
+     * and store value2enum[0].nat_value = 0, aliasing ee1.  The correct
+     * implementation uses the raw wire ordinal and stores LONG_MAX-0 = LONG_MAX.
+     */
+    {
+        static const uint8_t w[] = { 0x80 };
+        long v = decode_uper(__LINE__, &base_specs, &ext_constraints, RC_OK, w, 1);
+        assert(v == LONG_MAX);   /* must not alias ee1(0) */
+        assert(v != 0);          /* the aliasing value the wrong code would produce */
+    }
 
     /*
      * ------- Sparse enumeration { a(0), b(2), ... }: no aliasing. -------
@@ -197,8 +253,11 @@ main(void) {
      */
     value = decode_uper(__LINE__, &sparse_specs, &ext_constraints, RC_OK, "\x40", 1);
     assert(value == 2);                                 /* known b(2) */
-    value = relay_ok(__LINE__, &sparse_specs, 0x80, LONG_MAX);
-    assert(value != 2);                                 /* must not alias b(2) */
+    {
+        static const uint8_t w_u0[] = { 0x80 };
+        value = relay_ok(__LINE__, &sparse_specs, w_u0, 1, LONG_MAX);
+        assert(value != 2);                             /* must not alias b(2) */
+    }
 
     /*
      * ------- Newer version knows the additions: byte-exact encoding. -------
