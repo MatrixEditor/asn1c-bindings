@@ -1,10 +1,15 @@
 Changes since v1.5.0:
+	* Hardened APER open-type decoding against undefined NULL-pointer arithmetic
+	  when malformed input begins with a zero-length chunk.  Regression coverage
+	  now exercises the corresponding aligned-PER vector in check-126.
+	  Fix suggested by <shakespark@gmail.com> in <https://github.com/vlm/asn1c/pull/551>.
 	* Generalized generated OER, UPER, and APER descriptor constraint-table
 	  inheritance for typedef aliases by deriving codec slots from the terminal
-	  ASN.1 type. Issue #552, reported by @zhouvlia, was already avoided for
-	  ENUMERATED aliases by an earlier enum-specific branch in this fork; the
-	  new terminal-type rule covers the remaining alias classes and the added
-	  UPER/APER regression locks in the reported behavior and truncation safety.
+	  ASN.1 type. 
+	  Issue #552, reported by @zhouvlia, was already avoided for ENUMERATED aliases
+	  by an earlier enum-specific branch in this fork; the new terminal-type rule
+	  covers the remaining alias classes and the added UPER/APER regression locks
+	  in the reported behavior and truncation safety.
 	IMPORTANT UPGRADE NOTICE:
 	* Decoding behavior for unknown extensions has changed from "fail" to
 	  "skip/relay". Evaluate the impact on your application before upgrading;
@@ -15,6 +20,7 @@ Changes since v1.5.0:
 	  Compatibility warning contributed by <shakespark@gmail.com>.
 
 	INTEROPERABILITY FIXES (vlm/asn1c PRs #539-#548 and #550):
+	* Co-authored-by: libo <shakespark@gmail.com>
 	* The original fixes were authored by @shakespark (this notice is placed
 	  here upon his request).
 	* Ported vlm/asn1c PR #550 so generated permitted-alphabet constraint
@@ -23,7 +29,6 @@ Changes since v1.5.0:
 	  their size is non-zero. Runtime regression coverage exercises both empty
 	  representations plus malformed, in-alphabet, and out-of-alphabet values;
 	  generated permitted-alphabet helpers now include complete docblocks.
-	  Co-authored-by: libo <shakespark@gmail.com>
 	* Corrected UPER known-multiplier character strings with extensible SIZE
 	  constraints to retain their effective permitted-alphabet width outside
 	  the size root, as required by X.691:2021 sections 30.4 and 30.5.2.

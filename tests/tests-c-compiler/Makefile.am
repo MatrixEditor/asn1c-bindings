@@ -28,6 +28,7 @@ TESTS += check-src/check-03.-fwide-types.c
 TESTS += check-src/check-119.-fwide-types.-gen-UPER.c
 TESTS += check-src/check-119.-gen-UPER.c
 TESTS += check-src/check-126.-gen-UPER.c
+TESTS += check-src/check-126.-gen-APER.c
 TESTS += check-src/check-127.-gen-UPER.c
 TESTS += check-src/check-131.-gen-UPER.c
 TESTS += check-src/check-132.-gen-UPER.c
