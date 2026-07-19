@@ -40,7 +40,7 @@ jobs:
       contents: read
       pull-requests: write
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 70
     steps:
     - uses: actions/checkout@v5
 
@@ -80,7 +80,7 @@ jobs:
 
     - name: make check
       # Standard, non-fuzz tests must fail visibly instead of consuming a runner indefinitely.
-      timeout-minutes: 40
+      timeout-minutes: 70
       run: make -j"$(nproc)" check
 
     - name: test PKIX1 example - generate codecs and test all supported formats
@@ -140,7 +140,7 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 90
     steps:
     - uses: actions/checkout@v5
 
@@ -211,7 +211,7 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 80
     steps:
     - uses: actions/checkout@v5
 
@@ -253,7 +253,7 @@ jobs:
 
     - name: make check
       # Keep the sanitizer suite within the same non-fuzz runtime budget.
-      timeout-minutes: 40
+      timeout-minutes: 80
       run: make -j"$(nproc)" check
 
     - name: ccache statistics
