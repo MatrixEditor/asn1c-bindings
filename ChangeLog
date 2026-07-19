@@ -1,4 +1,10 @@
 1.5.0:
+	* Generalized generated OER, UPER, and APER descriptor constraint-table
+	  inheritance for typedef aliases by deriving codec slots from the terminal
+	  ASN.1 type. Issue #552, reported by @zhouvlia, was already avoided for
+	  ENUMERATED aliases by an earlier enum-specific branch in this fork; the
+	  new terminal-type rule covers the remaining alias classes and the added
+	  UPER/APER regression locks in the reported behavior and truncation safety.
 	IMPORTANT UPGRADE NOTICE:
 	* Decoding behavior for unknown extensions has changed from "fail" to
 	  "skip/relay". Evaluate the impact on your application before upgrading;
