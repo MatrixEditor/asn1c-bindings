@@ -1047,7 +1047,7 @@ memb_ut_c_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 		return -1;
 	}
 	
-	if((size == 6UL)) {
+	if(size == 6UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -1079,7 +1079,7 @@ memb_ut_ce_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 		return -1;
 	}
 	
-	if((size == 6UL)) {
+	if(size == 6UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -1185,7 +1185,7 @@ memb_bm_cs_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size >> 1;	/* 2 byte per character */
 	
-	if((size == 6UL)
+	if(size == 6UL
 		 && !check_permitted_alphabet_25(st)) {
 		/* Constraint check succeeded */
 		return 0;
@@ -1294,7 +1294,7 @@ memb_us_cs_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size >> 2;	/* 4 byte per character */
 	
-	if((size == 6UL)
+	if(size == 6UL
 		 && !check_permitted_alphabet_30(st)) {
 		/* Constraint check succeeded */
 		return 0;

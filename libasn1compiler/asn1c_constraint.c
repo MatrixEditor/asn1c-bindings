@@ -6,6 +6,7 @@
 #include "asn1c_bigint.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include <asn1fix_crange.h>	/* constraint groker from libasn1fix */
 #include <asn1fix_export.h>	/* other exportables from libasn1fix */
@@ -19,6 +20,7 @@ static abuf *emit_range_comparison_code(asn1cnst_range_t *range,
                                           const char *varname,
                                           asn1c_integer_t natural_start,
                                           asn1c_integer_t natural_stop);
+static void emit_range_constraint_condition(arg_t *arg, const abuf *comparison);
 static int native_long_sign(arg_t *arg, asn1cnst_range_t *r);	/* -1, 0, 1 */
 
 /*
@@ -384,7 +386,7 @@ asn1c_emit_constraint_checking_code(arg_t *arg) {
 		if(r_size) {
             abuf *ab = emit_range_comparison_code(r_size, "size", 0, -1);
             if(ab->length)  {
-                OUT("(%s)", ab->buffer);
+                emit_range_constraint_condition(arg, ab);
                 got_something++;
             }
             abuf_free(ab);
@@ -398,7 +400,7 @@ asn1c_emit_constraint_checking_code(arg_t *arg) {
                 ab = emit_range_comparison_code(r_value, "value",
                                                 value_unsigned ? 0 : -1, -1);
             if(ab->length)  {
-                OUT("(%s)", ab->buffer);
+                emit_range_constraint_condition(arg, ab);
                 got_something++;
             } else {
                 value_unused = 1;
@@ -817,6 +819,18 @@ emit_range_comparison_code(asn1cnst_range_t *range, const char *varname,
             abuf_oint(ab, range->right.value, natural_start);
         }
     } else {
+        int comparison_count = 0;
+
+        /* Count surviving alternatives before emitting them so a single
+         * alternative does not acquire parentheses meant for a disjunction. */
+        for(int i = 0; i < range->el_count; i++) {
+            asn1cnst_range_t *r = range->elements[i];
+            abuf *rec = emit_range_comparison_code(r, varname, natural_start,
+                                                   natural_stop);
+            if(rec->length) comparison_count++;
+            abuf_free(rec);
+        }
+
         for(int i = 0; i < range->el_count; i++) {
             asn1cnst_range_t *r = range->elements[i];
 
@@ -826,9 +840,9 @@ emit_range_comparison_code(asn1cnst_range_t *range, const char *varname,
                 if(ab->length) {
                     abuf_str(ab, " || ");
                 }
-                abuf_str(ab, "(");
+                if(comparison_count > 1) abuf_str(ab, "(");
                 abuf_buf(ab, rec);
-                abuf_str(ab, ")");
+                if(comparison_count > 1) abuf_str(ab, ")");
             } else {
                 /* Ignore this part */
             }
@@ -837,6 +851,32 @@ emit_range_comparison_code(asn1cnst_range_t *range, const char *varname,
     }
 
     return ab;
+}
+
+/**
+ * Purpose: Emit a generated range expression without redundant equality parentheses.
+ * Original source: The asn1c constraint compiler.
+ * Version: 2026-07-20, avoid Clang -Wparentheses-equality diagnostics.
+ * Parameters:
+ *   arg - Compiler state selecting the active generated-code output stream.
+ *   comparison - Generated range expression to write to that output stream.
+ * Returns: None.
+ * Exceptions: None; output failures follow the existing compiler output path.
+ * Author: asn1c maintainers.
+ * History: Added on 2026-07-20 while retaining grouping for disjunctions.
+ * Example: Emits `size == 3UL` instead of `(size == 3UL)`.
+ */
+static void
+emit_range_constraint_condition(arg_t *arg, const abuf *comparison) {
+    /* Equality has higher precedence than the surrounding logical operators,
+     * so parentheses are unnecessary unless the expression is compound. */
+    if(strstr(comparison->buffer, " == ")
+       && !strstr(comparison->buffer, " && ")
+       && !strstr(comparison->buffer, " || ")) {
+        OUT("%s", comparison->buffer);
+    } else {
+        OUT("(%s)", comparison->buffer);
+    }
 }
 
 static int

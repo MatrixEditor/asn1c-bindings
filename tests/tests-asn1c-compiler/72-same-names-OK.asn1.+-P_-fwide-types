@@ -553,7 +553,7 @@ a_4_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 		size = 0;
 	}
 
-	if((size == 2UL)) {
+	if(size == 2UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -588,7 +588,7 @@ memb_a_constraint_3(const asn_TYPE_descriptor_t *td, const void *sptr,
 		size = 0;
 	}
 	
-	if((size == 2UL)) {
+	if(size == 2UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -630,7 +630,7 @@ a_9_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 		size = 0;
 	}
 
-	if((size == 2UL)) {
+	if(size == 2UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -665,7 +665,7 @@ memb_a_constraint_8(const asn_TYPE_descriptor_t *td, const void *sptr,
 		size = 0;
 	}
 	
-	if((size == 2UL)) {
+	if(size == 2UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {

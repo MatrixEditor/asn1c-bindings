@@ -121,7 +121,7 @@ memb_con_ia5_constraint_6(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 2UL)
+	if(size == 2UL
 		 && !check_permitted_alphabet_7(st)) {
 		/* Constraint check succeeded */
 		return 0;
@@ -154,7 +154,7 @@ memb_con_utf8_constraint_6(const asn_TYPE_descriptor_t *td, const void *sptr,
 		return -1;
 	}
 	
-	if((size == 2UL)) {
+	if(size == 2UL) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -180,7 +180,7 @@ memb_con_universal_constraint_6(const asn_TYPE_descriptor_t *td, const void *spt
 	
 	size = st->size >> 2;	/* 4 byte per character */
 	
-	if((size == 2UL)
+	if(size == 2UL
 		 && !check_permitted_alphabet_9(st)) {
 		/* Constraint check succeeded */
 		return 0;

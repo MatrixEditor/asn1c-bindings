@@ -372,7 +372,7 @@ Int5_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 		return -1;
 	}
 	
-	if((value == 5L)) {
+	if(value == 5L) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -2504,7 +2504,7 @@ memb_int5_c_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 		return -1;
 	}
 	
-	if((value == 5L)) {
+	if(value == 5L) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -3021,7 +3021,7 @@ Enum1_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value == 0L)) {
+	if(value == 0L) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {

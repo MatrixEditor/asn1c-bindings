@@ -1,4 +1,7 @@
 Changes since v1.5.0:
+	* Avoided redundant parentheses around standalone equality comparisons in
+	  generated constraint checks, preventing Clang's -Wparentheses-equality
+	  warning while retaining required grouping for compound expressions.
 	* Hardened APER open-type decoding against undefined NULL-pointer arithmetic
 	  when malformed input begins with a zero-length chunk.  Regression coverage
 	  now exercises the corresponding aligned-PER vector in check-126.
