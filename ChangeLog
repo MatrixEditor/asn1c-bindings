@@ -1,4 +1,6 @@
 Changes since v1.5.0:
+	* Made the generated-constraint warning regression test compatible with
+	  Automake's standard top_srcdir/top_builddir test environment.
 	* Avoided redundant parentheses around standalone equality comparisons in
 	  generated constraint checks, preventing Clang's -Wparentheses-equality
 	  warning while retaining required grouping for compound expressions.

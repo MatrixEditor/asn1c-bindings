@@ -5,12 +5,13 @@
 
 set -eu
 
-: "${abs_top_srcdir:?abs_top_srcdir must name the source tree}"
-: "${abs_top_builddir:?abs_top_builddir must name the build tree}"
-
-compiler="${abs_top_builddir}/asn1c/asn1c"
-schema="${abs_top_srcdir}/tests/tests-asn1c-compiler/test_simple_constraint.asn1"
-skeletons="${abs_top_srcdir}/skeletons"
+# Automake exports top_srcdir/top_builddir to tests; accept absolute variants
+# as well because this script is also useful when invoked directly.
+src_root="${abs_top_srcdir:-${top_srcdir:?top_srcdir must name the source tree}}"
+build_root="${abs_top_builddir:-${top_builddir:?top_builddir must name the build tree}}"
+compiler="${build_root}/asn1c/asn1c"
+schema="${src_root}/tests/tests-asn1c-compiler/test_simple_constraint.asn1"
+skeletons="${src_root}/skeletons"
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/asn1c-generated-warning.XXXXXX")
 
 cleanup() {
