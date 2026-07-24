@@ -7,7 +7,7 @@
 #include <constr_SEQUENCE.h>
 #include <OPEN_TYPE.h>
 #include <aper_opentype.h>
-#include <string.h>   /* strcmp() — used to identify NULL-typed extension
+#include <string.h>   /* strncmp() — used to identify NULL-typed extension
                        * fields without introducing a hard link
                        * dependency on NULL.o */
 
@@ -236,7 +236,7 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                 return rv;
             }
             if(rv.code != RC_OK && elm->type->name
-               && strcmp(elm->type->name, "NULL") == 0) {
+               && strncmp(elm->type->name, "NULL", 4) == 0) {
                 /*
                  * Narrow forward-compat carve-out: the schema deliberately
                  * declares this extension addition as `NULL`, a placeholder
