@@ -439,7 +439,7 @@ asn_compile() {
     echo "include converter-example.mk"
     echo
     echo "random-test-driver.o: random-test-driver.c"
-    echo "\t\$(CC) \$(CFLAGS) \$(DEPFLAGS) -DASN1_TEXT='\$(ASN1_TEXT)' -o \$@ -c \$<"
+    printf "\t\$(CC) \$(CFLAGS) \$(DEPFLAGS) -DASN1_TEXT='\$(ASN1_TEXT)' -o \$@ -c \$<\n"
     echo
     echo "all-tests-succeeded: ${abs_top_builddir}/asn1c/asn1c \$(ASN_PROGRAM_SRCS) \\"
     echo "    \$(ASN_MODULE_SRCS) \$(ASN_MODULE_HDRS)"
