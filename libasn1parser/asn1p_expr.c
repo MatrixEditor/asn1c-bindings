@@ -203,6 +203,7 @@ static asn1p_expr_t *asn1p_expr_clone_impl(
     if (!clone) clone = asn1p_expr_new(expr->_lineno, expr->module);
     if (!clone) return NULL;
 
+<<<<<<< HEAD
     /*
      * Copy simple fields.
      */
@@ -213,10 +214,24 @@ static asn1p_expr_t *asn1p_expr_clone_impl(
     CLCOPY(_mark);
     CLCOPY(parent_expr);
     CLCOPY(_type_unique_index);
+=======
+	/*
+	 * Copy simple fields.
+	 */
+	CLCOPY(meta_type);
+	CLCOPY(expr_type);
+	CLCOPY(tag);
+	CLCOPY(encoding_control.encoding_type);
+	CLCOPY(marker.flags);		/* OPTIONAL/DEFAULT */
+	CLCOPY(_mark);
+	CLCOPY(parent_expr);
+	CLCOPY(_type_unique_index);
+>>>>>>> upstream/vlm_master
 
     clone->data = 0;      /* Do not clone this */
     clone->data_free = 0; /* Do not clone this */
 
+<<<<<<< HEAD
     /*
      * Clone complex fields.
      */
@@ -228,6 +243,23 @@ static asn1p_expr_t *asn1p_expr_clone_impl(
     CLVRCLONE(value, asn1p_value_clone_with_resolver);
     CLVRCLONE(marker.default_value, asn1p_value_clone_with_resolver);
     CLCLONE(with_syntax, asn1p_wsyntx_clone);
+=======
+	/*
+	 * Clone complex fields.
+	 */
+	CLCLONE(Identifier, strdup);
+	CLCLONE(encoding_control.encoding_reference, strdup);
+	CLCLONE(encoding_control.target_path, strdup);
+	CLCLONE(encoding_control.target_value, strdup);
+	CLCLONE(encoding_control.replacement, strdup);
+	CLCLONE(reference, asn1p_ref_clone);
+	CLVRCLONE(constraints, asn1p_constraint_clone_with_resolver);
+	CLVRCLONE(combined_constraints, asn1p_constraint_clone_with_resolver);
+	CLCLONE(lhs_params, asn1p_paramlist_clone);
+	CLVRCLONE(value, asn1p_value_clone_with_resolver);
+	CLVRCLONE(marker.default_value, asn1p_value_clone_with_resolver);
+	CLCLONE(with_syntax, asn1p_wsyntx_clone);
+>>>>>>> upstream/vlm_master
 
     /*
      * Copy all the children of this expr.
@@ -378,6 +410,7 @@ void asn1p_expr_free(asn1p_expr_t *expr) {
             asn1p_expr_free(tm);
         }
 
+<<<<<<< HEAD
         free(expr->Identifier);
         asn1p_ref_free(expr->reference);
         asn1p_constraint_free(expr->constraints);
@@ -397,6 +430,30 @@ void asn1p_expr_free(asn1p_expr_t *expr) {
             free(expr->specializations.pspec);
         }
         asn1p_ioc_table_free(expr->ioc_table);
+=======
+		free(expr->Identifier);
+		asn1p_ref_free(expr->reference);
+		asn1p_constraint_free(expr->constraints);
+		asn1p_constraint_free(expr->combined_constraints);
+		asn1p_paramlist_free(expr->lhs_params);
+		asn1p_expr_free(expr->rhs_pspecs);
+		asn1p_value_free(expr->value);
+		asn1p_value_free(expr->marker.default_value);
+		asn1p_wsyntx_free(expr->with_syntax);
+		if(expr->specializations.pspec) {
+			int pspec;
+			for(pspec = 0; pspec < expr->specializations.pspecs_count; pspec++) {
+				asn1p_expr_free(expr->specializations.pspec[pspec].rhs_pspecs);
+				asn1p_expr_free(expr->specializations.pspec[pspec].my_clone);
+			}
+			free(expr->specializations.pspec);
+		}
+		asn1p_ioc_table_free(expr->ioc_table);
+		free(expr->encoding_control.encoding_reference);
+		free(expr->encoding_control.target_path);
+		free(expr->encoding_control.target_value);
+		free(expr->encoding_control.replacement);
+>>>>>>> upstream/vlm_master
 
         if (expr->data && expr->data_free) expr->data_free(expr->data);
 

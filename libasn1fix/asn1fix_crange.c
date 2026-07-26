@@ -971,12 +971,22 @@ asn1cnst_range_t *asn1constraint_compute_constraint_range(
     enum asn1p_constraint_type_e requested_ct_type,
     const asn1cnst_range_t *minmax, int *exmet, enum cpr_flags cpr_flags) {
     asn1cnst_range_t *range;
+<<<<<<< HEAD
     asn1cnst_range_t *tmp;
     asn1p_value_t *vmin;
     asn1p_value_t *vmax;
     int expectation_met;
     unsigned int i;
     int ret;
+=======
+	asn1cnst_range_t *tmp;
+	asn1p_value_t *vmin;
+	asn1p_value_t *vmax;
+	int expectation_met;
+	unsigned int i;
+	int ret;
+	int past_ext = 0;	/* Seen the "..." extension marker in this list */
+>>>>>>> upstream/vlm_master
 
     if (!exmet) {
         exmet = &expectation_met;
@@ -1048,8 +1058,13 @@ asn1cnst_range_t *asn1constraint_compute_constraint_range(
      * SIZE constraints on restricted character string types
      * which are not known-multiplier are not OER-visible.
      */
+<<<<<<< HEAD
     if (requested_ct_type == ACT_CT_SIZE && (expr_type & ASN_STRING_NKM_MASK))
         range->not_OER_visible = 1;
+=======
+    if(requested_ct_type == ACT_CT_SIZE && (expr_type & ASN_STRING_NKM_MASK))
+		range->not_OER_visible = 1;
+>>>>>>> upstream/vlm_master
 
     if (!ct ||
         (range->not_OER_visible && (cpr_flags & CPR_strict_OER_visibility))) {
@@ -1061,6 +1076,7 @@ asn1cnst_range_t *asn1constraint_compute_constraint_range(
         return range;
     }
 
+<<<<<<< HEAD
     switch (ct->type) {
         case ACT_EL_VALUE:
             vmin = vmax = ct->value;
@@ -1081,6 +1097,265 @@ asn1cnst_range_t *asn1constraint_compute_constraint_range(
                 _range_free(range);
                 errno = ERANGE;
                 range = 0;
+=======
+	switch(ct->type) {
+	case ACT_EL_VALUE:
+		vmin = vmax = ct->value;
+		break;
+	case ACT_EL_RANGE:
+	case ACT_EL_LLRANGE:
+	case ACT_EL_RLRANGE:
+	case ACT_EL_ULRANGE:
+		vmin = ct->range_start;
+		vmax = ct->range_stop;
+		break;
+	case ACT_EL_EXT:
+		if(!*exmet) {
+			range->extensible = 1;
+			range->not_OER_visible = 1;
+			range->not_JER_visible = 1;
+		} else {
+			_range_free(range);
+			errno = ERANGE;
+			range = 0;
+		}
+		return range;
+	case ACT_CT_SIZE:
+	case ACT_CT_FROM:
+		if(requested_ct_type == ct->type) {
+			/*
+			 * Specifically requested to process SIZE() or FROM() constraint.
+			 */
+			*exmet = 1;
+		} else {
+			range->incompatible = 1;
+			return range;
+		}
+		assert(ct->el_count == 1);
+		tmp = asn1constraint_compute_constraint_range(
+			dbg_name, expr_type, ct->elements[0], requested_ct_type, minmax,
+			exmet, cpr_flags);
+		if(tmp) {
+			_range_free(range);
+		} else {
+			if(errno == ERANGE) {
+				range->empty_constraint = 1;
+				range->extensible = 1;
+				if(range->extensible) {
+					range->not_OER_visible = 1;
+					range->not_PER_visible = 1;
+                }
+				tmp = range;
+			} else {
+				_range_free(range);
+			}
+		}
+		return tmp;
+	case ACT_CA_SET:	/* (10..20)(15..17) */
+	case ACT_CA_INT:	/* SIZE(1..2) ^ FROM("ABCD") */
+
+		/* AND constraints, one after another. */
+		for(i = 0; i < ct->el_count; i++) {
+			tmp = asn1constraint_compute_constraint_range(dbg_name, expr_type,
+				ct->elements[i], requested_ct_type,
+				ct->type==ACT_CA_SET?range:minmax, exmet,
+				cpr_flags);
+			if(!tmp) {
+				if(errno == ERANGE) {
+					range->extensible = 1;
+					if(range->extensible) {
+						range->not_OER_visible = 1;
+						range->not_JER_visible = 1;
+                    }
+					continue;
+				} else {
+					_range_free(range);
+					return NULL;
+				}
+			}
+
+			if(tmp->incompatible) {
+				/*
+				 * Ignore constraints
+				 * incompatible with arguments:
+				 * 	SIZE(1..2) ^ FROM("ABCD")
+				 * either SIZE or FROM will be ignored.
+				 */
+				_range_free(tmp);
+				continue;
+			}
+
+			if(tmp->not_OER_visible
+			   && (cpr_flags & CPR_strict_OER_visibility)) {
+                /*
+                 * Ignore not OER-visible
+                 */
+                _range_free(tmp);
+				continue;
+			}
+
+			if(tmp->not_PER_visible
+			   && (cpr_flags & CPR_strict_PER_visibility)) {
+				if(ct->type == ACT_CA_SET) {
+					/*
+					 * X.691, #9.3.18:
+					 * Ignore this separate component.
+					 */
+				} else {
+					/*
+					 * X.691, #9.3.19:
+					 * Ignore not PER-visible INTERSECTION
+					 */
+				}
+				_range_free(tmp);
+				continue;
+			}
+
+			if(tmp->not_JER_visible
+			   && (cpr_flags & CPR_strict_JER_visibility)) {
+                /*
+                 * Ignore not JER-visible
+                 */
+                _range_free(tmp);
+				continue;
+			}
+
+			ret = _range_intersection(range, tmp,
+				ct->type == ACT_CA_SET, cpr_flags & (CPR_strict_OER_visibility | CPR_strict_JER_visibility));
+			_range_free(tmp);
+			if(ret) {
+				_range_free(range);
+				errno = EPERM;
+				return NULL;
+			}
+
+			_range_canonicalize(range);
+		}
+
+		return range;
+	case ACT_CA_CSV:	/* SIZE(1..2, 3..4) */
+	case ACT_CA_UNI:	/* SIZE(1..2) | FROM("ABCD") */
+
+		/*
+		 * Grab the first valid constraint.
+		 */
+		tmp = 0;
+		for(i = 0; i < ct->el_count; i++) {
+			tmp = asn1constraint_compute_constraint_range(dbg_name, expr_type,
+				ct->elements[i], requested_ct_type, minmax, exmet,
+				cpr_flags);
+			if(!tmp) {
+				if(errno == ERANGE) {
+					range->extensible = 1;
+					range->not_OER_visible = 1;
+					range->not_JER_visible = 1;
+					past_ext = 1;
+					continue;
+				} else {
+					_range_free(range);
+					return NULL;
+				}
+			}
+			if(tmp->incompatible) {
+				_range_free(tmp);
+				tmp = 0;
+			}
+			break;
+		}
+		if(tmp) {
+			tmp->extensible |= range->extensible;
+			tmp->not_OER_visible |= range->not_OER_visible;
+			tmp->not_JER_visible |= range->not_JER_visible;
+			tmp->empty_constraint |= range->empty_constraint;
+			_range_free(range);
+			range = tmp;
+		} else {
+			range->incompatible = 1;
+			return range;
+		}
+
+		/*
+		 * Merge with the rest of them.
+		 * Canonicalizator will do the union magic.
+		 */
+		for(; i < ct->el_count; i++) {
+			tmp = asn1constraint_compute_constraint_range(dbg_name, expr_type,
+				ct->elements[i], requested_ct_type, minmax, exmet,
+				cpr_flags);
+			if(!tmp) {
+				if(errno == ERANGE) {
+					range->extensible = 1;
+					range->not_OER_visible = 1;
+					range->not_JER_visible = 1;
+					past_ext = 1;
+					continue;
+				} else {
+					_range_free(range);
+					return NULL;
+				}
+			}
+
+			if(tmp->incompatible) {
+				_range_free(tmp);
+				_range_canonicalize(range);
+				range->incompatible = 1;
+				return range;
+			}
+
+			if(tmp->empty_constraint) {
+				/*
+				 * Ignore empty constraints in OR logic.
+				 */
+				range->extensible |= tmp->extensible;
+				range->not_OER_visible |= tmp->not_OER_visible;
+				range->not_JER_visible |= tmp->not_JER_visible;
+				_range_free(tmp);
+				continue;
+			}
+
+			if(past_ext && (cpr_flags & CPR_ignore_extension_additions)) {
+				/*
+				 * Elements following the "..." extension marker are
+				 * extension additions (e.g. the "3" in SIZE(2,...,3)).
+				 * When the caller asked to compute the PER-visible root
+				 * range (CPR_ignore_extension_additions), they must not
+				 * widen it: in PER an extension value is encoded with a
+				 * general length determinant, independent of which
+				 * extension sizes the version happens to name. Folding
+				 * them into the root produced encodings incompatible with
+				 * the standard and corrupted cross-version decoding.
+				 *
+				 * Every other caller (notably the generated
+				 * asn_check_constraints checker, which has no ellipsis
+				 * escape and compares against the returned root) keeps the
+				 * additions folded in, so that a value in the named
+				 * extension range still satisfies the constraint.
+				 */
+				range->extensible = 1;
+				_range_free(tmp);
+				continue;
+			}
+
+			_range_merge_in(range, tmp);
+		}
+
+		_range_canonicalize(range);
+
+        if(requested_ct_type == ACT_CT_FROM) {
+            /*
+             * X.696 permitted alphabet constraints are not OER-visible.
+             * X.697 permitted alphabet constraints are not JER-visible.
+             */
+            range->not_OER_visible = 1;
+            range->not_JER_visible = 1;
+            if(range->extensible) {
+                /*
+                 * X.691, #9.3.10:
+                 * Extensible permitted alphabet constraints
+                 * are not PER-visible.
+                 */
+                range->not_PER_visible = 1;
+>>>>>>> upstream/vlm_master
             }
             return range;
         case ACT_CT_SIZE:

@@ -7,6 +7,7 @@
 #include <UTCTime.h>
 #include <errno.h>
 
+<<<<<<< HEAD
 #ifdef __CYGWIN__
 #include "/usr/include/time.h"
 #else
@@ -15,6 +16,11 @@
 
 int UTCTime_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                   asn_app_consume_bytes_f *cb, void *app_key) {
+=======
+int
+UTCTime_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
+              asn_app_consume_bytes_f *cb, void *app_key) {
+>>>>>>> upstream/vlm_master
     const UTCTime_t *st = (const UTCTime_t *)sptr;
 
     (void)td;     /* Unused argument */

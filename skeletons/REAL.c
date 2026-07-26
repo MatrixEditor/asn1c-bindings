@@ -52,6 +52,7 @@ static int asn_isfinite(double d) {
 static const ber_tlv_tag_t asn_DEF_REAL_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (9 << 2))};
 asn_TYPE_operation_t asn_OP_REAL = {
+    .kind = ASN_KIND_PRIMITIVE,
     ASN__PRIMITIVE_TYPE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     REAL_print,
@@ -106,8 +107,20 @@ asn_TYPE_operation_t asn_OP_REAL = {
     REAL_random_fill,
 #else
     0,
+<<<<<<< HEAD
 #endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0  /* Use generic outmost tag fetcher */
+=======
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    REAL_decode_cbor,
+    REAL_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
+>>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_REAL = {
     "REAL",

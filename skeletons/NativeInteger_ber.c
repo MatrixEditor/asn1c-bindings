@@ -16,16 +16,22 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
                                         size_t size, int tag_mode) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
-    long *native = (long *)*nint_ptr;
+    void *native = *nint_ptr;
     asn_dec_rval_t rval;
     ber_tlv_len_t length;
 
     /*
      * If the structure is not there, allocate it.
      */
+<<<<<<< HEAD
     if (native == NULL) {
         native = (long *)(*nint_ptr = CALLOC(1, sizeof(*native)));
         if (native == NULL) {
+=======
+    if(native == NULL) {
+        native = (*nint_ptr = CALLOC(1, NativeInteger_field_width(specs)));
+        if(native == NULL) {
+>>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
@@ -65,28 +71,34 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
             const void *constbuf;
             void *nonconstbuf;
         } unconst_buf;
-        long l;
 
         unconst_buf.constbuf = buf_ptr;
         tmp.buf = (uint8_t *)unconst_buf.nonconstbuf;
         tmp.size = length;
 
+<<<<<<< HEAD
         if ((specs && specs->field_unsigned)
                 ? asn_INTEGER2ulong(&tmp, (unsigned long *)&l) /* sic */
                 : asn_INTEGER2long(&tmp, &l)) {
+=======
+        if(NativeInteger_store_from_INTEGER(native, specs, &tmp)) {
+>>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
         }
-
-        *native = l;
     }
 
     rval.code = RC_OK;
     rval.consumed += length;
 
+<<<<<<< HEAD
     ASN_DEBUG("Took %ld/%ld bytes to encode %s (%ld)", (long)rval.consumed,
               (long)length, td->name, (long)*native);
+=======
+    ASN_DEBUG("Took %ld/%ld bytes to encode %s",
+              (long)rval.consumed, (long)length, td->name);
+>>>>>>> upstream/vlm_master
 
     return rval;
 }
@@ -94,6 +106,7 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 /*
  * Encode the NativeInteger using the standard INTEGER type DER encoder.
  */
+<<<<<<< HEAD
 asn_enc_rval_t NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd,
                                         const void *ptr, int tag_mode,
                                         ber_tlv_tag_t tag,
@@ -121,9 +134,28 @@ asn_enc_rval_t NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd,
 #endif /* WORDS_BIGENDIAN */
 
     /* Encode fake INTEGER */
+=======
+asn_enc_rval_t
+NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd, const void *ptr,
+                         int tag_mode, ber_tlv_tag_t tag,
+                         asn_app_consume_bytes_f *cb, void *app_key) {
+    const asn_TYPE_descriptor_t *td = sd;  /* for ASN__ENCODE_FAILED */
+    const void *sptr = ptr;                /* for ASN__ENCODE_FAILED */
+    const asn_INTEGER_specifics_t *specs =
+        (const asn_INTEGER_specifics_t *)sd->specifics;
+    asn_enc_rval_t erval = {0,0,0};
+    INTEGER_t tmp;
+
+    /* Materialize the native member (any width) as a canonical INTEGER. */
+    if(NativeInteger_to_INTEGER(ptr, specs, &tmp)) {
+        ASN__ENCODE_FAILED;
+    }
+
+>>>>>>> upstream/vlm_master
     erval = INTEGER_encode_der(sd, &tmp, tag_mode, tag, cb, app_key);
     if (erval.structure_ptr == &tmp) {
         erval.structure_ptr = ptr;
     }
+    if(tmp.buf) FREEMEM(tmp.buf);
     return erval;
 }

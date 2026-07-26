@@ -12,13 +12,14 @@ asn_dec_rval_t NativeInteger_decode_uper(
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     asn_dec_rval_t rval;
-    long *native = (long *)*sptr;
+    void *native = *sptr;
     INTEGER_t tmpint;
     void *tmpintptr = &tmpint;
 
     (void)opt_codec_ctx;
     ASN_DEBUG("Decoding NativeInteger %s (UPER)", td->name);
 
+<<<<<<< HEAD
     if (!native) {
         native = (long *)(*sptr = CALLOC(1, sizeof(*native)));
         if (!native) ASN__DECODE_FAILED;
@@ -33,6 +34,19 @@ asn_dec_rval_t NativeInteger_decode_uper(
             rval.code = RC_FAIL;
         else
             ASN_DEBUG("NativeInteger %s got value %ld", td->name, *native);
+=======
+    if(!native) {
+        native = (*sptr = CALLOC(1, NativeInteger_field_width(specs)));
+        if(!native) ASN__DECODE_FAILED;
+    }
+
+    memset(&tmpint, 0, sizeof tmpint);
+    rval = INTEGER_decode_uper(opt_codec_ctx, td, constraints,
+                               &tmpintptr, pd);
+    if(rval.code == RC_OK) {
+        if(NativeInteger_store_from_INTEGER(native, specs, &tmpint))
+            rval.code = RC_FAIL;
+>>>>>>> upstream/vlm_master
     }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
 
@@ -44,19 +58,27 @@ asn_enc_rval_t NativeInteger_encode_uper(
     const void *sptr, asn_per_outp_t *po) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
+<<<<<<< HEAD
     asn_enc_rval_t er = {0, 0, 0};
     long native;
+=======
+    asn_enc_rval_t er = {0,0,0};
+>>>>>>> upstream/vlm_master
     INTEGER_t tmpint;
 
     if (!sptr) ASN__ENCODE_FAILED;
 
-    native = *(const long *)sptr;
+    ASN_DEBUG("Encoding NativeInteger %s (UPER)", td->name);
 
+<<<<<<< HEAD
     ASN_DEBUG("Encoding NativeInteger %s %ld (UPER)", td->name, native);
 
     memset(&tmpint, 0, sizeof(tmpint));
     if ((specs && specs->field_unsigned) ? asn_ulong2INTEGER(&tmpint, native)
                                          : asn_long2INTEGER(&tmpint, native))
+=======
+    if(NativeInteger_to_INTEGER(sptr, specs, &tmpint))
+>>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     er = INTEGER_encode_uper(td, constraints, &tmpint, po);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);

@@ -133,6 +133,9 @@ asn_dec_rval_t SET_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
 
+    /* Check recursion depth to prevent stack overflow */
+    ASN__DECODER_RECURSION_DEPTH_CHECK(opt_codec_ctx);
+
     /*
      * Start to parse where left previously
      */
@@ -417,13 +420,23 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
     ssize_t ret;
     size_t edx;
 
+    /* Check encoding recursion depth to prevent stack overflow */
+    ASN__ENCODER_RECURSION_DEPTH_INC();
+
     /*
      * Use existing, or build our own tags map.
      */
     if (t2m_build_own) {
         t2m_build = (asn_TYPE_tag2member_t *)CALLOC(td->elements_count,
                                                     sizeof(t2m_build[0]));
+<<<<<<< HEAD
         if (!t2m_build) ASN__ENCODE_FAILED;
+=======
+        if(!t2m_build) {
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
+            ASN__ENCODE_FAILED;
+        }
+>>>>>>> upstream/vlm_master
         t2m_count = 0;
     } else {
         t2m_build = NULL;
@@ -452,6 +465,7 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
                 if (!elm->optional) {
                     /* Mandatory elements missing */
                     FREEMEM(t2m_build);
+                    ASN__ENCODER_RECURSION_DEPTH_DEC();
                     ASN__ENCODE_FAILED;
                 }
                 if (t2m_build) {
@@ -477,9 +491,20 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
             continue;
         }
 
+<<<<<<< HEAD
         tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2, elm->tag_mode,
                                            elm->tag, 0, 0);
         if (tmper.encoded == -1) return tmper;
+=======
+        tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2,
+                                           elm->tag_mode, elm->tag,
+                                           0, 0);
+        if(tmper.encoded == -1) {
+            FREEMEM(t2m_build);
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
+            return tmper;
+        }
+>>>>>>> upstream/vlm_master
         computed_size += tmper.encoded;
 
         /*
@@ -522,12 +547,14 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
     ret = der_write_tags(td, computed_size, tag_mode, 1, tag, cb, app_key);
     if (ret == -1) {
         FREEMEM(t2m_build);
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
     }
     er.encoded = computed_size + ret;
 
     if (!cb) {
         FREEMEM(t2m_build);
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODED_OK(er);
     }
 
@@ -558,9 +585,20 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
         if (elm->default_value_cmp && elm->default_value_cmp(*memb_ptr2) == 0)
             continue;
 
+<<<<<<< HEAD
         tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2, elm->tag_mode,
                                            elm->tag, cb, app_key);
         if (tmper.encoded == -1) return tmper;
+=======
+        tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2,
+                                           elm->tag_mode, elm->tag,
+                                           cb, app_key);
+        if(tmper.encoded == -1) {
+            FREEMEM(t2m_build);
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
+            return tmper;
+        }
+>>>>>>> upstream/vlm_master
         computed_size -= tmper.encoded;
     }
 
@@ -569,9 +607,11 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
          * Encoded size is not equal to the computed size.
          */
         FREEMEM(t2m_build);
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
     }
 
     FREEMEM(t2m_build);
+    ASN__ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
 }

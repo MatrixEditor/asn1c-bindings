@@ -13,11 +13,25 @@
 #include <NativeEnumerated.h>
 
 /*
+ * The unknown-extension reserved region published in NativeEnumerated.h is
+ * sized by the widest extension index the PER runtime can transfer
+ * (ASN_UPER_NSNNWN_MAX, per_support.h). NativeEnumerated.h must stay
+ * self-contained -- it also ships in builds that do not carry per_support.h
+ * -- so the two constants are defined independently; fail the build here,
+ * where both are visible, if they ever drift apart.
+ */
+#if defined(ASN_UPER_NSNNWN_MAX) \
+    && ASN_NATIVE_ENUMERATED_UNKNOWN_EXT_BASE != (LONG_MAX - ASN_UPER_NSNNWN_MAX)
+#error ASN_NATIVE_ENUMERATED_UNKNOWN_EXT_BASE out of sync with ASN_UPER_NSNNWN_MAX
+#endif
+
+/*
  * NativeEnumerated basic type description.
  */
 static const ber_tlv_tag_t asn_DEF_NativeEnumerated_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (10 << 2))};
 asn_TYPE_operation_t asn_OP_NativeEnumerated = {
+    .kind = ASN_KIND_PRIMITIVE,
     NativeInteger_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     NativeInteger_print,
@@ -72,8 +86,20 @@ asn_TYPE_operation_t asn_OP_NativeEnumerated = {
     NativeEnumerated_random_fill,
 #else
     0,
+<<<<<<< HEAD
 #endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0  /* Use generic outmost tag fetcher */
+=======
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    NativeEnumerated_decode_cbor,
+    NativeEnumerated_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
+>>>>>>> upstream/vlm_master
 };
 
 int NativeEnumerated_constraint(const asn_TYPE_descriptor_t *td,

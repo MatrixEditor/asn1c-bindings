@@ -56,11 +56,14 @@ typedef struct arg_s {
 
     struct compiler_streams *target;
 
+	int complex_threshold; // threshold for switching structures to ptrs (#398)
+
     asn1p_t *asn;
     asn1_namespace_t *ns;
     asn1p_expr_t *expr;
 
     int embed;
+<<<<<<< HEAD
 
     /*python code generation*/
     size_t anonymous_inner;        /* anonymous inner type counter*/
@@ -68,6 +71,11 @@ typedef struct arg_s {
     const char *pymodule_name;     /* python module name, e.g. "mymodule"*/
     struct compiler_streams *pytarget;
     struct asn1c_pyimports_s *pyimports;
+=======
+    union {
+       asn1p_expr_t *localvalidation_expr;
+    } param;
+>>>>>>> upstream/vlm_master
 } arg_t;
 
 /*

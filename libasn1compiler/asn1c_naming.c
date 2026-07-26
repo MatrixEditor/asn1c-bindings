@@ -141,6 +141,7 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
     static abuf b_presence_name;
     static abuf b_members_enum;
     static abuf b_members_name;
+    static abuf b_compound_name;
 
     abuf_clear(&b_type_asn_name);
     abuf_clear(&b_type_part_name);
@@ -157,6 +158,7 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
     abuf_clear(&b_presence_name);
     abuf_clear(&b_members_enum);
     abuf_clear(&b_members_name);
+    abuf_clear(&b_compound_name);
 
     abuf_str(&b_type_asn_name, asn1c_type_name(arg, expr, TNF_UNMODIFIED));
     abuf_str(&b_type_part_name, asn1c_type_name(arg, expr, TNF_SAFE));
@@ -165,12 +167,47 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
     abuf_str(&b_type_constrained_c_name,
              asn1c_type_name(arg, expr, TNF_CONSTYPE));
 
+<<<<<<< HEAD
     if ((arg->flags & A1C_COMPOUND_NAMES)) {
         if ((expr_type & ASN_CONSTR_MASK) ||
             expr_type == ASN_BASIC_ENUMERATED ||
             ((expr_type == ASN_BASIC_INTEGER ||
               expr_type == ASN_BASIC_BIT_STRING))) {
+=======
+
+    if((arg->flags & A1C_COMPOUND_NAMES)) {
+        if((expr_type & ASN_CONSTR_MASK)
+           || expr_type == ASN_BASIC_ENUMERATED
+           || ((expr_type == ASN_BASIC_INTEGER
+                || expr_type == ASN_BASIC_BIT_STRING))
+           || expr->encoding_control.encoding_type != EC_NONE) {
+>>>>>>> upstream/vlm_master
             compound_names = 1;
+        }
+    }
+
+    /*
+     * For constructed types that are members of a CHOICE or SET, check whether
+     * compound naming is required to avoid name collisions.
+     * This is specifically needed when the same identifier appears at multiple
+     * nesting levels (like "criticalExtensions" used recursively), which would
+     * cause name collisions in generated code.
+     * We only apply compound naming if the identifier matches an ancestor's
+     * identifier.
+     */
+    if(!compound_names && expr->parent_expr && expr->Identifier &&
+       (expr_type & ASN_CONSTR_MASK) &&
+       (expr->parent_expr->expr_type == ASN_CONSTR_CHOICE || 
+        expr->parent_expr->expr_type == ASN_CONSTR_SET)) {
+        /* Check if this identifier matches any ancestor identifier */
+        asn1p_expr_t *ancestor = expr->parent_expr;
+        while(ancestor) {
+            if(ancestor->Identifier && 
+               strcmp(expr->Identifier, ancestor->Identifier) == 0) {
+                compound_names = 1;
+                break;
+            }
+            ancestor = ancestor->parent_expr;
         }
     }
 
@@ -202,16 +239,25 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
                     tmp_compoundable_part_name.buffer);
         abuf_printf(&b_members_enum, "enum %s", b_base_name.buffer);
         abuf_printf(&b_members_name, "e_%s", tmp_compoundable_part_name.buffer);
+<<<<<<< HEAD
     } else {
         if (!expr->_anonymous_type) {
             if (arg->embed) {
                 abuf_printf(&b_short_name, "%s%s", asn1c_prefix_get(),
                             b_as_member.buffer);
+=======
+        abuf_printf(&b_compound_name, "%s", compound_part_name.buffer);
+   } else {
+        if(!expr->_anonymous_type) {
+            if(arg->embed) {
+                abuf_printf(&b_short_name, "%s%s", asn1c_prefix_get(), b_as_member.buffer);
+>>>>>>> upstream/vlm_master
             } else {
                 abuf_printf(&b_short_name, "%s%s_t", asn1c_prefix_get(),
                             b_as_member.buffer);
             }
         }
+<<<<<<< HEAD
         abuf_printf(&b_full_name, "struct %s%s", asn1c_prefix_get(),
                     b_base_name.buffer);
         abuf_printf(&b_presence_enum, "enum %s%s_PR", asn1c_prefix_get(),
@@ -222,6 +268,14 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
                     b_base_name.buffer);
         abuf_printf(&b_members_name, "e_%s%s", asn1c_prefix_get(),
                     tmp_compoundable_part_name.buffer);
+=======
+        abuf_printf(&b_full_name, "struct %s%s", asn1c_prefix_get(), b_base_name.buffer);
+        abuf_printf(&b_presence_enum, "enum %s%s_PR", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
+        abuf_printf(&b_presence_name, "%s%s_PR", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
+        abuf_printf(&b_members_enum, "enum %s%s", asn1c_prefix_get(), b_base_name.buffer);
+        abuf_printf(&b_members_name, "e_%s%s", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
+        abuf_printf(&b_compound_name, "%s%s", asn1c_prefix_get(), compound_part_name.buffer);
+>>>>>>> upstream/vlm_master
     }
 
     names.type.asn_name = b_type_asn_name.buffer;
@@ -239,7 +293,7 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
     names.presence_name = b_presence_name.buffer;
     names.members_enum = b_members_enum.buffer;
     names.members_name = b_members_name.buffer;
-    names.compound_name = compound_part_name.buffer;
+    names.compound_name = b_compound_name.buffer;
 
     /* A _subset_ of names is checked against being globally unique */
     register_global_name(expr, names.base_name);
@@ -262,14 +316,31 @@ struct c_names c_expr_name(arg_t *arg, asn1p_expr_t *expr) {
 
 const char *c_member_name(arg_t *arg, asn1p_expr_t *expr) {
     static abuf ab;
+    static abuf typedef_name;
 
     abuf_clear(&ab);
+    abuf_clear(&typedef_name);
 
     /* NB: do not use part_name, doesn't work for -fcompound-names */
     abuf_str(&ab, asn1c_prefix_get());
     abuf_str(&ab, c_name_impl(arg, arg->expr, 0).base_name);
     abuf_str(&ab, "_");
     abuf_str(&ab, asn1c_make_identifier(0, expr, 0));
+
+    /* 
+     * Check for potential collision with typedef name.
+     * For ENUMERATED types, the typedef is named <base_name>_t,
+     * so if an enum member would have the same name, add a suffix to avoid clash.
+     */
+    if (arg->expr->expr_type == ASN_BASIC_ENUMERATED) {
+        abuf_str(&typedef_name, asn1c_prefix_get());
+        abuf_str(&typedef_name, c_name_impl(arg, arg->expr, 0).base_name);
+        abuf_str(&typedef_name, "_t");
+        
+        if (strcmp(ab.buffer, typedef_name.buffer) == 0) {
+            abuf_str(&ab, "_member");
+        }
+    }
 
     return ab.buffer;
 }

@@ -5,6 +5,7 @@
  */
 #include <asn_internal.h>
 #include <GeneralizedTime.h>
+<<<<<<< HEAD
 
 #ifdef __CYGWIN__
 #include "/usr/include/time.h"
@@ -12,6 +13,8 @@
 #include <time.h>
 #endif /* __CYGWIN__ */
 
+=======
+>>>>>>> upstream/vlm_master
 #include <errno.h>
 
 #if !defined(ASN___INTERNAL_TEST_MODE)

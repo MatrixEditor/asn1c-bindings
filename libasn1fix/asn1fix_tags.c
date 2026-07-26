@@ -161,11 +161,20 @@ int asn1f_fetch_tags(asn1p_t *asn, asn1_namespace_t *ns, asn1p_module_t *mod,
     struct asn1p_type_tag_s *tags = 0;
     int count;
 
+<<<<<<< HEAD
     memset(&arg, 0, sizeof(arg));
     arg.asn = asn;
     arg.ns = ns;
     arg.mod = mod;
     arg.expr = expr;
+=======
+	memset(&arg, 0, sizeof(arg));
+	arg.asn = asn;
+	arg.ns = ns;
+	arg.mod = mod;
+	arg.expr = expr;
+	arg.flags = a1f_replace_me_with_proper_interface_arg.flags;
+>>>>>>> upstream/vlm_master
 
     count = asn1f_fetch_tags_impl(&arg, &tags, 0, 0, flags);
     if (count <= 0) {

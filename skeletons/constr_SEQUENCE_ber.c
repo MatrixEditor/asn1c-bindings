@@ -5,6 +5,7 @@
  */
 #include <asn_internal.h>
 #include <constr_SEQUENCE.h>
+#include <constr_CHOICE.h>
 #include <OPEN_TYPE.h>
 
 /*
@@ -148,6 +149,12 @@ asn_dec_rval_t SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      * Restore parsing context.
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
+
+	/*
+     * Check recursion depth to prevent stack overflow from circular references,
+     * using ctx->step 
+	 */
+    ASN__DECODER_RECURSION_DEPTH_CHECK(opt_codec_ctx);
 
     /*
      * Start to parse where left previously
@@ -362,6 +369,7 @@ asn_dec_rval_t SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
                         ssize_t skip;
                         edx += elements[edx].optional;
 
+<<<<<<< HEAD
                         ASN_DEBUG("Skipping unexpected %s (at %" ASN_PRI_SIZE
                                   ")",
                                   ber_tlv_tag_string(tlv_tag), edx);
@@ -381,6 +389,83 @@ asn_dec_rval_t SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
                         ctx->step -= 2;
                         edx--;
                         continue; /* Try again with the next tag */
+=======
+            /*
+             * Find the next available type with this tag.
+             */
+            use_bsearch = 0;
+            opt_edx_end = edx + elements[edx].optional + 1;
+            if(opt_edx_end > td->elements_count)
+                opt_edx_end = td->elements_count;  /* Cap */
+            else if(opt_edx_end - edx > 8) {
+                /* Limit the scope of linear search... */
+                opt_edx_end = edx + 8;
+                use_bsearch = 1;
+                /* ... and resort to bsearch() */
+            }
+            for(n = edx; n < opt_edx_end; n++) {
+                if(BER_TAGS_EQUAL(tlv_tag, elements[n].tag)) {
+                    /*
+                     * Found element corresponding to the tag
+                     * being looked at.
+                     * Reposition over the right element.
+                     */
+                    edx = n;
+                    ctx->step = 1 + 2 * edx;  /* Remember! */
+                    goto microphase2;
+                } else if(elements[n].flags & ATF_ANY_TYPE) {
+                    /*
+                     * This is the ANY type, which may bear
+                     * any flag whatsoever.
+                     */
+                    edx = n;
+                    ctx->step = 1 + 2 * edx;  /* Remember! */
+                    goto microphase2;
+                } else if(elements[n].flags & ATF_OPEN_TYPE) {
+                    /*
+                     * This is the OPEN TYPE, which may bear
+                     * any tag whatsoever.
+                     */
+                    edx = n;
+                    ctx->step = 1 + 2 * edx;  /* Remember! */
+                    goto microphase2;
+                } else if(elements[n].tag == (ber_tlv_tag_t)-1) {
+                    use_bsearch = 1;
+                    break;
+                }
+            }
+            if(use_bsearch) {
+                /*
+                 * Resort to a binary search over
+                 * sorted array of tags.
+                 */
+                const asn_TYPE_tag2member_t *t2m;
+                asn_TYPE_tag2member_t key = {0, 0, 0, 0};
+                key.el_tag = tlv_tag;
+                key.el_no = edx;
+                t2m = (const asn_TYPE_tag2member_t *)bsearch(&key,
+                       specs->tag2el, specs->tag2el_count,
+                       sizeof(specs->tag2el[0]), _t2e_cmp);
+                if(t2m) {
+                    const asn_TYPE_tag2member_t *best = 0;
+                    const asn_TYPE_tag2member_t *t2m_f, *t2m_l;
+                    size_t edx_max = edx + elements[edx].optional;
+                    /*
+                     * Rewind to the first element with that tag,
+                     * `cause bsearch() does not guarantee order.
+                     */
+                    t2m_f = t2m + t2m->toff_first;
+                    t2m_l = t2m + t2m->toff_last;
+                    for(t2m = t2m_f; t2m <= t2m_l; t2m++) {
+                        if(t2m->el_no > edx_max) break;
+                        if(t2m->el_no < edx) continue;
+                        best = t2m;
+                    }
+                    if(best) {
+                        edx = best->el_no;
+                        ctx->step = 1 + 2 * edx;
+                        goto microphase2;
+>>>>>>> upstream/vlm_master
                     }
                 }
 
@@ -401,6 +486,122 @@ asn_dec_rval_t SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
                     memb_ptr2 =
                         (void **)((char *)st + elements[edx].memb_offset);
                 } else {
+<<<<<<< HEAD
+=======
+                    /* Skip this tag */
+                    ssize_t skip;
+                    edx += elements[edx].optional;
+
+                    ASN_DEBUG("Skipping unexpected %s (at %" ASN_PRI_SIZE ")",
+                              ber_tlv_tag_string(tlv_tag), edx);
+                    skip = ber_skip_length(opt_codec_ctx,
+                                           BER_TLV_CONSTRUCTED(ptr),
+                                           (const char *)ptr + tag_len,
+                                           LEFT - tag_len);
+                    ASN_DEBUG("Skip length %d in %s",
+                              (int)skip, td->name);
+                    switch(skip) {
+                    case 0: if(!SIZE_VIOLATION) RETURN(RC_WMORE);
+                        /* Fall through */
+                    case -1: RETURN(RC_FAIL);
+                    }
+
+                    ADVANCE(skip + tag_len);
+                    ctx->step -= 2;
+                    edx--;
+                    continue;  /* Try again with the next tag */
+                }
+            }
+
+            /*
+             * MICROPHASE 2: Invoke the member-specific decoder.
+             */
+            ctx->step |= 1;  /* Confirm entering next microphase */
+        microphase2:
+            ASN_DEBUG("Inside SEQUENCE %s MF2", td->name);
+
+            /*
+             * Compute the position of the member inside a structure,
+             * and also a type of containment (it may be contained
+             * as pointer or using inline inclusion).
+             */
+            if(elements[edx].flags & ATF_POINTER) {
+                /* Member is a pointer to another structure */
+                memb_ptr2 = (void **)((char *)st + elements[edx].memb_offset);
+            } else {
+                /*
+                 * A pointer to a pointer
+                 * holding the start of the structure
+                 */
+                memb_ptr = (char *)st + elements[edx].memb_offset;
+                memb_ptr2 = &memb_ptr;
+            }
+            /*
+             * Invoke the member fetch routine according to member's type
+             */
+            if(elements[edx].flags & ATF_OPEN_TYPE) {
+                rval = OPEN_TYPE_ber_get(opt_codec_ctx, td, st, &elements[edx], ptr, LEFT);
+            } else {
+	            rval = elements[edx].type->op->ber_decoder(opt_codec_ctx, elements[edx].type,
+	                                                       memb_ptr2, ptr, LEFT,
+	                                                       elements[edx].tag_mode);
+            }
+            
+            ASN_DEBUG("In %s SEQUENCE decoded %" ASN_PRI_SIZE " %s of %d "
+                      "in %d bytes rval.code %d, size=%d",
+                      td->name, edx, elements[edx].type->name,
+                      (int)LEFT, (int)rval.consumed, rval.code, (int)size);
+            switch(rval.code) {
+            case RC_OK:
+                break;
+            case RC_WMORE: /* More data expected */
+                if(!SIZE_VIOLATION) {
+                    ADVANCE(rval.consumed);
+                    RETURN(RC_WMORE);
+                }
+                ASN_DEBUG("Size violation (c->l=%ld <= s=%ld)",
+                          (long)ctx->left, (long)size);
+                /* Fall through */
+            case RC_FAIL: /* Fatal error */
+                RETURN(RC_FAIL);
+        } /* switch(rval) */
+
+        ADVANCE(rval.consumed);
+    }  /* for(all structure members) */
+
+    phase3:
+        ctx->phase = 3;
+        /* Fall through */
+    case 3:  /* 00 and other tags expected */
+    case 4:  /* only 00's expected */
+
+        ASN_DEBUG("SEQUENCE %s Leftover: %ld, size = %ld",
+                  td->name, (long)ctx->left, (long)size);
+
+        /*
+         * Skip everything until the end of the SEQUENCE.
+         */
+        while(ctx->left) {
+            ssize_t tl, ll;
+
+            tl = ber_fetch_tag(ptr, LEFT, &tlv_tag);
+            switch(tl) {
+            case 0: if(!SIZE_VIOLATION) RETURN(RC_WMORE);
+                /* Fall through */
+            case -1: RETURN(RC_FAIL);
+            }
+
+            /*
+             * If expected <0><0>...
+             */
+            if(ctx->left < 0 && ((const uint8_t *)ptr)[0] == 0) {
+                if(LEFT < 2) {
+                    if(SIZE_VIOLATION)
+                        RETURN(RC_FAIL);
+                    else
+                        RETURN(RC_WMORE);
+                } else if(((const uint8_t *)ptr)[1] == 0) {
+>>>>>>> upstream/vlm_master
                     /*
                      * A pointer to a pointer
                      * holding the start of the structure
@@ -529,6 +730,9 @@ asn_enc_rval_t SEQUENCE_encode_der(const asn_TYPE_descriptor_t *td,
 
     ASN_DEBUG("%s %s as SEQUENCE", cb ? "Encoding" : "Estimating", td->name);
 
+    /* Check encoding recursion depth to prevent stack overflow */
+    ASN__ENCODER_RECURSION_DEPTH_INC();
+
     /*
      * Gather the length of the underlying members sequence.
      */
@@ -557,9 +761,24 @@ asn_enc_rval_t SEQUENCE_encode_der(const asn_TYPE_descriptor_t *td,
         if (elm->default_value_cmp && elm->default_value_cmp(*memb_ptr2) == 0)
             continue;
 
+<<<<<<< HEAD
         erval = elm->type->op->der_encoder(elm->type, *memb_ptr2, elm->tag_mode,
                                            elm->tag, 0, 0);
         if (erval.encoded == -1) return erval;
+=======
+        if(elm->flags & ATF_OPEN_TYPE) {
+            erval = OPEN_TYPE_ber_put(td, sptr, elm,
+                                      elm->tag_mode, elm->tag,
+                                      0, 0); /* NULL callback for size estimation */
+        } else {
+	        erval = elm->type->op->der_encoder(elm->type, *memb_ptr2,
+	                                           elm->tag_mode, elm->tag,
+	                                           0, 0);  /* NULL callback for size estimation */
+        }
+
+        if(erval.encoded == -1)
+            return erval;
+>>>>>>> upstream/vlm_master
         computed_size += erval.encoded;
         ASN_DEBUG("Member %" ASN_PRI_SIZE " %s estimated %ld bytes", edx,
                   elm->name, (long)erval.encoded);
@@ -570,10 +789,23 @@ asn_enc_rval_t SEQUENCE_encode_der(const asn_TYPE_descriptor_t *td,
      */
     ret = der_write_tags(td, computed_size, tag_mode, 1, tag, cb, app_key);
     ASN_DEBUG("Wrote tags: %ld (+%ld)", (long)ret, (long)computed_size);
+<<<<<<< HEAD
     if (ret == -1) ASN__ENCODE_FAILED;
     erval.encoded = computed_size + ret;
 
     if (!cb) ASN__ENCODED_OK(erval);
+=======
+    if(ret == -1) {
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
+        ASN__ENCODE_FAILED;
+    }
+    erval.encoded = computed_size + ret;
+
+    if(!cb) {
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
+        ASN__ENCODED_OK(erval);
+    }
+>>>>>>> upstream/vlm_master
 
     /*
      * Encode all members.
@@ -597,20 +829,52 @@ asn_enc_rval_t SEQUENCE_encode_der(const asn_TYPE_descriptor_t *td,
         if (elm->default_value_cmp && elm->default_value_cmp(*memb_ptr2) == 0)
             continue;
 
+<<<<<<< HEAD
         tmperval = elm->type->op->der_encoder(
             elm->type, *memb_ptr2, elm->tag_mode, elm->tag, cb, app_key);
         if (tmperval.encoded == -1) return tmperval;
+=======
+        if(elm->flags & ATF_OPEN_TYPE) {
+            tmperval = OPEN_TYPE_ber_put(td, sptr, elm,
+                                         elm->tag_mode, elm->tag, cb, app_key);
+        } else {
+            tmperval = elm->type->op->der_encoder(elm->type, *memb_ptr2,
+                                                  elm->tag_mode, elm->tag, cb, app_key);
+        }
+
+       
+        if(tmperval.encoded == -1) {
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
+            return tmperval;
+        }
+
+        if(computed_size < (size_t)tmperval.encoded) {
+	        /* This should never happen if estimation and encoding are consistent */
+	        ASN_DEBUG("Size mismatch: computed_size=%zu < tmperval.encoded=%zd for element %s",
+	                  computed_size, tmperval.encoded, elm->name);
+	        ASN__ENCODER_RECURSION_DEPTH_DEC();
+	        ASN__ENCODE_FAILED;
+        }
+        
+>>>>>>> upstream/vlm_master
         computed_size -= tmperval.encoded;
         ASN_DEBUG("Member %" ASN_PRI_SIZE
                   " %s of SEQUENCE %s encoded in %ld bytes",
                   edx, elm->name, td->name, (long)tmperval.encoded);
     }
 
+<<<<<<< HEAD
     if (computed_size != 0)
+=======
+    if(computed_size != 0) {
+>>>>>>> upstream/vlm_master
         /*
          * Encoded size is not equal to the computed size.
          */
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
+    }
 
+    ASN__ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(erval);
 }

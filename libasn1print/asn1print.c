@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 
 #include <asn1_buffer.h>
 #include <asn1_namespace.h>
@@ -157,6 +158,7 @@ static int asn1print_module(asn1p_t *asn, asn1p_module_t *mod,
     safe_printf(" ::=\n");
     safe_printf("BEGIN\n\n");
 
+<<<<<<< HEAD
     TQ_FOR (tc, &(mod->members), next) {
         asn1print_expr(asn, mod, tc, flags, 0);
         if (flags & APF_PRINT_CONSTRAINTS)
@@ -164,6 +166,19 @@ static int asn1print_module(asn1p_t *asn, asn1p_module_t *mod,
         else
             safe_printf("\n\n");
     }
+=======
+	TQ_FOR(tc, &(mod->members), next) {
+		/* Skip encoding instructions - they're not regular ASN.1 types */
+		if(tc->_mark & TM_ENCODING_INSTRUCTION) {
+			continue;
+		}
+		asn1print_expr(asn, mod, tc, flags, 0);
+		if(flags & APF_PRINT_CONSTRAINTS)
+			safe_printf("\n");
+		else
+			safe_printf("\n\n");
+	}
+>>>>>>> upstream/vlm_master
 
     safe_printf("END\n");
 
@@ -843,6 +858,7 @@ static int asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc,
 
         top_parent = WITH_MODULE_NAMESPACE(
             tc->module, tc_ns, asn1f_find_terminal_type_ex(asn, tc_ns, tc));
+<<<<<<< HEAD
         if (top_parent) {
             safe_printf("\n-- Practical constraints (%s): ",
                         top_parent->Identifier);
@@ -859,6 +875,76 @@ static int asn1print_expr(asn1p_t *asn, asn1p_module_t *mod, asn1p_expr_t *tc,
             asn1print_constraint_explain(
                 top_parent->Identifier, top_parent->expr_type,
                 tc->combined_constraints, CPR_strict_PER_visibility);
+=======
+        if(top_parent) {
+			safe_printf("\n-- Practical constraints (%s): ",
+				top_parent->Identifier);
+			asn1print_constraint_explain(top_parent->Identifier,
+				top_parent->expr_type,
+				tc->combined_constraints, 0);
+			safe_printf("\n-- OER-visible constraints (%s): ",
+				top_parent->Identifier);
+			asn1print_constraint_explain(top_parent->Identifier,
+				top_parent->expr_type,
+				tc->combined_constraints, CPR_strict_OER_visibility);
+			safe_printf("\n-- PER-visible constraints (%s): ",
+				top_parent->Identifier);
+			/*
+			 * Report the PER-visible *root* range: named extension
+			 * additions (e.g. the "3" in SIZE(2,...,3)) are encoded as
+			 * extensions with a general length determinant, so they are
+			 * not part of the root the way the emitted asn_per_constraints_t
+			 * table represents it. Use the same flag the table emitter uses
+			 * so the diagnostic matches what is actually generated.
+			 */
+			asn1print_constraint_explain(top_parent->Identifier,
+				top_parent->expr_type,
+				tc->combined_constraints,
+				CPR_strict_PER_visibility
+					| CPR_ignore_extension_additions);
+		}
+		safe_printf("\n");
+	}
+
+	if(flags & APF_PRINT_CLASS_MATRIX) do {
+		size_t col, maxidlen;
+		if(tc->ioc_table == NULL) {
+            if(tc->expr_type == A1TC_CLASSDEF) {
+                safe_printf("\n-- Information Object Class table is empty");
+            }
+			break;
+		}
+		safe_printf("\n-- Information Object Set has %zu entr%s:\n",
+				tc->ioc_table->rows,
+				tc->ioc_table->rows==1 ? "y" : "ies");
+		maxidlen = asn1p_ioc_table_max_identifier_length(tc->ioc_table);
+		int ioc_col_width = (maxidlen > (size_t)INT_MAX) ? INT_MAX : (int)maxidlen;
+		for(ssize_t r = -1; r < (ssize_t)tc->ioc_table->rows; r++) {
+			asn1p_ioc_row_t *row;
+			row = tc->ioc_table->row[r<0?0:r];
+			if(r < 0) safe_printf("--    %s", r > 9 ? " " : "");
+            else
+                safe_printf("-- [%*zd]", (tc->ioc_table->rows > 9) + 1, r + 1);
+            for(col = 0; col < row->columns; col++) {
+				struct asn1p_ioc_cell_s *cell;
+				cell = &row->column[col];
+				if(r < 0) {
+					safe_printf("[%*s]", ioc_col_width,
+						cell->field->Identifier);
+					continue;
+				}
+				if(!cell->value) {
+					safe_printf(" %*s ", ioc_col_width, "<no entry>");
+					continue;
+				}
+				safe_printf(" %*s ", ioc_col_width,
+					cell->value->Identifier);
+			}
+			safe_printf("\n");
+		}
+        if(tc->ioc_table->extensible) {
+            safe_printf("-- [%*s] ...\n", (tc->ioc_table->rows>9)+1, "");
+>>>>>>> upstream/vlm_master
         }
         safe_printf("\n");
     }

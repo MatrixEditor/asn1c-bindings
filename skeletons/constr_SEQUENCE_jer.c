@@ -7,6 +7,12 @@
 #include <constr_SEQUENCE.h>
 #include <OPEN_TYPE.h>
 
+#define JER_MEMBER_NAME(elm) \
+    (((elm)->encoding_constraints.jer_constraints \
+      && (elm)->encoding_constraints.jer_constraints->wire_name) \
+         ? (elm)->encoding_constraints.jer_constraints->wire_name \
+         : (elm)->name)
+
 /*
  * Return a standardized complex structure.
  */
@@ -71,6 +77,10 @@ asn_dec_rval_t SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
      * Restore parsing context.
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
+
+    /* Check recursion depth to prevent stack overflow */
+    if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        RETURN(RC_FAIL);
 
     /*
      * Phases of JER/JSON processing:
@@ -173,6 +183,7 @@ asn_dec_rval_t SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                 if (ctx->phase == 0) break;
                 ctx->phase = 0;
 
+<<<<<<< HEAD
                 if (edx >= td->elements_count ||
                     /* Explicit OPTIONAL specs reaches the end */
                     (edx + elements[edx].optional == td->elements_count) ||
@@ -194,6 +205,91 @@ asn_dec_rval_t SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                 if (ctx->phase == 0) {
                     JER_ADVANCE(ch_size);
                     ctx->phase = 1; /* Processing body phase */
+=======
+            if(edx >= td->elements_count ||
+               /* Explicit OPTIONAL specs reaches the end */
+               (edx + elements[edx].optional == td->elements_count) ||
+               /* All extensions are optional */
+               IN_EXTENSION_GROUP(specs, edx)) {
+                JER_ADVANCE(ch_size);
+                JER_ADVANCE(jer_whitespace_span(ptr, size));
+                ctx->phase = 4; /* Phase out */
+                RETURN(RC_OK);
+            } else {
+                ASN_DEBUG("Premature end of JER SEQUENCE");
+                RETURN(RC_FAIL);
+            }
+        case JCK_COMMA:
+            JER_ADVANCE(ch_size);
+            continue;
+            /* Fall through */
+        case JCK_OSTART: /* '{' */
+            if(ctx->phase == 0) {
+                JER_ADVANCE(ch_size);
+                ctx->phase = 1;  /* Processing body phase */
+                continue;
+            }
+
+            /* Fall through */
+        case JCK_KEY:
+        case JCK_UNKNOWN:
+            ASN_DEBUG("JER/SEQUENCE: scv=%d, ph=%d, edx=%" ASN_PRI_SIZE "",
+                      scv, ctx->phase, edx);
+            if(ctx->phase != 1) {
+                break;  /* Really unexpected */
+            }
+
+            if (td->elements_count == 0) {
+                JER_ADVANCE(ch_size);
+                continue;
+            }
+
+            if(edx < td->elements_count) {
+                /*
+                 * We have to check which member is next.
+                 */
+                size_t n;
+                size_t edx_end = edx + elements[edx].optional + 1;
+                if(edx_end > td->elements_count) {
+                    edx_end = td->elements_count;
+                }
+
+                for(n = edx; n < edx_end; n++) {
+                    elm = &td->elements[n];
+                    scv = jer_check_sym(ptr, ch_size, JER_MEMBER_NAME(elm));
+                    switch (scv) {
+                        case JCK_KEY:
+                            ctx->step = edx = n;
+                            ctx->phase = 2;
+
+                            JER_ADVANCE(ch_size); /* skip key */
+                            /* skip colon */
+                            ch_size = jer_next_token(&ctx->context, ptr, size,
+                                    &ch_type);
+                            if(ch_size == -1) {
+                                RETURN(RC_FAIL);
+                            } else {
+                                switch(ch_type) {
+                                case PJER_WMORE:
+                                    RETURN(RC_WMORE);
+                                case PJER_TEXT:
+                                    JER_ADVANCE(ch_size);
+                                    break;
+                                default:
+                                    RETURN(RC_FAIL);
+                                }
+                            }
+                            break;
+                        case JCK_UNKNOWN:
+                            continue;
+                        default:
+                            n = edx_end;
+                            break; /* Phase out */
+                    }
+                    break;
+                }
+                if(n != edx_end)
+>>>>>>> upstream/vlm_master
                     continue;
                 }
 
@@ -306,6 +402,9 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
 
     if (!sptr) ASN__ENCODE_FAILED;
 
+    /* Check recursion depth to prevent stack overflow */
+    JER_ENCODER_RECURSION_DEPTH_INC();
+
     er.encoded = 0;
 
     int bAddComma = 0;
@@ -314,7 +413,7 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
         asn_enc_rval_t tmper = {0, 0, 0};
         asn_TYPE_member_t *elm = &td->elements[edx];
         const void *memb_ptr;
-        const char *mname = elm->name;
+        const char *mname = JER_MEMBER_NAME(elm);
         unsigned int mlen = strlen(mname);
 
         if (elm->flags & ATF_POINTER) {
@@ -322,8 +421,14 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
                 *(const void *const *)((const char *)sptr + elm->memb_offset);
             if (!memb_ptr) {
                 assert(tmp_def_val == 0);
+<<<<<<< HEAD
                 if (elm->default_value_set) {
                     if (elm->default_value_set(&tmp_def_val)) {
+=======
+                if(elm->default_value_set) {
+                    if(elm->default_value_set(&tmp_def_val)) {
+                        JER_ENCODER_RECURSION_DEPTH_DEC();
+>>>>>>> upstream/vlm_master
                         ASN__ENCODE_FAILED;
                     } else {
                         memb_ptr = tmp_def_val;
@@ -333,6 +438,7 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
                     continue;
                 } else {
                     /* Mandatory element is missing */
+                    JER_ENCODER_RECURSION_DEPTH_DEC();
                     ASN__ENCODE_FAILED;
                 }
             }
@@ -353,6 +459,7 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
         }
 
         /* Print the member itself */
+<<<<<<< HEAD
         tmper = elm->type->op->jer_encoder(
             elm->type, elm->encoding_constraints.jer_constraints, memb_ptr,
             ilevel + 1, flags, cb, app_key);
@@ -361,6 +468,24 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
             tmp_def_val = 0;
         }
         if (tmper.encoded == -1) return tmper;
+=======
+        if(elm->flags & ATF_OPEN_TYPE) {
+            tmper = OPEN_TYPE_jer_put(td, sptr, elm, ilevel + 1, flags, cb, app_key);
+        } else {
+            tmper = elm->type->op->jer_encoder(elm->type,
+                                               elm->encoding_constraints.jer_constraints,
+                                               memb_ptr,
+                                               ilevel + 1, flags, cb, app_key);
+        }
+        if(tmp_def_val) {
+            ASN_STRUCT_FREE(*tmp_def_val_td, tmp_def_val);
+            tmp_def_val = 0;
+        }
+        if(tmper.encoded == -1) {
+            JER_ENCODER_RECURSION_DEPTH_DEC();
+            return tmper;
+        }
+>>>>>>> upstream/vlm_master
         er.encoded += tmper.encoded;
         if (edx != td->elements_count - 1) {
             bAddComma = 1;
@@ -369,8 +494,17 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
     if (!jmin) ASN__TEXT_INDENT(1, ilevel);
     ASN__CALLBACK("}", 1);
 
+<<<<<<< HEAD
     ASN__ENCODED_OK(er);
 cb_failed:
     if (tmp_def_val) ASN_STRUCT_FREE(*tmp_def_val_td, tmp_def_val);
+=======
+
+    JER_ENCODER_RECURSION_DEPTH_DEC();
+    ASN__ENCODED_OK(er);
+cb_failed:
+    if(tmp_def_val) ASN_STRUCT_FREE(*tmp_def_val_td, tmp_def_val);
+    JER_ENCODER_RECURSION_DEPTH_DEC();
+>>>>>>> upstream/vlm_master
     ASN__ENCODE_FAILED;
 }

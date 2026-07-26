@@ -92,6 +92,7 @@ int asn1c_compiled_output(arg_t *arg, const char *source, int lineno,
         m->len = m->len - 1 + ret;
     }
 
+<<<<<<< HEAD
     if (arg->target->target == OT_INCLUDES ||
         arg->target->target == OT_FWD_DECLS ||
         arg->target->target == OT_POST_INCLUDE ||
@@ -110,6 +111,25 @@ int asn1c_compiled_output(arg_t *arg, const char *source, int lineno,
             return 0;
         }
     }
+=======
+	/* Deduplicate includes within the same section */
+	if(arg->target->target == OT_INCLUDES
+	|| arg->target->target == OT_FWD_DECLS
+	|| arg->target->target == OT_POST_INCLUDE) {
+		out_chunk_t *v;
+		TQ_FOR(v, &dst->chunks, next) {
+			if(m->len == v->len
+			&& !memcmp(m->buf, v->buf, m->len))
+				break;
+		}
+		if(v) {
+			/* Entry is already present. Skip it. */
+			free(m->buf);
+			free(m);
+			return 0;
+		}
+	}
+>>>>>>> upstream/vlm_master
 
     TQ_ADD(&dst->chunks, m, next);
 

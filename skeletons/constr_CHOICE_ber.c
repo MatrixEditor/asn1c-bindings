@@ -131,6 +131,9 @@ asn_dec_rval_t CHOICE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
 
+    /* Check recursion depth to prevent stack overflow */
+    ASN__DECODER_RECURSION_DEPTH_CHECK(opt_codec_ctx);
+
     /*
      * Start to parse where left previously
      */
@@ -318,6 +321,27 @@ asn_dec_rval_t CHOICE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
                         /* Fall through */
                     case -1:
                         RETURN(RC_FAIL);
+<<<<<<< HEAD
+=======
+                    else
+                        RETURN(RC_WMORE);
+                } else if(((const uint8_t *)ptr)[1] == 0) {
+                    /*
+                     * Correctly finished with <0><0>.
+                     */
+                    ADVANCE(2);
+                    ctx->left++;
+                    continue;
+                } else {
+                    /*
+                     * Malformed end-of-contents: <0> followed by
+                     * a non-zero byte. Fail instead of spinning
+                     * forever on the same input (CWE-835).
+                     */
+                    ASN_DEBUG("Unexpected continuation in %s",
+                              td->name);
+                    RETURN(RC_FAIL);
+>>>>>>> upstream/vlm_master
                 }
 
                 /*
@@ -370,7 +394,15 @@ asn_enc_rval_t CHOICE_encode_der(const asn_TYPE_descriptor_t *td,
 
     ASN_DEBUG("%s %s as CHOICE", cb ? "Encoding" : "Estimating", td->name);
 
+<<<<<<< HEAD
     present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+=======
+    /* Check encoding recursion depth to prevent stack overflow */
+    ASN__ENCODER_RECURSION_DEPTH_INC();
+
+    present = _fetch_present_idx(sptr,
+        specs->pres_offset, specs->pres_size);
+>>>>>>> upstream/vlm_master
 
     /*
      * If the structure was not initialized, it cannot be encoded:
@@ -379,9 +411,11 @@ asn_enc_rval_t CHOICE_encode_der(const asn_TYPE_descriptor_t *td,
     if (present == 0 || present > td->elements_count) {
         if (present == 0 && td->elements_count == 0) {
             /* The CHOICE is empty?! */
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
             erval.encoded = 0;
             ASN__ENCODED_OK(erval);
         }
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
     }
 
@@ -392,12 +426,19 @@ asn_enc_rval_t CHOICE_encode_der(const asn_TYPE_descriptor_t *td,
     if (elm->flags & ATF_POINTER) {
         memb_ptr =
             *(const void *const *)((const char *)sptr + elm->memb_offset);
+<<<<<<< HEAD
         if (memb_ptr == 0) {
             if (elm->optional) {
+=======
+        if(memb_ptr == 0) {
+            if(elm->optional) {
+                ASN__ENCODER_RECURSION_DEPTH_DEC();
+>>>>>>> upstream/vlm_master
                 erval.encoded = 0;
                 ASN__ENCODED_OK(erval);
             }
             /* Mandatory element absent */
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
     } else {
@@ -418,25 +459,51 @@ asn_enc_rval_t CHOICE_encode_der(const asn_TYPE_descriptor_t *td,
         /* Encode member with its tag */
         erval = elm->type->op->der_encoder(elm->type, memb_ptr, elm->tag_mode,
                                            elm->tag, 0, 0);
+<<<<<<< HEAD
         if (erval.encoded == -1) return erval;
 
         /* Encode CHOICE with parent or my own tag */
         ret = der_write_tags(td, erval.encoded, tag_mode, 1, tag, cb, app_key);
         if (ret == -1) ASN__ENCODE_FAILED;
+=======
+        if(erval.encoded == -1) {
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
+            return erval;
+        }
+
+        /* Encode CHOICE with parent or my own tag */
+        ret = der_write_tags(td, erval.encoded, tag_mode, 1, tag,
+                             cb, app_key);
+        if(ret == -1) {
+            ASN__ENCODER_RECURSION_DEPTH_DEC();
+            ASN__ENCODE_FAILED;
+        }
+>>>>>>> upstream/vlm_master
         computed_size += ret;
     }
 
     /*
      * Encode the single underlying member.
      */
+<<<<<<< HEAD
     erval = elm->type->op->der_encoder(elm->type, memb_ptr, elm->tag_mode,
                                        elm->tag, cb, app_key);
     if (erval.encoded == -1) return erval;
+=======
+    erval = elm->type->op->der_encoder(elm->type, memb_ptr,
+                                       elm->tag_mode, elm->tag,
+                                       cb, app_key);
+    if(erval.encoded == -1) {
+        ASN__ENCODER_RECURSION_DEPTH_DEC();
+        return erval;
+    }
+>>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Encoded CHOICE member in %ld bytes (+%ld)", (long)erval.encoded,
               (long)computed_size);
 
     erval.encoded += computed_size;
 
+    ASN__ENCODER_RECURSION_DEPTH_DEC();
     return erval;
 }

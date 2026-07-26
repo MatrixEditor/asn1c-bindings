@@ -157,8 +157,124 @@ asn_dec_rval_t CHOICE_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
      * Restore parsing context.
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
+<<<<<<< HEAD
     switch (ctx->phase) {
         case 0: {
+=======
+
+    /* Check recursion depth to prevent stack overflow */
+    if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        RETURN(RC_FAIL);
+
+    switch(ctx->phase) {
+    case 0: {
+        /*
+         * Discover the tag.
+         */
+        ber_tlv_tag_t tlv_tag; /* T from TLV */
+        ssize_t tag_len;       /* Length of TLV's T */
+
+        tag_len = oer_fetch_tag(ptr, size, &tlv_tag);
+        switch(tag_len) {
+        case 0:
+            ASN__DECODE_STARVED;
+        case -1:
+            ASN__DECODE_FAILED;
+        }
+
+        do {
+            const asn_TYPE_tag2member_t *t2m;
+            asn_TYPE_tag2member_t key = {0, 0, 0, 0};
+            key.el_tag = tlv_tag;
+
+            t2m = (const asn_TYPE_tag2member_t *)bsearch(
+                &key, specs->tag2el, specs->tag2el_count,
+                sizeof(specs->tag2el[0]), _search4tag);
+            if(t2m) {
+                /*
+                 * Found the element corresponding to the tag.
+                 */
+                NEXT_PHASE(ctx);
+                ctx->step = t2m->el_no;
+                break;
+            } else if(specs->ext_start == -1) {
+                ASN_DEBUG(
+                    "Unexpected tag %s "
+                    "in non-extensible CHOICE %s",
+                    ber_tlv_tag_string(tlv_tag), td->name);
+                RETURN(RC_FAIL);
+            } else {
+                /*
+                 * Unknown extension alternative: the peer selected a
+                 * CHOICE alternative added in a newer version of the
+                 * type. X.696 wraps that alternative in an Open Type;
+                 * consume the tag and skip the Open Type (length
+                 * determinant plus contents), then present the CHOICE
+                 * as having no recognized alternative selected, so that
+                 * an enclosing type can keep decoding subsequent fields
+                 * instead of failing the whole message (forward
+                 * compatibility, mirroring the UPER fix in
+                 * constr_CHOICE.c's CHOICE_decode_uper()).
+                 */
+#ifdef ASN_REJECT_UNKNOWN_EXTENSIONS
+                /*
+                 * Strict mode: restore the pre-fix behavior of cleanly
+                 * failing on an unknown extension alternative instead of
+                 * skipping its Open Type and presenting the CHOICE as
+                 * absent. Escape hatch for callers not yet prepared to
+                 * handle present==0 meaning "unknown extension skipped"
+                 * (see ASN_REJECT_UNKNOWN_EXTENSIONS in asn_internal.h).
+                 */
+                RETURN(RC_FAIL);
+#else
+                ssize_t skipped;
+                ASN_DEBUG(
+                    "Skipping unknown open type extension for tag %s "
+                    "in extensible CHOICE %s",
+                    ber_tlv_tag_string(tlv_tag), td->name);
+                /*
+                 * Do not ADVANCE() until the whole Open Type is known to
+                 * be available: on RC_WMORE nothing must be consumed
+                 * yet, since ctx->phase stays at 0 and a retry re-parses
+                 * the tag from the same (now longer) buffer from
+                 * scratch.
+                 */
+                skipped = oer_open_type_skip((const char *)ptr + tag_len,
+                                             size - tag_len);
+                if(skipped < 0) {
+                    RETURN(RC_FAIL);
+                } else if(skipped == 0) {
+                    RETURN(RC_WMORE);
+                }
+                ADVANCE(tag_len);
+                ADVANCE(skipped);
+                CHOICE_variant_set_presence(td, st, 0);
+                SET_PHASE(ctx, 2); /* Already decoded everything */
+                RETURN(RC_OK);
+#endif	/* ASN_REJECT_UNKNOWN_EXTENSIONS */
+            }
+        } while(0);
+
+
+        ADVANCE(tag_len);
+    }
+        /* Fall through */
+    case 1: {
+        asn_TYPE_member_t *elm = &elements[ctx->step]; /* CHOICE's element */
+        void *memb_ptr;         /* Pointer to the member */
+        void **memb_ptr2;       /* Pointer to that pointer */
+        asn_dec_rval_t rval = {0,0};
+
+        /*
+         * Compute the position of the member inside a structure,
+         * and also a type of containment (it may be contained
+         * as pointer or using inline inclusion).
+         */
+        if(elm->flags & ATF_POINTER) {
+            /* Member is a pointer to another structure */
+            memb_ptr2 = (void **)((char *)st + elm->memb_offset);
+        } else {
+>>>>>>> upstream/vlm_master
             /*
              * Discover the tag.
              */
@@ -173,6 +289,7 @@ asn_dec_rval_t CHOICE_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
                     ASN__DECODE_FAILED;
             }
 
+<<<<<<< HEAD
             do {
                 const asn_TYPE_tag2member_t *t2m;
                 asn_TYPE_tag2member_t key = {0, 0, 0, 0};
@@ -205,6 +322,26 @@ asn_dec_rval_t CHOICE_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
             } while (0);
 
             ADVANCE(tag_len);
+=======
+        if(specs->ext_start >= 0 && specs->ext_start <= ctx->step) {
+            ssize_t got =
+                oer_open_type_get(opt_codec_ctx, elm->type,
+                                  elm->encoding_constraints.oer_constraints,
+                                  memb_ptr2, ptr, size);
+            if(got < 0) ASN__DECODE_FAILED;
+            if(got == 0) ASN__DECODE_STARVED;
+            rval.code = RC_OK;
+            rval.consumed = got;
+        } else if(!elm->type->op->oer_decoder) {
+            ASN_DEBUG("Member %s->%s has no OER decoder",
+                      td->name, elm->name);
+            ASN__DECODE_FAILED;
+        } else {
+            rval = elm->type->op->oer_decoder(
+                opt_codec_ctx, elm->type,
+                elm->encoding_constraints.oer_constraints, memb_ptr2, ptr,
+                size);
+>>>>>>> upstream/vlm_master
         }
             /* Fall through */
         case 1: {
@@ -326,11 +463,15 @@ asn_enc_rval_t CHOICE_encode_oer(const asn_TYPE_descriptor_t *td,
 
     if (!sptr) ASN__ENCODE_FAILED;
 
+    /* Check recursion depth to prevent stack overflow */
+    OER_ENCODER_RECURSION_DEPTH_INC();
+
     ASN_DEBUG("OER %s encoding as CHOICE", td->name);
 
     present = CHOICE_variant_get_presence(td, sptr);
     if (present == 0 || present > td->elements_count) {
         ASN_DEBUG("CHOICE %s member is not selected", td->name);
+        OER_ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
     }
 
@@ -340,6 +481,7 @@ asn_enc_rval_t CHOICE_encode_oer(const asn_TYPE_descriptor_t *td,
             *(const void *const *)((const char *)sptr + elm->memb_offset);
         if (memb_ptr == 0) {
             /* Mandatory element absent */
+            OER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
     } else {
@@ -347,11 +489,17 @@ asn_enc_rval_t CHOICE_encode_oer(const asn_TYPE_descriptor_t *td,
     }
 
     tag = asn_TYPE_outmost_tag(elm->type, memb_ptr, elm->tag_mode, elm->tag);
+<<<<<<< HEAD
     if (tag == 0) {
+=======
+    if(tag == 0) {
+        OER_ENCODER_RECURSION_DEPTH_DEC();
+>>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
 
     tag_len = oer_put_tag(tag, cb, app_key);
+<<<<<<< HEAD
     if (tag_len < 0) {
         ASN__ENCODE_FAILED;
     }
@@ -361,6 +509,21 @@ asn_enc_rval_t CHOICE_encode_oer(const asn_TYPE_descriptor_t *td,
             elm->type, elm->encoding_constraints.oer_constraints, memb_ptr, cb,
             app_key);
         if (encoded < 0) ASN__ENCODE_FAILED;
+=======
+    if(tag_len < 0) {
+        OER_ENCODER_RECURSION_DEPTH_DEC();
+        ASN__ENCODE_FAILED;
+    }
+
+    if(specs->ext_start >= 0 && (unsigned)specs->ext_start <= (present-1)) {
+        ssize_t encoded = oer_open_type_put(elm->type,
+                               elm->encoding_constraints.oer_constraints,
+                               memb_ptr, cb, app_key);
+        if(encoded < 0) {
+            OER_ENCODER_RECURSION_DEPTH_DEC();
+            ASN__ENCODE_FAILED;
+        }
+>>>>>>> upstream/vlm_master
         er.encoded = tag_len + encoded;
     } else {
         er = elm->type->op->oer_encoder(
@@ -369,5 +532,6 @@ asn_enc_rval_t CHOICE_encode_oer(const asn_TYPE_descriptor_t *td,
         if (er.encoded >= 0) er.encoded += tag_len;
     }
 
+    OER_ENCODER_RECURSION_DEPTH_DEC();
     return er;
 }

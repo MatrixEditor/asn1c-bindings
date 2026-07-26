@@ -85,6 +85,7 @@ int asn1f_pull_components_of(arg_t *arg) {
 /*
  * Fix extensibility parts inside constructed types (SEQUENCE, SET, CHOICE).
  */
+<<<<<<< HEAD
 int asn1f_fix_constr_ext(arg_t *arg) {
     asn1p_expr_t *expr = arg->expr;
     asn1p_expr_t *v;
@@ -93,6 +94,19 @@ int asn1f_fix_constr_ext(arg_t *arg) {
     TQ_HEAD(asn1p_expr_t) * cur_list;
     int r_value = 0;
     int ext_count = 0;
+=======
+int
+asn1f_fix_constr_ext(arg_t *arg) {
+	typedef TQ_HEAD(asn1p_expr_t) asn1p_expr_list_t;
+
+	asn1p_expr_t *expr = arg->expr;
+	asn1p_expr_t *v;
+	asn1p_expr_list_t root_list;
+	asn1p_expr_list_t ext_list;
+	asn1p_expr_list_t *cur_list;
+	int r_value = 0;
+	int ext_count = 0;
+>>>>>>> upstream/vlm_master
 
     switch (expr->expr_type) {
         case ASN_CONSTR_SEQUENCE:
@@ -105,6 +119,7 @@ int asn1f_fix_constr_ext(arg_t *arg) {
 
     DEBUG("(%s) for line %d", expr->Identifier, expr->_lineno);
 
+<<<<<<< HEAD
     TQ_INIT(&root_list);
     TQ_INIT(&ext_list);
     cur_list = (void *)&root_list;
@@ -144,6 +159,42 @@ int asn1f_fix_constr_ext(arg_t *arg) {
             }
             continue;
         }
+=======
+	TQ_INIT(&root_list);
+	TQ_INIT(&ext_list);
+	cur_list = &root_list;
+
+	/*
+	 * Split the set of fields into two lists, the root list
+	 * and the extensions list.
+	 */
+	while((v = TQ_REMOVE(&(expr->members), next))) {
+		if(v->expr_type == A1TC_EXTENSIBLE) {
+			ext_count++;
+			switch(ext_count) {
+			case 1: cur_list = &ext_list; break;
+			case 2:
+				/* Second extension marker: continue with extensions,
+				 * do not switch back to root_list */
+				cur_list = &ext_list;
+				if(v->value) {
+					FATAL("Optional extension marker "
+						"must not contain "
+						"an exception mark "
+						"at line %d", v->_lineno);
+					r_value = -1;
+				}
+				asn1p_expr_free(v);
+				continue;
+			case 3:
+				FATAL("Third extension marker "
+				"is not allowed at line %d", v->_lineno);
+                /* Fall through */
+			default:
+				r_value = -1;
+			}
+		}
+>>>>>>> upstream/vlm_master
 
         TQ_ADD(cur_list, v, next);
     }

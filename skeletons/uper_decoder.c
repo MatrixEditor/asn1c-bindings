@@ -38,10 +38,91 @@ asn_dec_rval_t uper_decode_complete(const asn_codec_ctx_t *opt_codec_ctx,
     return rval;
 }
 
+<<<<<<< HEAD
 asn_dec_rval_t uper_decode(const asn_codec_ctx_t *opt_codec_ctx,
                            const asn_TYPE_descriptor_t *td, void **sptr,
                            const void *buffer, size_t size, int skip_bits,
                            int unused_bits) {
+=======
+asn_dec_rval_t
+uper_decode_complete_canonical(const asn_codec_ctx_t *opt_codec_ctx,
+                               const asn_TYPE_descriptor_t *td, void **sptr,
+                               const void *buffer, size_t size) {
+    asn_codec_ctx_t canonical_ctx;
+    
+    /* Create a context with canonical flag set */
+    if(opt_codec_ctx) {
+        canonical_ctx = *opt_codec_ctx;
+    } else {
+        memset(&canonical_ctx, 0, sizeof(canonical_ctx));
+        canonical_ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
+    }
+    canonical_ctx.uper_canonical = 1;
+    
+    return uper_decode_complete(&canonical_ctx, td, sptr, buffer, size);
+}
+
+asn_dec_rval_t
+uper_decode_canonical(const asn_codec_ctx_t *opt_codec_ctx,
+                      const asn_TYPE_descriptor_t *td, void **sptr,
+                      const void *buffer, size_t size, int skip_bits, int unused_bits) {
+    asn_codec_ctx_t canonical_ctx;
+    
+    /* Create a context with canonical flag set */
+    if(opt_codec_ctx) {
+        canonical_ctx = *opt_codec_ctx;
+    } else {
+        memset(&canonical_ctx, 0, sizeof(canonical_ctx));
+        canonical_ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
+    }
+    canonical_ctx.uper_canonical = 1;
+    
+    return uper_decode(&canonical_ctx, td, sptr, buffer, size, skip_bits, unused_bits);
+}
+
+asn_dec_rval_t
+uper_decode_complete_canonical_lenient(const asn_codec_ctx_t *opt_codec_ctx,
+                                      const asn_TYPE_descriptor_t *td, void **sptr,
+                                      const void *buffer, size_t size) {
+    asn_codec_ctx_t canonical_ctx;
+    
+    /* Create a context with canonical and lenient flags set */
+    if(opt_codec_ctx) {
+        canonical_ctx = *opt_codec_ctx;
+    } else {
+        memset(&canonical_ctx, 0, sizeof(canonical_ctx));
+        canonical_ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
+    }
+    canonical_ctx.uper_canonical = 1;
+    canonical_ctx.uper_canonical_lenient = 1;
+    
+    return uper_decode_complete(&canonical_ctx, td, sptr, buffer, size);
+}
+
+asn_dec_rval_t
+uper_decode_canonical_lenient(const asn_codec_ctx_t *opt_codec_ctx,
+                             const asn_TYPE_descriptor_t *td, void **sptr,
+                             const void *buffer, size_t size, int skip_bits, int unused_bits) {
+    asn_codec_ctx_t canonical_ctx;
+    
+    /* Create a context with canonical and lenient flags set */
+    if(opt_codec_ctx) {
+        canonical_ctx = *opt_codec_ctx;
+    } else {
+        memset(&canonical_ctx, 0, sizeof(canonical_ctx));
+        canonical_ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
+    }
+    canonical_ctx.uper_canonical = 1;
+    canonical_ctx.uper_canonical_lenient = 1;
+    
+    return uper_decode(&canonical_ctx, td, sptr, buffer, size, skip_bits, unused_bits);
+}
+
+asn_dec_rval_t
+uper_decode(const asn_codec_ctx_t *opt_codec_ctx,
+            const asn_TYPE_descriptor_t *td, void **sptr, const void *buffer,
+            size_t size, int skip_bits, int unused_bits) {
+>>>>>>> upstream/vlm_master
     asn_codec_ctx_t s_codec_ctx;
     asn_dec_rval_t rval;
     asn_per_data_t pd;
@@ -73,6 +154,7 @@ asn_dec_rval_t uper_decode(const asn_codec_ctx_t *opt_codec_ctx,
     pd.nbits = 8 * size - unused_bits; /* 8 is CHAR_BIT from <limits.h> */
     if (pd.nboff > pd.nbits) ASN__DECODE_FAILED;
 
+<<<<<<< HEAD
     /*
      * Invoke type-specific decoder.
      */
@@ -90,4 +172,29 @@ asn_dec_rval_t uper_decode(const asn_codec_ctx_t *opt_codec_ctx,
         rval.consumed = 0;
     }
     return rval;
+=======
+	/*
+	 * Invoke type-specific decoder.
+	 */
+	if(!td->op->uper_decoder)
+		ASN__DECODE_FAILED;	/* PER is not compiled in */
+	rval = td->op->uper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
+	if(rval.code == RC_OK) {
+		/* Return the number of consumed bits */
+		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
+					+ pd.nboff - skip_bits;
+		ASN_DEBUG("PER decoding consumed %ld, counted %ld",
+			(long)rval.consumed, (long)pd.moved);
+		assert(rval.consumed == pd.moved);
+	} else {
+		/* PER codec is not a restartable */
+		/* Report position where decoding failed */
+		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
+					+ pd.nboff - skip_bits;
+		ASN_DEBUG("PER decoding failed at bit %ld (byte %ld, bit %ld)",
+			(long)rval.consumed, (long)(rval.consumed >> 3), 
+			(long)(rval.consumed & 7));
+	}
+	return rval;
+>>>>>>> upstream/vlm_master
 }

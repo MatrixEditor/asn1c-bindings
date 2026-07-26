@@ -68,6 +68,7 @@ asn_dec_rval_t aper_decode(const asn_codec_ctx_t *opt_codec_ctx,
     pd.nbits = 8 * size - unused_bits; /* 8 is CHAR_BIT from <limits.h> */
     if (pd.nboff > pd.nbits) ASN__DECODE_FAILED;
 
+<<<<<<< HEAD
     /*
      * Invoke type-specific decoder.
      */
@@ -85,4 +86,33 @@ asn_dec_rval_t aper_decode(const asn_codec_ctx_t *opt_codec_ctx,
         rval.consumed = 0;
     }
     return rval;
+=======
+	/*
+	 * Invoke type-specific decoder.
+	 */
+	if(!td->op->aper_decoder)
+		ASN__DECODE_FAILED;	/* PER is not compiled in */
+	rval = td->op->aper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
+	if(rval.code == RC_OK) {
+		/* Return the number of consumed bits */
+		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
+		+ pd.nboff - skip_bits;
+		ASN_DEBUG("PER decoding consumed %zu, counted %zu",
+				  rval.consumed, pd.moved);
+		assert(rval.consumed == pd.moved);
+	} else {
+		/* Calculate actual consumed bits even for non-OK results */
+		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
+		+ pd.nboff - skip_bits;
+		/* For RC_WMORE, report actual consumption to avoid infinite loops */
+		if(rval.code == RC_WMORE && rval.consumed == 0 && pd.moved > 0) {
+			rval.consumed = pd.moved;
+		}
+		/* PER codec is not a restartable for RC_FAIL */
+		if(rval.code == RC_FAIL) {
+			rval.consumed = 0;
+		}
+	}
+	return rval;
+>>>>>>> upstream/vlm_master
 }

@@ -13,6 +13,12 @@
 #define _NativeEnumerated_H_
 
 #include <NativeInteger.h>
+#include <limits.h>
+
+/* Unknown UPER extension ordinals are stored as LONG_MAX - ordinal. */
+#define ASN_NATIVE_ENUMERATED_UNKNOWN_EXT_BASE (LONG_MAX - 65535L)
+#define ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(v) \
+    ((v) >= ASN_NATIVE_ENUMERATED_UNKNOWN_EXT_BASE)
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
@@ -40,13 +46,27 @@ der_type_encoder_f NativeEnumerated_encode_der;
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
 xer_type_decoder_f NativeEnumerated_decode_xer;
+xer_type_decoder_f NativeEnumerated_decode_xer_text;
 xer_type_encoder_f NativeEnumerated_encode_xer;
+<<<<<<< HEAD
 #endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
+=======
+xer_type_encoder_f NativeEnumerated_encode_xer_text;
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+>>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 jer_type_decoder_f NativeEnumerated_decode_jer;
 jer_type_encoder_f NativeEnumerated_encode_jer;
+<<<<<<< HEAD
 #endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
+=======
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+cbor_type_decoder_f NativeEnumerated_decode_cbor;
+cbor_type_encoder_f NativeEnumerated_encode_cbor;
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
+>>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f NativeEnumerated_decode_oer;

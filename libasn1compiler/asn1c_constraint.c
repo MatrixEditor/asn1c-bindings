@@ -3,6 +3,10 @@
 #include "asn1c_misc.h"
 #include "asn1c_out.h"
 #include "asn1c_naming.h"
+#include "asn1c_bigint.h"
+
+#include <stdint.h>
+#include <string.h>
 
 #include <asn1fix_crange.h> /* constraint groker from libasn1fix */
 #include <asn1fix_export.h> /* other exportables from libasn1fix */
@@ -14,6 +18,7 @@ static int emit_value_determination_code(arg_t *arg, asn1p_expr_type_e etype,
 static int emit_size_determination_code(arg_t *arg, asn1p_expr_type_e etype);
 static asn1p_expr_type_e _find_terminal_type(arg_t *arg);
 static abuf *emit_range_comparison_code(asn1cnst_range_t *range,
+<<<<<<< HEAD
                                         const char *varname,
                                         asn1c_integer_t natural_start,
                                         asn1c_integer_t natural_stop);
@@ -25,6 +30,207 @@ static int ulong_optimization(arg_t *arg, asn1p_expr_type_e etype,
     return (!r_size && r_value &&
             (etype == ASN_BASIC_INTEGER || etype == ASN_BASIC_ENUMERATED) &&
             native_long_sign(arg, r_value) == 0);
+=======
+                                          const char *varname,
+                                          asn1c_integer_t natural_start,
+                                          asn1c_integer_t natural_stop);
+static void emit_range_constraint_condition(arg_t *arg, const abuf *comparison);
+static int native_long_sign(arg_t *arg, asn1cnst_range_t *r);	/* -1, 0, 1 */
+
+/*
+ * True if either edge of the value range is a concrete value outside the
+ * guaranteed-portable signed 32-bit window.  Such bounds cannot be enforced
+ * through the legacy long-based path on all targets.
+ */
+static int
+range_exceeds_int32(const asn1cnst_range_t *r) {
+    const asn1c_integer_t rmax = 2147483647;
+    const asn1c_integer_t rmin = -2147483647 - 1;
+    if(r->left.type == ARE_VALUE
+       && (r->left.value < rmin || r->left.value > rmax))
+        return 1;
+    if(r->right.type == ARE_VALUE
+       && (r->right.value < rmin || r->right.value > rmax))
+        return 1;
+    return 0;
+}
+
+/*
+ * Emit a single static asn_cval_t constraint bound named asn_CVAL_<id>_<sfx>
+ * for the given range edge.  Open edges (MIN/MAX) become ACV_ABSENT.
+ */
+static void
+emit_cval_bound(arg_t *arg, const char *id, int idx, const char *sfx,
+                const asn1cnst_edge_t *edge) {
+    if(edge->type != ARE_VALUE) {
+        OUT("static const asn_cval_t asn_CVAL_%s_%d_%s = "
+            "{ ACV_ABSENT, { 0 } };\n", id, idx, sfx);
+        return;
+    }
+    {
+        asn1c_integer_t v = edge->value;
+        int use_bytes;
+        char dec[64];
+        const char *s = asn1p_itoa(v);
+        strncpy(dec, s ? s : "0", sizeof(dec) - 1);
+        dec[sizeof(dec) - 1] = '\0';
+
+        /* Negative fitting intmax_t -> SINT; non-negative fitting uintmax_t
+         * -> UINT; everything else -> canonical INTEGER content octets. */
+        use_bytes = 0;
+#ifdef HAVE_128_BIT_INT
+        {
+            const asn1c_integer_t UMAX = (asn1c_integer_t)UINTMAX_MAX;
+            const asn1c_integer_t IMIN = -(asn1c_integer_t)INTMAX_MAX - 1;
+            use_bytes = (v < 0) ? (v < IMIN) : (v > UMAX);
+        }
+#endif
+
+        if(!use_bytes && v < 0) {
+            OUT("static const asn_cval_t asn_CVAL_%s_%d_%s = "
+                "{ ACV_SINT, { .s = INTMAX_C(%s) } };\n", id, idx, sfx, dec);
+        } else if(!use_bytes) {
+            OUT("static const asn_cval_t asn_CVAL_%s_%d_%s = "
+                "{ ACV_UINT, { .u = UINTMAX_C(%s) } };\n", id, idx, sfx, dec);
+        } else {
+            /* Oversized: emit canonical INTEGER content octets. */
+            asn1c_bigint_t b;
+            uint8_t *buf = 0;
+            size_t sz = 0, i;
+            if(asn1c_bigint_from_decimal(dec, &b) == 0
+               && asn1c_bigint_to_integer_content_octets(&b, &buf, &sz) == 0) {
+                OUT("static const uint8_t asn_CVAL_%s_%d_%s_bytes[] = { ",
+                    id, idx, sfx);
+                for(i = 0; i < sz; i++)
+                    OUT("0x%02x%s", buf[i], (i + 1 < sz) ? ", " : "");
+                OUT(" };\n");
+                OUT("static const asn_cval_t asn_CVAL_%s_%d_%s = "
+                    "{ ACV_INTEGER_BYTES, { .b = { asn_CVAL_%s_%d_%s_bytes, "
+                    "sizeof asn_CVAL_%s_%d_%s_bytes } } };\n",
+                    id, idx, sfx, id, idx, sfx, id, idx, sfx);
+                free(buf);
+                asn1c_bigint_free(&b);
+            } else {
+                if(buf) free(buf);
+                asn1c_bigint_free(&b);
+                OUT("static const asn_cval_t asn_CVAL_%s_%d_%s = "
+                    "{ ACV_ABSENT, { 0 } };\n", id, idx, sfx);
+            }
+        }
+    }
+}
+
+/*
+ * Emit a complete constraint-function body for a wide INTEGER (int64_t,
+ * uint64_t, or oversized INTEGER_t storage) using the asn_cval_t runtime
+ * helpers.  This enforces unsigned and >32-bit bounds that the legacy
+ * long-based path cannot represent.
+ */
+static void
+emit_wide_integer_constraint(arg_t *arg, asn1cnst_range_t *r_value,
+                             asn1c_integer_storage_kind_e isk) {
+    asn1p_expr_t *expr = arg->expr;
+    const char *id = asn1c_make_identifier(AMI_USE_PREFIX, expr, 0);
+    int idx = expr->_type_unique_index;
+    int saved = arg->target->target;
+
+    /*
+     * Pull in the runtime header once per generated header (the dependency
+     * tracker deduplicates OT_INCLUDES).  The bounds themselves are emitted as
+     * function-local statics (below) so that the type's own _constraint and
+     * any per-member memb_*_constraint can each carry an independent copy
+     * without clashing at file scope.
+     */
+    (void)saved;
+    GEN_INCLUDE_STD("asn_constraint_value");
+
+    /* Function-local static bounds. */
+    emit_cval_bound(arg, id, idx, "lb", &r_value->left);
+    emit_cval_bound(arg, id, idx, "ub", &r_value->right);
+
+    if(isk == AISK_UINT64 || isk == AISK_UINT32) {
+        const char *cty = (isk == AISK_UINT64) ? "uint64_t" : "uint32_t";
+        OUT("uintmax_t value;\n");
+        OUT("\n");
+        OUT("if(!sptr) {\n");
+        INDENT(+1);
+        OUT("ASN__CTFAIL(app_key, td, sptr,\n");
+        OUT("\t\"%%s: value not given (%%s:%%d)\",\n");
+        OUT("\ttd->name, __FILE__, __LINE__);\n");
+        OUT("return -1;\n");
+        INDENT(-1);
+        OUT("}\n");
+        OUT("\n");
+        OUT("value = (uintmax_t)(*(const %s *)sptr);\n", cty);
+        OUT("\n");
+        OUT("if(asn_check_integer_range_uint(value, "
+            "&asn_CVAL_%s_%d_lb, &asn_CVAL_%s_%d_ub) == 0) {\n",
+            id, idx, id, idx);
+    } else if(isk == AISK_INT64 || isk == AISK_INT32) {
+        const char *cty = (isk == AISK_INT64) ? "int64_t" : "int32_t";
+        OUT("intmax_t value;\n");
+        OUT("\n");
+        OUT("if(!sptr) {\n");
+        INDENT(+1);
+        OUT("ASN__CTFAIL(app_key, td, sptr,\n");
+        OUT("\t\"%%s: value not given (%%s:%%d)\",\n");
+        OUT("\ttd->name, __FILE__, __LINE__);\n");
+        OUT("return -1;\n");
+        INDENT(-1);
+        OUT("}\n");
+        OUT("\n");
+        OUT("value = (intmax_t)(*(const %s *)sptr);\n", cty);
+        OUT("\n");
+        OUT("if(asn_check_integer_range_sint(value, "
+            "&asn_CVAL_%s_%d_lb, &asn_CVAL_%s_%d_ub) == 0) {\n",
+            id, idx, id, idx);
+    } else {
+        /*
+         * INTEGER_t-backed oversized bounds.  An INTEGER_t always holds a
+         * canonical signed two's-complement value (large positive values
+         * carry a leading 0x00 octet), so the comparator must interpret it
+         * as signed: pass value_is_unsigned = 0.
+         */
+        int value_unsigned = 0;
+        OUT("const INTEGER_t *st = (const INTEGER_t *)sptr;\n");
+        OUT("\n");
+        OUT("if(!sptr) {\n");
+        INDENT(+1);
+        OUT("ASN__CTFAIL(app_key, td, sptr,\n");
+        OUT("\t\"%%s: value not given (%%s:%%d)\",\n");
+        OUT("\ttd->name, __FILE__, __LINE__);\n");
+        OUT("return -1;\n");
+        INDENT(-1);
+        OUT("}\n");
+        OUT("\n");
+        OUT("if(asn_check_INTEGER_range(st, "
+            "&asn_CVAL_%s_%d_lb, &asn_CVAL_%s_%d_ub, %d) == 0) {\n",
+            id, idx, id, idx, value_unsigned);
+    }
+
+    INDENT(+1);
+    OUT("/* Constraint check succeeded */\n");
+    OUT("return 0;\n");
+    INDENT(-1);
+    OUT("} else {\n");
+    INDENT(+1);
+    OUT("ASN__CTFAIL(app_key, td, sptr,\n");
+    OUT("\t\"%%s: constraint failed (%%s:%%d)\",\n");
+    OUT("\ttd->name, __FILE__, __LINE__);\n");
+    OUT("return -1;\n");
+    INDENT(-1);
+    OUT("}\n");
+}
+
+static int
+ulong_optimization(arg_t *arg, asn1p_expr_type_e etype, asn1cnst_range_t *r_size,
+						asn1cnst_range_t *r_value)
+{
+	return (!r_size && r_value
+		&& (etype == ASN_BASIC_INTEGER
+		|| etype == ASN_BASIC_ENUMERATED)
+		&& native_long_sign(arg, r_value) == 0);
+>>>>>>> upstream/vlm_master
 }
 
 int asn1c_emit_constraint_checking_code(arg_t *arg) {
@@ -66,6 +272,7 @@ int asn1c_emit_constraint_checking_code(arg_t *arg) {
         }
     }
 
+<<<<<<< HEAD
     /*
      * Do we really need an "*st = sptr" pointer?
      */
@@ -82,6 +289,37 @@ int asn1c_emit_constraint_checking_code(arg_t *arg) {
             break;
         case ASN_BASIC_BIT_STRING:
         case ASN_BASIC_OCTET_STRING:
+=======
+	/*
+	 * Wide / unsigned / oversized INTEGER value ranges are checked through
+	 * the asn_cval_t runtime helpers, which preserve unsigned semantics and
+	 * enforce bounds beyond signed 32-bit / native long storage.
+	 */
+	if(etype == ASN_BASIC_INTEGER && r_value && !r_size) {
+		asn1c_integer_storage_kind_e isk =
+			asn1c_select_integer_storage(arg, expr);
+		if(isk == AISK_INT32 || isk == AISK_UINT32
+		   || isk == AISK_INT64 || isk == AISK_UINT64
+		   || (isk == AISK_INTEGER_T && range_exceeds_int32(r_value))) {
+			emit_wide_integer_constraint(arg, r_value, isk);
+			ret = 0;
+			goto end;
+		}
+	}
+
+	/*
+	 * Do we really need an "*st = sptr" pointer?
+	 */
+	switch(etype) {
+	case ASN_BASIC_INTEGER:
+	case ASN_BASIC_ENUMERATED:
+		if(asn1c_type_fits_long(arg, arg->expr) == FL_NOTFIT)
+			produce_st = 1;
+		break;
+	case ASN_BASIC_REAL:
+        if((arg->flags & A1C_USE_WIDE_TYPES)
+           && asn1c_REAL_fits(arg, arg->expr) == RL_NOTFIT)
+>>>>>>> upstream/vlm_master
             produce_st = 1;
             break;
         default:
@@ -164,6 +402,7 @@ int asn1c_emit_constraint_checking_code(arg_t *arg) {
      */
     int got_something = 0;
     int value_unused = 0;
+<<<<<<< HEAD
     OUT("\n");
     OUT("if(");
     INDENT(+1);
@@ -171,6 +410,40 @@ int asn1c_emit_constraint_checking_code(arg_t *arg) {
         abuf *ab = emit_range_comparison_code(r_size, "size", 0, -1);
         if (ab->length) {
             OUT("(%s)", ab->buffer);
+=======
+	OUT("\n");
+	OUT("if(");
+	INDENT(+1);
+		if(r_size) {
+            abuf *ab = emit_range_comparison_code(r_size, "size", 0, -1);
+            if(ab->length)  {
+                emit_range_constraint_condition(arg, ab);
+                got_something++;
+            }
+            abuf_free(ab);
+		}
+		if(r_value) {
+			if(got_something) { OUT("\n"); OUT(" && "); }
+            abuf *ab;
+            if(etype == ASN_BASIC_BOOLEAN)
+                ab = emit_range_comparison_code(r_value, "value", 0, 1);
+            else
+                ab = emit_range_comparison_code(r_value, "value",
+                                                value_unsigned ? 0 : -1, -1);
+            if(ab->length)  {
+                emit_range_constraint_condition(arg, ab);
+                got_something++;
+            } else {
+                value_unused = 1;
+            }
+            abuf_free(ab);
+		}
+		if(alphabet_table_compiled) {
+			if(got_something) { OUT("\n"); OUT(" && "); }
+			OUT("!check_permitted_alphabet_%d(%s)",
+				arg->expr->_type_unique_index,
+				produce_st ? "st" : "sptr");
+>>>>>>> upstream/vlm_master
             got_something++;
         }
         abuf_free(ab);
@@ -253,6 +526,7 @@ end:
     return ret;
 }
 
+<<<<<<< HEAD
 static int asn1c_emit_constraint_tables(arg_t *arg, int got_size) {
     asn1c_integer_t range_start;
     asn1c_integer_t range_stop;
@@ -263,6 +537,32 @@ static int asn1c_emit_constraint_tables(arg_t *arg, int got_size) {
     int max_table_size = 256;
     int table[256];
     int use_table;
+=======
+/**
+ * Purpose: Emit permitted-alphabet lookup data and its generated constraint helper.
+ * Original source: The asn1c constraint compiler.
+ * Version: 2026-07-17, empty-value hardening and generated-helper documentation.
+ * Parameters:
+ *   arg - Compiler state describing the ASN.1 expression and output stream.
+ *   got_size - Non-zero when a separate generated size check already validates UTF-8 syntax.
+ * Returns: One when an alphabet helper is emitted; zero when no helper is necessary.
+ * Exceptions: None; allocation and compiler failures use the surrounding compiler error path.
+ * Author: asn1c maintainers; PR #550 update by libo <shakespark@gmail.com>.
+ * History: Updated on 2026-07-17 for NULL-safe generated helpers and online documentation.
+ * Example: asn1c_emit_constraint_tables(arg, 0) emits a FROM constraint helper when required.
+ */
+static int
+asn1c_emit_constraint_tables(arg_t *arg, int got_size) {
+	asn1c_integer_t range_start;
+	asn1c_integer_t range_stop;
+	asn1p_expr_type_e etype;
+	asn1cnst_range_t *range;
+	asn1p_constraint_t *ct;
+	int utf8_full_alphabet_check = 0;
+	int max_table_size = 256;
+	int table[256];
+	int use_table;
+>>>>>>> upstream/vlm_master
 
     ct = arg->expr->combined_constraints;
     if (!ct) return 0;
@@ -413,6 +713,7 @@ static int asn1c_emit_constraint_tables(arg_t *arg, int got_size) {
          */
     }
 
+<<<<<<< HEAD
     OUT("static int check_permitted_alphabet_%d(const void *sptr) {\n",
         arg->expr->_type_unique_index);
     INDENT(+1);
@@ -433,16 +734,72 @@ static int asn1c_emit_constraint_tables(arg_t *arg, int got_size) {
     INDENT(-1);
     OUT("}\n");
     OUT("\n");
+=======
+	OUT("/**\n");
+	OUT(" * Purpose: Validate every code unit against this type's permitted alphabet.\n");
+	OUT(" * Original source: Generated by the asn1c constraint compiler.\n");
+	OUT(" * Version: 2026-07-17, NULL-safe empty-value constraint checking.\n");
+	OUT(" * Parameters:\n");
+	OUT(" *   sptr - Non-NULL pointer to the generated string value.\n");
+	OUT(" * Returns: Zero for a valid alphabet; negative one for invalid data.\n");
+	OUT(" * Exceptions: None; malformed representations are rejected by return value.\n");
+	OUT(" * Author: asn1c maintainers; PR #550 update by libo <shakespark@gmail.com>.\n");
+	OUT(" * History: Generated NULL-buffer handling added on 2026-07-17.\n");
+	OUT(" * Example: Called by the generated type constraint function.\n");
+	OUT(" */\n");
+	OUT("static int check_permitted_alphabet_%d(const void *sptr) {\n",
+			arg->expr->_type_unique_index);
+	INDENT(+1);
+	if(utf8_full_alphabet_check) {
+		OUT("if(UTF8String_length((const UTF8String_t *)sptr) < 0)\n");
+		OUT("\treturn -1; /* Alphabet (sic!) test failed. */\n");
+		OUT("\n");
+	} else {
+		if(use_table) {
+			OUT("const int *table = permitted_alphabet_table_%d;\n",
+				arg->expr->_type_unique_index);
+			emit_alphabet_check_loop(arg, 0);
+		} else {
+			emit_alphabet_check_loop(arg, range);
+		}
+	}
+	OUT("return 0;\n");
+	INDENT(-1);
+	OUT("}\n");
+	OUT("\n");
+>>>>>>> upstream/vlm_master
 
     asn1constraint_range_free(range);
 
     return 1;
 }
 
+<<<<<<< HEAD
 static int emit_alphabet_check_loop(arg_t *arg, asn1cnst_range_t *range) {
     asn1c_integer_t natural_stop;
     asn1p_expr_t *terminal;
     const char *tname;
+=======
+/**
+ * Purpose: Emit the generated loop that validates a string's permitted alphabet.
+ * Original source: The asn1c constraint compiler, with the NULL-buffer guard ported
+ * from vlm/asn1c PR #550.
+ * Version: 2026-07-17, permitted-alphabet empty-value hardening.
+ * Parameters:
+ *   arg - Compiler state describing the ASN.1 expression and output stream.
+ *   range - Optional permitted-alphabet range; NULL selects a generated lookup table.
+ * Returns: Zero after emitting the validation loop.
+ * Exceptions: None; compiler failures are reported through the existing output helpers.
+ * Author: asn1c maintainers; PR #550 update by libo <shakespark@gmail.com>.
+ * History: Updated on 2026-07-17 to avoid arithmetic and comparisons on NULL buffers.
+ * Example: emit_alphabet_check_loop(arg, range) emits a check_permitted_alphabet helper body.
+ */
+static int
+emit_alphabet_check_loop(arg_t *arg, asn1cnst_range_t *range) {
+	asn1c_integer_t natural_stop;
+	asn1p_expr_t *terminal;
+	const char *tname;
+>>>>>>> upstream/vlm_master
 
     terminal = asn1f_find_terminal_type_ex(arg->asn, arg->ns, arg->expr);
     if (terminal) {
@@ -454,6 +811,7 @@ static int emit_alphabet_check_loop(arg_t *arg, asn1cnst_range_t *range) {
     tname = asn1c_type_name(arg, terminal, TNF_SAFE);
     OUT("const %s_t *st = (const %s_t *)sptr;\n", tname, tname);
 
+<<<<<<< HEAD
     switch (terminal->expr_type) {
         case ASN_STRING_UTF8String:
             OUT("const uint8_t *ch = st->buf;\n");
@@ -502,6 +860,60 @@ static int emit_alphabet_check_loop(arg_t *arg, asn1cnst_range_t *range) {
             natural_stop = 0xff;
             break;
     }
+=======
+	switch(terminal->expr_type) {
+	case ASN_STRING_UTF8String:
+		OUT("const uint8_t *ch = st->buf;\n");
+		OUT("const uint8_t *end = ch ? ch + st->size : ch;\n");
+		OUT("if(!ch) return st->size ? -1 : 0;\n");
+		OUT("\n");
+		OUT("for(; ch < end; ch++) {\n");
+			INDENT(+1);
+			OUT("uint8_t cv = *ch;\n");
+			if(!range) OUT("if(cv >= 0x80) return -1;\n");
+		natural_stop = 0xffffffffUL;
+		break;
+	case ASN_STRING_UniversalString:
+		OUT("const uint8_t *ch = st->buf;\n");
+		OUT("const uint8_t *end = ch ? ch + st->size : ch;\n");
+		OUT("if(!ch) return st->size ? -1 : 0;\n");
+		OUT("\n");
+		OUT("if(st->size %% 4) return -1; /* (size%%4)! */\n");
+		OUT("for(; ch < end; ch += 4) {\n");
+			INDENT(+1);
+			OUT("uint32_t cv = (ch[0] << 24)\n");
+			OUT("\t\t| (ch[1] << 16)\n");
+			OUT("\t\t| (ch[2] << 8)\n");
+			OUT("\t\t|  ch[3];\n");
+			if(!range) OUT("if(cv > 255) return -1;\n");
+		natural_stop = 0xffffffffUL;
+		break;
+	case ASN_STRING_BMPString:
+		OUT("const uint8_t *ch = st->buf;\n");
+		OUT("const uint8_t *end = ch ? ch + st->size : ch;\n");
+		OUT("if(!ch) return st->size ? -1 : 0;\n");
+		OUT("\n");
+		OUT("if(st->size %% 2) return -1; /* (size%%2)! */\n");
+		OUT("for(; ch < end; ch += 2) {\n");
+			INDENT(+1);
+			OUT("uint16_t cv = (ch[0] << 8)\n");
+			OUT("\t\t| ch[1];\n");
+			if(!range) OUT("if(cv > 255) return -1;\n");
+		natural_stop = 0xffff;
+		break;
+	case ASN_BASIC_OCTET_STRING:
+	default:
+		OUT("const uint8_t *ch = st->buf;\n");
+		OUT("const uint8_t *end = ch ? ch + st->size : ch;\n");
+		OUT("if(!ch) return st->size ? -1 : 0;\n");
+		OUT("\n");
+		OUT("for(; ch < end; ch++) {\n");
+			INDENT(+1);
+			OUT("uint8_t cv = *ch;\n");
+		natural_stop = 0xff;
+		break;
+	}
+>>>>>>> upstream/vlm_master
 
     if (range) {
         abuf *ab = emit_range_comparison_code(range, "cv", 0, natural_stop);
@@ -562,7 +974,23 @@ static abuf *emit_range_comparison_code(asn1cnst_range_t *range,
             abuf_oint(ab, range->right.value, natural_start);
         }
     } else {
+<<<<<<< HEAD
         for (int i = 0; i < range->el_count; i++) {
+=======
+        int comparison_count = 0;
+
+        /* Count surviving alternatives before emitting them so a single
+         * alternative does not acquire parentheses meant for a disjunction. */
+        for(int i = 0; i < range->el_count; i++) {
+            asn1cnst_range_t *r = range->elements[i];
+            abuf *rec = emit_range_comparison_code(r, varname, natural_start,
+                                                   natural_stop);
+            if(rec->length) comparison_count++;
+            abuf_free(rec);
+        }
+
+        for(int i = 0; i < range->el_count; i++) {
+>>>>>>> upstream/vlm_master
             asn1cnst_range_t *r = range->elements[i];
 
             abuf *rec = emit_range_comparison_code(r, varname, natural_start,
@@ -571,9 +999,9 @@ static abuf *emit_range_comparison_code(asn1cnst_range_t *range,
                 if (ab->length) {
                     abuf_str(ab, " || ");
                 }
-                abuf_str(ab, "(");
+                if(comparison_count > 1) abuf_str(ab, "(");
                 abuf_buf(ab, rec);
-                abuf_str(ab, ")");
+                if(comparison_count > 1) abuf_str(ab, ")");
             } else {
                 /* Ignore this part */
             }
@@ -584,6 +1012,7 @@ static abuf *emit_range_comparison_code(asn1cnst_range_t *range,
     return ab;
 }
 
+<<<<<<< HEAD
 static int emit_size_determination_code(arg_t *arg, asn1p_expr_type_e etype) {
     switch (etype) {
         case ASN_BASIC_BIT_STRING:
@@ -634,6 +1063,36 @@ static int emit_size_determination_code(arg_t *arg, asn1p_expr_type_e etype) {
             }
             return -1;
     }
+=======
+/**
+ * Purpose: Emit a generated range expression without redundant equality parentheses.
+ * Original source: The asn1c constraint compiler.
+ * Version: 2026-07-20, avoid Clang -Wparentheses-equality diagnostics.
+ * Parameters:
+ *   arg - Compiler state selecting the active generated-code output stream.
+ *   comparison - Generated range expression to write to that output stream.
+ * Returns: None.
+ * Exceptions: None; output failures follow the existing compiler output path.
+ * Author: asn1c maintainers.
+ * History: Added on 2026-07-20 while retaining grouping for disjunctions.
+ * Example: Emits `size == 3UL` instead of `(size == 3UL)`.
+ */
+static void
+emit_range_constraint_condition(arg_t *arg, const abuf *comparison) {
+    /* Equality has higher precedence than the surrounding logical operators,
+     * so parentheses are unnecessary unless the expression is compound. */
+    if(strstr(comparison->buffer, " == ")
+       && !strstr(comparison->buffer, " && ")
+       && !strstr(comparison->buffer, " || ")) {
+        OUT("%s", comparison->buffer);
+    } else {
+        OUT("(%s)", comparison->buffer);
+    }
+}
+
+static int
+emit_size_determination_code(arg_t *arg, asn1p_expr_type_e etype) {
+>>>>>>> upstream/vlm_master
 
     return 0;
 }
@@ -735,6 +1194,7 @@ static int native_long_sign(arg_t *arg, asn1cnst_range_t *r) {
         r->right.type == ARE_MAX) {
         return 1;
     }
+<<<<<<< HEAD
     if (r->left.type == ARE_VALUE && r->left.value >= 0 &&
         r->right.type == ARE_VALUE && r->right.value > 2147483647 &&
         r->right.value <= (asn1c_integer_t)(4294967295UL)) {
@@ -746,4 +1206,16 @@ static int native_long_sign(arg_t *arg, asn1cnst_range_t *r) {
     } else {
         return -1;
     }
+=======
+	if(r->left.type == ARE_VALUE
+	&& r->left.value >= 0
+	&& r->right.type == ARE_VALUE
+	&& r->right.value > 2147483647
+	&& r->right.value <= (asn1c_integer_t)(ULONG_MAX)) {
+		/* For ranges that fit in unsigned long but exceed signed long */
+		return 1;  /* Use unsigned long, but still need constraints */
+	} else {
+		return -1;
+	}
+>>>>>>> upstream/vlm_master
 }

@@ -1,6 +1,7 @@
 TESTS_ENVIRONMENT= MAKE=${MAKE}                     \
                     top_builddir=${top_builddir}    \
-                    top_srcdir=${top_srcdir}
+                    top_srcdir=${top_srcdir}        \
+                    CC="${CC}"
 
 TESTS =
 TESTS += check-INTEGER.sh
@@ -20,11 +21,18 @@ TESTS += check-UTF8String.sh
 TESTS += check-REAL.sh
 TESTS += check-SET_OF_INTEGER.sh
 TESTS += check-SEQUENCE_OF_INTEGER.sh
+TESTS += check-Time.sh
+TESTS += check-JER-open-type.sh
+TESTS += check-JER-enumerated-opentype.sh
+TESTS += check-encoding-instructions.sh
+TESTS += check-APER-inline-constrained-ioc.sh
+TESTS += check-fprefix-link.sh
+TESTS += check-fprefix-anon-typedef.sh
 
 CLEANFILES = Makefile.am.* *.[acho] check-*.log check-*.trs
 
-EXTRA_DIST = README $(srcdir)/check-*.sh
+EXTRA_DIST = README $(srcdir)/check-*.sh $(srcdir)/data/fprefix-link.asn \
+	$(srcdir)/data/fprefix-anon-typedef.asn
 
 clean-local:
 	rm -rf test-*
-

@@ -13,21 +13,23 @@ asn_dec_rval_t NativeInteger_decode_oer(
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     asn_dec_rval_t rval = {RC_OK, 0};
-    long *native = (long *)*nint_ptr;
+    void *native = *nint_ptr;
     INTEGER_t tmpint;
     INTEGER_t *tmpintptr = &tmpint;
 
     memset(&tmpint, 0, sizeof(tmpint));
 
+<<<<<<< HEAD
     if (!native) {
         native = (long *)(*nint_ptr = CALLOC(1, sizeof(*native)));
         if (!native) ASN__DECODE_FAILED;
+=======
+    if(!native) {
+        native = (*nint_ptr = CALLOC(1, NativeInteger_field_width(specs)));
+        if(!native) ASN__DECODE_FAILED;
+>>>>>>> upstream/vlm_master
     }
 
-    /*
-     * OPTIMIZATION: Encode directly rather than passing through INTEGER.
-     * Saves a memory allocation.
-     */
     rval = INTEGER_decode_oer(opt_codec_ctx, td, constraints,
                               (void **)&tmpintptr, ptr, size);
     if (rval.code != RC_OK) {
@@ -35,6 +37,7 @@ asn_dec_rval_t NativeInteger_decode_oer(
         return rval;
     }
 
+<<<<<<< HEAD
     if (specs && specs->field_unsigned) {
         unsigned long ul;
         int ok = asn_INTEGER2ulong(&tmpint, &ul) == 0;
@@ -52,6 +55,12 @@ asn_dec_rval_t NativeInteger_decode_oer(
         if (ok) {
             *native = l;
         } else {
+=======
+    {
+        int ok = (NativeInteger_store_from_INTEGER(native, specs, &tmpint) == 0);
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
+        if(!ok) {
+>>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             return rval;
         }
@@ -69,10 +78,10 @@ asn_enc_rval_t NativeInteger_encode_oer(
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     INTEGER_t tmpint;
-    long native;
 
     if (!sptr) ASN__ENCODE_FAILED;
 
+<<<<<<< HEAD
     native = *(const long *)sptr;
     memset(&tmpint, 0, sizeof(tmpint));
 
@@ -80,6 +89,9 @@ asn_enc_rval_t NativeInteger_encode_oer(
 
     if ((specs && specs->field_unsigned) ? asn_ulong2INTEGER(&tmpint, native)
                                          : asn_long2INTEGER(&tmpint, native)) {
+=======
+    if(NativeInteger_to_INTEGER(sptr, specs, &tmpint)) {
+>>>>>>> upstream/vlm_master
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
         ASN__ENCODE_FAILED;
     } else {

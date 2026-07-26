@@ -22,6 +22,7 @@ struct genhash_s; /* Forward declaration */
  * Flags specific to a module.
  */
 typedef enum asn1p_module_flags {
+<<<<<<< HEAD
     MSF_NOFLAGS,
     MSF_unk_INSTRUCTIONS = 0x001,
     MSF_TAG_INSTRUCTIONS = 0x002,
@@ -30,6 +31,17 @@ typedef enum asn1p_module_flags {
     MSF_IMPLICIT_TAGS = 0x020,
     MSF_AUTOMATIC_TAGS = 0x040,
     MSF_EXTENSIBILITY_IMPLIED = 0x100,
+=======
+	MSF_NOFLAGS,
+	MSF_unk_INSTRUCTIONS		= 0x001,
+	MSF_TAG_INSTRUCTIONS		= 0x002,
+	MSF_XER_INSTRUCTIONS		= 0x004,
+	MSF_JER_INSTRUCTIONS		= 0x008,
+	MSF_EXPLICIT_TAGS		= 0x010,
+	MSF_IMPLICIT_TAGS		= 0x020,
+	MSF_AUTOMATIC_TAGS		= 0x040,
+	MSF_EXTENSIBILITY_IMPLIED	= 0x100,
+>>>>>>> upstream/vlm_master
 } asn1p_module_flags_e;
 #define MSF_MASK_INSTRUCTIONS 0x0f
 #define MSF_MASK_TAGS 0xf0

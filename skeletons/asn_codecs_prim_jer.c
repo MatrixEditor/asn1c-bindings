@@ -138,6 +138,7 @@ asn_dec_rval_t jer_decode_primitive(
     rc = jer_decode_general(opt_codec_ctx, &s_ctx, &s_arg, buf_ptr, size,
                             jer_decode__unexpected_tag,
                             jer_decode__primitive_body);
+<<<<<<< HEAD
     switch (rc.code) {
         case RC_OK:
             if (!s_arg.decoded_something) {
@@ -145,6 +146,22 @@ asn_dec_rval_t jer_decode_primitive(
                 ASN_DEBUG(
                     "Primitive body is not recognized, "
                     "supplying empty one");
+=======
+    switch(rc.code) {
+    case RC_OK:
+        if(!s_arg.decoded_something) {
+            char ch = '\0';
+            ASN_DEBUG("Primitive body is not recognized, "
+                      "supplying empty one");
+            /*
+             * Decoding opportunity has come and gone.
+             * Where's the result?
+             * Try to feed with empty body, see if it eats it.
+             */
+            if(prim_body_decoder(s_arg.type_descriptor,
+                s_arg.struct_key, &ch, 0)
+                    != JPBD_BODY_CONSUMED) {
+>>>>>>> upstream/vlm_master
                 /*
                  * Decoding opportunity has come and gone.
                  * Where's the result?

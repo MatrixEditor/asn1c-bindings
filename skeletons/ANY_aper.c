@@ -135,9 +135,15 @@ asn_dec_rval_t ANY_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         int ret;
 
         /* Get the PER length */
+<<<<<<< HEAD
         raw_len = aper_get_length(pd, -1, -1, 0, &repeat);
         if (raw_len < 0) RETURN(RC_WMORE);
         if (raw_len == 0 && st->buf) break;
+=======
+        raw_len = aper_get_length(pd, -1, -1, -1, &repeat);
+        if(raw_len < 0) RETURN(RC_WMORE);
+        if(raw_len == 0 && st->buf) break;
+>>>>>>> upstream/vlm_master
 
         ASN_DEBUG("Got PER length len %" ASN_PRI_SIZE ", %s (%s)", raw_len,
                   repeat ? "repeat" : "once", td->name);

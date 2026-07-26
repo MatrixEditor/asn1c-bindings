@@ -55,11 +55,20 @@ static int write_out(const void *buffer, size_t size, void *key);
 static FILE *argument_to_file(char *av[], int idx);
 static char *argument_to_name(char *av[], int idx);
 
+<<<<<<< HEAD
 int opt_debug;         /* -d (or -dd) */
 static int opt_check;  /* -c (constraints checking) */
 static int opt_stack;  /* -s (maximum stack size) */
 static int opt_nopad;  /* -per-nopad (PER input is not padded between msgs) */
 static int opt_onepdu; /* -1 (decode single PDU) */
+=======
+       int opt_debug;   /* -d (or -dd) */
+static int opt_check;   /* -c (constraints checking) */
+static int opt_stack;   /* -s (maximum stack size) */
+static int opt_nopad;   /* -per-nopad (PER input is not padded between msgs) */
+static int opt_onepdu;  /* -1 (decode single PDU) */
+static int opt_partial; /* -P (print partial decoding results on failure) */
+>>>>>>> upstream/vlm_master
 
 #ifdef JUNKTEST /* Enable -J <probability> */
 #define JUNKOPT "J:"
@@ -107,6 +116,7 @@ static void CC_PRINTFLIKE(1, 2) DEBUG(const char *fmt, ...) {
     fprintf(stderr, "\n");
 }
 
+<<<<<<< HEAD
 static const char *ats_simple_name(enum asn_transfer_syntax syntax) {
     switch (syntax) {
         case ATS_INVALID:
@@ -135,6 +145,39 @@ static const char *ats_simple_name(enum asn_transfer_syntax syntax) {
             return "APER";
         default:
             return "<?>";
+=======
+static const char *
+ats_simple_name(enum asn_transfer_syntax syntax) {
+    switch(syntax) {
+    case ATS_INVALID:
+        return "/dev/null";
+    case ATS_NONSTANDARD_PLAINTEXT:
+        return "plaintext";
+    case ATS_BER:
+        return "BER";
+    case ATS_DER:
+        return "DER";
+    case ATS_CER:
+        return "CER";
+    case ATS_BASIC_OER:
+    case ATS_CANONICAL_OER:
+        return "OER";
+    case ATS_BASIC_XER:
+    case ATS_CANONICAL_XER:
+        return "XER";
+    case ATS_JER:
+      return "JER";
+    case ATS_CBOR:
+        return "CBOR";
+    case ATS_UNALIGNED_BASIC_PER:
+    case ATS_UNALIGNED_CANONICAL_PER:
+        return "PER";
+    case ATS_ALIGNED_BASIC_PER:
+    case ATS_ALIGNED_CANONICAL_PER:
+        return "APER";
+    default:
+        return "<?>";
+>>>>>>> upstream/vlm_master
     }
 }
 
@@ -161,6 +204,8 @@ static syntax_selector input_encodings[] = {
      "Input is in XER (XML Encoding Rules)"},
     {"jer", ATS_JER, CODEC_OFFSET(jer_decoder),
      "Input is in JER (JSON Encoding Rules)"},
+    {"cbor", ATS_CBOR, CODEC_OFFSET(cbor_decoder),
+     "Input is in CBOR (Concise Binary Object Representation)"},
     {0, ATS_INVALID, 0, 0}};
 
 static syntax_selector output_encodings[] = {
@@ -178,6 +223,8 @@ static syntax_selector output_encodings[] = {
      "Output as XER (XML Encoding Rules)"},
     {"jer", ATS_JER, CODEC_OFFSET(jer_encoder),
      "Output as JER (JSON Encoding Rules)"},
+    {"cbor", ATS_CBOR, CODEC_OFFSET(cbor_encoder),
+     "Output as CBOR (Concise Binary Object Representation)"},
     {"text", ATS_NONSTANDARD_PLAINTEXT, CODEC_OFFSET(print_struct),
      "Output as plain semi-structured text"},
     {"null", ATS_INVALID, CODEC_OFFSET(print_struct),
@@ -245,6 +292,7 @@ int main(int ac, char *av[]) {
     /*
      * Process the command-line arguments.
      */
+<<<<<<< HEAD
     while ((ch = getopt(ac, av, "i:o:1b:cdn:p:hs:" JUNKOPT RANDOPT)) != -1)
         switch (ch) {
             case 'i':
@@ -257,6 +305,88 @@ int main(int ac, char *av[]) {
                             optarg);
                     exit(EX_UNAVAILABLE);
                 }
+=======
+    while((ch = getopt(ac, av, "i:o:1b:cdn:p:Phs:" JUNKOPT RANDOPT)) != -1)
+    switch(ch) {
+    case 'i':
+        sel = ats_by_name(optarg, anyPduType, input_encodings);
+        if(sel) {
+            isyntax = sel->syntax;
+        } else {
+            fprintf(stderr, "-i<format>: '%s': improper format selector\n",
+                    optarg);
+            exit(EX_UNAVAILABLE);
+        }
+        break;
+    case 'o':
+        sel = ats_by_name(optarg, anyPduType, output_encodings);
+        if(sel) {
+            osyntax = sel->syntax;
+        } else {
+            fprintf(stderr, "-o<format>: '%s': improper format selector\n",
+                    optarg);
+            exit(EX_UNAVAILABLE);
+        }
+        break;
+    case '1':
+        opt_onepdu = 1;
+        break;
+    case 'b':
+        suggested_bufsize = atoi(optarg);
+        if(suggested_bufsize < 1
+            || suggested_bufsize > 16 * 1024 * 1024) {
+            fprintf(stderr,
+                "-b %s: Improper buffer size (1..16M)\n",
+                optarg);
+            exit(EX_UNAVAILABLE);
+        }
+        break;
+    case 'c':
+        opt_check = 1;
+        break;
+    case 'd':
+        opt_debug++;    /* Double -dd means ASN.1 debug */
+        break;
+    case 'P':
+        opt_partial = 1;
+        break;
+    case 'n':
+        number_of_iterations = atoi(optarg);
+        if(number_of_iterations < 1) {
+            fprintf(stderr,
+                "-n %s: Improper iterations count\n", optarg);
+            exit(EX_UNAVAILABLE);
+        }
+        break;
+    case 'p':
+        if(strcmp(optarg, "er-nopad") == 0) {
+            opt_nopad = 1;
+            break;
+        }
+#ifdef    ASN_PDU_COLLECTION
+        if(strcmp(optarg, "list") == 0) {
+            asn_TYPE_descriptor_t **pdu = asn_pdu_collection;
+            fprintf(stderr, "Available PDU types:\n");
+            for(; *pdu; pdu++) printf("%s\n", (*pdu)->name);
+            exit(0);
+        } else if(optarg[0] >= 'A' && optarg[0] <= 'Z') {
+            asn_TYPE_descriptor_t **pdu = asn_pdu_collection;
+            while(*pdu && strcmp((*pdu)->name, optarg)) pdu++;
+            if(*pdu) { pduType = *pdu; break; }
+            fprintf(stderr, "-p %s: Unrecognized PDU. Try '-p list'.\n",
+                    optarg);
+            exit(EX_USAGE);
+        }
+#else   /* Without -pdu=auto there's just a single type */
+        if(strcmp(optarg, "list") == 0) {
+            fprintf(stderr, "Available PDU types:\n");
+            if(pduType) {
+                printf("%s\n", pduType->name);
+            }
+            exit(0);
+        } else if(optarg[0] >= 'A' && optarg[0] <= 'Z') {
+            if(pduType && strcmp(optarg, pduType->name) == 0) {
+>>>>>>> upstream/vlm_master
                 break;
             case 'o':
                 sel = ats_by_name(optarg, anyPduType, output_encodings);
@@ -370,6 +500,7 @@ int main(int ac, char *av[]) {
 #define _ASX(x) _AXS(x)
                 fprintf(stderr, "%s\n", _ASX(ASN_CONVERTER_TITLE));
 #endif
+<<<<<<< HEAD
                 fprintf(stderr, "Usage: %s [options] <datafile> ...\n", av[0]);
                 fprintf(stderr, "Where options are:\n");
                 for (sel = input_encodings; sel->name; sel++) {
@@ -411,6 +542,46 @@ int main(int ac, char *av[]) {
                     "  -R <size>    Generate a random value of roughly the "
                     "given size,\n"
                     "               instead of parsing the value from file.\n"
+=======
+        fprintf(stderr, "Usage: %s [options] <datafile> ...\n", av[0]);
+        fprintf(stderr, "Where options are:\n");
+        for(sel = input_encodings; sel->name; sel++) {
+            if(ats_by_name(sel->name, anyPduType, sel)) {
+                fprintf(stderr, "  -i%s        %s%s\n", sel->name,
+                        sel->full_name,
+                        (sel->syntax == isyntax) ? " (DEFAULT)" : "");
+            }
+        }
+        for(sel = output_encodings; sel->name; sel++) {
+            if(ats_by_name(sel->name, anyPduType, sel)) {
+                fprintf(stderr, "  -o%s%s       %s%s\n", sel->name,
+                        strlen(sel->name) > 3 ? "" : " ",
+                        sel->full_name,
+                        (sel->syntax == osyntax) ? " (DEFAULT)" : "");
+            }
+        }
+        if(anyPduType->op->uper_decoder) {
+            fprintf(stderr,
+                    "  -per-nopad   Assume PER PDUs are not padded (-iper)\n");
+        }
+#ifdef    ASN_PDU_COLLECTION
+        fprintf(stderr,
+        "  -p <PDU>     Specify PDU type to decode\n"
+        "  -p list      List available PDUs\n");
+#endif    /* ASN_PDU_COLLECTION */
+        fprintf(stderr,
+        "  -1           Decode only the first PDU in file\n"
+        "  -b <size>    Set the i/o buffer size (default is %ld)\n"
+        "  -c           Check ASN.1 constraints after decoding\n"
+        "  -d           Enable debugging (-dd is even better)\n"
+        "  -n <num>     Process files <num> times\n"
+        "  -P           Print partial decoding results on failure\n"
+        "  -s <size>    Set the stack usage limit (default is %d)\n"
+#ifdef    JUNKTEST
+        "  -J <prob>    Set random junk test bit garbaging probability\n"
+        "  -R <size>    Generate a random value of roughly the given size,\n"
+        "               instead of parsing the value from file.\n"
+>>>>>>> upstream/vlm_master
 #endif
                     ,
                     (long)suggested_bufsize, ASN__DEFAULT_STACK_MAX);
@@ -566,15 +737,23 @@ int main(int ac, char *av[]) {
 }
 
 static struct dynamic_buffer {
+<<<<<<< HEAD
     uint8_t *data;       /* Pointer to the data bytes */
     size_t offset;       /* Offset from the start */
     size_t length;       /* Length of meaningful contents */
     size_t unbits;       /* Unused bits in the last byte */
+=======
+    uint8_t *data;        /* Pointer to the data bytes */
+    size_t offset;        /* Offset from the start */
+    size_t length;        /* Length of meaningful contents */
+    int skip_bits;        /* Bits to skip at the start (PER sub-byte offset, 0..7) */
+>>>>>>> upstream/vlm_master
     size_t allocated;    /* Allocated memory for data */
     int nreallocs;       /* Number of data reallocations */
     off_t bytes_shifted; /* Number of bytes ever shifted */
 } DynamicBuffer;
 
+<<<<<<< HEAD
 static void buffer_dump() {
     uint8_t *p = DynamicBuffer.data + DynamicBuffer.offset;
     uint8_t *e = p + DynamicBuffer.length - (DynamicBuffer.unbits ? 1 : 0);
@@ -680,6 +859,8 @@ static void buffer_shift_left(size_t offset, int bits) {
           DynamicBuffer.offset, DynamicBuffer.unbits, DynamicBuffer.length);
 }
 
+=======
+>>>>>>> upstream/vlm_master
 /*
  * Ensure that the buffer contains at least this amount of free space.
  */
@@ -687,15 +868,29 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
     if (bytes == 0) return;
 
     DEBUG("=> add_bytes(%" ASN_PRI_SIZE ") { o=%" ASN_PRI_SIZE
+<<<<<<< HEAD
           " l=%" ASN_PRI_SIZE " u=%" ASN_PRI_SIZE ", s=%" ASN_PRI_SIZE " }",
           bytes, DynamicBuffer.offset, DynamicBuffer.length,
           DynamicBuffer.unbits, DynamicBuffer.allocated);
+=======
+          " l=%" ASN_PRI_SIZE " sb=%d, s=%" ASN_PRI_SIZE " }",
+        bytes,
+        DynamicBuffer.offset,
+        DynamicBuffer.length,
+        DynamicBuffer.skip_bits,
+        DynamicBuffer.allocated);
+>>>>>>> upstream/vlm_master
 
     if (DynamicBuffer.allocated >=
         (DynamicBuffer.offset + DynamicBuffer.length + bytes)) {
         DEBUG("\tNo buffer reallocation is necessary");
+<<<<<<< HEAD
     } else if (bytes <= DynamicBuffer.offset) {
         DEBUG("\tContents shifted by %ld", DynamicBuffer.offset);
+=======
+    } else if(bytes <= DynamicBuffer.offset) {
+        DEBUG("\tContents shifted by %" ASN_PRI_SIZE, DynamicBuffer.offset);
+>>>>>>> upstream/vlm_master
 
         /* Shift the buffer contents */
         memmove(DynamicBuffer.data, DynamicBuffer.data + DynamicBuffer.offset,
@@ -718,13 +913,19 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
         DynamicBuffer.offset = 0;
         DynamicBuffer.allocated = newsize;
         DynamicBuffer.nreallocs++;
+<<<<<<< HEAD
         DEBUG("\tBuffer reallocated to %ld (%d time)", newsize,
               DynamicBuffer.nreallocs);
+=======
+        DEBUG("\tBuffer reallocated to %" ASN_PRI_SIZE " (%d time)",
+            newsize, DynamicBuffer.nreallocs);
+>>>>>>> upstream/vlm_master
     }
 
     memcpy(DynamicBuffer.data + DynamicBuffer.offset + DynamicBuffer.length,
            data2add, bytes);
     DynamicBuffer.length += bytes;
+<<<<<<< HEAD
     if (DynamicBuffer.unbits) {
         int bits = DynamicBuffer.unbits;
         DynamicBuffer.unbits = 0;
@@ -735,6 +936,16 @@ static void add_bytes_to_buffer(const void *data2add, size_t bytes) {
           " l=%" ASN_PRI_SIZE " u=%" ASN_PRI_SIZE ", s=%" ASN_PRI_SIZE " }",
           bytes, DynamicBuffer.offset, DynamicBuffer.length,
           DynamicBuffer.unbits, DynamicBuffer.allocated);
+=======
+
+    DEBUG("<= add_bytes(%" ASN_PRI_SIZE ") { o=%" ASN_PRI_SIZE
+          " l=%" ASN_PRI_SIZE " sb=%d, s=%" ASN_PRI_SIZE " }",
+        bytes,
+        DynamicBuffer.offset,
+        DynamicBuffer.length,
+        DynamicBuffer.skip_bits,
+        DynamicBuffer.allocated);
+>>>>>>> upstream/vlm_master
 }
 
 static int is_syntax_PER(enum asn_transfer_syntax syntax) {
@@ -789,10 +1000,61 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
     if (on_first_pdu) {
         DynamicBuffer.offset = 0;
         DynamicBuffer.length = 0;
-        DynamicBuffer.unbits = 0;
+        DynamicBuffer.skip_bits = 0;
         DynamicBuffer.allocated = 0;
         DynamicBuffer.bytes_shifted = 0;
         DynamicBuffer.nreallocs = 0;
+    }
+
+    /*
+     * Special handling for JER (JSON Encoding Rules):
+     * JER parsing requires complete JSON tokens and doesn't handle 
+     * partial tokens across read boundaries well. For large JSON files,
+     * read the entire file into memory before parsing to avoid failures
+     * when the default buffer size (8192 bytes) is smaller than the JSON.
+     */
+    if((isyntax == ATS_JER || isyntax == ATS_JER_MINIFIED) && on_first_pdu) {
+        long file_size;
+        size_t total_read = 0;
+        
+        /* Get file size */
+        if(fseek(file, 0, SEEK_END) == 0) {
+            file_size = ftell(file);
+            fseek(file, 0, SEEK_SET);
+            
+            if(file_size > 0 && file_size > suggested_bufsize) {
+                /* File is larger than suggested buffer, read it all */
+                DEBUG("JER: File size %" ASN_PRI_SIZE " bytes, reading entire file", (size_t)file_size);
+                
+                /* Reallocate buffer to fit entire file */
+                fbuf = (uint8_t *)REALLOC(fbuf, file_size + 1);
+                if(!fbuf) {
+                    perror("realloc() for JER file");
+                    exit(EX_OSERR);
+                }
+                fbuf_size = file_size + 1;
+                
+                /* Read entire file */
+                total_read = fread(fbuf, 1, file_size, file);
+                if(total_read == (size_t)file_size) {
+                    fbuf[total_read] = '\0';  /* Null terminate for safety */
+                    
+                    /* Decode the entire file at once */
+                    DEBUG("JER: Decoding entire file (%" ASN_PRI_SIZE " bytes)", total_read);
+                    rval = asn_decode(opt_codec_ctx, isyntax, pduType,
+                                      (void **)&structure, fbuf, total_read);
+                    
+                    DEBUG("JER: Decode result: code=%d, consumed=%" ASN_PRI_SIZE,
+                          rval.code, rval.consumed);
+                    
+                    /* Return the structure directly, bypassing the chunk-based loop */
+                    return structure;
+                } else {
+                    DEBUG("JER: Failed to read entire file, falling back to chunked reading");
+                    fseek(file, 0, SEEK_SET);  /* Reset file position */
+                }
+            }
+        }
     }
 
     old_offset = DynamicBuffer.bytes_shifted + DynamicBuffer.offset;
@@ -801,10 +1063,21 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
     rval.code = RC_WMORE;
     rval.consumed = 0;
 
+<<<<<<< HEAD
     for (tolerate_eof = 1; /* Allow EOF first time buffer is non-empty */
          (rd = fread(fbuf, 1, fbuf_size, file)) || feof(file) == 0 ||
          (tolerate_eof && DynamicBuffer.length);) {
         int ecbits = 0; /* Extra consumed bits in case of PER */
+=======
+    int partial_printed = 0;  /* Track if we already printed partial results */
+    
+    for(tolerate_eof = 1;    /* Allow EOF first time buffer is non-empty */
+        (rd = fread(fbuf, 1, fbuf_size, file))
+        || feof(file) == 0
+        || (tolerate_eof && DynamicBuffer.length)
+        ;) {
+        int      ecbits = 0;    /* Extra consumed bits in case of PER */
+>>>>>>> upstream/vlm_master
         uint8_t *i_bptr;
         size_t i_size;
 
@@ -830,6 +1103,7 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
         if (is_syntax_PER(isyntax) && opt_nopad) {
             switch (isyntax) {
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
+<<<<<<< HEAD
                 case ATS_UNALIGNED_BASIC_PER:
                 case ATS_UNALIGNED_CANONICAL_PER:
                     rval =
@@ -856,18 +1130,55 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
                 default:
                     rval.code = RC_FAIL;
                     rval.consumed = 0;
+=======
+            case ATS_UNALIGNED_BASIC_PER:
+            case ATS_UNALIGNED_CANONICAL_PER:
+                rval = uper_decode(opt_codec_ctx, pduType, (void **)&structure,
+                                   i_bptr, i_size, DynamicBuffer.skip_bits, 0);
+                /* uper_decode() returns bits consumed relative to skip_bits.
+                 * Byte advance = (skip_bits + consumed) / 8; next skip = remainder. */
+                ecbits = (DynamicBuffer.skip_bits + rval.consumed) % 8;
+                rval.consumed = (DynamicBuffer.skip_bits + rval.consumed) >> 3;
+                break;
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+            case ATS_ALIGNED_BASIC_PER:
+            case ATS_ALIGNED_CANONICAL_PER:
+                rval = aper_decode(opt_codec_ctx, pduType, (void **)&structure,
+                                   i_bptr, i_size, DynamicBuffer.skip_bits, 0);
+                /* aper_decode() returns bits consumed relative to skip_bits.
+                 * Byte advance = (skip_bits + consumed) / 8; next skip = remainder. */
+                ecbits = (DynamicBuffer.skip_bits + rval.consumed) % 8;
+                rval.consumed = (DynamicBuffer.skip_bits + rval.consumed) >> 3;
+                break;
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+            default:
+                rval.code = RC_FAIL;
+                rval.consumed = 0;
+>>>>>>> upstream/vlm_master
             }
             /* Non-padded PER decoder */
         } else {
             rval = asn_decode(opt_codec_ctx, isyntax, pduType,
                               (void **)&structure, i_bptr, i_size);
         }
+<<<<<<< HEAD
         if (rval.code == RC_WMORE && !restartability_supported(isyntax)) {
             /* PER does not support restartability */
+=======
+        if(rval.code == RC_WMORE && !restartability_supported(isyntax)) {
+            /* PER does not support restartability — discard partial structure and retry */
+            if(opt_partial && structure && rd == 0 && !partial_printed) {
+                fprintf(stderr, "\n=== Partial Decoding Results (RC_WMORE) ===\n");
+                asn_fprint(stderr, pduType, structure);
+                fprintf(stderr, "=== End of Partial Results ===\n\n");
+                partial_printed = 1;
+            }
+>>>>>>> upstream/vlm_master
             ASN_STRUCT_FREE(*pduType, structure);
             structure = 0;
             rval.consumed = 0;
-            /* Continue accumulating data */
+            /* skip_bits is unchanged: it holds the sub-byte start offset for this PDU */
         }
 
         DEBUG("decode(%" ASN_PRI_SIZE ") consumed %" ASN_PRI_SIZE
@@ -878,12 +1189,19 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
             /*
              * Flush remainder into the intermediate buffer.
              */
+<<<<<<< HEAD
             if (rval.code != RC_FAIL && rval.consumed < rd) {
                 add_bytes_to_buffer(fbuf + rval.consumed, rd - rval.consumed);
                 buffer_shift_left(0, ecbits);
                 DynamicBuffer.bytes_shifted = rval.consumed;
+=======
+            if(rval.code != RC_FAIL && rval.consumed < rd) {
+                add_bytes_to_buffer(fbuf + rval.consumed,
+                    rd - rval.consumed);
+                DynamicBuffer.bytes_shifted += (off_t)rval.consumed;
+>>>>>>> upstream/vlm_master
                 rval.consumed = 0;
-                ecbits = 0;
+                /* ecbits preserved; skip_bits set in RC_OK below */
             }
         }
 
@@ -894,9 +1212,10 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
             DynamicBuffer.offset += rval.consumed;
             DynamicBuffer.length -= rval.consumed;
         } else {
-            DynamicBuffer.bytes_shifted += rval.consumed;
+            DynamicBuffer.bytes_shifted += (off_t)rval.consumed;
         }
 
+<<<<<<< HEAD
         switch (rval.code) {
             case RC_OK:
                 if (ecbits) buffer_shift_left(0, ecbits);
@@ -914,11 +1233,40 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
                 continue;
             case RC_FAIL:
                 break;
+=======
+        switch(rval.code) {
+        case RC_OK:
+            DynamicBuffer.skip_bits = ecbits;
+            DEBUG("RC_OK, finishing up with %" ASN_PRI_SIZE "+%d",
+                rval.consumed, ecbits);
+            return structure;
+        case RC_WMORE:
+            DEBUG("RC_WMORE, continuing read=%" ASN_PRI_SSIZE ", cons=%" ASN_PRI_SIZE
+                " with %" ASN_PRI_SIZE "..%" ASN_PRI_SIZE "-%d..%" ASN_PRI_SIZE,
+                rd,
+                rval.consumed,
+                DynamicBuffer.offset,
+                DynamicBuffer.length,
+                DynamicBuffer.skip_bits,
+                DynamicBuffer.allocated);
+            if(!rd) tolerate_eof--;
+            continue;
+        case RC_FAIL:
+            break;
+>>>>>>> upstream/vlm_master
         }
         break;
     }
 
     DEBUG("Clean up partially decoded %s", pduType->name);
+    
+    /* If partial decoding option is enabled and we haven't already printed, print what we decoded so far */
+    if(opt_partial && structure && !partial_printed) {
+        fprintf(stderr, "\n=== Partial Decoding Results ===\n");
+        asn_fprint(stderr, pduType, structure);
+        fprintf(stderr, "=== End of Partial Results ===\n\n");
+    }
+    
     ASN_STRUCT_FREE(*pduType, structure);
 
     new_offset = DynamicBuffer.bytes_shifted + DynamicBuffer.offset;
@@ -942,6 +1290,7 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
         }
 #endif
 
+<<<<<<< HEAD
         DEBUG("ofp %d, no=%ld, oo=%ld, dbl=%ld", on_first_pdu, (long)new_offset,
               (long)old_offset, (long)DynamicBuffer.length);
         fprintf(stderr,
@@ -952,6 +1301,31 @@ static void *data_decode_from_file(enum asn_transfer_syntax isyntax,
                                         : "Input processing error");
 #ifndef ENOMSG
 #define ENOMSG EINVAL
+=======
+        DEBUG("ofp %d, no=%" ASN_PRI_SIZE ", oo=%" ASN_PRI_SIZE ", dbl=%" ASN_PRI_SIZE,
+            on_first_pdu, new_offset, old_offset,
+            DynamicBuffer.length);
+        
+        /* Provide detailed error information */
+        if(rval.consumed > 0) {
+            /* We have position information about where the failure occurred */
+            fprintf(stderr, "%s: "
+                "Decode failed at byte %" ASN_PRI_SIZE ": %s\n",
+                name, new_offset + rval.consumed,
+                (rval.code == RC_WMORE)
+                    ? "Unexpected end of input"
+                    : "Input processing error");
+        } else {
+            fprintf(stderr, "%s: "
+                "Decode failed past byte %" ASN_PRI_SIZE ": %s\n",
+                name, new_offset,
+                (rval.code == RC_WMORE)
+                    ? "Unexpected end of input"
+                    : "Input processing error");
+        }
+#ifndef    ENOMSG
+#define    ENOMSG EINVAL
+>>>>>>> upstream/vlm_master
 #endif
 #ifndef EBADMSG
 #define EBADMSG EINVAL

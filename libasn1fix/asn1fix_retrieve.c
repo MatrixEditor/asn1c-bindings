@@ -59,7 +59,22 @@ asn1p_module_t *asn1f_lookup_in_imports(arg_t *arg, asn1p_module_t *mod,
         TQ_FOR (tc, &(xp->xp_members), next) {
             if (strcmp(name, tc->Identifier) == 0) break;
 
+<<<<<<< HEAD
             if (!fromModule) continue;
+=======
+			/*
+			 * In strict mode, an unqualified name MUST be listed
+			 * explicitly in the IMPORTS group's xp_members to be
+			 * considered as imported from this group.  This avoids
+			 * picking up a same-named type that happens to live in a
+			 * from-module that exports unrelated names.
+			 */
+			if(arg->flags & A1F_PREFER_IMPORT_SOURCE)
+				continue;
+
+			if(!fromModule)
+				continue;
+>>>>>>> upstream/vlm_master
 
             asn1p_expr_t *v = asn1f_lookup_in_module(fromModule, name);
             if (v) break;
@@ -304,6 +319,7 @@ static asn1p_expr_t *asn1f_lookup_symbol_impl(arg_t *arg,
         struct asn1_namespace_element_s *ns_el =
             &my_namespace->elements[ns_item];
 
+<<<<<<< HEAD
         switch (ns_el->selector) {
             case NAM_SYMBOL:
                 if (modulename) {
@@ -312,6 +328,40 @@ static asn1p_expr_t *asn1f_lookup_symbol_impl(arg_t *arg,
                      * against the "Symbol" parameter. Doesn't match.
                      */
                     continue;
+=======
+        switch(ns_el->selector) {
+        case NAM_SYMBOL:
+            if(modulename) {
+                /*
+                 * Trying to match a fully specified "Module.Symbol"
+                 * against the "Symbol" parameter. Doesn't match.
+                 */
+                continue;
+            }
+            if(strcmp(ns_el->u.symbol.identifier, identifier) != 0) {
+                continue;
+            } else {
+                DEBUG("Lookup (%s) in %s for line %d => found as parameter",
+                      asn1f_printable_reference(ref),
+                      asn1_namespace_string(my_namespace), ref->_lineno);
+                DISPOSE_OF_MY_NAMESPACE();
+                return ns_el->u.symbol.resolution;
+            }
+        case NAM_SPACE: {
+            asn1p_expr_t *ref_tc; /* Referenced tc */
+            /*
+             * Do a direct symbol search in the given module.
+             */
+            ref_tc = asn1f_lookup_in_module(ns_el->u.space.module, identifier);
+            if(ref_tc) {
+                /* It is acceptable that we don't use input parameters */
+                if(rhs_pspecs && !ref_tc->lhs_params) {
+                    DEBUG(
+                        "Parameterized type %s expected "
+                        "for %s at line %d",
+                        ref_tc->Identifier, asn1f_printable_reference(ref),
+                        ref->_lineno);
+>>>>>>> upstream/vlm_master
                 }
                 if (strcmp(ns_el->u.symbol.identifier, identifier) != 0) {
                     continue;

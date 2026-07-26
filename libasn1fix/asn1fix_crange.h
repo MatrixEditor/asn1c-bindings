@@ -48,11 +48,20 @@ typedef struct asn1cnst_range_s {
  * 	EPERM:	Invalid constraint reference.
  */
 enum cpr_flags {
+<<<<<<< HEAD
     CPR_noflags = 0x00,
     CPR_strict_OER_visibility = 0x01,
     CPR_strict_PER_visibility = 0x02,
     CPR_strict_JER_visibility = 0x04,
     CPR_simulate_fbless_SIZE = 0x08,
+=======
+	CPR_noflags			= 0x00,
+	CPR_strict_OER_visibility	= 0x01,
+	CPR_strict_PER_visibility	= 0x02,
+	CPR_strict_JER_visibility	= 0x04,
+	CPR_simulate_fbless_SIZE	= 0x08,
+	CPR_ignore_extension_additions = 0x10,
+>>>>>>> upstream/vlm_master
 };
 asn1cnst_range_t *asn1constraint_compute_OER_range(
     const char *dbg_name, asn1p_expr_type_e expr_type,

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info> and contributors.
+ * Copyright (c) 2022-2025 Mouse <mouse07410@hotmail.com> and contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +50,37 @@
 #else
 #include <dirent.h>
 #endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
+
+/*
+ * Parse a string as a decimal integer with validation.
+ * Returns 1 on success, 0 on failure (non-integer, overflow, or trailing garbage).
+ * If out_val is non-NULL, stores the parsed value on success.
+ */
+static int
+is_integer(const char *str, long *out_val) {
+    char *endptr;
+    errno = 0; /* To distinguish success/failure after call */
+
+    /* 10 is the base (decimal) */
+    long val = strtol(str, &endptr, 10);
+
+    /* Check for various possible errors */
+    if (str == endptr) return 0; /* No digits found at all */
+    if (errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) return 0; /* Overflow */
+    if (errno != 0 && val == 0) return 0; /* Other conversion error */
+
+    /* Check for trailing garbage (optional) */
+    /* If you want to allow "123 ", you'd check if *endptr is whitespace */
+    if (*endptr != '\0') return 0;
+
+    if (out_val) *out_val = val;
+    return 1; /* Success */
+}
 
 static void usage(const char *av0); /* Print the Usage screen and exit */
 static int importStandardModules(asn1p_t *asn, const char *skeletons_dir);
@@ -418,6 +450,15 @@ int main(int ac, char **av) {
         }
     }
 
+    if((asn1_compiler_flags & A1C_NO_CONSTRAINTS)
+       && (asn1_compiler_flags
+           & (A1C_GEN_OER | A1C_GEN_UPER | A1C_GEN_APER))) {
+        fprintf(stderr,
+                "Error: -fno-constraints is incompatible with -gen-OER, "
+                "-gen-UPER, or -gen-APER\n");
+        exit(EX_USAGE);
+    }
+
     /*
      * Ensure that there are some input files present.
      */
@@ -703,6 +744,7 @@ static void __attribute__((noreturn)) usage(const char *av0) {
     /* clang-format off */
 	fprintf(stderr,
 "ASN.1 Compiler, " VERSION "\n" COPYRIGHT
+"ASN.1 Compiler, " VERSION "\n" COPYRIGHT
 "Usage: %s [options] file ...\n"
 "Options:\n"
 "  -E                    Run only the ASN.1 parser and print out the tree\n"
@@ -725,6 +767,7 @@ static void __attribute__((noreturn)) usage(const char *av0) {
 "\n"
 
 "  -fbless-SIZE          Allow SIZE() constraint for INTEGER etc (non-std.)\n"
+"  -fcomplex-threshold=<value>   Threshold value beyond which to use indirection\n"
 "  -fcompound-names      Disambiguate C's struct NAME's inside top-level types\n"
 "  -findirect-choice     Compile members of CHOICE as indirect pointers\n"
 "  -fincludes-quoted     Generate #includes in \"double\" instead of <angle> quotes\n"
@@ -732,8 +775,17 @@ static void __attribute__((noreturn)) usage(const char *av0) {
 "  -fline-refs           Include ASN.1 module's line numbers in comments\n"
 "  -fno-constraints      Do not generate the constraint checking code\n"
 "  -fno-include-deps     Do not generate the courtesy #includes for dependencies\n"
+"  -fprefer-import-source  Require strict xp_members match for IMPORTS (fixes ambiguous same-name imports)\n"
 "  -funnamed-unions      Enable unnamed unions in structures\n"
 "  -fwide-types          Use INTEGER_t instead of \"long\" by default, etc.\n"
+"  -flong-size=<bits>    Target C long size for native INTEGER storage.\n"
+"                        Values: 32, 64.  Default: auto portable 32-bit.\n"
+"  -finteger-native-type=<mode>  Native C storage policy for constrained INTEGER\n"
+"                        types.  Modes: auto, int32, uint32, int64, uint64.\n"
+"                        Default: auto.  Values not fitting the policy are\n"
+"                        generated as INTEGER_t.\n"
+"  -fgen-only-pdu-deps   Generate code only for types that are dependencies of -pdu types\n"
+"  -flist-deps           List PDU dependencies (requires -pdu option, no code generated)\n"
 "  -fprefix=<prefix>     Add the specified prefix to generated types\n"
 "\n"
 

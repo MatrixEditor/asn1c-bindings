@@ -6,6 +6,12 @@
 #include <asn_internal.h>
 #include <constr_CHOICE.h>
 
+#define JER_MEMBER_NAME(elm) \
+    (((elm)->encoding_constraints.jer_constraints \
+      && (elm)->encoding_constraints.jer_constraints->wire_name) \
+         ? (elm)->encoding_constraints.jer_constraints->wire_name \
+         : (elm)->name)
+
 /*
  * Return a standardized complex structure.
  */
@@ -62,6 +68,10 @@ asn_dec_rval_t CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
      * Restore parsing context.
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
+
+    /* Check recursion depth to prevent stack overflow */
+    if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        RETURN(RC_FAIL);
 
     /*
      * Phases of JER/JSON processing:
@@ -185,6 +195,7 @@ asn_dec_rval_t CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
             case JCK_KEY:
             case JCK_UNKNOWN:
 
+<<<<<<< HEAD
                 if (ctx->phase != 1) break; /* Really unexpected */
 
                 /*
@@ -217,6 +228,33 @@ asn_dec_rval_t CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                                         RETURN(RC_FAIL);
                                 }
                             }
+=======
+            /*
+             * Search which inner member corresponds to this key.
+             */
+            for(edx = 0; edx < td->elements_count; edx++) {
+                elm = &td->elements[edx];
+                scv = jer_check_sym(buf_ptr, ch_size, JER_MEMBER_NAME(elm));
+                switch(scv) {
+                case JCK_KEY:
+                    /*
+                     * Process this member.
+                     */
+                    ctx->step = edx;
+                    ctx->phase = 2;
+                    JER_ADVANCE(ch_size); /* skip key */
+                    /* skip colon */
+                    ch_size = jer_next_token(&ctx->context, buf_ptr, size,
+                            &ch_type);
+                    if(ch_size == -1) {
+                        RETURN(RC_FAIL);
+                    } else {
+                        switch(ch_type) {
+                        case PJER_WMORE:
+                            RETURN(RC_WMORE);
+                        case PJER_TEXT:  
+                            JER_ADVANCE(ch_size);
+>>>>>>> upstream/vlm_master
                             break;
                         case JCK_UNKNOWN:
                             continue;
@@ -270,24 +308,39 @@ asn_enc_rval_t CHOICE_encode_jer(const asn_TYPE_descriptor_t *td,
 
     if (!sptr) ASN__ENCODE_FAILED;
 
+    /* Check recursion depth to prevent stack overflow */
+    JER_ENCODER_RECURSION_DEPTH_INC();
+
     /*
      * Figure out which CHOICE element is encoded.
      */
     present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 
+<<<<<<< HEAD
     if (present == 0 || present > td->elements_count) {
+=======
+    if(present == 0 || present > td->elements_count) {
+        JER_ENCODER_RECURSION_DEPTH_DEC();
+>>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     } else {
         asn_enc_rval_t tmper = {0, 0, 0};
         asn_TYPE_member_t *elm = &td->elements[present - 1];
         const void *memb_ptr = NULL;
-        const char *mname = elm->name;
+        const char *mname = JER_MEMBER_NAME(elm);
         unsigned int mlen = strlen(mname);
 
         if (elm->flags & ATF_POINTER) {
             memb_ptr =
                 *(const void *const *)((const char *)sptr + elm->memb_offset);
+<<<<<<< HEAD
             if (!memb_ptr) ASN__ENCODE_FAILED;
+=======
+            if(!memb_ptr) {
+                JER_ENCODER_RECURSION_DEPTH_DEC();
+                ASN__ENCODE_FAILED;
+            }
+>>>>>>> upstream/vlm_master
         } else {
             memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
         }
@@ -312,7 +365,9 @@ asn_enc_rval_t CHOICE_encode_jer(const asn_TYPE_descriptor_t *td,
         ASN__CALLBACK("}", 1);
     }
 
+    JER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
 cb_failed:
+    JER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODE_FAILED;
 }

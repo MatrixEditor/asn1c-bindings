@@ -6,6 +6,12 @@
 #include <asn_internal.h>
 #include <constr_SET.h>
 
+#define JER_MEMBER_NAME(elm) \
+    (((elm)->encoding_constraints.jer_constraints \
+      && (elm)->encoding_constraints.jer_constraints->wire_name) \
+         ? (elm)->encoding_constraints.jer_constraints->wire_name \
+         : (elm)->name)
+
 /*
  * Return a standardized complex structure.
  */
@@ -70,6 +76,14 @@ asn_dec_rval_t SET_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
 
+<<<<<<< HEAD
+=======
+    /* Check recursion depth to prevent stack overflow */
+    if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
+        RETURN(RC_FAIL);
+
+
+>>>>>>> upstream/vlm_master
     /*
      * Phases of JER/JSON processing:
      * Phase 0: Check that the key matches our expectations.
@@ -184,12 +198,26 @@ asn_dec_rval_t SET_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                 JER_ADVANCE(ch_size);
                 continue;
 
+<<<<<<< HEAD
             case JCK_OSTART:
                 if (ctx->phase == 0) {
                     JER_ADVANCE(ch_size);
                     ctx->phase = 1; /* Processing body phase */
                     continue;
                 }
+=======
+            if(edx < td->elements_count) {
+                /*
+                 * We have to check which member is next.
+                 */
+                for(edx = 0; edx < td->elements_count; edx++) {
+                    elm = &elements[edx];
+                    scv = jer_check_sym(ptr, ch_size, JER_MEMBER_NAME(elm));
+                    switch (scv) {
+                    case JCK_KEY:
+                        ctx->step = edx;
+                        ctx->phase = 2;
+>>>>>>> upstream/vlm_master
 
                 /* Fall through */
             case JCK_KEY:

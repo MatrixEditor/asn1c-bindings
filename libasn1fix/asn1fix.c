@@ -73,7 +73,20 @@ int asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
         }
     }
 
+<<<<<<< HEAD
     a1f_replace_me_with_proper_interface_arg = arg;
+=======
+	if(flags & A1F_PREFER_IMPORT_SOURCE) {
+		arg.flags |= A1F_PREFER_IMPORT_SOURCE;
+		flags &= ~A1F_PREFER_IMPORT_SOURCE;
+		if(arg.debug) {
+			arg.debug(-1,
+				"IMPORTS resolution: require explicit xp_members match");
+		}
+	}
+
+	a1f_replace_me_with_proper_interface_arg = arg;
+>>>>>>> upstream/vlm_master
 
     /*
      * Check that we haven't missed an unknown flag.
@@ -109,7 +122,11 @@ int asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
         arg.ns = 0;
     }
 
-    memset(&a1f_replace_me_with_proper_interface_arg, 0, sizeof(arg_t));
+	a1f_replace_me_with_proper_interface_arg = (arg_t){
+		.eh = arg.eh,
+		.debug = arg.debug,
+		.flags = arg.flags,
+	};
 
     /*
      * Compute a return value.
@@ -192,6 +209,7 @@ static int asn1f_fix_module__phase_1(arg_t *arg) {
             RET2RVAL(-1, rvalue);
     }
 
+<<<<<<< HEAD
     /*
      * Do various non-recursive transformations.
      */
@@ -210,6 +228,32 @@ static int asn1f_fix_module__phase_1(arg_t *arg) {
         RET2RVAL(ret, rvalue);
         assert(arg->expr == expr);
     }
+=======
+	/*
+	 * Do various non-recursive transformations.
+	 */
+	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
+		arg->expr = expr;
+		ret = phase_1_1(arg, 0);
+		RET2RVAL(ret, rvalue);
+		/*
+		 * Make sure everybody's behaving well.
+		 */
+		assert(arg->expr == expr);
+	}
+	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
+		arg->expr = expr;
+		ret = phase_1_1(arg, 1);
+		RET2RVAL(ret, rvalue);
+		assert(arg->expr == expr);
+	}
+>>>>>>> upstream/vlm_master
 
     /*
      * 5. Automatic tagging
@@ -220,8 +264,17 @@ static int asn1f_fix_module__phase_1(arg_t *arg) {
         ret = asn1f_recurse_expr(arg, asn1f_fix_constr_autotag);
         RET2RVAL(ret, rvalue);
 
+<<<<<<< HEAD
         assert(arg->expr == expr);
     }
+=======
+	/*
+	 * 5. Automatic tagging
+	 */
+	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+>>>>>>> upstream/vlm_master
 
     /*
      * 8. fix BIT STRING
@@ -236,8 +289,20 @@ static int asn1f_fix_module__phase_1(arg_t *arg) {
         ret = asn1f_recurse_expr(arg, asn1f_fix_cstring);
         RET2RVAL(ret, rvalue);
 
+<<<<<<< HEAD
         assert(arg->expr == expr);
     }
+=======
+	/*
+	 * 8. fix BIT STRING
+	 * 9. fix spaces in cstrings
+	 */
+	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
+		arg->expr = expr;
+>>>>>>> upstream/vlm_master
 
     /*
      * ... Check for tags distinctness.
@@ -251,7 +316,26 @@ static int asn1f_fix_module__phase_1(arg_t *arg) {
         assert(arg->expr == expr);
     }
 
+<<<<<<< HEAD
     return rvalue;
+=======
+	/*
+	 * ... Check for tags distinctness.
+	 */
+	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+		
+		arg->expr = expr;
+
+		ret = asn1f_recurse_expr(arg, asn1f_check_constr_tags_distinct);
+		RET2RVAL(ret, rvalue);
+
+		assert(arg->expr == expr);
+	}
+
+	return rvalue;
+>>>>>>> upstream/vlm_master
 }
 
 static int asn1f_fix_module__phase_2(arg_t *arg) {
@@ -259,8 +343,14 @@ static int asn1f_fix_module__phase_2(arg_t *arg) {
     int rvalue = 0;
     int ret;
 
+<<<<<<< HEAD
     TQ_FOR (expr, &(arg->mod->members), next) {
         arg->expr = expr;
+=======
+	TQ_FOR(expr, &(arg->mod->members), next) {
+		/* Skip encoding instructions */
+		if(expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+>>>>>>> upstream/vlm_master
 
         /*
          * Dereference DEFAULT values.
@@ -520,7 +610,18 @@ static int asn1f_check_duplicate(arg_t *arg) {
             assert(tmparg.expr->Identifier);
             assert(arg->expr->Identifier);
 
+<<<<<<< HEAD
             if (arg->expr->spec_index != -1) continue;
+=======
+			if(arg->expr->spec_index != -1)
+				continue;
+			
+			/* Skip encoding instructions - they're not real types */
+			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION)
+				continue;
+			if(tmparg.expr->_mark & TM_ENCODING_INSTRUCTION)
+				continue;
+>>>>>>> upstream/vlm_master
 
             if (tmparg.expr == arg->expr) break;
 
