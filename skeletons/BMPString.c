@@ -25,12 +25,8 @@ static asn_per_constraints_t asn_DEF_BMPString_per_constraints = {
 #endif /* !defined(ASN_DISABLE_UPER_SUPPORT) || \
           !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_operation_t asn_OP_BMPString = {
-<<<<<<< HEAD
-    OCTET_STRING_free, /* Implemented in terms of OCTET STRING */
-=======
     .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,  /* Implemented in terms of OCTET STRING */
->>>>>>> upstream/vlm_master
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     BMPString_print,
 #else
@@ -84,10 +80,6 @@ asn_TYPE_operation_t asn_OP_BMPString = {
     OCTET_STRING_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -97,7 +89,6 @@ asn_TYPE_operation_t asn_OP_BMPString = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_BMPString = {
     "BMPString",

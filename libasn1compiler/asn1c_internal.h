@@ -62,20 +62,17 @@ typedef struct arg_s {
     asn1_namespace_t *ns;
     asn1p_expr_t *expr;
 
-    int embed;
-<<<<<<< HEAD
+	int embed;
+	union {
+	   asn1p_expr_t *localvalidation_expr;
+	} param;
 
-    /*python code generation*/
-    size_t anonymous_inner;        /* anonymous inner type counter*/
-    const char *pymodule_qualname; /* python module qualname, e.g. "example.mymodule"*/
-    const char *pymodule_name;     /* python module name, e.g. "mymodule"*/
-    struct compiler_streams *pytarget;
-    struct asn1c_pyimports_s *pyimports;
-=======
-    union {
-       asn1p_expr_t *localvalidation_expr;
-    } param;
->>>>>>> upstream/vlm_master
+	/* Python code generation. */
+	size_t anonymous_inner;
+	const char *pymodule_qualname;
+	const char *pymodule_name;
+	struct compiler_streams *pytarget;
+	struct asn1c_pyimports_s *pyimports;
 } arg_t;
 
 /*

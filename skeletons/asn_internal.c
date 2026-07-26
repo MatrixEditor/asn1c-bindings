@@ -1,13 +1,5 @@
 #include <asn_internal.h>
 
-<<<<<<< HEAD
-#ifdef ASN_EMIT_DEBUG
-int asn_debug_indent = 0;
-#endif
-
-ssize_t asn__format_to_callback(int (*cb)(const void *, size_t, void *key),
-                                void *key, const char *fmt, ...) {
-=======
 #ifdef ASN__DEBUG_INDENT_NEEDS_DEFINITION
 /*
  * The single definition of the debugging indentation level, shared by all
@@ -60,7 +52,6 @@ int jer_encoding_depth = 0;   /* JER */
 ssize_t
 asn__format_to_callback(int (*cb)(const void *, size_t, void *key), void *key,
                         const char *fmt, ...) {
->>>>>>> upstream/vlm_master
     char scratch[64];
     char *buf = scratch;
     size_t buf_size = sizeof(scratch);

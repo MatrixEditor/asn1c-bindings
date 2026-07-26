@@ -57,7 +57,9 @@ if [ ! -x "${ASN1C}" ]; then
     exit 1
 fi
 
-"${ASN1C}" -fcompound-names -findirect-choice -gen-JER -S "${SKELETONS_DIR}" test-open-type.asn1 || {
+"${ASN1C}" -fcompound-names -findirect-choice -gen-JER \
+    -no-gen-python -no-gen-python-stubs \
+    -S "${SKELETONS_DIR}" test-open-type.asn1 || {
     echo "ERROR: Failed to generate C code from ASN.1 schema" >&2
     exit 1
 }

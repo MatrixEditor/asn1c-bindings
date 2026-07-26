@@ -25,25 +25,6 @@ ssize_t aper_get_length(asn_per_data_t *pd, ssize_t lb, ssize_t ub, int ebits,
         return aper_get_constrained_whole_number(pd, lb, ub);
     }
 
-<<<<<<< HEAD
-    if (aper_get_align(pd) < 0) return -1;
-
-    if (ebits >= 0) return per_get_few_bits(pd, ebits);
-
-    value = per_get_few_bits(pd, 8);
-    if (value < 0) return -1;
-    if ((value & 128) == 0) /* #11.9.3.6 */
-        return (value & 0x7F);
-    if ((value & 64) == 0) { /* #11.9.3.7 */
-        value = ((value & 63) << 8) | per_get_few_bits(pd, 8);
-        if (value < 0) return -1;
-        return value;
-    }
-    value &= 63; /* this is "m" from X.691, #11.9.3.8 */
-    if (value < 1 || value > 4) return -1;
-    *repeat = 1;
-    return (16384 * value);
-=======
 	/* Only align for unconstrained length determinants that require it.
 	 * For SET OF/SEQUENCE OF with unconstrained size, alignment should
 	 * be done only when the length encoding format requires it.
@@ -73,7 +54,6 @@ ssize_t aper_get_length(asn_per_data_t *pd, ssize_t lb, ssize_t ub, int ebits,
 		return -1;
 	*repeat = 1;
 	return (16384 * value);
->>>>>>> upstream/vlm_master
 }
 
 ssize_t aper_get_nslength(asn_per_data_t *pd) {
@@ -292,15 +272,6 @@ int aper_put_nsnnwn(asn_per_outp_t *po, int number) {
 }
 
 /* X.691 2002 10.5 - Encoding of a constrained whole number */
-<<<<<<< HEAD
-int aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub,
-                                      long number) {
-    assert(ub >= lb);
-    long range = ub - lb + 1;
-    long value = number - lb;
-    int range_len;
-    int value_len;
-=======
 int
 aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long number) {
 	assert(ub >= lb);
@@ -315,7 +286,6 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 	long value = number - lb;
 	int range_len;
 	int value_len;
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("aper put constrained_whole_number %ld with lb %ld and ub %ld",
               number, lb, ub);
@@ -325,15 +295,6 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
     /* X.691 2002 10.5.4 */
     if (range == 1) return 0;
 
-<<<<<<< HEAD
-    /* X.691 2002 10.5.7.1 - The bit-field case. */
-    if (range <= 255) {
-        int bitfield_size = 8;
-        for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--)
-            if ((range - 1) & (1 << (bitfield_size - 1))) break;
-        return per_put_few_bits(po, value, bitfield_size);
-    }
-=======
 	/* X.691 2002 10.5.7.1 - The bit-field case. */
 	if (range <= 255) {
 		int bitfield_size = 8;
@@ -345,7 +306,6 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 		}
 		return per_put_few_bits(po, value, bitfield_size);
 	}
->>>>>>> upstream/vlm_master
 
     /* X.691 2002 10.5.7.2 - The one-octet case. */
     if (range == 256) {
@@ -359,25 +319,6 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
         return per_put_few_bits(po, value, 16);
     }
 
-<<<<<<< HEAD
-    /* X.691 2002 10.5.7.4 - The indefinite length case. */
-    /* since we limit input to be 'long' we don't handle all numbers */
-    /* and so length determinant is stored as X.691 2002 10.9.3.3 */
-    /* number of bytes to store the range */
-    for (range_len = 3;; range_len++) {
-        int bits = 1 << (8 * range_len);
-        if (range - 1 < bits) break;
-    }
-    /* number of bytes to store the value */
-    for (value_len = 1;; value_len++) {
-        long bits = ((long)1) << (8 * value_len);
-        if (value < bits) break;
-    }
-    if (aper_put_constrained_whole_number(po, 1, range_len, value_len))
-        return -1;
-    if (aper_put_align(po)) return -1;
-    return per_put_few_bits(po, value, value_len * 8);
-=======
 	/* X.691 2002 10.5.7.4 - The indefinite length case. */
 	/* since we limit input to be 'long' we don't handle all numbers */
 	/* and so length determinant is stored as X.691 2002 10.9.3.3 */
@@ -408,5 +349,4 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 	if (aper_put_align(po))
 		return -1;
 	return per_put_few_bits(po, value, value_len * 8);
->>>>>>> upstream/vlm_master
 }

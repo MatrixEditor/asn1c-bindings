@@ -21,9 +21,6 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
         ASN__DECODE_FAILED;
     }
 
-<<<<<<< HEAD
-    if (!elm->type_selector) {
-=======
     /* Validate elm->type before accessing its members */
     if(!elm->type) {
         ASN_DEBUG("Open Type %s->%s: type descriptor is NULL",
@@ -32,18 +29,13 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     if(!elm->type_selector) {
->>>>>>> upstream/vlm_master
         ASN_DEBUG("Type selector is not defined for Open Type %s->%s->%s",
                   td->name, elm->name, elm->type->name);
         ASN__DECODE_FAILED;
     }
 
     selected = elm->type_selector(td, sptr);
-<<<<<<< HEAD
-    if (!selected.presence_index) {
-=======
     if(!selected.presence_index || !selected.type_descriptor) {
->>>>>>> upstream/vlm_master
         ASN__DECODE_FAILED;
     }
 
@@ -54,11 +46,6 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
         memb_ptr = (char *)sptr + elm->memb_offset;
         memb_ptr2 = &memb_ptr;
     }
-<<<<<<< HEAD
-    if (*memb_ptr2 != NULL) {
-        /* Make sure we reset the structure first before encoding */
-        if (CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0) != 0) {
-=======
 
     /* Check if this OPEN_TYPE uses CHOICE wrapper (elements_count > 0) or direct type */
     if(elm->type->elements_count > 0) {
@@ -69,7 +56,6 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
             ASN_DEBUG("Open Type %s->%s: presence index %u out of bounds (max %u)",
                       td->name, elm->name, selected.presence_index,
                       elm->type->elements_count);
->>>>>>> upstream/vlm_master
             ASN__DECODE_FAILED;
         }
         
@@ -105,17 +91,6 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
                   td->name, elm->name);
     }
 
-<<<<<<< HEAD
-    inner_value = (char *)*memb_ptr2 +
-                  elm->type->elements[selected.presence_index - 1].memb_offset;
-
-    ot_ret = oer_open_type_get(opt_codec_ctx, selected.type_descriptor, NULL,
-                               &inner_value, ptr, size);
-    switch (ot_ret) {
-        default:
-            if (CHOICE_variant_set_presence(elm->type, *memb_ptr2,
-                                            selected.presence_index) == 0) {
-=======
     /* Compute inner_value based on CHOICE wrapper mode or direct type mode */
     unsigned int memb_offset = 0;
     const asn_TYPE_member_t *variant_elm = NULL;
@@ -170,24 +145,12 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
                     void **variant_ptr = (void **)((char *)*memb_ptr2 + memb_offset);
                     *variant_ptr = inner_value;
                 }
->>>>>>> upstream/vlm_master
                 rv.code = RC_OK;
                 rv.consumed = ot_ret;
                 return rv;
             } else {
                 /* Oh, now a full-blown failure failure */
             }
-<<<<<<< HEAD
-            /* Fall through */
-        case -1:
-            rv.code = RC_FAIL;
-            rv.consumed = ot_ret;
-            break;
-        case 0:
-            rv.code = RC_WMORE;
-            rv.consumed = 0;
-            break;
-=======
         } else {
             /* Direct type mode: update member pointer with decoded value if pointer type */
             if(elm->flags & ATF_POINTER) {
@@ -206,18 +169,12 @@ asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
         rv.code = RC_WMORE;
         rv.consumed = 0;
         break;
->>>>>>> upstream/vlm_master
     }
 
     if (*memb_ptr2) {
         const asn_CHOICE_specifics_t *specs =
-<<<<<<< HEAD
-            selected.type_descriptor->specifics;
-        if (elm->flags & ATF_POINTER) {
-=======
             (const asn_CHOICE_specifics_t *)elm->type->specifics;
         if(elm->flags & ATF_POINTER) {
->>>>>>> upstream/vlm_master
             ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
             *memb_ptr2 = NULL;
         } else {

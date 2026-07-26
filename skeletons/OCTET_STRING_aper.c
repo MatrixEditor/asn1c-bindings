@@ -186,16 +186,6 @@ asn_dec_rval_t OCTET_STRING_decode_aper(
 
         repeat = 0;
         /* Get the PER length */
-<<<<<<< HEAD
-        if (csiz->upper_bound - csiz->lower_bound == 0)
-            /* Indefinite length case */
-            raw_len =
-                aper_get_length(pd, -1, -1, csiz->effective_bits, &repeat);
-        else
-            raw_len = aper_get_length(pd, csiz->lower_bound, csiz->upper_bound,
-                                      csiz->effective_bits, &repeat);
-        if (raw_len < 0) RETURN(RC_WMORE);
-=======
         if((csiz->flags & APC_CONSTRAINED)
            && csiz->upper_bound >= csiz->lower_bound) {
             raw_len = aper_get_length(pd, csiz->lower_bound, csiz->upper_bound,
@@ -204,7 +194,6 @@ asn_dec_rval_t OCTET_STRING_decode_aper(
             raw_len = aper_get_length(pd, -1, -1, -1, &repeat);
         }
         if(raw_len < 0) RETURN(RC_WMORE);
->>>>>>> upstream/vlm_master
 
         ASN_DEBUG("Got PER length eb %ld, len %ld, %s (%s)",
                   (long)csiz->effective_bits, (long)raw_len,

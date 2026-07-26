@@ -44,13 +44,6 @@ int asn1p_constraint_compare(const asn1p_constraint_t *a,
 
     if (a->type != b->type) return -1;
 
-<<<<<<< HEAD
-    /* Currently we only check VALUESET as a reference */
-    if (a->type == ACT_EL_TYPE) {
-        return strcmp(
-            a->containedSubtype->value.v_type->reference->components[0].name,
-            b->containedSubtype->value.v_type->reference->components[0].name);
-=======
     /*
      * Currently we only distinguish VALUESET constraints expressed as
      * references to contained subtypes. This keeps parameterizations that differ
@@ -70,7 +63,6 @@ int asn1p_constraint_compare(const asn1p_constraint_t *a,
         if(ra || rb)
             return -1;
         return 0;
->>>>>>> upstream/vlm_master
     }
 
     return 0;

@@ -16,6 +16,7 @@ path_from_testdir() {
 
 ASN1C="$(path_from_testdir "${top_builddir}")/asn1c/asn1c"
 SKELETONS_DIR="$(path_from_testdir "${top_srcdir}")/skeletons"
+COMMON_ASN1C_FLAGS="-no-gen-python -no-gen-python-stubs"
 
 cleanup() {
     rm -rf *.[acho] Makefile.am.* *.mk *.txt *.asn
@@ -43,7 +44,7 @@ verify() {
     rm -rf "test-${type}"
     mkdir "test-${type}"
     cd "test-${type}"
-    asncmd="${ASN1C} -fall-defs-global -Wdebug-compiler -flink-skeletons -S ${SKELETONS_DIR} $flags test.asn"
+    asncmd="${ASN1C} -fall-defs-global -Wdebug-compiler -flink-skeletons -S ${SKELETONS_DIR} ${COMMON_ASN1C_FLAGS} $flags test.asn"
 
     {
     echo "$asncmd"

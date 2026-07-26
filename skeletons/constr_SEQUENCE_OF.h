@@ -45,15 +45,11 @@ jer_type_encoder_f SEQUENCE_OF_encode_jer;
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 #define SEQUENCE_OF_decode_oer SET_OF_decode_oer
 #define SEQUENCE_OF_encode_oer SET_OF_encode_oer
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
-=======
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
 cbor_type_decoder_f SEQUENCE_OF_decode_cbor;
 cbor_type_encoder_f SEQUENCE_OF_encode_cbor;
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define SEQUENCE_OF_decode_uper SET_OF_decode_uper

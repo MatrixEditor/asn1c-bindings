@@ -51,7 +51,9 @@ END
 END
 ENDOFASN1
 
-"${ASN1C}" -fcompound-names -gen-JER -no-gen-OER -no-gen-UPER -no-gen-APER -no-gen-CBOR -S "${SKELETONS_DIR}" test.asn1
+"${ASN1C}" -fcompound-names -gen-JER -no-gen-OER -no-gen-UPER -no-gen-APER -no-gen-CBOR \
+    -no-gen-python -no-gen-python-stubs \
+    -S "${SKELETONS_DIR}" test.asn1
 
 cat > test_program.c << 'ENDOFTEST'
 #include <assert.h>
@@ -200,7 +202,7 @@ expect_fail() {
     name=$1
     body=$2
     printf '%s\n' "${body}" > "${name}.asn1"
-    if "${ASN1C}" -S "${SKELETONS_DIR}" -P "${name}.asn1" > "${name}.out" 2> "${name}.err"; then
+    if "${ASN1C}" -S "${SKELETONS_DIR}" -P -no-gen-python -no-gen-python-stubs "${name}.asn1" > "${name}.out" 2> "${name}.err"; then
         echo "ERROR: ${name}.asn1 unexpectedly compiled" >&2
         exit 1
     fi

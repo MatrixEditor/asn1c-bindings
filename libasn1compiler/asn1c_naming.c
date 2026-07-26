@@ -167,13 +167,6 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
     abuf_str(&b_type_constrained_c_name,
              asn1c_type_name(arg, expr, TNF_CONSTYPE));
 
-<<<<<<< HEAD
-    if ((arg->flags & A1C_COMPOUND_NAMES)) {
-        if ((expr_type & ASN_CONSTR_MASK) ||
-            expr_type == ASN_BASIC_ENUMERATED ||
-            ((expr_type == ASN_BASIC_INTEGER ||
-              expr_type == ASN_BASIC_BIT_STRING))) {
-=======
 
     if((arg->flags & A1C_COMPOUND_NAMES)) {
         if((expr_type & ASN_CONSTR_MASK)
@@ -181,7 +174,6 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
            || ((expr_type == ASN_BASIC_INTEGER
                 || expr_type == ASN_BASIC_BIT_STRING))
            || expr->encoding_control.encoding_type != EC_NONE) {
->>>>>>> upstream/vlm_master
             compound_names = 1;
         }
     }
@@ -239,43 +231,22 @@ static struct c_names c_name_impl(arg_t *arg, asn1p_expr_t *expr,
                     tmp_compoundable_part_name.buffer);
         abuf_printf(&b_members_enum, "enum %s", b_base_name.buffer);
         abuf_printf(&b_members_name, "e_%s", tmp_compoundable_part_name.buffer);
-<<<<<<< HEAD
-    } else {
-        if (!expr->_anonymous_type) {
-            if (arg->embed) {
-                abuf_printf(&b_short_name, "%s%s", asn1c_prefix_get(),
-                            b_as_member.buffer);
-=======
         abuf_printf(&b_compound_name, "%s", compound_part_name.buffer);
    } else {
         if(!expr->_anonymous_type) {
             if(arg->embed) {
                 abuf_printf(&b_short_name, "%s%s", asn1c_prefix_get(), b_as_member.buffer);
->>>>>>> upstream/vlm_master
             } else {
                 abuf_printf(&b_short_name, "%s%s_t", asn1c_prefix_get(),
                             b_as_member.buffer);
             }
         }
-<<<<<<< HEAD
-        abuf_printf(&b_full_name, "struct %s%s", asn1c_prefix_get(),
-                    b_base_name.buffer);
-        abuf_printf(&b_presence_enum, "enum %s%s_PR", asn1c_prefix_get(),
-                    tmp_compoundable_part_name.buffer);
-        abuf_printf(&b_presence_name, "%s%s_PR", asn1c_prefix_get(),
-                    tmp_compoundable_part_name.buffer);
-        abuf_printf(&b_members_enum, "enum %s%s", asn1c_prefix_get(),
-                    b_base_name.buffer);
-        abuf_printf(&b_members_name, "e_%s%s", asn1c_prefix_get(),
-                    tmp_compoundable_part_name.buffer);
-=======
         abuf_printf(&b_full_name, "struct %s%s", asn1c_prefix_get(), b_base_name.buffer);
         abuf_printf(&b_presence_enum, "enum %s%s_PR", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
         abuf_printf(&b_presence_name, "%s%s_PR", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
         abuf_printf(&b_members_enum, "enum %s%s", asn1c_prefix_get(), b_base_name.buffer);
         abuf_printf(&b_members_name, "e_%s%s", asn1c_prefix_get(), tmp_compoundable_part_name.buffer);
         abuf_printf(&b_compound_name, "%s%s", asn1c_prefix_get(), compound_part_name.buffer);
->>>>>>> upstream/vlm_master
     }
 
     names.type.asn_name = b_type_asn_name.buffer;

@@ -7,16 +7,6 @@
 #include <constr_SEQUENCE_OF.h>
 #include <asn_SEQUENCE_OF.h>
 
-<<<<<<< HEAD
-asn_enc_rval_t SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td,
-                                      const void *sptr, int ilevel,
-                                      enum xer_encoder_flags_e flags,
-                                      asn_app_consume_bytes_f *cb,
-                                      void *app_key) {
-    asn_enc_rval_t er = {0, 0, 0};
-    const asn_SET_OF_specifics_t *specs =
-        (const asn_SET_OF_specifics_t *)td->specifics;
-=======
 /*
  * SEQUENCE OF XER decoder with preprocessing to handle ASN.1 keyword wrapper tags.
  * 
@@ -143,7 +133,6 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
      */
     asn_enc_rval_t er = {0,0,0};
     const asn_SET_OF_specifics_t *specs = (const asn_SET_OF_specifics_t *)td->specifics;
->>>>>>> upstream/vlm_master
     const asn_TYPE_member_t *elm = td->elements;
     const asn_anonymous_sequence_ *list = _A_CSEQUENCE_FROM_VOID(sptr);
     const char *mname;
@@ -155,7 +144,8 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
             ASN_DEBUG("SEQUENCE OF has no element type descriptor");
             ASN__ENCODE_FAILED;
         }
-        mname = (*elm->name) ? elm->name : elm->type->xml_tag;
+        mname = (*elm->name && !asn_is_synthetic_collection_member_name(elm->name))
+              ? elm->name : elm->type->xml_tag;
         
         /* Check if mname contains ASN.1 meta-syntax keywords that should not be output */
         if(asn_is_meta_syntax_keyword(mname)) {
@@ -179,10 +169,6 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         void *memb_ptr = list->array[i];
         if (!memb_ptr) continue;
 
-<<<<<<< HEAD
-        if (mname) {
-            if (!xcan) ASN__TEXT_INDENT(1, ilevel);
-=======
         if(mname) {
             if(!xcan) {
                 if(i == 0 || er.encoded == 0) {
@@ -194,20 +180,15 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
                     for(tmp_i = 0; tmp_i < ilevel; tmp_i++) ASN__CALLBACK("    ", 4);
                 }
             }
->>>>>>> upstream/vlm_master
             ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
         }
 
         tmper = elm->type->op->xer_encoder(elm->type, memb_ptr, ilevel + 1,
                                            flags, cb, app_key);
-<<<<<<< HEAD
-        if (tmper.encoded == -1) return tmper;
-=======
         if(tmper.encoded == -1) {
             XER_ENCODER_RECURSION_DEPTH_DEC();
             return tmper;
         }
->>>>>>> upstream/vlm_master
         er.encoded += tmper.encoded;
         if (tmper.encoded == 0 && specs->as_XMLValueList) {
             const char *name = elm->type->xml_tag;
@@ -216,15 +197,6 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
             ASN__CALLBACK3("<", 1, name, len, "/>", 2);
         }
 
-<<<<<<< HEAD
-        if (mname) {
-            ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
-        }
-    }
-
-    if (!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
-
-=======
         if(mname) {
             if(!xcan) {
                 /* Add indentation before closing tag only if element is a structured type
@@ -241,7 +213,6 @@ SEQUENCE_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
     }
 
     XER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
     ASN__ENCODED_OK(er);
 cb_failed:
     XER_ENCODER_RECURSION_DEPTH_DEC();

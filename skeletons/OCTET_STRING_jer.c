@@ -7,15 +7,6 @@
 #include <OCTET_STRING.h>
 #include <BIT_STRING.h> /* for .bits_unused member */
 
-<<<<<<< HEAD
-asn_enc_rval_t OCTET_STRING_encode_jer(const asn_TYPE_descriptor_t *td,
-                                       const asn_jer_constraints_t *constraints,
-                                       const void *sptr, int ilevel,
-                                       enum jer_encoder_flags_e flags,
-                                       asn_app_consume_bytes_f *cb,
-                                       void *app_key) {
-    const char *const h2c = "0123456789ABCDEF";
-=======
 static const char jer_base64_encode_table[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -26,7 +17,6 @@ OCTET_STRING_encode_jer(const asn_TYPE_descriptor_t *td,
                         enum jer_encoder_flags_e flags,
                         asn_app_consume_bytes_f *cb, void *app_key) {
     const char * const h2c = "0123456789ABCDEF";
->>>>>>> upstream/vlm_master
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
     asn_enc_rval_t er = {0, 0, 0};
     char scratch[16 * 3 + 4];
@@ -306,11 +296,6 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr,
             break;
         }
     }
-<<<<<<< HEAD
-    --pend;
-    for (; pend >= p; --pend) {
-        if (*pend == CQUOTE) break;
-=======
     /* Find ending quote - ensure we don't go below the start */
     if (pend > (const char *)chunk_buf) {
         --pend;
@@ -318,7 +303,6 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr,
             if (*pend == CQUOTE)
                 break;
         }
->>>>>>> upstream/vlm_master
     }
     if (pend < p) return -1;
     chunk_size = pend - p;
@@ -407,14 +391,10 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr,
     assert(st->size <= new_size);
     st->buf[st->size] = 0; /* Courtesy termination */
 
-<<<<<<< HEAD
-    return (chunk_stop - (const char *)chunk_buf); /* Converted size */
-=======
     /* Ensure return value is valid */
     ssize_t consumed = chunk_stop - (const char *)chunk_buf;
     if (consumed < 0 || (size_t)consumed > chunk_size + 2) return -1;  /* +2 for quotes */
     return consumed;  /* Converted size */
->>>>>>> upstream/vlm_master
 }
 
 /*

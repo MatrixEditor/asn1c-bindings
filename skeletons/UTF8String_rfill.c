@@ -45,11 +45,6 @@ static size_t UTF8String__random_char(uint8_t *b, size_t size) {
     return v->size;
 }
 
-<<<<<<< HEAD
-asn_random_fill_result_t UTF8String_random_fill(
-    const asn_TYPE_descriptor_t *td, void **sptr,
-    const asn_encoding_constraints_t *constraints, size_t max_length) {
-=======
 static size_t
 UTF8String__encode_codepoint(uint8_t *b, uint32_t code) {
     if(code <= 0x7f) {
@@ -94,7 +89,6 @@ asn_random_fill_result_t
 UTF8String_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
                        const asn_encoding_constraints_t *constraints,
                        size_t max_length) {
->>>>>>> upstream/vlm_master
     asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
     asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
     asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
@@ -161,10 +155,6 @@ UTF8String_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
 
     bend = &buf[4 * rnd_len];
 
-<<<<<<< HEAD
-    for (b = buf, idx = 0; idx < rnd_len; idx++) {
-        b += UTF8String__random_char(b, (bend - b));
-=======
     for(b = buf, idx = 0; idx < rnd_len; idx++) {
         if(has_value_constraint) {
             uint32_t code = (uint32_t)asn_random_between(value_lb, value_ub);
@@ -174,7 +164,6 @@ UTF8String_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
         } else {
             b += UTF8String__random_char(b, (bend - b));
         }
->>>>>>> upstream/vlm_master
     }
     *(uint8_t *)b = 0;
 

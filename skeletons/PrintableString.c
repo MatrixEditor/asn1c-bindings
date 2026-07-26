@@ -50,13 +50,8 @@ static int asn_DEF_PrintableString_c2v(unsigned int code) {
     return -1;
 }
 static asn_per_constraints_t asn_DEF_PrintableString_per_constraints = {
-<<<<<<< HEAD
-    {APC_CONSTRAINED, 4, 4, 0x20, 0x39},  /* Value */
-    {APC_SEMI_CONSTRAINED, -1, -1, 0, 0}, /* Size */
-=======
     { APC_CONSTRAINED, 7, 7, 0x20, 0x7a },   /* Value: 7-bit, range space..'z' */
     { APC_SEMI_CONSTRAINED, -1, -1, 0, 0 },  /* Size */
->>>>>>> upstream/vlm_master
     asn_DEF_PrintableString_v2c,
     asn_DEF_PrintableString_c2v};
 #endif /* !defined(ASN_DISABLE_UPER_SUPPORT) || \
@@ -117,10 +112,6 @@ asn_TYPE_operation_t asn_OP_PrintableString = {
     OCTET_STRING_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -130,7 +121,6 @@ asn_TYPE_operation_t asn_OP_PrintableString = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_PrintableString = {
     "PrintableString",

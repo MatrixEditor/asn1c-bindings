@@ -7,10 +7,11 @@
 #include <OPEN_TYPE.h>
 #include <constr_CHOICE.h>
 
-asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
-                                 const asn_TYPE_descriptor_t *td, void *sptr,
-                                 const asn_TYPE_member_t *elm, const void *ptr,
-                                 size_t size) {
+asn_dec_rval_t
+OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
+                  const asn_TYPE_descriptor_t *td,
+                  void *sptr, const asn_TYPE_member_t *elm, const void *ptr,
+                  size_t size) {
     size_t consumed_myself = 0;
     asn_type_selector_result_t selected;
     void *memb_ptr;   /* Pointer to the member */
@@ -18,17 +19,6 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     void *inner_value;
     asn_dec_rval_t rv;
 
-<<<<<<< HEAD
-    int jer_context = 0;
-    ssize_t ch_size;
-    pjer_chunk_type_e ch_type;
-
-    if (!(elm->flags & ATF_OPEN_TYPE)) {
-        ASN__DECODE_FAILED;
-    }
-
-    if (!elm->type_selector) {
-=======
     if(!(elm->flags & ATF_OPEN_TYPE)) {
         ASN__DECODE_FAILED;
     }
@@ -41,61 +31,24 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     if(!elm->type_selector) {
->>>>>>> upstream/vlm_master
         ASN_DEBUG("Type selector is not defined for Open Type %s->%s->%s",
                   td->name, elm->name, elm->type->name);
         ASN__DECODE_FAILED;
     }
 
     selected = elm->type_selector(td, sptr);
-<<<<<<< HEAD
-    if (!selected.presence_index) {
-=======
     if(!selected.presence_index || !selected.type_descriptor) {
->>>>>>> upstream/vlm_master
         ASN__DECODE_FAILED;
     }
 
     /* Fetch the pointer to this member */
-<<<<<<< HEAD
-    assert(elm->flags == ATF_OPEN_TYPE);
-    if (elm->flags & ATF_POINTER) {
-=======
     assert(elm->flags & ATF_OPEN_TYPE);
     if(elm->flags & ATF_POINTER) {
->>>>>>> upstream/vlm_master
         memb_ptr2 = (void **)((char *)sptr + elm->memb_offset);
     } else {
         memb_ptr = (char *)sptr + elm->memb_offset;
         memb_ptr2 = &memb_ptr;
     }
-<<<<<<< HEAD
-    if (*memb_ptr2 != NULL) {
-        /* Make sure we reset the structure first before encoding */
-        if (CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0) != 0) {
-            ASN__DECODE_FAILED;
-        }
-    }
-
-    /*
-     * Confirm wrapper.
-     */
-    for (;;) {
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if (ch_size < 0) {
-            ASN__DECODE_FAILED;
-        } else {
-            switch (ch_type) {
-                case PJER_WMORE:
-                    ASN__DECODE_STARVED;
-                case PJER_TEXT:
-                case PJER_DLM:
-                    ADVANCE(ch_size);
-                    continue;
-                case PJER_KEY:
-                default:
-                    break;
-=======
 
     /* Check if this OPEN_TYPE uses CHOICE wrapper (elements_count > 0) or direct type */
     if(elm->type->elements_count > 0) {
@@ -134,16 +87,12 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
             if(CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0)
                != 0) {
                 ASN__DECODE_FAILED;
->>>>>>> upstream/vlm_master
             }
         }
-<<<<<<< HEAD
-=======
     } else {
         /* Direct type mode: no CHOICE wrapper, decode directly into member */
         ASN_DEBUG("Open Type %s->%s: using direct type mode (no CHOICE wrapper)",
                   td->name, elm->name);
->>>>>>> upstream/vlm_master
     }
 
     /*
@@ -157,21 +106,6 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
      * Therefore, the decoder should NOT try to parse a CHOICE key wrapper.
      * We proceed directly to decoding the value using the selected type descriptor.
      */
-<<<<<<< HEAD
-    switch (jer_check_sym(ptr, ch_size, NULL)) {
-        case JCK_UNKNOWN:
-            ADVANCE(ch_size);
-            break;
-        case JCK_BROKEN:
-        default:
-            ASN__DECODE_FAILED;
-    }
-
-    /* Skip colon */
-    ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-    if (ch_size < 0 || ch_type != PJER_TEXT) {
-        ASN__DECODE_FAILED;
-=======
 
     /*
      * Compute inner_value pointer based on internal structure.
@@ -208,31 +142,16 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
             /* Compute address of the embedded value field */
             inner_value = (char *)*memb_ptr2 + memb_offset;
         }
->>>>>>> upstream/vlm_master
     } else {
         /* Direct type mode: decode directly into the member pointer */
         inner_value = *memb_ptr2;
     }
 
-<<<<<<< HEAD
-    inner_value = (char *)*memb_ptr2 +
-                  elm->type->elements[selected.presence_index - 1].memb_offset;
-
-=======
->>>>>>> upstream/vlm_master
     rv = selected.type_descriptor->op->jer_decoder(
-        opt_codec_ctx, selected.type_descriptor,
-        selected.type_descriptor->encoding_constraints.jer_constraints,
+        opt_codec_ctx, selected.type_descriptor, selected.type_descriptor->encoding_constraints.jer_constraints,
         &inner_value, ptr, size);
     ADVANCE(rv.consumed);
     rv.consumed = 0;
-<<<<<<< HEAD
-    switch (rv.code) {
-        case RC_OK:
-            if (CHOICE_variant_set_presence(elm->type, *memb_ptr2,
-                                            selected.presence_index) == 0) {
-                break;
-=======
     switch(rv.code) {
     case RC_OK:
         if(elm->type->elements_count > 0) {
@@ -277,68 +196,14 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
             if(elm->flags & ATF_POINTER) {
                 ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
                 *memb_ptr2 = NULL;
->>>>>>> upstream/vlm_master
             } else {
-                rv.code = RC_FAIL;
+                ASN_STRUCT_RESET(*selected.type_descriptor,
+                                              inner_value);
             }
-            /* Fall through */
-        case RC_FAIL:
-            /* Point to a best position where failure occurred */
-            rv.consumed = consumed_myself;
-            /* Fall through */
-        case RC_WMORE:
-            /* Wrt. rv.consumed==0:
-             * In case a genuine RC_WMORE, the whole Open Type decoding
-             * will have to be restarted.
-             */
-            if (*memb_ptr2) {
-                if (elm->flags & ATF_POINTER) {
-                    ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
-                    *memb_ptr2 = NULL;
-                } else {
-                    ASN_STRUCT_RESET(*selected.type_descriptor, inner_value);
-                }
-            }
-            return rv;
-    }
-
-<<<<<<< HEAD
-    /*
-     * Finalize wrapper.
-     */
-    for (;;) {
-        ch_size = jer_next_token(&jer_context, ptr, size, &ch_type);
-        if (ch_size < 0) {
-            ASN__DECODE_FAILED;
-        } else {
-            switch (ch_type) {
-                case PJER_WMORE:
-                    ASN__DECODE_STARVED;
-                case PJER_TEXT:
-                    ADVANCE(ch_size);
-                    continue;
-                default:
-                    break;
-            }
-            break;
         }
+        return rv;
     }
 
-    /*
-     * Wrapper value confirmed.
-     */
-    switch (jer_check_sym(ptr, ch_size, NULL)) {
-        case JCK_KEY:
-        case JCK_OEND:
-            ADVANCE(ch_size);
-            break;
-        case JCK_BROKEN:
-        default:
-            ASN__DECODE_FAILED;
-    }
-
-=======
->>>>>>> upstream/vlm_master
     rv.consumed += consumed_myself;
 
     return rv;

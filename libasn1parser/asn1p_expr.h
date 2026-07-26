@@ -201,21 +201,6 @@ typedef struct asn1p_expr_s {
         asn1c_integer_t tag_value;
     } tag;
 
-<<<<<<< HEAD
-    struct asn1p_expr_marker_s {
-        enum asn1p_expr_marker_e {
-            EM_NOMARK,
-            EM_INDIRECT = 0x01,  /* 00001 Represent as pointer */
-            EM_OMITABLE = 0x02,  /* 00010 May be absent in encoding */
-            EM_OPTIONAL = 0x07,  /* 00111 Optional member */
-            EM_DEFAULT = 0x0F,   /* 01111 default_value */
-            EM_UNRECURSE = 0x10, /* 10000 Use safe naming */
-        } flags;
-        asn1p_value_t *default_value; /* For EM_DEFAULT case */
-    } marker;
-    int unique;  /* UNIQUE */
-    int ref_cnt; /* reference count */
-=======
 	/*
 	 * Encoding control directives (X.693 Annex G, X.696)
 	 * Minimal structure to store encoding preferences
@@ -254,7 +239,6 @@ typedef struct asn1p_expr_s {
 	} marker;
 	int unique;	/* UNIQUE */
 	int ref_cnt;	/* reference count */
->>>>>>> upstream/vlm_master
 
     /*
      * Whether automatic tagging may be applied for subtypes.
@@ -281,21 +265,6 @@ typedef struct asn1p_expr_s {
      */
     int _lineno;
 
-<<<<<<< HEAD
-    /*
-     * Marks are used for various purposes.
-     * Here are some predefined ones.
-     */
-    enum {
-        TM_NOMARK = 0,
-        TM_RECURSION = (1 << 0), /* Used to break recursion */
-        TM_BROKEN = (1 << 1),    /* A warning was already issued */
-        TM_PERFROMCT = (1 << 2), /* PER FROM() constraint tables emitted */
-        TM_NAMECLASH =
-            (1 << 3), /* Name clash found, need to add module name to resolve */
-        TM_NAMEGIVEN = (1 << 4) /* The expression has already yielded a name */
-    } _mark;
-=======
 	/*
 	 * Marks are used for various purposes.
 	 * Here are some predefined ones.
@@ -310,7 +279,6 @@ typedef struct asn1p_expr_s {
 	  TM_PDU_DEPENDENCY = (1<<5), /* Part of PDU dependency chain */
 	  TM_ENCODING_INSTRUCTION = (1<<6) /* ENCODING-CONTROL instruction, not a regular type */
 	} _mark;
->>>>>>> upstream/vlm_master
 
     /*
      * Some tags used by the compiler.

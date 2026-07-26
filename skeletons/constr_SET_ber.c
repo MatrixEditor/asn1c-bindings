@@ -429,14 +429,10 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
     if (t2m_build_own) {
         t2m_build = (asn_TYPE_tag2member_t *)CALLOC(td->elements_count,
                                                     sizeof(t2m_build[0]));
-<<<<<<< HEAD
-        if (!t2m_build) ASN__ENCODE_FAILED;
-=======
         if(!t2m_build) {
             ASN__ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
->>>>>>> upstream/vlm_master
         t2m_count = 0;
     } else {
         t2m_build = NULL;
@@ -491,11 +487,6 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
             continue;
         }
 
-<<<<<<< HEAD
-        tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2, elm->tag_mode,
-                                           elm->tag, 0, 0);
-        if (tmper.encoded == -1) return tmper;
-=======
         tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2,
                                            elm->tag_mode, elm->tag,
                                            0, 0);
@@ -504,7 +495,6 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
             ASN__ENCODER_RECURSION_DEPTH_DEC();
             return tmper;
         }
->>>>>>> upstream/vlm_master
         computed_size += tmper.encoded;
 
         /*
@@ -585,11 +575,6 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
         if (elm->default_value_cmp && elm->default_value_cmp(*memb_ptr2) == 0)
             continue;
 
-<<<<<<< HEAD
-        tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2, elm->tag_mode,
-                                           elm->tag, cb, app_key);
-        if (tmper.encoded == -1) return tmper;
-=======
         tmper = elm->type->op->der_encoder(elm->type, *memb_ptr2,
                                            elm->tag_mode, elm->tag,
                                            cb, app_key);
@@ -598,7 +583,6 @@ asn_enc_rval_t SET_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
             ASN__ENCODER_RECURSION_DEPTH_DEC();
             return tmper;
         }
->>>>>>> upstream/vlm_master
         computed_size -= tmper.encoded;
     }
 

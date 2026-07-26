@@ -19,15 +19,9 @@ asn_dec_rval_t NativeInteger_decode_oer(
 
     memset(&tmpint, 0, sizeof(tmpint));
 
-<<<<<<< HEAD
-    if (!native) {
-        native = (long *)(*nint_ptr = CALLOC(1, sizeof(*native)));
-        if (!native) ASN__DECODE_FAILED;
-=======
     if(!native) {
         native = (*nint_ptr = CALLOC(1, NativeInteger_field_width(specs)));
         if(!native) ASN__DECODE_FAILED;
->>>>>>> upstream/vlm_master
     }
 
     rval = INTEGER_decode_oer(opt_codec_ctx, td, constraints,
@@ -37,30 +31,10 @@ asn_dec_rval_t NativeInteger_decode_oer(
         return rval;
     }
 
-<<<<<<< HEAD
-    if (specs && specs->field_unsigned) {
-        unsigned long ul;
-        int ok = asn_INTEGER2ulong(&tmpint, &ul) == 0;
-        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
-        if (ok) {
-            *native = ul;
-        } else {
-            rval.code = RC_FAIL;
-            return rval;
-        }
-    } else {
-        long l;
-        int ok = asn_INTEGER2long(&tmpint, &l) == 0;
-        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
-        if (ok) {
-            *native = l;
-        } else {
-=======
     {
         int ok = (NativeInteger_store_from_INTEGER(native, specs, &tmpint) == 0);
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
         if(!ok) {
->>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             return rval;
         }
@@ -81,17 +55,7 @@ asn_enc_rval_t NativeInteger_encode_oer(
 
     if (!sptr) ASN__ENCODE_FAILED;
 
-<<<<<<< HEAD
-    native = *(const long *)sptr;
-    memset(&tmpint, 0, sizeof(tmpint));
-
-    ASN_DEBUG("Encoding %s %ld as NativeInteger", td ? td->name : "", native);
-
-    if ((specs && specs->field_unsigned) ? asn_ulong2INTEGER(&tmpint, native)
-                                         : asn_long2INTEGER(&tmpint, native)) {
-=======
     if(NativeInteger_to_INTEGER(sptr, specs, &tmpint)) {
->>>>>>> upstream/vlm_master
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
         ASN__ENCODE_FAILED;
     } else {

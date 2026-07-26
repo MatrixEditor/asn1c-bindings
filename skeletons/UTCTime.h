@@ -81,11 +81,6 @@ asn_random_fill_f UTCTime_random_fill;
  * Some handy helpers. *
  ***********************/
 
-<<<<<<< HEAD
-struct tm; /* <time.h> */
-
-=======
->>>>>>> upstream/vlm_master
 /* See asn_GT2time() in GeneralizedTime.h */
 time_t asn_UT2time(const UTCTime_t *, struct tm *_optional_tm4fill, int as_gmt);
 

@@ -29,17 +29,12 @@ extern "C" {
 #define OPEN_TYPE_free CHOICE_free
 
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
-<<<<<<< HEAD
-#define OPEN_TYPE_print CHOICE_print
-#endif /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
-=======
 int OPEN_TYPE_print(const asn_TYPE_descriptor_t *td, const void *sptr,
                     int ilevel, asn_app_consume_bytes_f *cb, void *app_key);
 int OPEN_TYPE_print_member(const asn_TYPE_descriptor_t *td, const void *sptr,
                            const asn_TYPE_member_t *elm, int ilevel,
                            asn_app_consume_bytes_f *cb, void *app_key);
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #define OPEN_TYPE_compare CHOICE_compare
 #define OPEN_TYPE_copy CHOICE_copy
@@ -54,9 +49,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
                                  const void *ptr, size_t size);
 #define OPEN_TYPE_decode_ber NULL
 #define OPEN_TYPE_encode_der CHOICE_encode_der
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_BER_SUPPORT) */
-=======
 asn_enc_rval_t OPEN_TYPE_ber_put(
     const asn_TYPE_descriptor_t *parent_type,
     const void *parent_structure,
@@ -64,7 +56,6 @@ asn_enc_rval_t OPEN_TYPE_ber_put(
     int tag_mode, ber_tlv_tag_t tag,
     asn_app_consume_bytes_f *consume_bytes_cb, void *app_key);
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
 asn_dec_rval_t OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
@@ -73,10 +64,6 @@ asn_dec_rval_t OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
                                  const asn_TYPE_member_t *element,
                                  const void *ptr, size_t size);
 #define OPEN_TYPE_decode_xer NULL
-<<<<<<< HEAD
-#define OPEN_TYPE_encode_xer CHOICE_encode_xer
-#endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
-=======
 asn_enc_rval_t OPEN_TYPE_encode_xer(
     const asn_TYPE_descriptor_t *type_descriptor,
     const void *struct_ptr, int ilevel, enum xer_encoder_flags_e flags,
@@ -88,7 +75,6 @@ asn_enc_rval_t OPEN_TYPE_xer_put(
     int ilevel, enum xer_encoder_flags_e flags,
     asn_app_consume_bytes_f *consume_bytes_cb, void *app_key);
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
@@ -98,9 +84,6 @@ asn_dec_rval_t OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
                                  const void *ptr, size_t size);
 #define OPEN_TYPE_decode_jer NULL
 #define OPEN_TYPE_encode_jer CHOICE_encode_jer
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
-=======
 asn_enc_rval_t OPEN_TYPE_jer_put(
     const asn_TYPE_descriptor_t *parent_type,
     const void *parent_structure,
@@ -108,7 +91,6 @@ asn_enc_rval_t OPEN_TYPE_jer_put(
     int ilevel, enum jer_encoder_flags_e flags,
     asn_app_consume_bytes_f *consume_bytes_cb, void *app_key);
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 asn_dec_rval_t OPEN_TYPE_oer_get(const asn_codec_ctx_t *opt_codec_ctx,
@@ -121,16 +103,12 @@ asn_enc_rval_t OPEN_TYPE_encode_oer(
     const asn_TYPE_descriptor_t *type_descriptor,
     const asn_oer_constraints_t *constraints, const void *struct_ptr,
     asn_app_consume_bytes_f *consume_bytes_cb, void *app_key);
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
-=======
 asn_enc_rval_t OPEN_TYPE_oer_put(
     const asn_TYPE_descriptor_t *parent_type,
     const void *parent_structure,
     const asn_TYPE_member_t *element,
     asn_app_consume_bytes_f *consume_bytes_cb, void *app_key);
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 asn_dec_rval_t OPEN_TYPE_uper_get(const asn_codec_ctx_t *opt_codec_ctx,
@@ -143,16 +121,12 @@ asn_enc_rval_t OPEN_TYPE_encode_uper(
     const asn_TYPE_descriptor_t *type_descriptor,
     const asn_per_constraints_t *constraints, const void *struct_ptr,
     asn_per_outp_t *per_output);
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_UPER_SUPPORT) */
-=======
 asn_enc_rval_t OPEN_TYPE_uper_put(
     const asn_TYPE_descriptor_t *parent_type,
     const void *parent_structure,
     const asn_TYPE_member_t *element,
     asn_per_outp_t *per_output);
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
->>>>>>> upstream/vlm_master
 #if !defined(ASN_DISABLE_APER_SUPPORT)
 asn_dec_rval_t OPEN_TYPE_aper_get(const asn_codec_ctx_t *opt_codec_ctx,
                                   const asn_TYPE_descriptor_t *parent_type,

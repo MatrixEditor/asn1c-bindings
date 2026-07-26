@@ -27,16 +27,11 @@ asn_dec_rval_t NULL_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     /*
-     * NULL type produces no encoding per X.691 §18. Any alignment required
-     * for the surrounding context (e.g. CHOICE alternative alignment) is the
-     * responsibility of the enclosing decoder, not NULL's.
+     * NULL type does not have content octets but has to align
      */
 
-<<<<<<< HEAD
     if (aper_get_align(pd) < 0) ASN__DECODE_FAILED;
 
-=======
->>>>>>> upstream/vlm_master
     rv.code = RC_OK;
     rv.consumed = 0;
     return rv;
@@ -52,11 +47,8 @@ asn_enc_rval_t NULL_encode_aper(const asn_TYPE_descriptor_t *td,
     (void)sptr;
     (void)po;
 
-<<<<<<< HEAD
     if (aper_put_align(po) < 0) ASN__ENCODE_FAILED;
 
-=======
->>>>>>> upstream/vlm_master
     er.encoded = 0;
     ASN__ENCODED_OK(er);
 }

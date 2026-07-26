@@ -44,11 +44,6 @@ int SEQUENCE_print(const asn_TYPE_descriptor_t *td, const void *sptr,
             return -1;
 
         /* Print the member itself */
-<<<<<<< HEAD
-        ret = elm->type->op->print_struct(elm->type, memb_ptr, ilevel + 1, cb,
-                                          app_key);
-        if (ret) return ret;
-=======
         if(elm->flags & ATF_OPEN_TYPE) {
             ret = OPEN_TYPE_print_member(td, sptr, elm, ilevel + 1, cb, app_key);
         } else {
@@ -56,7 +51,6 @@ int SEQUENCE_print(const asn_TYPE_descriptor_t *td, const void *sptr,
                                               cb, app_key);
         }
         if(ret) return ret;
->>>>>>> upstream/vlm_master
     }
 
     ilevel--;

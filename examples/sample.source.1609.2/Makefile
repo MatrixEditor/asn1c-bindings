@@ -1,4 +1,5 @@
 ASN_PROGRAM = 1609-2-dump
+ASN_PDU = Certificate
 CFLAGS += -DASN_CONVERTER_TITLE="IEEE 1609.2-2016 decoder" -DHAVE_CONFIG_H -DJUNKTEST -D_DEFAULT_SOURCE
 begin: Certificate.c maybe-wip-pause all
 
@@ -105,3 +106,4 @@ distclean: clean
 	rm -f $(ASN_MODULE_HDRS)
 	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)
 	rm -f converter-example.mk
+	rm -f $(ASN_PDU).c

@@ -7,9 +7,6 @@
 #include <constr_SEQUENCE.h>
 #include <OPEN_TYPE.h>
 #include <aper_opentype.h>
-#include <string.h>   /* strncmp() — used to identify NULL-typed extension
-                       * fields without introducing a hard link
-                       * dependency on NULL.o */
 
 /*
  * Check whether we are inside the extensions group.
@@ -147,16 +144,6 @@ asn_dec_rval_t SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                 }
             }
         } else {
-<<<<<<< HEAD
-            rv = elm->type->op->aper_decoder(
-                opt_codec_ctx, elm->type,
-                elm->encoding_constraints.per_constraints, memb_ptr2, pd);
-        }
-        if (rv.code != RC_OK) {
-            ASN_DEBUG("Failed decode %s in %s", elm->name, td->name);
-            FREEMEM(opres);
-            return rv;
-=======
             rv = elm->type->op->aper_decoder(opt_codec_ctx, elm->type,
                                              elm->encoding_constraints.per_constraints,
                                              memb_ptr2, pd);
@@ -166,7 +153,6 @@ asn_dec_rval_t SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                 FREEMEM(opres);
                 return rv;
             }
->>>>>>> upstream/vlm_master
         }
     }
 
@@ -191,14 +177,10 @@ asn_dec_rval_t SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         if (!epres) ASN__DECODE_STARVED;
 
         /* Get the extensions map */
-<<<<<<< HEAD
-        if (per_get_many_bits(pd, epres, 0, bmlength)) ASN__DECODE_STARVED;
-=======
         if(per_get_many_bits(pd, epres, 0, bmlength)) {
             FREEMEM(epres);
             ASN__DECODE_STARVED;
         }
->>>>>>> upstream/vlm_master
 
         memset(&epmd, 0, sizeof(epmd));
         epmd.buffer = epres;
@@ -207,14 +189,10 @@ asn_dec_rval_t SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                   td->name, bmlength, *epres);
 
         /* Deal with padding */
-<<<<<<< HEAD
-        if (aper_get_align(pd) < 0) ASN__DECODE_STARVED;
-=======
         if (aper_get_align(pd) < 0) {
             FREEMEM(epres);
             ASN__DECODE_STARVED;
         }
->>>>>>> upstream/vlm_master
 
         /* Go over extensions and read them in */
         for (edx = specs->first_extension; edx < td->elements_count; edx++) {
@@ -247,46 +225,7 @@ asn_dec_rval_t SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
             rv = aper_open_type_get(opt_codec_ctx, elm->type,
                                     elm->encoding_constraints.per_constraints,
                                     memb_ptr2, pd);
-<<<<<<< HEAD
             if (rv.code != RC_OK) {
-=======
-            if(rv.code == RC_WMORE) {
-                /* Wire truncation inside the open-type wrapper (couldn't
-                 * read length determinant or the declared number of
-                 * content bytes). Real wire violation — propagate. */
-                FREEMEM(epres);
-                return rv;
-            }
-            if(rv.code != RC_OK && elm->type->name
-               && strncmp(elm->type->name, "NULL", 4) == 0) {
-                /*
-                 * Narrow forward-compat carve-out: the schema deliberately
-                 * declares this extension addition as `NULL`, a placeholder
-                 * whose only purpose is to preserve extension-bitmap
-                 * positional numbering vs. the wire. Its inner decoder
-                 * consumes zero bits, so aper_open_type_get_simple's
-                 * padding check will fail whenever the wire actually
-                 * carries a non-empty payload at this position — which is
-                 * exactly what the placeholder is there to acknowledge
-                 * and discard.
-                 *
-                 * The open-type wrapper has already advanced pd past this
-                 * extension's bytes (they were consumed into a temporary
-                 * buffer before dispatch), so silently continuing here is
-                 * safe: subsequent extensions still decode at their
-                 * correct wire positions.
-                 *
-                 * Restricting the skip to `NULL`-typed extensions
-                 * preserves strict rejection for every other schema/wire
-                 * mismatch inside extension additions.
-                 */
-                ASN_DEBUG("Skipping payload for NULL-placeholder extension %s in %s",
-                          elm->name, td->name);
-                if(elm->flags & ATF_POINTER) {
-                    *memb_ptr2 = NULL;  /* field absent from decoded tree */
-                }
-            } else if(rv.code != RC_OK) {
->>>>>>> upstream/vlm_master
                 FREEMEM(epres);
                 return rv;
             }
@@ -424,17 +363,12 @@ asn_enc_rval_t SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
         n_extensions = 0; /* There are no extensions to encode */
     } else {
         n_extensions = SEQUENCE_handle_extensions_aper(td, sptr, 0, 0);
-<<<<<<< HEAD
-        if (n_extensions < 0) ASN__ENCODE_FAILED;
-        if (per_put_few_bits(po, n_extensions ? 1 : 0, 1)) {
-=======
         if(n_extensions < 0) {
             APER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
         if(per_put_few_bits(po, n_extensions ? 1 : 0, 1)) {
             APER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             ASN__ENCODE_FAILED;
         }
     }
@@ -467,18 +401,12 @@ asn_enc_rval_t SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
 
         ASN_DEBUG("Element %s %s %s->%s is %s",
                   elm->flags & ATF_POINTER ? "ptr" : "inline",
-<<<<<<< HEAD
-                  elm->default_value_cmp ? "def" : "wtv", td->name, elm->name,
-                  present ? "present" : "absent");
-        if (per_put_few_bits(po, present, 1)) ASN__ENCODE_FAILED;
-=======
                   elm->default_value_cmp ? "def" : "wtv",
                   td->name, elm->name, present ? "present" : "absent");
         if(per_put_few_bits(po, present, 1)) {
             APER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
->>>>>>> upstream/vlm_master
     }
 
     /*
@@ -519,20 +447,6 @@ asn_enc_rval_t SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
             continue;
 
         ASN_DEBUG("Encoding %s->%s", td->name, elm->name);
-<<<<<<< HEAD
-        er = elm->type->op->aper_encoder(
-            elm->type, elm->encoding_constraints.per_constraints, *memb_ptr2,
-            po);
-        if (er.encoded == -1) return er;
-    }
-
-    /* No extensions to encode */
-    if (!n_extensions) ASN__ENCODED_OK(er);
-
-    ASN_DEBUG("Length of %d bit-map", n_extensions);
-    /* #18.8. Write down the presence bit-map length. */
-    if (aper_put_nslength(po, n_extensions)) ASN__ENCODE_FAILED;
-=======
         if(elm->flags & ATF_OPEN_TYPE) {
             er = OPEN_TYPE_aper_put(td, sptr, elm, po);
         } else {
@@ -558,28 +472,19 @@ asn_enc_rval_t SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
         APER_ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
     }
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Bit-map of %d elements", n_extensions);
     /* #18.7. Encoding the extensions presence bit-map. */
     /* TODO: act upon NOTE in #18.7 for canonical PER */
-<<<<<<< HEAD
-    if (SEQUENCE_handle_extensions_aper(td, sptr, po, 0) != n_extensions)
-=======
     if(SEQUENCE_handle_extensions_aper(td, sptr, po, 0) != n_extensions) {
         APER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
 
     ASN_DEBUG("Writing %d extensions", n_extensions);
     /* #18.9. Encode extensions as open type fields. */
-<<<<<<< HEAD
-    if (SEQUENCE_handle_extensions_aper(td, sptr, 0, po) != n_extensions)
-=======
     if(SEQUENCE_handle_extensions_aper(td, sptr, 0, po) != n_extensions) {
         APER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
 

@@ -68,10 +68,6 @@ asn_TYPE_operation_t asn_OP_T61String = {
     OCTET_STRING_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -81,7 +77,6 @@ asn_TYPE_operation_t asn_OP_T61String = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_T61String = {
     "T61String",

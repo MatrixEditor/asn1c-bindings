@@ -117,10 +117,6 @@ asn_dec_rval_t SEQUENCE_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
                 opt_codec_ctx, elm->type,
                 elm->encoding_constraints.per_constraints, memb_ptr2, pd);
         }
-<<<<<<< HEAD
-        if (rv.code != RC_OK) {
-            ASN_DEBUG("Failed decode %s in %s", elm->name, td->name);
-=======
         
         /*
          * Canonical UPER validation: X.691 19.5 - DEFAULT value check.
@@ -155,7 +151,6 @@ asn_dec_rval_t SEQUENCE_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         if(rv.code != RC_OK) {
             ASN_DEBUG("Failed decode %s in %s",
                       elm->name, td->name);
->>>>>>> upstream/vlm_master
             FREEMEM(opres);
             return rv;
         }
@@ -344,17 +339,8 @@ static int SEQUENCE__handle_extensions(const asn_TYPE_descriptor_t *td,
             present = 1;
         }
 
-<<<<<<< HEAD
         ASN_DEBUG("checking %s:%s (@%" ASN_PRI_SIZE ") present => %d",
                   elm->name, elm->type->name, edx, present);
-=======
-        if(present && elm->default_value_cmp
-           && elm->default_value_cmp(*memb_ptr2) == 0)
-            present = 0;
-
-        ASN_DEBUG("checking %s:%s (@%" ASN_PRI_SIZE ") present => %d", elm->name,
-                  elm->type->name, edx, present);
->>>>>>> upstream/vlm_master
         exts_count++;
         exts_present += present;
 
@@ -402,17 +388,12 @@ asn_enc_rval_t SEQUENCE_encode_uper(const asn_TYPE_descriptor_t *td,
         n_extensions = 0; /* There are no extensions to encode */
     } else {
         n_extensions = SEQUENCE__handle_extensions(td, sptr, 0, 0);
-<<<<<<< HEAD
-        if (n_extensions < 0) ASN__ENCODE_FAILED;
-        if (per_put_few_bits(po, n_extensions ? 1 : 0, 1)) {
-=======
         if(n_extensions < 0) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
         if(per_put_few_bits(po, n_extensions ? 1 : 0, 1)) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             ASN__ENCODE_FAILED;
         }
     }
@@ -445,18 +426,12 @@ asn_enc_rval_t SEQUENCE_encode_uper(const asn_TYPE_descriptor_t *td,
 
         ASN_DEBUG("Element %s %s %s->%s is %s",
                   elm->flags & ATF_POINTER ? "ptr" : "inline",
-<<<<<<< HEAD
-                  elm->default_value_cmp ? "def" : "wtv", td->name, elm->name,
-                  present ? "present" : "absent");
-        if (per_put_few_bits(po, present, 1)) ASN__ENCODE_FAILED;
-=======
                   elm->default_value_cmp ? "def" : "wtv",
                   td->name, elm->name, present ? "present" : "absent");
         if(per_put_few_bits(po, present, 1)) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
->>>>>>> upstream/vlm_master
     }
 
     /*
@@ -496,20 +471,6 @@ asn_enc_rval_t SEQUENCE_encode_uper(const asn_TYPE_descriptor_t *td,
             continue;
 
         ASN_DEBUG("Encoding %s->%s:%s", td->name, elm->name, elm->type->name);
-<<<<<<< HEAD
-        er = elm->type->op->uper_encoder(
-            elm->type, elm->encoding_constraints.per_constraints, *memb_ptr2,
-            po);
-        if (er.encoded == -1) return er;
-    }
-
-    /* No extensions to encode */
-    if (!n_extensions) ASN__ENCODED_OK(er);
-
-    ASN_DEBUG("Length of extensions %d bit-map", n_extensions);
-    /* #18.8. Write down the presence bit-map length. */
-    if (uper_put_nslength(po, n_extensions)) ASN__ENCODE_FAILED;
-=======
         if(elm->flags & ATF_OPEN_TYPE) {
             er = OPEN_TYPE_uper_put(td, sptr, elm, po);
         } else {
@@ -535,28 +496,19 @@ asn_enc_rval_t SEQUENCE_encode_uper(const asn_TYPE_descriptor_t *td,
         UPER_ENCODER_RECURSION_DEPTH_DEC();
         ASN__ENCODE_FAILED;
     }
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Bit-map of %d elements", n_extensions);
     /* #18.7. Encoding the extensions presence bit-map. */
     /* TODO: act upon NOTE in #18.7 for canonical PER */
-<<<<<<< HEAD
-    if (SEQUENCE__handle_extensions(td, sptr, po, 0) != n_extensions)
-=======
     if(SEQUENCE__handle_extensions(td, sptr, po, 0) != n_extensions) {
         UPER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
 
     ASN_DEBUG("Writing %d extensions", n_extensions);
     /* #18.9. Encode extensions as open type fields. */
-<<<<<<< HEAD
-    if (SEQUENCE__handle_extensions(td, sptr, 0, po) != n_extensions)
-=======
     if(SEQUENCE__handle_extensions(td, sptr, 0, po) != n_extensions) {
         UPER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
 

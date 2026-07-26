@@ -7,12 +7,6 @@
 #include <OPEN_TYPE.h>
 #include <constr_CHOICE.h>
 
-<<<<<<< HEAD
-asn_dec_rval_t OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
-                                 const asn_TYPE_descriptor_t *td, void *sptr,
-                                 const asn_TYPE_member_t *elm, const void *ptr,
-                                 size_t size) {
-=======
 extern const asn_TYPE_operation_t asn_OP_SEQUENCE;
 extern const asn_TYPE_operation_t asn_OP_SEQUENCE_OF;
 extern const asn_TYPE_operation_t asn_OP_SET_OF;
@@ -21,7 +15,6 @@ asn_dec_rval_t
 OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
                   const asn_TYPE_descriptor_t *td, void *sptr,
                   const asn_TYPE_member_t *elm, const void *ptr, size_t size) {
->>>>>>> upstream/vlm_master
     size_t consumed_myself = 0;
     asn_type_selector_result_t selected;
     void *memb_ptr;   /* Pointer to the member */
@@ -33,13 +26,10 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
     ssize_t ch_size;
     pxer_chunk_type_e ch_type;
 
-    if (!(elm->flags & ATF_OPEN_TYPE)) {
+    if(!(elm->flags & ATF_OPEN_TYPE)) {
         ASN__DECODE_FAILED;
     }
 
-<<<<<<< HEAD
-    if (!elm->type_selector) {
-=======
     /* Validate elm->type before accessing its members */
     if(!elm->type) {
         ASN_DEBUG("Open Type %s->%s: type descriptor is NULL",
@@ -48,18 +38,13 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     if(!elm->type_selector) {
->>>>>>> upstream/vlm_master
         ASN_DEBUG("Type selector is not defined for Open Type %s->%s->%s",
                   td->name, elm->name, elm->type->name);
         ASN__DECODE_FAILED;
     }
 
     selected = elm->type_selector(td, sptr);
-<<<<<<< HEAD
-    if (!selected.presence_index) {
-=======
     if(!selected.presence_index || !selected.type_descriptor) {
->>>>>>> upstream/vlm_master
         ASN__DECODE_FAILED;
     }
 
@@ -68,23 +53,13 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
               selected.presence_index, selected.type_descriptor->name);
 
     /* Fetch the pointer to this member */
-<<<<<<< HEAD
-    assert(elm->flags == ATF_OPEN_TYPE);
-    if (elm->flags & ATF_POINTER) {
-=======
     assert(elm->flags & ATF_OPEN_TYPE);
     if(elm->flags & ATF_POINTER) {
->>>>>>> upstream/vlm_master
         memb_ptr2 = (void **)((char *)sptr + elm->memb_offset);
     } else {
         memb_ptr = (char *)sptr + elm->memb_offset;
         memb_ptr2 = &memb_ptr;
     }
-<<<<<<< HEAD
-    if (*memb_ptr2 != NULL) {
-        /* Make sure we reset the structure first before encoding */
-        if (CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0) != 0) {
-=======
 
     /* Check if this OPEN_TYPE uses CHOICE wrapper (elements_count > 0) or direct type */
     if(elm->type->elements_count > 0) {
@@ -95,7 +70,6 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
             ASN_DEBUG("Open Type %s->%s: presence index %u out of bounds (max %u)",
                       td->name, elm->name, selected.presence_index,
                       elm->type->elements_count);
->>>>>>> upstream/vlm_master
             ASN__DECODE_FAILED;
         }
         
@@ -135,20 +109,20 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
     /*
      * Confirm wrapper.
      */
-    for (;;) {
+    for(;;) {
         ch_size = xer_next_token(&xer_context, ptr, size, &ch_type);
-        if (ch_size < 0) {
+        if(ch_size < 0) {
             ASN__DECODE_FAILED;
         } else {
-            switch (ch_type) {
-                case PXER_WMORE:
-                    ASN__DECODE_STARVED;
-                case PXER_COMMENT:
-                case PXER_TEXT:
-                    ADVANCE(ch_size);
-                    continue;
-                case PXER_TAG:
-                    break;
+            switch(ch_type) {
+            case PXER_WMORE:
+                ASN__DECODE_STARVED;
+            case PXER_COMMENT:
+            case PXER_TEXT:
+                ADVANCE(ch_size);
+                continue;
+            case PXER_TAG:
+                break;
             }
             break;
         }
@@ -157,19 +131,6 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
     /*
      * Wrapper value confirmed.
      */
-<<<<<<< HEAD
-    switch (xer_check_tag(ptr, ch_size, elm->name)) {
-        case XCT_OPENING:
-            ADVANCE(ch_size);
-            break;
-        case XCT_BROKEN:
-        default:
-            ASN__DECODE_FAILED;
-    }
-
-    inner_value = (char *)*memb_ptr2 +
-                  elm->type->elements[selected.presence_index - 1].memb_offset;
-=======
     switch(xer_check_tag(ptr, ch_size, elm->name)) {
     case XCT_BOTH:
 #if XER_EMPTY_OPTIONALS_ENABLED
@@ -231,19 +192,11 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
         /* Direct type mode: decode directly into the member pointer */
         inner_value = *memb_ptr2;
     }
->>>>>>> upstream/vlm_master
 
     rv = selected.type_descriptor->op->xer_decoder(
         opt_codec_ctx, selected.type_descriptor, &inner_value, NULL, ptr, size);
     ADVANCE(rv.consumed);
     rv.consumed = 0;
-<<<<<<< HEAD
-    switch (rv.code) {
-        case RC_OK:
-            if (CHOICE_variant_set_presence(elm->type, *memb_ptr2,
-                                            selected.presence_index) == 0) {
-                break;
-=======
     ASN_DEBUG("xer_decoder returned code=%d for %s", rv.code, selected.type_descriptor->name);
     switch(rv.code) {
     case RC_OK:
@@ -295,48 +248,31 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
             if(elm->flags & ATF_POINTER) {
                 ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
                 *memb_ptr2 = NULL;
->>>>>>> upstream/vlm_master
             } else {
-                rv.code = RC_FAIL;
+                ASN_STRUCT_RESET(*selected.type_descriptor,
+                                              inner_value);
             }
-            /* Fall through */
-        case RC_FAIL:
-            /* Point to a best position where failure occurred */
-            rv.consumed = consumed_myself;
-            /* Fall through */
-        case RC_WMORE:
-            /* Wrt. rv.consumed==0:
-             * In case a genuine RC_WMORE, the whole Open Type decoding
-             * will have to be restarted.
-             */
-            if (*memb_ptr2) {
-                if (elm->flags & ATF_POINTER) {
-                    ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
-                    *memb_ptr2 = NULL;
-                } else {
-                    ASN_STRUCT_RESET(*selected.type_descriptor, inner_value);
-                }
-            }
-            return rv;
+        }
+        return rv;
     }
 
     /*
      * Finalize wrapper.
      */
-    for (;;) {
+    for(;;) {
         ch_size = xer_next_token(&xer_context, ptr, size, &ch_type);
-        if (ch_size < 0) {
+        if(ch_size < 0) {
             ASN__DECODE_FAILED;
         } else {
-            switch (ch_type) {
-                case PXER_WMORE:
-                    ASN__DECODE_STARVED;
-                case PXER_COMMENT:
-                case PXER_TEXT:
-                    ADVANCE(ch_size);
-                    continue;
-                case PXER_TAG:
-                    break;
+            switch(ch_type) {
+            case PXER_WMORE:
+                ASN__DECODE_STARVED;
+            case PXER_COMMENT:
+            case PXER_TEXT:
+                ADVANCE(ch_size);
+                continue;
+            case PXER_TAG:
+                break;
             }
             break;
         }
@@ -345,13 +281,13 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
     /*
      * Wrapper value confirmed.
      */
-    switch (xer_check_tag(ptr, ch_size, elm->name)) {
-        case XCT_CLOSING:
-            ADVANCE(ch_size);
-            break;
-        case XCT_BROKEN:
-        default:
-            ASN__DECODE_FAILED;
+    switch(xer_check_tag(ptr, ch_size, elm->name)) {
+    case XCT_CLOSING:
+        ADVANCE(ch_size);
+        break;
+    case XCT_BROKEN:
+    default:
+        ASN__DECODE_FAILED;
     }
 
     rv.consumed += consumed_myself;

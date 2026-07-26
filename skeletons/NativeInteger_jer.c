@@ -20,21 +20,6 @@ asn_dec_rval_t NativeInteger_decode_jer(
     void *st_ptr = (void *)&st;
     void *native = *sptr;
 
-<<<<<<< HEAD
-    if (!native) {
-        native = (long *)(*sptr = CALLOC(1, sizeof(*native)));
-        if (!native) ASN__DECODE_FAILED;
-    }
-
-    memset(&st, 0, sizeof(st));
-    rval = INTEGER_decode_jer(opt_codec_ctx, td, constraints, &st_ptr, buf_ptr,
-                              size);
-    if (rval.code == RC_OK) {
-        long l;
-        if ((specs && specs->field_unsigned)
-                ? asn_INTEGER2ulong(&st, (unsigned long *)&l) /* sic */
-                : asn_INTEGER2long(&st, &l)) {
-=======
     if(!native) {
         native = (*sptr = CALLOC(1, NativeInteger_field_width(specs)));
         if(!native) ASN__DECODE_FAILED;
@@ -44,7 +29,6 @@ asn_dec_rval_t NativeInteger_decode_jer(
     rval = INTEGER_decode_jer(opt_codec_ctx, td, constraints, &st_ptr, buf_ptr, size);
     if(rval.code == RC_OK) {
         if(NativeInteger_store_from_INTEGER(native, specs, &st)) {
->>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             rval.consumed = 0;
         }
@@ -66,27 +50,12 @@ asn_enc_rval_t NativeInteger_encode_jer(
     asn_app_consume_bytes_f *cb, void *app_key) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
-<<<<<<< HEAD
-    char scratch[32]; /* Enough for 64-bit int */
-    asn_enc_rval_t er = {0, 0, 0};
-    const long *native = (const long *)sptr;
-=======
     char scratch[32];  /* Enough for 64-bit int */
     asn_enc_rval_t er = {0,0,0};
->>>>>>> upstream/vlm_master
 
     (void)ilevel;
     (void)flags;
 
-<<<<<<< HEAD
-    if (!native) ASN__ENCODE_FAILED;
-
-    er.encoded =
-        snprintf(scratch, sizeof(scratch),
-                 (specs && specs->field_unsigned) ? "%lu" : "%ld", *native);
-    if (er.encoded <= 0 || (size_t)er.encoded >= sizeof(scratch) ||
-        cb(scratch, er.encoded, app_key) < 0)
-=======
     if(!sptr) ASN__ENCODE_FAILED;
 
     if(specs && specs->field_unsigned)
@@ -97,7 +66,6 @@ asn_enc_rval_t NativeInteger_encode_jer(
                               NativeInteger_load_s(sptr, specs));
     if(er.encoded <= 0 || (size_t)er.encoded >= sizeof(scratch)
         || cb(scratch, er.encoded, app_key) < 0)
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
 
     ASN__ENCODED_OK(er);

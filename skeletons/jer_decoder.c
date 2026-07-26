@@ -68,13 +68,6 @@ ssize_t jer_next_token(int *stateContext, const void *buffer, size_t size,
     if (arg.callback_not_invoked) {
         assert(ret == 0); /* No data was consumed */
         *ch_type = PJER_WMORE;
-<<<<<<< HEAD
-        return 0; /* Try again with more data */
-    } else {
-        assert(arg.chunk_size);
-        assert(arg.chunk_buf == buffer);
-    }
-=======
 		return 0;		/* Try again with more data */
 	} else {
 		if(arg.chunk_size == 0
@@ -82,7 +75,6 @@ ssize_t jer_next_token(int *stateContext, const void *buffer, size_t size,
 		|| arg.chunk_buf != buffer)
 			return -1;
 	}
->>>>>>> upstream/vlm_master
 
     /*
      * Translate the JSON chunk types into more convenient ones.
@@ -259,14 +251,10 @@ asn_dec_rval_t jer_decode_general(
             }
         }
 
-<<<<<<< HEAD
-        ctx->phase = 2; /* Phase out */
-=======
         if(consumed_myself == 0)
             RETURN(RC_FAIL);
 
         ctx->phase = 2;	/* Phase out */
->>>>>>> upstream/vlm_master
         RETURN(RC_OK);
 
         break; /* Dark and mysterious things have just happened */

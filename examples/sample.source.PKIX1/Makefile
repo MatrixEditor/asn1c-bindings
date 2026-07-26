@@ -1,3 +1,4 @@
+ASN_PDU = Certificate
 ASN_PROGRAM = x509dump
 CFLAGS += -DJUNKTEST -D_DEFAULT_SOURCE
 begin: Certificate.c maybe-wip-pause all
@@ -117,7 +118,7 @@ check-aper:
 maybe-wip-pause:
 	@if [ -f WIP ]; then cat WIP; sleep 2; fi
 
-clean: 
+clean:
 	rm -f *.[oa] $(ASN_PROGRAM)
 
 distclean: clean
@@ -126,3 +127,4 @@ distclean: clean
 	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)
 	rm -f Makefile.am.* asn_*.[ch] ASN*.[ch]
 	rm -f converter-example.mk ASN1*.[ch] asn_*.[ch]
+	rm -f $(ASN_PDU).c

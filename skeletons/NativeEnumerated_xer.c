@@ -34,12 +34,6 @@ asn_enc_rval_t NativeEnumerated_encode_xer(const asn_TYPE_descriptor_t *td,
     }
 }
 
-<<<<<<< HEAD
-asn_dec_rval_t NativeEnumerated_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
-                                           const asn_TYPE_descriptor_t *td,
-                                           void **sptr, const char *opt_mname,
-                                           const void *buf_ptr, size_t size) {
-=======
 asn_enc_rval_t
 NativeEnumerated_encode_xer_text(const asn_TYPE_descriptor_t *td,
                                  const void *sptr, int ilevel,
@@ -73,7 +67,6 @@ NativeEnumerated_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                          const asn_TYPE_descriptor_t *td, void **sptr,
                          const char *opt_mname, const void *buf_ptr,
                          size_t size) {
->>>>>>> upstream/vlm_master
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     asn_dec_rval_t rval;

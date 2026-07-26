@@ -67,12 +67,8 @@ asn_struct_copy_f REAL_copy;
 xer_type_decoder_f REAL_decode_xer;
 xer_type_decoder_f REAL_decode_xer_decimal;
 xer_type_encoder_f REAL_encode_xer;
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
-=======
 xer_type_encoder_f REAL_encode_xer_decimal;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 jer_type_decoder_f REAL_decode_jer;
@@ -82,15 +78,11 @@ jer_type_encoder_f REAL_encode_jer;
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f REAL_decode_oer;
 oer_type_encoder_f REAL_encode_oer;
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
-=======
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
 cbor_type_decoder_f REAL_decode_cbor;
 cbor_type_encoder_f REAL_encode_cbor;
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f REAL_decode_uper;

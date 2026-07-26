@@ -23,7 +23,6 @@ static asn_dec_rval_t aper_open_type_get_simple(
 
     ASN_DEBUG("Getting open type %s...", td->name);
 
-<<<<<<< HEAD
     do {
         chunk_bytes = aper_get_length(pd, -1, -1, -1, &repeat);
         if (chunk_bytes < 0) {
@@ -46,30 +45,6 @@ static asn_dec_rval_t aper_open_type_get_simple(
         }
         bufLen += chunk_bytes;
     } while (repeat);
-=======
-	do {
-	        chunk_bytes = aper_get_length(pd, -1, -1, -1, &repeat);
-		if(chunk_bytes < 0) {
-			FREEMEM(buf);
-			ASN__DECODE_STARVED;
-		}
-		if(bufLen + chunk_bytes > bufSize) {
-			void *ptr;
-			bufSize = chunk_bytes + (bufSize << 2);
-			ptr = REALLOC(buf, bufSize);
-			if(!ptr) {
-				FREEMEM(buf);
-				ASN__DECODE_FAILED;
-			}
-			buf = ptr;
-		}
-		if(per_get_many_bits(pd, buf ? buf + bufLen : NULL, 0, chunk_bytes << 3)) {
-			FREEMEM(buf);
-			ASN__DECODE_STARVED;
-		}
-		bufLen += chunk_bytes;
-	} while(repeat);
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Getting open type %s encoded in %ld bytes", td->name,
               (long)bufLen);

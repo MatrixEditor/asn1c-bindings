@@ -22,15 +22,9 @@ asn_random_fill_result_t NativeInteger_random_fill(
 
     if (max_length == 0) return result_skipped;
 
-<<<<<<< HEAD
-    if (st == NULL) {
-        st = (long *)CALLOC(1, sizeof(*st));
-        if (st == NULL) {
-=======
     if(st == NULL) {
         st = CALLOC(1, NativeInteger_field_width(specs));
         if(st == NULL) {
->>>>>>> upstream/vlm_master
             return result_failed;
         }
     }

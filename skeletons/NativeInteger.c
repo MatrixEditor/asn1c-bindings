@@ -74,10 +74,6 @@ asn_TYPE_operation_t asn_OP_NativeInteger = {
     NativeInteger_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0  /* Use generic outmost tag fetcher */,
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -87,7 +83,6 @@ asn_TYPE_operation_t asn_OP_NativeInteger = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_NativeInteger = {
     "INTEGER", /* The ASN.1 type is still INTEGER */
@@ -114,11 +109,6 @@ asn_TYPE_descriptor_t asn_DEF_NativeInteger = {
     0  /* No specifics */
 };
 
-<<<<<<< HEAD
-void NativeInteger_free(const asn_TYPE_descriptor_t *td, void *ptr,
-                        enum asn_struct_free_method method) {
-    if (!td || !ptr) return;
-=======
 /*
  * Width-aware access helpers.  The native integer member occupies
  * field_width octets (1/2/4/8); when field_width is 0 the width defaults to
@@ -215,21 +205,9 @@ NativeInteger_free(const asn_TYPE_descriptor_t *td, void *ptr,
                    enum asn_struct_free_method method) {
     if(!td || !ptr)
 		return;
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Freeing %s as INTEGER (%d, %p, Native)", td->name, method, ptr);
 
-<<<<<<< HEAD
-    switch (method) {
-        case ASFM_FREE_EVERYTHING:
-            FREEMEM(ptr);
-            break;
-        case ASFM_FREE_UNDERLYING:
-            break;
-        case ASFM_FREE_UNDERLYING_AND_RESET:
-            memset(ptr, 0, sizeof(long));
-            break;
-=======
     switch(method) {
     case ASFM_FREE_EVERYTHING:
         FREEMEM(ptr);
@@ -241,7 +219,6 @@ NativeInteger_free(const asn_TYPE_descriptor_t *td, void *ptr,
                NativeInteger_field_width(
                    (const asn_INTEGER_specifics_t *)td->specifics));
         break;
->>>>>>> upstream/vlm_master
     }
 }
 
@@ -252,28 +229,6 @@ int NativeInteger_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
     if (aptr && bptr) {
         const asn_INTEGER_specifics_t *specs =
             (const asn_INTEGER_specifics_t *)td->specifics;
-<<<<<<< HEAD
-        if (specs && specs->field_unsigned) {
-            const unsigned long *a = aptr;
-            const unsigned long *b = bptr;
-            if (*a < *b) {
-                return -1;
-            } else if (*a > *b) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
-            const long *a = aptr;
-            const long *b = bptr;
-            if (*a < *b) {
-                return -1;
-            } else if (*a > *b) {
-                return 1;
-            } else {
-                return 0;
-            }
-=======
         if(specs && specs->field_unsigned) {
             uintmax_t a = NativeInteger_load_u(aptr, specs);
             uintmax_t b = NativeInteger_load_u(bptr, specs);
@@ -286,7 +241,6 @@ int NativeInteger_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
             if(a < b) return -1;
             else if(a > b) return 1;
             else return 0;
->>>>>>> upstream/vlm_master
         }
     } else if (!aptr) {
         return -1;
@@ -295,17 +249,6 @@ int NativeInteger_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
     }
 }
 
-<<<<<<< HEAD
-int NativeInteger_copy(const asn_TYPE_descriptor_t *td, void **aptr,
-                       const void *bptr) {
-    unsigned long *a = *aptr;
-    const unsigned long *b = bptr;
-
-    (void)td;
-
-    /* Check if source has data */
-    if (!b) {
-=======
 int
 NativeInteger_copy(const asn_TYPE_descriptor_t *td, void **aptr, const void *bptr) {
     const asn_INTEGER_specifics_t *specs =
@@ -315,7 +258,6 @@ NativeInteger_copy(const asn_TYPE_descriptor_t *td, void **aptr, const void *bpt
 
     /* Check if source has data */
     if(!bptr) {
->>>>>>> upstream/vlm_master
         /* Clear destination */
         if (a) {
             FREEMEM(a);
@@ -324,15 +266,9 @@ NativeInteger_copy(const asn_TYPE_descriptor_t *td, void **aptr, const void *bpt
         return 0;
     }
 
-<<<<<<< HEAD
-    if (!a) {
-        a = *aptr = MALLOC(sizeof(*a));
-        if (!a) return -1;
-=======
     if(!a) {
         a = *aptr = MALLOC(width);
         if(!a) return -1;
->>>>>>> upstream/vlm_master
     }
 
     memcpy(a, bptr, width);

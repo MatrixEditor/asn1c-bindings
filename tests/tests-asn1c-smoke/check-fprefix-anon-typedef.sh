@@ -33,6 +33,7 @@ prefix=S1AP_
 mkdir "$prefix"
 
 "${ASN1C}" -S "${SKELETONS_DIR}" -flink-skeletons \
+    -no-gen-python -no-gen-python-stubs \
     -fprefix="$prefix" -D "$prefix" test.asn
 
 # The anonymous typedef alias in FWD-DEFS must carry the -fprefix.

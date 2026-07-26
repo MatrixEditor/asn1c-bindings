@@ -17,170 +17,26 @@ static int asn1c_detach_streams(asn1p_expr_t *expr);
 static void asn1c_mark_pdu_dependencies(arg_t *arg);
 static void asn1c_mark_expr_dependencies(arg_t *arg, asn1p_expr_t *expr);
 static void asn1c_mark_ioc_table_dependencies(arg_t *arg, asn1p_ioc_table_t *ioc_table);
-
-<<<<<<< HEAD
 static int asn1c_attach_py_streams(arg_t *arg);
 static int asn1c_detach_py_streams(arg_t *arg);
 
-static inline const char *get_pymodule_name(const char *qualname) {
-    const char *last = strrchr(qualname, '.');
-    return (last != NULL) ? (last + 1) : qualname;
-=======
-int
-asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_flags flags,
-		int argc, int optc, char **argv, int complex_threshold) {
-	arg_t arg_s = {0};
-	arg_t *arg = &arg_s;
-	asn1p_module_t *mod;
-	int ret;
-
-	c_name_clash_finder_init();
-
-	/*
-	 * Initialize target language.
-	 */
-	ret = asn1c_with_language(ASN1C_LANGUAGE_C);
-	assert(ret == 0);
-
-	memset(arg, 0, sizeof(*arg));
-	arg->default_cb = asn1c_compile_expr;
-	arg->logger_cb = default_logger_cb;
-	arg->flags = flags;
-	arg->asn = asn;
-	arg->complex_threshold = complex_threshold;
-
-	/*
-	 * If -flist-deps is specified, list dependencies and exit
-	 */
-	if(flags & A1C_LIST_DEPS) {
-		if(flags & (A1C_PDU_ALL | A1C_PDU_AUTO | A1C_PDU_TYPE)) {
-			asn1c_mark_pdu_dependencies(arg);
-			/* List all marked dependencies */
-			TQ_FOR(mod, &(asn->modules), mod_next) {
-				TQ_FOR(arg->expr, &(mod->members), next) {
-					if(arg->expr->_mark & TM_PDU_DEPENDENCY) {
-						printf("%s\n", arg->expr->Identifier);
-					}
-				}
-			}
-			return 0;
-		} else {
-			/* -flist-deps requires -pdu option */
-			FATAL("-flist-deps requires -pdu={all|auto|Type} option");
-			return -1;
-		}
-	}
-
-	/*
-	 * If -fgen-only-pdu-deps is specified, mark all PDU dependencies before compilation
-	 */
-	if(flags & A1C_GEN_ONLY_PDU_DEPS) {
-		if(flags & (A1C_PDU_ALL | A1C_PDU_AUTO | A1C_PDU_TYPE)) {
-			asn1c_mark_pdu_dependencies(arg);
-		} else {
-			/* -fgen-only-pdu-deps requires -pdu option */
-			FATAL("-fgen-only-pdu-deps requires -pdu={all|auto|Type} option");
-			return -1;
-		}
-	}
-
-	/*
-	 * Apply encoding controls to types before code generation
-	 */
-	TQ_FOR(mod, &(asn->modules), mod_next) {
-		if(asn1c_apply_encoding_controls(asn, mod) < 0)
-			return -1;
-	}
-
-	/*
-	 * Compile each individual top level structure.
-	 */
-	TQ_FOR(mod, &(asn->modules), mod_next) {
-		TQ_FOR(arg->expr, &(mod->members), next) {
-			/* Skip encoding instructions - they're not real types to compile */
-			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) {
-				continue;
-			}
-			
-			/* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
-			if((flags & A1C_GEN_ONLY_PDU_DEPS) && 
-			   !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
-				DEBUG("Skipping non-PDU type: %s", arg->expr->Identifier);
-				continue;
-			}
-
-			arg->ns = asn1_namespace_new_from_module(mod, 0);
-
-			compiler_streams_t *cs = NULL;
-
-			if(asn1c_attach_streams(arg->expr))
-				return -1;
-
-			cs = arg->expr->data;
-			cs->target = OT_TYPE_DECLS;
-			arg->target = cs;
-
-			ret = asn1c_compile_expr(arg, NULL);
-			if(ret) {
-				FATAL("Cannot compile \"%s\" (%x:%x) at line %d",
-					arg->expr->Identifier,
-					arg->expr->expr_type,
-					arg->expr->meta_type,
-					arg->expr->_lineno);
-				return ret;
-			}
-
-			asn1_namespace_free(arg->ns);
-			arg->ns = 0;
-		}
-	}
-
-	if(c_name_clash(arg)) {
-		if(arg->flags & A1C_COMPOUND_NAMES) {
-			FATAL("Name clashes encountered even with -fcompound-names flag");
-			/* Proceed further for better debugging. */
-		} else {
-			FATAL("Use \"-fcompound-names\" flag to asn1c to resolve name clashes");
-			if(arg->flags & A1C_PRINT_COMPILED) {
-				/* Proceed further for better debugging. */
-			} else {
-				return -1;
-			}
-		}
-	}
-
-	DEBUG("Saving compiled data");
-
-	c_name_clash_finder_destroy();
-
-	/*
-	 * Save or print out the compiled result.
-	 */
-	if(asn1c_save_compiled_output(arg, datadir, destdir, argc, optc, argv))
-		return -1;
-
-	TQ_FOR(mod, &(asn->modules), mod_next) {
-		TQ_FOR(arg->expr, &(mod->members), next) {
-			asn1c_detach_streams(arg->expr);
-		}
-	}
-
-	return 0;
->>>>>>> upstream/vlm_master
+static inline const char *
+get_pymodule_name(const char *qualname) {
+	const char *last = strrchr(qualname, '.');
+	return (last != NULL) ? (last + 1) : qualname;
 }
 
-int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
-                 enum asn1c_flags flags, int argc, int optc, char **argv,
-                 const char *pymodule) {
-    arg_t arg_s;
+int
+asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
+             enum asn1c_flags flags, int argc, int optc, char **argv,
+             const char *pymodule, int complex_threshold) {
+    arg_t arg_s = {0};
     arg_t *arg = &arg_s;
     asn1p_module_t *mod;
-    compiler_streams_t *cs;
     int ret;
-    const char *pymodule_name = get_pymodule_name(pymodule);
+    const char *pymodule_qualname = pymodule ? pymodule : "_asn1types";
+    const char *pymodule_name = get_pymodule_name(pymodule_qualname);
 
-    arg_s.pymodule_qualname = pymodule;
-    arg_s.pymodule_name = pymodule_name;
     c_name_clash_finder_init();
 
     /*
@@ -189,22 +45,78 @@ int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
     ret = asn1c_with_language(ASN1C_LANGUAGE_C);
     assert(ret == 0);
 
-    memset(arg, 0, sizeof(*arg));
     arg->default_cb = asn1c_compile_expr;
     arg->logger_cb = default_logger_cb;
     arg->flags = flags;
     arg->asn = asn;
+    arg->complex_threshold = complex_threshold;
+    arg->pymodule_qualname = pymodule_qualname;
+    arg->pymodule_name = pymodule_name;
 
-    if (asn1c_attach_py_streams(arg)) {
+    if ((flags & A1C_GEN_PYTHON) && asn1c_attach_py_streams(arg)) {
         return -1;
     }
-    cs = arg->pytarget;
+
+    /*
+     * If -flist-deps is specified, list dependencies and exit.
+     */
+    if (flags & A1C_LIST_DEPS) {
+        if (flags & (A1C_PDU_ALL | A1C_PDU_AUTO | A1C_PDU_TYPE)) {
+            asn1c_mark_pdu_dependencies(arg);
+            TQ_FOR(mod, &(asn->modules), mod_next) {
+                TQ_FOR(arg->expr, &(mod->members), next) {
+                    if (arg->expr->_mark & TM_PDU_DEPENDENCY) {
+                        printf("%s\n", arg->expr->Identifier);
+                    }
+                }
+            }
+            if (flags & A1C_GEN_PYTHON) asn1c_detach_py_streams(arg);
+            return 0;
+        } else {
+            FATAL("-flist-deps requires -pdu={all|auto|Type} option");
+            if (flags & A1C_GEN_PYTHON) asn1c_detach_py_streams(arg);
+            return -1;
+        }
+    }
+
+    /*
+     * If -fgen-only-pdu-deps is specified, mark all PDU dependencies before
+     * compilation.
+     */
+    if (flags & A1C_GEN_ONLY_PDU_DEPS) {
+        if (flags & (A1C_PDU_ALL | A1C_PDU_AUTO | A1C_PDU_TYPE)) {
+            asn1c_mark_pdu_dependencies(arg);
+        } else {
+            FATAL("-fgen-only-pdu-deps requires -pdu={all|auto|Type} option");
+            if (flags & A1C_GEN_PYTHON) asn1c_detach_py_streams(arg);
+            return -1;
+        }
+    }
+
+    /*
+     * Apply encoding controls to types before code generation.
+     */
+    TQ_FOR(mod, &(asn->modules), mod_next) {
+        if (asn1c_apply_encoding_controls(asn, mod) < 0) {
+            if (flags & A1C_GEN_PYTHON) asn1c_detach_py_streams(arg);
+            return -1;
+        }
+    }
 
     /*
      * Compile each individual top level structure.
      */
     TQ_FOR (mod, &(asn->modules), mod_next) {
         TQ_FOR (arg->expr, &(mod->members), next) {
+            if (arg->expr->_mark & TM_ENCODING_INSTRUCTION) {
+                continue;
+            }
+            if ((flags & A1C_GEN_ONLY_PDU_DEPS) &&
+                !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
+                DEBUG("Skipping non-PDU type: %s", arg->expr->Identifier);
+                continue;
+            }
+
             arg->ns = asn1_namespace_new_from_module(mod, 0);
 
             compiler_streams_t *cs = NULL;
@@ -214,7 +126,7 @@ int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
             cs = arg->expr->data;
             cs->target = OT_TYPE_DECLS;
             arg->target = cs;
-            arg->pymodule_qualname = pymodule;
+            arg->pymodule_qualname = pymodule_qualname;
             arg->pymodule_name = pymodule_name;
             arg->anonymous_inner = 0;
             ret = asn1c_compile_expr(arg, NULL);
@@ -246,12 +158,11 @@ int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
         }
     }
 
-    DEBUG("Saving compiled data");
+	DEBUG("Saving compiled data");
 
-    c_name_clash_finder_destroy();
+	c_name_clash_finder_destroy();
 
-    arg->pytarget = cs;
-    arg->pymodule_qualname = pymodule;
+    arg->pymodule_qualname = pymodule_qualname;
     arg->pymodule_name = pymodule_name;
     /*
      * Save or print out the compiled result.
@@ -437,16 +348,10 @@ static void asn1c_debug_expr_naming(arg_t *arg) {
     printf("\n");
 }
 
-<<<<<<< HEAD
-void asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags flags,
-                             char **asn_type_names) {
-    arg_t arg_s;
-=======
 void
 asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags flags,
                         char **asn_type_names) {
     arg_t arg_s = {0};
->>>>>>> upstream/vlm_master
     arg_t *arg = &arg_s;
     asn1p_module_t *mod;
 
@@ -483,8 +388,6 @@ asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags flags,
 
     c_name_clash_finder_destroy();
 }
-<<<<<<< HEAD
-=======
 
 /*
  * Helper to mark IOC table types as dependencies.
@@ -794,4 +697,3 @@ asn1c_mark_pdu_dependencies(arg_t *arg) {
 		}
 	}
 }
->>>>>>> upstream/vlm_master

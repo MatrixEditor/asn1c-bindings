@@ -41,6 +41,7 @@ test -f config.h && EXTRA_CFLAGS="-DHAVE_CONFIG_H ${EXTRA_CFLAGS}"
 test -n "$TITLE" && EXTRA_CFLAGS="-DASN_CONVERTER_TITLE=\"$TITLE\" ${EXTRA_CFLAGS}"
 
 {
+	echo "ASN_PDU = ${ASN_PDU}"
 	echo "ASN_PROGRAM = ${ASN_PROGRAM}"
 	echo "CFLAGS += ${EXTRA_CFLAGS}"
 	echo "begin: ${ASN_PDU}.c maybe-wip-pause all"
@@ -170,6 +171,7 @@ test -n "$TITLE" && EXTRA_CFLAGS="-DASN_CONVERTER_TITLE=\"$TITLE\" ${EXTRA_CFLAG
 	echo '	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)'
 	echo "	rm -f Makefile.am.* asn_*.[ch] ASN*.[ch]"
 	echo "	rm -f converter-example.mk ASN1*.[ch] asn_*.[ch]"
+	echo '	rm -f $(ASN_PDU).c'
 } > Makefile
 
 echo

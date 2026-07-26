@@ -11,9 +11,6 @@
 #define __EXTENSIONS__ /* for Sun */
 #endif
 
-<<<<<<< HEAD
-#include "asn_application.h" /* Application-visible API */
-=======
 typedef enum asn_type_kind {
     ASN_KIND_PRIMITIVE,
     ASN_KIND_SEQUENCE,
@@ -24,7 +21,6 @@ typedef enum asn_type_kind {
 } asn_type_kind_t;
 
 #include "asn_application.h"	/* Application-visible API */
->>>>>>> upstream/vlm_master
 
 #ifndef __NO_ASSERT_H__ /* Include assert.h only for internal use. */
 #include <assert.h>     /* for assert() macro */
@@ -72,25 +68,6 @@ int get_asn1c_environment_version(void); /* Run-time version */
 #ifdef ASN_THREAD_SAFE
 /* Thread safety requires sacrifice in output indentation:
  * Retain empty definition of ASN_DEBUG_INDENT_ADD. */
-<<<<<<< HEAD
-#else /* !ASN_THREAD_SAFE */
-#undef ASN_DEBUG_INDENT_ADD
-#undef asn_debug_indent
-extern int asn_debug_indent;
-#define ASN_DEBUG_INDENT_ADD(i) \
-    do {                        \
-        asn_debug_indent += i;  \
-    } while (0)
-#endif /* ASN_THREAD_SAFE */
-#define ASN_DEBUG(fmt, args...)                            \
-    do {                                                   \
-        int adi = asn_debug_indent;                        \
-        while (adi--) fprintf(stderr, " ");                \
-        fprintf(stderr, fmt, ##args);                      \
-        fprintf(stderr, " (%s:%d)\n", __FILE__, __LINE__); \
-    } while (0)
-#else /* !C99 */
-=======
 #else	/* !ASN_THREAD_SAFE */
 #undef  ASN_DEBUG_INDENT_ADD
 #undef  asn_debug_indent
@@ -106,7 +83,6 @@ extern int asn_debug_indent;	/* A single definition is in asn_internal.c */
 			__FILE__, __LINE__);		\
 	} while(0)
 #else	/* !C99 */
->>>>>>> upstream/vlm_master
 void CC_PRINTFLIKE(1, 2) ASN_DEBUG_f(const char *fmt, ...);
 #define ASN_DEBUG ASN_DEBUG_f
 #endif /* C99 */
@@ -161,15 +137,6 @@ ssize_t CC_PRINTFLIKE(3, 4)
         for (tmp_i = 0; tmp_i < tmp_level; tmp_i++) ASN__CALLBACK("    ", 4); \
     } while (0)
 
-<<<<<<< HEAD
-#define _i_INDENT(nl)                                    \
-    do {                                                 \
-        int tmp_i;                                       \
-        if ((nl) && cb("\n", 1, app_key) < 0) return -1; \
-        for (tmp_i = 0; tmp_i < ilevel; tmp_i++)         \
-            if (cb("    ", 4, app_key) < 0) return -1;   \
-    } while (0)
-=======
 /*
  * Check if an ASN.1 type is a structured type that outputs newlines in XER.
  * Structured types (SEQUENCE, SET, CHOICE, SEQUENCE_OF, SET_OF) output 
@@ -191,7 +158,6 @@ ssize_t CC_PRINTFLIKE(3, 4)
             if(cb("    ", 4, app_key) < 0)          \
                 return -1;                          \
     } while(0)
->>>>>>> upstream/vlm_master
 
 /*
  * Check stack against overflow, if limit is set.
@@ -214,9 +180,6 @@ ssize_t CC_PRINTFLIKE(3, 4)
 #endif
 
 #define ASN__DEFAULT_STACK_MAX (30000)
-
-/* Define ASN_REJECT_UNKNOWN_EXTENSIONS to restore strict decode failure for
- * unknown UPER/OER CHOICE alternatives and UPER ENUMERATED additions. */
 
 /*
  * Recursion depth limit for encoding/decoding to prevent stack overflow
@@ -249,9 +212,6 @@ static int CC_NOTUSED ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
 }
 #endif
 
-<<<<<<< HEAD
-#ifdef __cplusplus
-=======
 /*
 * Decoder recursion/stack depth tracking.
  * Use ASN__STACK_OVERFLOW_CHECK() to detect when the decoding context
@@ -461,8 +421,18 @@ asn_is_meta_syntax_keyword(const char *name) {
     return 0;
 }
 
+static inline int
+asn_is_synthetic_collection_member_name(const char *name) {
+    size_t len;
+
+    if(!name) return 0;
+    if(strcmp(name, "Member") == 0) return 1;
+
+    len = strlen(name);
+    return len > 7 && strcmp(name + len - 7, "_Member") == 0;
+}
+
 #ifdef	__cplusplus
->>>>>>> upstream/vlm_master
 }
 #endif
 

@@ -6,12 +6,6 @@
 #include <asn_internal.h>
 #include <REAL.h>
 
-<<<<<<< HEAD
-asn_enc_rval_t REAL_encode_xer(const asn_TYPE_descriptor_t *td,
-                               const void *sptr, int ilevel,
-                               enum xer_encoder_flags_e flags,
-                               asn_app_consume_bytes_f *cb, void *app_key) {
-=======
 static int
 REAL__isfinite(double d) {
 #ifdef isfinite
@@ -25,7 +19,6 @@ asn_enc_rval_t
 REAL_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 enum xer_encoder_flags_e flags, asn_app_consume_bytes_f *cb,
                 void *app_key) {
->>>>>>> upstream/vlm_master
     const REAL_t *st = (const REAL_t *)sptr;
     asn_enc_rval_t er = {0, 0, 0};
     double d;

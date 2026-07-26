@@ -95,7 +95,6 @@ ssize_t uper_get_nsnnwn(asn_per_data_t *pd) {
 int uper_put_nsnnwn(asn_per_outp_t *po, int n) {
     int bytes;
 
-<<<<<<< HEAD
     if (n <= 63) {
         if (n < 0) return -1;
         return per_put_few_bits(po, n, 7);
@@ -109,21 +108,6 @@ int uper_put_nsnnwn(asn_per_outp_t *po, int n) {
     else
         return -1; /* This is not a "normally small" value */
     if (per_put_few_bits(po, bytes, 8)) return -1;
-=======
-	if(n <= 63) {
-		if(n < 0) return -1;
-		return per_put_few_bits(po, n, 7);
-	}
-	if(n < 256)
-		bytes = 1;
-	else if(n < 65536)
-		bytes = 2;
-	else
-		return -1;	/* This is not a "normally small" value */
-	if(per_put_few_bits(po, 1, 1)
-	|| per_put_few_bits(po, bytes, 8))
-		return -1;
->>>>>>> upstream/vlm_master
 
     return per_put_few_bits(po, n, 8 * bytes);
 }
@@ -204,14 +188,8 @@ int uper_put_nslength(asn_per_outp_t *po, size_t length) {
         return per_put_few_bits(po, length - 1, 7) ? -1 : 0;
     } else {
         int need_eom = 0;
-<<<<<<< HEAD
         if (uper_put_length(po, length, &need_eom) != (ssize_t)length ||
             need_eom) {
-=======
-        if(per_put_few_bits(po, 1, 1)) return -1;
-        if(uper_put_length(po, length, &need_eom) != (ssize_t)length
-           || need_eom) {
->>>>>>> upstream/vlm_master
             /* This might happen in case of >16K extensions */
             return -1;
         }

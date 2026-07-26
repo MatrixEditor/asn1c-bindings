@@ -1,4 +1,5 @@
 ASN_PROGRAM = rrc-dump
+ASN_PDU = DL-DCCH-Message
 CFLAGS += -DHAVE_CONFIG_H -DJUNKTEST -D_DEFAULT_SOURCE
 begin: DL-DCCH-Message.c maybe-wip-pause all
 
@@ -104,3 +105,4 @@ distclean: clean
 	rm -f $(ASN_MODULE_HDRS)
 	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)
 	rm -f converter-example.mk
+	rm -f $(ASN_PDU).c

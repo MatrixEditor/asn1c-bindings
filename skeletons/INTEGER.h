@@ -26,7 +26,6 @@ typedef struct asn_INTEGER_enum_map_s {
 
 /* This type describes an enumeration for INTEGER and ENUMERATED types */
 typedef struct asn_INTEGER_specifics_s {
-<<<<<<< HEAD
     const asn_INTEGER_enum_map_t *value2enum; /* N -> "tag"; sorted by N */
     const unsigned int *enum2value;           /* "tag" => N; sorted by tag */
     int map_count;                            /* Elements in either map */
@@ -34,15 +33,6 @@ typedef struct asn_INTEGER_specifics_s {
     int strict_enumeration;                   /* Enumeration set is fixed */
     int field_width;                          /* Size of native integer */
     int field_unsigned;                       /* Signed=0, unsigned=1 */
-=======
-	const asn_INTEGER_enum_map_t *value2enum;	/* N -> "tag"; two segments (root, then extension additions), each sorted by N */
-	const unsigned int *enum2value;		/* "tag" => N; sorted by tag */
-	int map_count;				/* Elements in either map */
-	int extension;				/* This map is extensible */
-	int strict_enumeration;			/* Enumeration set is fixed */
-	int field_width;			/* Size of native integer */
-	int field_unsigned;			/* Signed=0, unsigned=1 */
->>>>>>> upstream/vlm_master
 } asn_INTEGER_specifics_t;
 
 ssize_t INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st,
@@ -69,12 +59,8 @@ der_type_encoder_f INTEGER_encode_der;
 xer_type_decoder_f INTEGER_decode_xer;
 xer_type_decoder_f INTEGER_decode_xer_text;
 xer_type_encoder_f INTEGER_encode_xer;
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
-=======
 xer_type_encoder_f INTEGER_encode_xer_text;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 jer_type_decoder_f INTEGER_decode_jer;
@@ -84,15 +70,11 @@ jer_type_encoder_f INTEGER_encode_jer;
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f INTEGER_decode_oer;
 oer_type_encoder_f INTEGER_encode_oer;
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
-=======
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
 cbor_type_decoder_f INTEGER_decode_cbor;
 cbor_type_encoder_f INTEGER_encode_cbor;
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f INTEGER_decode_uper;

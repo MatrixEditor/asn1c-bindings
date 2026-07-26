@@ -61,6 +61,8 @@ EOF
     -fcompound-names \
     -findirect-choice \
     -flink-skeletons \
+    -no-gen-python \
+    -no-gen-python-stubs \
     -S "${SKELETONS_DIR}" \
     test-inline-ioc.asn1
 

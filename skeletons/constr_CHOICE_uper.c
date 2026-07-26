@@ -55,22 +55,7 @@ asn_dec_rval_t CHOICE_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         value = uper_get_nsnnwn(pd);
         if (value < 0) ASN__DECODE_STARVED;
         value += specs->ext_start;
-<<<<<<< HEAD
         if ((unsigned)value >= td->elements_count) ASN__DECODE_FAILED;
-=======
-        if((unsigned)value >= td->elements_count) {
-#ifdef ASN_REJECT_UNKNOWN_EXTENSIONS
-            ASN__DECODE_FAILED;
-#else
-            if(uper_open_type_skip(opt_codec_ctx, pd))
-                ASN__DECODE_STARVED;
-            _set_present_idx(st, specs->pres_offset, specs->pres_size, 0);
-            rv.code = RC_OK;
-            rv.consumed = 0;
-            return rv;
-#endif
-        }
->>>>>>> upstream/vlm_master
     }
 
     /* Adjust if canonical order is different from natural order */
@@ -140,12 +125,8 @@ asn_enc_rval_t CHOICE_encode_uper(const asn_TYPE_descriptor_t *td,
      * If the structure was not initialized properly, it cannot be encoded:
      * can't deduce what to encode in the choice type.
      */
-<<<<<<< HEAD
-    if (present == 0 || present > td->elements_count)
-=======
     if(present == 0 || present > td->elements_count) {
         UPER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     } else {
         present--;
@@ -166,14 +147,10 @@ asn_enc_rval_t CHOICE_encode_uper(const asn_TYPE_descriptor_t *td,
                     "CHOICE member %d (enc %d) is an extension (%" ASN_PRIdMAX
                     "..%" ASN_PRIdMAX ")",
                     present, present_enc, ct->lower_bound, ct->upper_bound);
-<<<<<<< HEAD
-                if (per_put_few_bits(po, 1, 1)) ASN__ENCODE_FAILED;
-=======
                 if(per_put_few_bits(po, 1, 1)) {
                     UPER_ENCODER_RECURSION_DEPTH_DEC();
                     ASN__ENCODE_FAILED;
                 }
->>>>>>> upstream/vlm_master
             } else {
                 UPER_ENCODER_RECURSION_DEPTH_DEC();
                 ASN__ENCODE_FAILED;
@@ -185,14 +162,10 @@ asn_enc_rval_t CHOICE_encode_uper(const asn_TYPE_descriptor_t *td,
         ASN_DEBUG("CHOICE member %d (enc %d) is not an extension (%" ASN_PRIdMAX
                   "..%" ASN_PRIdMAX ")",
                   present, present_enc, ct->lower_bound, ct->upper_bound);
-<<<<<<< HEAD
-        if (per_put_few_bits(po, 0, 1)) ASN__ENCODE_FAILED;
-=======
         if(per_put_few_bits(po, 0, 1)) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
->>>>>>> upstream/vlm_master
     }
 
     elm = &td->elements[present];
@@ -202,26 +175,17 @@ asn_enc_rval_t CHOICE_encode_uper(const asn_TYPE_descriptor_t *td,
         /* Member is a pointer to another structure */
         memb_ptr =
             *(const void *const *)((const char *)sptr + elm->memb_offset);
-<<<<<<< HEAD
-        if (!memb_ptr) ASN__ENCODE_FAILED;
-=======
         if(!memb_ptr) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
->>>>>>> upstream/vlm_master
     } else {
         memb_ptr = (const char *)sptr + elm->memb_offset;
     }
 
-<<<<<<< HEAD
-    if (ct && ct->range_bits >= 0) {
-        if (per_put_few_bits(po, present_enc, ct->range_bits))
-=======
     if(ct && ct->range_bits >= 0) {
         if(per_put_few_bits(po, present_enc, ct->range_bits)) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             ASN__ENCODE_FAILED;
         }
 
@@ -231,15 +195,6 @@ asn_enc_rval_t CHOICE_encode_uper(const asn_TYPE_descriptor_t *td,
         UPER_ENCODER_RECURSION_DEPTH_DEC();
         return rval;
     } else {
-<<<<<<< HEAD
-        asn_enc_rval_t rval = {0, 0, 0};
-        if (specs->ext_start == -1) ASN__ENCODE_FAILED;
-        if (uper_put_nsnnwn(po, present_enc - specs->ext_start))
-            ASN__ENCODE_FAILED;
-        if (uper_open_type_put(elm->type,
-                               elm->encoding_constraints.per_constraints,
-                               memb_ptr, po))
-=======
         asn_enc_rval_t rval = {0,0,0};
         if(specs->ext_start == -1) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
@@ -253,7 +208,6 @@ asn_enc_rval_t CHOICE_encode_uper(const asn_TYPE_descriptor_t *td,
                               elm->encoding_constraints.per_constraints,
                               memb_ptr, po)) {
             UPER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             ASN__ENCODE_FAILED;
         }
         rval.encoded = 0;

@@ -205,14 +205,9 @@ typedef asn_type_selector_result_t(asn_type_selector_f)(
  * May be directly invoked by applications.
  */
 typedef struct asn_TYPE_operation_s {
-<<<<<<< HEAD
-    asn_struct_free_f *free_struct;       /* Free the structure */
-    asn_struct_print_f *print_struct;     /* Human readable output */
-=======
     asn_type_kind_t kind;   /* The kind/category of this type */
     asn_struct_free_f *free_struct;     /* Free the structure */
     asn_struct_print_f *print_struct;   /* Human readable output */
->>>>>>> upstream/vlm_master
     asn_struct_compare_f *compare_struct; /* Compare two structures */
     asn_struct_copy_f *copy_struct;       /* Copy method */
     ber_type_decoder_f *ber_decoder;      /* Generic BER decoder */

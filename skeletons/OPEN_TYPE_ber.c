@@ -22,9 +22,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
         ASN__DECODE_FAILED;
     }
 
-<<<<<<< HEAD
-    if (!elm->type_selector) {
-=======
     /* Validate elm->type before accessing its members */
     if(!elm->type) {
         ASN_DEBUG("Open Type %s->%s: type descriptor is NULL",
@@ -33,18 +30,13 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     if(!elm->type_selector) {
->>>>>>> upstream/vlm_master
         ASN_DEBUG("Type selector is not defined for Open Type %s->%s->%s",
                   td->name, elm->name, elm->type->name);
         ASN__DECODE_FAILED;
     }
 
     selected = elm->type_selector(td, sptr);
-<<<<<<< HEAD
-    if (!selected.presence_index) {
-=======
     if(!selected.presence_index || !selected.type_descriptor) {
->>>>>>> upstream/vlm_master
         ASN__DECODE_FAILED;
     }
 
@@ -55,11 +47,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
         memb_ptr = (char *)sptr + elm->memb_offset;
         memb_ptr2 = &memb_ptr;
     }
-<<<<<<< HEAD
-    if (*memb_ptr2 != NULL) {
-        /* Make sure we reset the structure first before encoding */
-        if (CHOICE_variant_set_presence(elm->type, *memb_ptr2, 0) != 0) {
-=======
 
     /* Check if this OPEN_TYPE uses CHOICE wrapper (elements_count > 0) or direct type */
     if(elm->type->elements_count > 0) {
@@ -70,7 +57,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
             ASN_DEBUG("Open Type %s->%s: presence index %u out of bounds (max %u)",
                       td->name, elm->name, selected.presence_index,
                       elm->type->elements_count);
->>>>>>> upstream/vlm_master
             ASN__DECODE_FAILED;
         }
         
@@ -106,10 +92,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
                   td->name, elm->name);
     }
 
-<<<<<<< HEAD
-    inner_value = (char *)*memb_ptr2 +
-                  elm->type->elements[selected.presence_index - 1].memb_offset;
-=======
     /* Compute inner_value based on CHOICE wrapper mode or direct type mode */
     unsigned int memb_offset = 0;
     const asn_TYPE_member_t *variant_elm = NULL;
@@ -145,7 +127,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
         /* Direct type mode: decode directly into the member pointer */
         inner_value = *memb_ptr2;
     }
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("presence %d\n", selected.presence_index);
 
@@ -154,12 +135,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
         elm->tag_mode);
     ADVANCE(rv.consumed);
     rv.consumed = 0;
-<<<<<<< HEAD
-    switch (rv.code) {
-        case RC_OK:
-            if (CHOICE_variant_set_presence(elm->type, *memb_ptr2,
-                                            selected.presence_index) == 0) {
-=======
     switch(rv.code) {
     case RC_OK:
         if(elm->type->elements_count > 0) {
@@ -176,21 +151,12 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
                     void **variant_ptr = (void **)((char *)*memb_ptr2 + memb_offset);
                     *variant_ptr = inner_value;
                 }
->>>>>>> upstream/vlm_master
                 rv.code = RC_OK;
                 rv.consumed = consumed_myself;
                 return rv;
             } else {
                 /* Oh, now a full-blown failure failure */
             }
-<<<<<<< HEAD
-            /* Fall through */
-        case RC_FAIL:
-            rv.consumed = consumed_myself;
-            /* Fall through */
-        case RC_WMORE:
-            break;
-=======
         } else {
             /* Direct type mode: update member pointer with decoded value if pointer type */
             if(elm->flags & ATF_POINTER) {
@@ -206,7 +172,6 @@ asn_dec_rval_t OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
         /* Fall through */
     case RC_WMORE:
         break;
->>>>>>> upstream/vlm_master
     }
 
     if (*memb_ptr2) {

@@ -464,11 +464,6 @@ static asn_enc_rval_t asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
             }
             break;
 #endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
-<<<<<<< HEAD
-        default:
-            errno = ENOENT;
-            ASN__ENCODE_FAILED;
-=======
 
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
     case ATS_CBOR:
@@ -495,7 +490,6 @@ static asn_enc_rval_t asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
     default:
         errno = ENOENT;
         ASN__ENCODE_FAILED;
->>>>>>> upstream/vlm_master
     }
 
     return er;
@@ -584,11 +578,6 @@ asn_dec_rval_t asn_decode(const asn_codec_ctx_t *opt_codec_ctx,
 #if !defined(ASN_DISABLE_JER_SUPPORT)
             return jer_decode(opt_codec_ctx, td, sptr, buffer, size);
 #else
-<<<<<<< HEAD
-            errno = ENOENT;
-            ASN__DECODE_FAILED;
-#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
-=======
         errno = ENOENT;
         ASN__DECODE_FAILED;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
@@ -600,6 +589,5 @@ asn_dec_rval_t asn_decode(const asn_codec_ctx_t *opt_codec_ctx,
         errno = ENOENT;
         ASN__DECODE_FAILED;
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
     }
 }

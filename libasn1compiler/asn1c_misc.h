@@ -1,5 +1,5 @@
-#ifndef ASN1_COMPILER_MISC_H
-#define ASN1_COMPILER_MISC_H
+#ifndef	ASN1_COMPILER_MISC_H
+#define	ASN1_COMPILER_MISC_H
 
 /*
  * Make the target language identifier out of one or more names.
@@ -7,11 +7,11 @@
  * with safe ones.
  */
 enum ami_flags_e {
-    AMI_MASK_ONLY_SPACES = 1,  /* Mask only spaces, everything else's safe */
-    AMI_CHECK_RESERVED = 2,    /* Check against reserved keywords */
-    AMI_NODELIMITER = 4,       /* Do not put delimiter, just concatenate */
-    AMI_USE_PREFIX = 8,        /* Use Prefix when generating identifier */
-    AMI_CHECK_PY_RESERVED = 16 /* Check against Python reserved keywords */
+	AMI_MASK_ONLY_SPACES	= 1,	/* Mask only spaces, everything else's safe */
+	AMI_CHECK_RESERVED	= 2,	/* Check against reserved keywords */
+	AMI_NODELIMITER       = 4,	/* Do not put delimiter, just concatenate */
+	AMI_USE_PREFIX        = 8,	/* Use Prefix when generating identifier */
+	AMI_CHECK_PY_RESERVED = 16, /* Check against Python reserved keywords */
 };
 const char *asn1c_make_identifier(enum ami_flags_e, asn1p_expr_t *expr, ...);
 
@@ -21,12 +21,12 @@ const char *asn1c_make_identifier(enum ami_flags_e, asn1p_expr_t *expr, ...);
  * going to be clobbered by the subsequent invocation of this function.
  */
 enum tnfmt {
-    TNF_UNMODIFIED = 0x10, /* Return unmodified type name */
-    TNF_INCLUDE = 0x20,    /* Format for #include <> */
-    TNF_CTYPE = 0x30,      /* Format as normal C-ish type (append "_t") */
-    TNF_CONSTYPE = 0x40,   /* Replace unsafe characters with _ */
-    TNF_SAFE = 0x50,       /* Replace unsafe characters with _ */
-    TNF_RSAFE = 0x60,      /* Recursion-safe C type format */
+	TNF_UNMODIFIED	= 0x10,	/* Return unmodified type name */
+	TNF_INCLUDE	= 0x20,	/* Format for #include <> */
+	TNF_CTYPE	= 0x30,	/* Format as normal C-ish type (append "_t") */
+	TNF_CONSTYPE = 0x40, /* Replace unsafe characters with _ */
+	TNF_SAFE	= 0x50, /* Replace unsafe characters with _ */
+	TNF_RSAFE	= 0x60,	/* Recursion-safe C type format */
 };
 const char *asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format);
 const char *asn1c_disambiguate_generated_filename(const char *name);
@@ -41,19 +41,13 @@ const char *asn1c_disambiguate_generated_filename(const char *name);
  * 	FL_PRESUMED:	Probably can't, but -fwide-types is not in effect.
  */
 enum asn1c_fitslong_e {
-    FL_NOTFIT,
-    FL_FITS_SIGNED,
-    FL_FITS_UNSIGN,
-    FL_PRESUMED,
+	FL_NOTFIT,
+	FL_FITS_SIGNED,
+	FL_FITS_UNSIGN,
+	FL_PRESUMED,
 };
 enum asn1c_fitslong_e asn1c_type_fits_long(arg_t *arg, asn1p_expr_t *expr);
 
-<<<<<<< HEAD
-enum asn1c_fitsfloat_e { RL_NOTFIT, RL_FITS_FLOAT32, RL_FITS_DOUBLE64 };
-enum asn1c_fitsfloat_e asn1c_REAL_fits(arg_t *arg, asn1p_expr_t *expr);
-
-#endif /* ASN1_COMPILER_MISC_H */
-=======
 /*
  * Generated C storage selection for a (possibly constrained) ASN.1 INTEGER.
  * Answers only the storage-type question; constraint bounds are represented
@@ -91,4 +85,3 @@ enum asn1c_fitsfloat_e asn1c_REAL_fits(arg_t *arg, asn1p_expr_t *expr);
 asn1p_expr_t *asn1c_find_parent_parameterized_type(asn1p_t *asn, asn1p_expr_t *spec);
 
 #endif	/* ASN1_COMPILER_MISC_H */
->>>>>>> upstream/vlm_master

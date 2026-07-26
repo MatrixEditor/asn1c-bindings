@@ -300,13 +300,6 @@ asn_enc_rval_t SET_OF_encode_der(const asn_TYPE_descriptor_t *td,
         void *memb_ptr = list->array[edx];
         asn_enc_rval_t erval = {0, 0, 0};
 
-<<<<<<< HEAD
-        if (!memb_ptr) ASN__ENCODE_FAILED;
-
-        erval = elm->type->op->der_encoder(elm->type, memb_ptr, elm->tag_mode,
-                                           elm->tag, 0, 0);
-        if (erval.encoded == -1) return erval;
-=======
         if(!memb_ptr) {
             ASN__ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
@@ -318,7 +311,6 @@ asn_enc_rval_t SET_OF_encode_der(const asn_TYPE_descriptor_t *td,
             ASN__ENCODER_RECURSION_DEPTH_DEC();
             return erval;
         }
->>>>>>> upstream/vlm_master
         computed_size += erval.encoded;
     }
 
@@ -327,24 +319,15 @@ asn_enc_rval_t SET_OF_encode_der(const asn_TYPE_descriptor_t *td,
      */
     encoding_size =
         der_write_tags(td, computed_size, tag_mode, 1, tag, cb, app_key);
-<<<<<<< HEAD
-    if (encoding_size < 0) {
-=======
     if(encoding_size < 0) {
         ASN__ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
     computed_size += encoding_size;
 
-<<<<<<< HEAD
-    if (!cb || list->count == 0) {
-        asn_enc_rval_t erval = {0, 0, 0};
-=======
     if(!cb || list->count == 0) {
         asn_enc_rval_t erval = {0,0,0};
         ASN__ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         erval.encoded = computed_size;
         ASN__ENCODED_OK(erval);
     }

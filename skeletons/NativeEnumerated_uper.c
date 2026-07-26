@@ -50,23 +50,9 @@ asn_dec_rval_t NativeEnumerated_decode_uper(
          * X.691, #10.6: normally small non-negative whole number;
          */
         value = uper_get_nsnnwn(pd);
-<<<<<<< HEAD
         if (value < 0) ASN__DECODE_STARVED;
         value += specs->extension - 1;
         if (value >= specs->map_count) ASN__DECODE_FAILED;
-=======
-        if(value < 0) ASN__DECODE_STARVED;
-        if(value > ASN_UPER_NSNNWN_MAX) ASN__DECODE_FAILED;
-        if(value + specs->extension - 1 >= specs->map_count) {
-#ifdef ASN_REJECT_UNKNOWN_EXTENSIONS
-            ASN__DECODE_FAILED;
-#else
-            *native = LONG_MAX - value;
-            return rval;
-#endif
-        }
-        value += specs->extension - 1;
->>>>>>> upstream/vlm_master
     }
 
     *native = specs->value2enum[value].nat_value;
@@ -104,33 +90,9 @@ asn_enc_rval_t NativeEnumerated_encode_uper(
     native = *(const long *)sptr;
 
     key.nat_value = native;
-<<<<<<< HEAD
     kf = bsearch(&key, specs->value2enum, specs->map_count, sizeof(key),
                  NativeEnumerated__compar_value2enum);
     if (!kf) {
-=======
-    if(specs->extension) {
-        int root_count = specs->extension - 1;
-        kf = bsearch(&key, specs->value2enum, root_count,
-            sizeof(key), NativeEnumerated__compar_value2enum);
-        if(!kf)
-            kf = bsearch(&key, specs->value2enum + root_count,
-                specs->map_count - root_count, sizeof(key),
-                NativeEnumerated__compar_value2enum);
-    } else {
-        kf = bsearch(&key, specs->value2enum, specs->map_count,
-            sizeof(key), NativeEnumerated__compar_value2enum);
-    }
-    if(!kf) {
-        if((ct->flags & APC_EXTENSIBLE) && specs->extension
-           && ASN_NATIVE_ENUMERATED_IS_UNKNOWN_EXT(native)) {
-            value = LONG_MAX - native;
-            if(per_put_few_bits(po, 1, 1)
-               || uper_put_nsnnwn(po, value))
-                ASN__ENCODE_FAILED;
-            ASN__ENCODED_OK(er);
-        }
->>>>>>> upstream/vlm_master
         ASN_DEBUG("No element corresponds to %ld", native);
         ASN__ENCODE_FAILED;
     }

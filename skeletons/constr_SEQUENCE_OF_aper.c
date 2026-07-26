@@ -16,15 +16,11 @@ asn_enc_rval_t SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
     asn_TYPE_member_t *elm = td->elements;
     int seq;
 
-<<<<<<< HEAD
-    if (!sptr) ASN__ENCODE_FAILED;
-=======
     if(!sptr) ASN__ENCODE_FAILED;
 
     /* Check recursion depth to prevent stack overflow */
     APER_ENCODER_RECURSION_DEPTH_INC();
 
->>>>>>> upstream/vlm_master
     list = _A_CSEQUENCE_FROM_VOID(sptr);
 
     er.encoded = 0;
@@ -48,11 +44,6 @@ asn_enc_rval_t SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                   ct->flags & APC_EXTENSIBLE ? "ext" : "fix");
         if (ct->flags & APC_EXTENSIBLE) {
             /* Declare whether size is in extension root */
-<<<<<<< HEAD
-            if (per_put_few_bits(po, not_in_root, 1)) ASN__ENCODE_FAILED;
-            if (not_in_root) ct = 0;
-        } else if (not_in_root && ct->effective_bits >= 0)
-=======
             if(per_put_few_bits(po, not_in_root, 1)) {
                 APER_ENCODER_RECURSION_DEPTH_DEC();
                 ASN__ENCODE_FAILED;
@@ -60,7 +51,6 @@ asn_enc_rval_t SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
             if(not_in_root) ct = 0;
         } else if(not_in_root && ct->effective_bits >= 0) {
             APER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             ASN__ENCODE_FAILED;
         }
     }
@@ -74,13 +64,8 @@ asn_enc_rval_t SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
         */
         if (ct->lower_bound == ct->upper_bound && ct->upper_bound < 65536) {
             /* No length determinant */
-<<<<<<< HEAD
-        } else if (aper_put_length(po, ct->lower_bound, ct->upper_bound,
-                                   list->count - ct->lower_bound, 0) < 0)
-=======
     } else if (aper_put_length(po, ct->lower_bound, ct->upper_bound, list->count - ct->lower_bound, 0) < 0) {
             APER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             ASN__ENCODE_FAILED;
         }
     }
@@ -92,32 +77,15 @@ asn_enc_rval_t SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
         if (ct && ct->effective_bits >= 0) {
             mayEncode = list->count;
         } else {
-<<<<<<< HEAD
-            mayEncode =
-                aper_put_length(po, -1, -1, list->count - seq, &need_eom);
-            if (mayEncode < 0) ASN__ENCODE_FAILED;
-=======
             mayEncode = aper_put_length(po, -1, -1, list->count - seq, &need_eom);
             if(mayEncode < 0) {
                 APER_ENCODER_RECURSION_DEPTH_DEC();
                 ASN__ENCODE_FAILED;
             }
->>>>>>> upstream/vlm_master
         }
 
         while (mayEncode--) {
             void *memb_ptr = list->array[seq++];
-<<<<<<< HEAD
-            if (!memb_ptr) ASN__ENCODE_FAILED;
-            er = elm->type->op->aper_encoder(
-                elm->type, elm->encoding_constraints.per_constraints, memb_ptr,
-                po);
-            if (er.encoded == -1) ASN__ENCODE_FAILED;
-        }
-
-        if (need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
-            ASN__ENCODE_FAILED; /* End of Message length */
-=======
             if(!memb_ptr) {
                 APER_ENCODER_RECURSION_DEPTH_DEC();
                 ASN__ENCODE_FAILED;
@@ -135,7 +103,6 @@ asn_enc_rval_t SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
             APER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;  /* End of Message length */
         }
->>>>>>> upstream/vlm_master
     }
 
     APER_ENCODER_RECURSION_DEPTH_DEC();

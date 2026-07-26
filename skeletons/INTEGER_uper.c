@@ -105,14 +105,9 @@ asn_dec_rval_t INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         ret = per_get_many_bits(pd, &st->buf[st->size], 0, 8 * len);
         if (ret < 0) ASN__DECODE_STARVED;
         st->size += len;
-<<<<<<< HEAD
-    } while (repeat);
-    st->buf[st->size] = 0; /* JIC */
-=======
         bytes_received += (size_t)len;
     } while(repeat);
     st->buf[st->size] = 0;  /* JIC */
->>>>>>> upstream/vlm_master
 
     /* INTEGER must have at least one content octet (X.691 §12.2.3) */
     if(bytes_received == 0) {
@@ -248,12 +243,6 @@ asn_enc_rval_t INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
         ASN__ENCODED_OK(er);
     }
 
-<<<<<<< HEAD
-    if (ct && ct->lower_bound) {
-        ASN_DEBUG("Adjust lower bound to %" ASN_PRIdMAX "", ct->lower_bound);
-        /* TODO: adjust lower bound */
-        ASN__ENCODE_FAILED;
-=======
     if(ct && ct->lower_bound) {
         ASN_DEBUG("Adjust lower bound to %"ASN_PRIdMAX"", ct->lower_bound);
         /*
@@ -307,7 +296,6 @@ asn_enc_rval_t INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
 
         ASN_STRUCT_RESET(asn_DEF_INTEGER, &adjusted_int);
         ASN__ENCODED_OK(er);
->>>>>>> upstream/vlm_master
     }
 
     for (buf = st->buf, end = st->buf + st->size; buf < end;) {

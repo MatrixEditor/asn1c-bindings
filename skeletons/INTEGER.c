@@ -68,10 +68,6 @@ asn_TYPE_operation_t asn_OP_INTEGER = {
     INTEGER_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -81,7 +77,6 @@ asn_TYPE_operation_t asn_OP_INTEGER = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_INTEGER = {
     "INTEGER",
@@ -170,26 +165,6 @@ ssize_t INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st,
         return -1;
     }
 
-<<<<<<< HEAD
-    /* Output in the long xx:yy:zz... format */
-    /* TODO: replace with generic algorithm (Knuth TAOCP Vol 2, 4.3.1) */
-    for (p = scratch; buf < buf_end; buf++) {
-        const char *const h2c = "0123456789ABCDEF";
-        if ((p - scratch) >= (ssize_t)(sizeof(scratch) - 4)) {
-            /* Flush buffer */
-            if (cb(scratch, p - scratch, app_key) < 0) return -1;
-            wrote += p - scratch;
-            p = scratch;
-        }
-        *p++ = h2c[*buf >> 4];
-        *p++ = h2c[*buf & 0x0F];
-        *p++ = 0x3a; /* ":" */
-    }
-    if (p != scratch) p--; /* Remove the last ":" */
-
-    wrote += p - scratch;
-    return (cb(scratch, p - scratch, app_key) < 0) ? -1 : wrote;
-=======
 	/* Output in the long xx:yy:zz... format */
 	/* TODO: replace with generic algorithm (Knuth TAOCP Vol 2, 4.3.1) */
 	
@@ -225,7 +200,6 @@ ssize_t INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st,
 	}
 	
 	return wrote;
->>>>>>> upstream/vlm_master
 }
 
 static int INTEGER__compar_value2enum(const void *kp, const void *am) {
@@ -240,7 +214,6 @@ static int INTEGER__compar_value2enum(const void *kp, const void *am) {
         return 1;
 }
 
-<<<<<<< HEAD
 const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(
     const asn_INTEGER_specifics_t *specs, long value) {
     int count = specs ? specs->map_count : 0;
@@ -248,33 +221,6 @@ const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(
     return (asn_INTEGER_enum_map_t *)bsearch(&value, specs->value2enum, count,
                                              sizeof(specs->value2enum[0]),
                                              INTEGER__compar_value2enum);
-=======
-const asn_INTEGER_enum_map_t *
-INTEGER_map_value2enum(const asn_INTEGER_specifics_t *specs, long value) {
-	int count = specs ? specs->map_count : 0;
-	if(!count) return 0;
-	if(specs->extension) {
-		/*
-		 * As in NativeEnumerated_encode_uper(): value2enum is two
-		 * independently value-sorted segments (root, then extension
-		 * additions), so a single whole-array bsearch() is only
-		 * valid when the array is globally monotonic. Search each
-		 * segment in turn.
-		 */
-		int root_count = specs->extension - 1;
-		const asn_INTEGER_enum_map_t *el = (const asn_INTEGER_enum_map_t *)
-			bsearch(&value, specs->value2enum, root_count,
-				sizeof(specs->value2enum[0]),
-				INTEGER__compar_value2enum);
-		if(el) return el;
-		return (asn_INTEGER_enum_map_t *)bsearch(&value,
-			specs->value2enum + root_count, count - root_count,
-			sizeof(specs->value2enum[0]), INTEGER__compar_value2enum);
-	}
-	return (asn_INTEGER_enum_map_t *)bsearch(&value, specs->value2enum,
-		count, sizeof(specs->value2enum[0]),
-		INTEGER__compar_value2enum);
->>>>>>> upstream/vlm_master
 }
 
 static intmax_t asn__integer_convert(const uint8_t *b, const uint8_t *end) {
@@ -492,10 +438,6 @@ int asn_long2INTEGER(INTEGER_t *st, long value) {
     return asn_imax2INTEGER(st, value);
 }
 
-<<<<<<< HEAD
-int asn_ulong2INTEGER(INTEGER_t *st, unsigned long value) {
-    return asn_imax2INTEGER(st, value);
-=======
 int
 asn_ulong2INTEGER(INTEGER_t *st, unsigned long value) {
     /*
@@ -505,7 +447,6 @@ asn_ulong2INTEGER(INTEGER_t *st, unsigned long value) {
      * Using the signed helper here would misencode e.g. ULONG_MAX as -1.
      */
     return asn_umax2INTEGER(st, (uintmax_t)value);
->>>>>>> upstream/vlm_master
 }
 
 int asn_INTEGER2int64(const INTEGER_t *st, int64_t *value) {

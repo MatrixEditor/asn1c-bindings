@@ -34,13 +34,6 @@ asn_dec_rval_t NativeReal_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
     return rval;
 }
 
-<<<<<<< HEAD
-asn_enc_rval_t NativeReal_encode_xer(const asn_TYPE_descriptor_t *td,
-                                     const void *sptr, int ilevel,
-                                     enum xer_encoder_flags_e flags,
-                                     asn_app_consume_bytes_f *cb,
-                                     void *app_key) {
-=======
 asn_dec_rval_t
 NativeReal_decode_xer_decimal(const asn_codec_ctx_t *opt_codec_ctx,
                               const asn_TYPE_descriptor_t *td, void **sptr,
@@ -69,7 +62,6 @@ asn_enc_rval_t
 NativeReal_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
                       int ilevel, enum xer_encoder_flags_e flags,
                       asn_app_consume_bytes_f *cb, void *app_key) {
->>>>>>> upstream/vlm_master
     double d = NativeReal__get_double(td, sptr);
     asn_enc_rval_t er = {0, 0, 0};
 

@@ -77,10 +77,6 @@ asn_TYPE_operation_t asn_OP_SET_OF = {
     SET_OF_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0  /* Use generic outmost tag fetcher */,
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -90,7 +86,6 @@ asn_TYPE_operation_t asn_OP_SET_OF = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 
 /* Append bytes to the above structure */
@@ -185,12 +180,8 @@ struct _el_buffer *SET_OF__encode_sorted(const asn_TYPE_member_t *elm,
         struct _el_buffer *encoding_el = &encoded_els[edx];
         asn_enc_rval_t erval = {0, 0, 0};
 
-<<<<<<< HEAD
-        if (!memb_ptr) break;
-=======
         if(!memb_ptr) break;
         encoding_el->memb_ptr = memb_ptr;
->>>>>>> upstream/vlm_master
 
         /*
          * Encode the member into the prepared space.

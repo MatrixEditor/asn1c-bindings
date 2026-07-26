@@ -66,10 +66,6 @@ asn_dec_rval_t CHOICE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
      * Restore parsing context.
      */
     ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
-<<<<<<< HEAD
-    if (ctx->phase == 0 && !*xml_tag)
-        ctx->phase = 1; /* Skip the outer tag checking phase */
-=======
 
     /* Check recursion depth to prevent stack overflow */
     if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
@@ -77,7 +73,6 @@ asn_dec_rval_t CHOICE_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
 
     if(ctx->phase == 0 && !*xml_tag)
         ctx->phase = 1;  /* Skip the outer tag checking phase */
->>>>>>> upstream/vlm_master
 
     /*
      * Phases of XER/XML processing:
@@ -285,12 +280,8 @@ asn_enc_rval_t CHOICE_encode_xer(const asn_TYPE_descriptor_t *td,
      */
     present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 
-<<<<<<< HEAD
-    if (present == 0 || present > td->elements_count) {
-=======
     if(present == 0 || present > td->elements_count) {
         XER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     } else {
         asn_enc_rval_t tmper = {0, 0, 0};
@@ -308,28 +299,16 @@ asn_enc_rval_t CHOICE_encode_xer(const asn_TYPE_descriptor_t *td,
         if (elm->flags & ATF_POINTER) {
             memb_ptr =
                 *(const void *const *)((const char *)sptr + elm->memb_offset);
-<<<<<<< HEAD
-            if (!memb_ptr) ASN__ENCODE_FAILED;
-=======
             if(!memb_ptr) {
                 XER_ENCODER_RECURSION_DEPTH_DEC();
                 ASN__ENCODE_FAILED;
             }
->>>>>>> upstream/vlm_master
         } else {
             memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
         }
 
         er.encoded = 0;
 
-<<<<<<< HEAD
-        if (!(flags & XER_F_CANONICAL)) ASN__TEXT_INDENT(1, ilevel);
-        ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
-
-        tmper = elm->type->op->xer_encoder(elm->type, memb_ptr, ilevel + 1,
-                                           flags, cb, app_key);
-        if (tmper.encoded == -1) return tmper;
-=======
         /* Output opening tag (unless it's ASN.1 meta-syntax) */
         if(!skip_wrapper) {
             if(!(flags & XER_F_CANONICAL)) ASN__TEXT_INDENT(1, ilevel);
@@ -342,7 +321,6 @@ asn_enc_rval_t CHOICE_encode_xer(const asn_TYPE_descriptor_t *td,
             XER_ENCODER_RECURSION_DEPTH_DEC();
             return tmper;
         }
->>>>>>> upstream/vlm_master
         er.encoded += tmper.encoded;
 
         /* Output closing tag (unless it's ASN.1 meta-syntax) */
@@ -361,12 +339,7 @@ asn_enc_rval_t CHOICE_encode_xer(const asn_TYPE_descriptor_t *td,
         }
     }
 
-<<<<<<< HEAD
-    if (!(flags & XER_F_CANONICAL)) ASN__TEXT_INDENT(1, ilevel - 1);
-
-=======
     XER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
     ASN__ENCODED_OK(er);
 cb_failed:
     XER_ENCODER_RECURSION_DEPTH_DEC();

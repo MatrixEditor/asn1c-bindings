@@ -1,4 +1,5 @@
 ASN_PROGRAM = s1ap-dump
+ASN_PDU = S1AP-PDU
 CFLAGS += -DHAVE_CONFIG_H -DJUNKTEST -D_DEFAULT_SOURCE
 begin: S1AP-PDU.c maybe-wip-pause all
 
@@ -120,3 +121,4 @@ distclean: clean
 	rm -f $(ASN_MODULE_HDRS)
 	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)
 	rm -f converter-example.mk
+	rm -f $(ASN_PDU).c

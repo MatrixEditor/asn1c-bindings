@@ -302,11 +302,6 @@ asn_enc_rval_t SET_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         }
     }
 
-<<<<<<< HEAD
-    if (!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
-
-=======
->>>>>>> upstream/vlm_master
     ASN__ENCODED_OK(er);
 cb_failed:
     ASN__ENCODE_FAILED;

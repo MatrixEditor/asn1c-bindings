@@ -85,11 +85,6 @@ asn_random_fill_f GeneralizedTime_random_fill;
  * Some handy helpers. *
  ***********************/
 
-<<<<<<< HEAD
-struct tm; /* <time.h> */
-
-=======
->>>>>>> upstream/vlm_master
 /*
  * Convert a GeneralizedTime structure into time_t
  * and optionally into struct tm.

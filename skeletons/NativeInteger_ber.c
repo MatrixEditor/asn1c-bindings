@@ -23,15 +23,9 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
     /*
      * If the structure is not there, allocate it.
      */
-<<<<<<< HEAD
-    if (native == NULL) {
-        native = (long *)(*nint_ptr = CALLOC(1, sizeof(*native)));
-        if (native == NULL) {
-=======
     if(native == NULL) {
         native = (*nint_ptr = CALLOC(1, NativeInteger_field_width(specs)));
         if(native == NULL) {
->>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
@@ -76,13 +70,7 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
         tmp.buf = (uint8_t *)unconst_buf.nonconstbuf;
         tmp.size = length;
 
-<<<<<<< HEAD
-        if ((specs && specs->field_unsigned)
-                ? asn_INTEGER2ulong(&tmp, (unsigned long *)&l) /* sic */
-                : asn_INTEGER2long(&tmp, &l)) {
-=======
         if(NativeInteger_store_from_INTEGER(native, specs, &tmp)) {
->>>>>>> upstream/vlm_master
             rval.code = RC_FAIL;
             rval.consumed = 0;
             return rval;
@@ -92,13 +80,8 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
     rval.code = RC_OK;
     rval.consumed += length;
 
-<<<<<<< HEAD
-    ASN_DEBUG("Took %ld/%ld bytes to encode %s (%ld)", (long)rval.consumed,
-              (long)length, td->name, (long)*native);
-=======
     ASN_DEBUG("Took %ld/%ld bytes to encode %s",
               (long)rval.consumed, (long)length, td->name);
->>>>>>> upstream/vlm_master
 
     return rval;
 }
@@ -106,35 +89,6 @@ asn_dec_rval_t NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 /*
  * Encode the NativeInteger using the standard INTEGER type DER encoder.
  */
-<<<<<<< HEAD
-asn_enc_rval_t NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd,
-                                        const void *ptr, int tag_mode,
-                                        ber_tlv_tag_t tag,
-                                        asn_app_consume_bytes_f *cb,
-                                        void *app_key) {
-    unsigned long native = *(const unsigned long *)ptr; /* Disable sign ext. */
-    asn_enc_rval_t erval = {0, 0, 0};
-    INTEGER_t tmp;
-
-#ifdef WORDS_BIGENDIAN /* Opportunistic optimization */
-
-    tmp.buf = (uint8_t *)&native;
-    tmp.size = sizeof(native);
-
-#else  /* Works even if WORDS_BIGENDIAN is not set where should've been */
-    uint8_t buf[sizeof(native)];
-    uint8_t *p;
-
-    /* Prepare a fake INTEGER */
-    for (p = buf + sizeof(buf) - 1; p >= buf; p--, native >>= 8)
-        *p = (uint8_t)native;
-
-    tmp.buf = buf;
-    tmp.size = sizeof(buf);
-#endif /* WORDS_BIGENDIAN */
-
-    /* Encode fake INTEGER */
-=======
 asn_enc_rval_t
 NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd, const void *ptr,
                          int tag_mode, ber_tlv_tag_t tag,
@@ -151,7 +105,6 @@ NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd, const void *ptr,
         ASN__ENCODE_FAILED;
     }
 
->>>>>>> upstream/vlm_master
     erval = INTEGER_encode_der(sd, &tmp, tag_mode, tag, cb, app_key);
     if (erval.structure_ptr == &tmp) {
         erval.structure_ptr = ptr;

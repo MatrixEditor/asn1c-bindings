@@ -14,13 +14,8 @@ asn_enc_rval_t OCTET_STRING_encode_xer(const asn_TYPE_descriptor_t *td,
                                        void *app_key) {
     const char *const h2c = "0123456789ABCDEF";
     const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
-<<<<<<< HEAD
-    asn_enc_rval_t er = {0, 0, 0};
-    char scratch[16 * 3 + 4];
-=======
     asn_enc_rval_t er = { 0, 0, 0 };
     char scratch[32 + 4];
->>>>>>> upstream/vlm_master
     char *p = scratch;
     char *scend = scratch + (sizeof(scratch) - 2);
     uint8_t *buf;
@@ -46,40 +41,10 @@ asn_enc_rval_t OCTET_STRING_encode_xer(const asn_TYPE_descriptor_t *td,
      */
     buf = st->buf;
     end = buf + st->size;
-<<<<<<< HEAD
-    if (flags & XER_F_CANONICAL) {
-        char *scend = scratch + (sizeof(scratch) - 2);
-        for (; buf < end; buf++) {
-            if (p >= scend) {
-                ASN__CALLBACK(scratch, p - scratch);
-                p = scratch;
-            }
-            *p++ = h2c[(*buf >> 4) & 0x0F];
-            *p++ = h2c[*buf & 0x0F];
-        }
-
-        ASN__CALLBACK(scratch, p - scratch); /* Dump the rest */
-    } else {
-        for (i = 0; buf < end; buf++, i++) {
-            if (!(i % 16) && (i || st->size > 16)) {
-                ASN__CALLBACK(scratch, p - scratch);
-                p = scratch;
-                ASN__TEXT_INDENT(1, ilevel);
-            }
-            *p++ = h2c[(*buf >> 4) & 0x0F];
-            *p++ = h2c[*buf & 0x0F];
-            *p++ = 0x20;
-        }
-        if (p - scratch) {
-            p--;                                 /* Remove the tail space */
-            ASN__CALLBACK(scratch, p - scratch); /* Dump the rest */
-            if (st->size > 16) ASN__TEXT_INDENT(1, ilevel - 1);
-=======
     for(; buf < end; buf++) {
         if(p >= scend) {
             ASN__CALLBACK(scratch, p - scratch);
             p = scratch;
->>>>>>> upstream/vlm_master
         }
         *p++ = h2c[(*buf >> 4) & 0x0F];
         *p++ = h2c[*buf & 0x0F];
@@ -585,51 +550,6 @@ BIT_STRING__convert_binary_or_hex(void *sptr, const void *chunk_buf,
 /*
  * Something like strtod(), but with stricter rules.
  */
-<<<<<<< HEAD
-static int OS__strtoent(int base, const char *buf, const char *end,
-                        int32_t *ret_value) {
-    const int32_t last_unicode_codepoint = 0x10ffff;
-    int32_t val = 0;
-    const char *p;
-
-    for (p = buf; p < end; p++) {
-        int ch = *p;
-
-        switch (ch) {
-            case 0x30:
-            case 0x31:
-            case 0x32:
-            case 0x33:
-            case 0x34: /*01234*/
-            case 0x35:
-            case 0x36:
-            case 0x37:
-            case 0x38:
-            case 0x39: /*56789*/
-                val = val * base + (ch - 0x30);
-                break;
-            case 0x41:
-            case 0x42:
-            case 0x43: /* ABC */
-            case 0x44:
-            case 0x45:
-            case 0x46: /* DEF */
-                val = val * base + (ch - 0x41 + 10);
-                break;
-            case 0x61:
-            case 0x62:
-            case 0x63: /* abc */
-            case 0x64:
-            case 0x65:
-            case 0x66: /* def */
-                val = val * base + (ch - 0x61 + 10);
-                break;
-            case 0x3b: /* ';' */
-                *ret_value = val;
-                return (p - buf) + 1;
-            default:
-                return -1; /* Character set error */
-=======
 static int
 OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
 	const int32_t last_unicode_codepoint = 0x10ffff;
@@ -659,7 +579,6 @@ OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
             if(val >= 0xd800 && val <= 0xdfff) return -1;
             *ret_value = (int32_t)val;
             return p - buf;
->>>>>>> upstream/vlm_master
         }
 
         if(digit >= base) return -1;
@@ -721,16 +640,6 @@ static ssize_t OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf,
             else
                 pval = p + 2, base = 10;
             len = OS__strtoent(base, pval, p + len, &val);
-<<<<<<< HEAD
-            if (len == -1) {
-                /* Invalid charset. Just copy verbatim. */
-                *buf++ = ch;
-                continue;
-            }
-            if (!len || pval[len - 1] != 0x3b) goto want_more;
-            assert(val > 0);
-            p += (pval - p) + len - 1; /* Advance past entref */
-=======
             if(len == -1) {
                 ASN_DEBUG("XER OCTET STRING: invalid numeric character reference rejected");
                 st->buf[st->size] = 0;
@@ -741,7 +650,6 @@ static ssize_t OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf,
                 ASN_DEBUG("XER OCTET STRING: numeric character reference without semicolon accepted");
             }
             p += (pval - p) + len - 1;  /* Advance past entref */
->>>>>>> upstream/vlm_master
 
             if (val < 0x80) {
                 *buf++ = (char)val;

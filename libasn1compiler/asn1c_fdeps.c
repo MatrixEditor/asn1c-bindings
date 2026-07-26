@@ -124,11 +124,6 @@ asn1c_dep_chainset *asn1c_read_file_dependencies(arg_t *arg,
                 } else if ((arg->flags & A1C_GEN_JER) &&
                            strcmp(p, "CODEC-JER:") == 0) {
                     activate = 0;
-<<<<<<< HEAD
-                    section = FDEP_CODEC_JER;
-                } else if ((arg->flags & A1C_GEN_OER) &&
-                           strcmp(p, "CODEC-OER:") == 0) {
-=======
 					section = FDEP_CODEC_JER;
 				} else if((arg->flags & A1C_GEN_CBOR)
 					  && strcmp(p, "CODEC-CBOR:") == 0) {
@@ -136,7 +131,6 @@ asn1c_dep_chainset *asn1c_read_file_dependencies(arg_t *arg,
 					section = FDEP_CODEC_CBOR;
 				} else if((arg->flags & A1C_GEN_OER)
 					  && strcmp(p, "CODEC-OER:") == 0) {
->>>>>>> upstream/vlm_master
                     activate = 0;
                     section = FDEP_CODEC_OER;
                 } else if ((arg->flags & A1C_GEN_UPER) &&

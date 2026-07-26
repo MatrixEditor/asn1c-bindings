@@ -15,11 +15,6 @@ struct asn_TYPE_descriptor_s; /* Forward declaration */
 
 /* Flags used by the xer_encode() and (*xer_type_encoder_f), defined below */
 enum xer_encoder_flags_e {
-<<<<<<< HEAD
-    /* Mode of encoding */
-    XER_F_BASIC = 0x01,    /* BASIC-XER (pretty-printing) */
-    XER_F_CANONICAL = 0x02 /* Canonical XER (strict rules) */
-=======
 	/* Mode of encoding */
 	XER_F_BASIC	= 0x01,	/* BASIC-XER (pretty-printing) */
 	XER_F_CANONICAL	= 0x02,	/* Canonical XER (strict rules) */
@@ -48,7 +43,6 @@ enum xer_encoder_flags_e {
 	 *     Silently ignored when the type carries a schema instruction.
 	 */
 	XER_F_BASE64	= 0x04
->>>>>>> upstream/vlm_master
 };
 
 /*

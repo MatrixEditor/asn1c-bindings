@@ -42,6 +42,7 @@ asn_dec_rval_t OCTET_STRING_decode_uper(
         OS__BPC_U32 = 4
     } bpc; /* Bytes per character */
     unsigned int unit_bits;
+    unsigned int canonical_unit_bits;
 
     (void)opt_codec_ctx;
 
@@ -53,7 +54,6 @@ asn_dec_rval_t OCTET_STRING_decode_uper(
         csiz = &asn_DEF_OCTET_STRING_constraints.size;
     }
 
-<<<<<<< HEAD
     switch (specs->subvariant) {
         default:
         case ASN_OSUBV_ANY:
@@ -76,33 +76,6 @@ asn_dec_rval_t OCTET_STRING_decode_uper(
             if (cval->flags & APC_CONSTRAINED) unit_bits = cval->range_bits;
             bpc = OS__BPC_U32;
             break;
-=======
-    switch(specs->subvariant) {
-    default:
-    case ASN_OSUBV_ANY:
-    case ASN_OSUBV_BIT:
-        ASN_DEBUG("Unrecognized subvariant %d", specs->subvariant);
-        RETURN(RC_FAIL);
-        break;
-    case ASN_OSUBV_STR:
-        unit_bits = 8;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_CHAR;
-        break;
-    case ASN_OSUBV_U16:
-        unit_bits = 16;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_U16;
-        break;
-    case ASN_OSUBV_U32:
-        unit_bits = 32;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_U32;
-        break;
->>>>>>> upstream/vlm_master
     }
 
     /*
@@ -120,19 +93,10 @@ asn_dec_rval_t OCTET_STRING_decode_uper(
 
     if (csiz->flags & APC_EXTENSIBLE) {
         int inext = per_get_few_bits(pd, 1);
-<<<<<<< HEAD
         if (inext < 0) RETURN(RC_WMORE);
         if (inext) {
-=======
-        if(inext < 0) RETURN(RC_WMORE);
-        if(inext) {
-            /*
-             * X.691:2021 30.4 removes only the effective size constraint
-             * in the extension region.  The effective permitted alphabet,
-             * and therefore the 30.5.2 character width, remains in force.
-             */
->>>>>>> upstream/vlm_master
             csiz = &asn_DEF_OCTET_STRING_constraints.size;
+            unit_bits = canonical_unit_bits;
         }
     }
 
@@ -177,7 +141,7 @@ asn_dec_rval_t OCTET_STRING_decode_uper(
     st->size = 0;
     do {
         ssize_t raw_len;
-        size_t len_bytes;
+        ssize_t len_bytes;
         void *p;
         int ret;
 
@@ -190,14 +154,7 @@ asn_dec_rval_t OCTET_STRING_decode_uper(
         ASN_DEBUG("Got PER length eb %ld, len %ld, %s (%s)",
                   (long)csiz->effective_bits, (long)raw_len,
                   repeat ? "repeat" : "once", td->name);
-        /*
-         * The general length determinant is attacker-controlled.  Check
-         * both multiplication and accumulation before reallocating so a
-         * fragmented value cannot wrap into an undersized allocation.
-         */
-        if((size_t)raw_len > (SIZE_MAX - 1) / bpc) RETURN(RC_FAIL);
-        len_bytes = (size_t)raw_len * bpc;
-        if(len_bytes > SIZE_MAX - 1 - st->size) RETURN(RC_FAIL);
+        len_bytes = raw_len * bpc;
         p = REALLOC(st->buf, st->size + len_bytes + 1);
         if (!p) RETURN(RC_FAIL);
         st->buf = (uint8_t *)p;
@@ -228,6 +185,7 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
     asn_enc_rval_t er = {0, 0, 0};
     int inext = 0; /* Lies not within extension root */
     unsigned int unit_bits;
+    unsigned int canonical_unit_bits;
     size_t size_in_units;
     const uint8_t *buf;
     int ret;
@@ -240,9 +198,6 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
 
     if (!st || (!st->buf && st->size)) ASN__ENCODE_FAILED;
 
-<<<<<<< HEAD
-    if (pc) {
-=======
     /* 
      * Sanity check for st->size: if it appears to contain a pointer value
      * rather than a reasonable size, this indicates a struct layout mismatch
@@ -257,7 +212,6 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
     }
 
     if(pc) {
->>>>>>> upstream/vlm_master
         cval = &pc->value;
         csiz = &pc->size;
     } else {
@@ -266,7 +220,6 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
     }
     ct_extensible = csiz->flags & APC_EXTENSIBLE;
 
-<<<<<<< HEAD
     switch (specs->subvariant) {
         default:
         case ASN_OSUBV_ANY:
@@ -298,42 +251,6 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
                 ASN__ENCODE_FAILED;
             }
             break;
-=======
-    switch(specs->subvariant) {
-    default:
-    case ASN_OSUBV_ANY:
-    case ASN_OSUBV_BIT:
-        ASN__ENCODE_FAILED;
-    case ASN_OSUBV_STR:
-        unit_bits = 8;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_CHAR;
-        size_in_units = st->size;
-        break;
-    case ASN_OSUBV_U16:
-        unit_bits = 16;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_U16;
-        size_in_units = st->size >> 1;
-        if(st->size & 1) {
-            ASN_DEBUG("%s string size is not modulo 2", td->name);
-            ASN__ENCODE_FAILED;
-        }
-        break;
-    case ASN_OSUBV_U32:
-        unit_bits = 32;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_U32;
-        size_in_units = st->size >> 2;
-        if(st->size & 3) {
-            ASN_DEBUG("%s string size is not modulo 4", td->name);
-            ASN__ENCODE_FAILED;
-        }
-        break;
->>>>>>> upstream/vlm_master
     }
 
     ASN_DEBUG("Encoding %s into %" ASN_PRI_SIZE
@@ -345,23 +262,12 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
 
     /* Figure out whether size lies within PER visible constraint */
 
-<<<<<<< HEAD
     if (csiz->effective_bits >= 0) {
         if ((ssize_t)size_in_units < csiz->lower_bound ||
             (ssize_t)size_in_units > csiz->upper_bound) {
             if (ct_extensible) {
-=======
-    if(csiz->effective_bits >= 0) {
-        if((ssize_t)size_in_units < csiz->lower_bound
-           || (ssize_t)size_in_units > csiz->upper_bound) {
-            if(ct_extensible) {
-                /*
-                 * X.691:2021 30.4 removes only the effective size
-                 * constraint; the permitted alphabet and its 30.5.2
-                 * character width remain effective in the extension.
-                 */
->>>>>>> upstream/vlm_master
                 csiz = &asn_DEF_OCTET_STRING_constraints.size;
+                unit_bits = canonical_unit_bits;
                 inext = 1;
             } else {
                 ASN__ENCODE_FAILED;
@@ -408,8 +314,7 @@ asn_enc_rval_t OCTET_STRING_encode_uper(
                                               cval->upper_bound, pc);
         if (ret) ASN__ENCODE_FAILED;
 
-        /* Avoid undefined arithmetic on a NULL empty-string buffer. */
-        if(may_save) buf += may_save * bpc;
+        buf += may_save * bpc;
         size_in_units -= may_save;
         assert(!(may_save & 0x07) || !size_in_units);
         if (need_eom && uper_put_length(po, 0, 0))

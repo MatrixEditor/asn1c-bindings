@@ -21,20 +21,6 @@ struct asn_TYPE_descriptor_s; /* Forward declaration */
  *   xer_decode() and uper_decode() functions instead.
  */
 typedef struct asn_codec_ctx_s {
-<<<<<<< HEAD
-    /*
-     * Limit the decoder routines to use no (much) more stack than a given
-     * number of bytes. Most of decoders are stack-based, and this
-     * would protect against stack overflows if the number of nested
-     * encodings is high.
-     * The OCTET STRING, BIT STRING and ANY BER decoders are heap-based,
-     * and are safe from this kind of overflow.
-     * A value from getrlimit(RLIMIT_STACK) may be used to initialize
-     * this variable. Be careful in multithreaded environments, as the
-     * stack size is rather limited.
-     */
-    size_t max_stack_size; /* 0 disables stack bounds checking */
-=======
 	/*
 	 * Limit the decoder routines to use no (much) more stack than a given
 	 * number of bytes. Most of decoders are stack-based, and this
@@ -62,7 +48,6 @@ typedef struct asn_codec_ctx_s {
 	 * the error occurred.
 	 */
 	unsigned int preserve_partial_decoding:1;
->>>>>>> upstream/vlm_master
 } asn_codec_ctx_t;
 
 /*

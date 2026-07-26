@@ -69,10 +69,6 @@ asn_TYPE_operation_t asn_OP_RELATIVE_OID = {
     RELATIVE_OID_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -82,7 +78,6 @@ asn_TYPE_operation_t asn_OP_RELATIVE_OID = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_RELATIVE_OID = {
     "RELATIVE-OID",

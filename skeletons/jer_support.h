@@ -16,13 +16,9 @@ extern "C" {
  * Pre-computed JER constraints
  */
 typedef struct asn_jer_constraints_s {
-<<<<<<< HEAD
-    ssize_t size; /* -1 (no constraint) or >= 0 */
-=======
     ssize_t size;    /* -1 (no constraint) or >= 0 */
     const char *wire_name; /* Optional JER NAME override for members */
     unsigned int flags;    /* Reserved for instruction-specific flags */
->>>>>>> upstream/vlm_master
 } asn_jer_constraints_t;
 
 /*

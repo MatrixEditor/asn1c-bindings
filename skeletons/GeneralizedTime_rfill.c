@@ -21,19 +21,6 @@ asn_random_fill_result_t GeneralizedTime_random_fill(
 
     (void)constraints;
 
-<<<<<<< HEAD
-    if (max_length < sizeof("yyyymmddhhmmss") && !*sptr) {
-        return result_skipped;
-    }
-
-    if (*sptr) {
-        if (OCTET_STRING_fromBuf(*sptr, values[rnd], -1) != 0) {
-            if (!sptr) return result_failed;
-        }
-    } else {
-        *sptr = OCTET_STRING_new_fromBuf(td, values[rnd], -1);
-        if (!sptr) return result_failed;
-=======
     if (!sptr) return result_failed;
 
     if(max_length < sizeof("yyyymmddhhmmss") && !*sptr) {
@@ -47,7 +34,6 @@ asn_random_fill_result_t GeneralizedTime_random_fill(
     } else {
         *sptr = OCTET_STRING_new_fromBuf(td, values[rnd], -1);
         if (!*sptr) return result_failed;
->>>>>>> upstream/vlm_master
     }
 
     return result_ok;

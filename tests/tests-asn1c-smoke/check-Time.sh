@@ -40,11 +40,13 @@ END
 EOF
 
 "${ASN1C}" -flink-skeletons \
-    -S "${SKELETONS_DIR}" test.asn
+    -S "${SKELETONS_DIR}" \
+    -no-gen-python -no-gen-python-stubs \
+    test.asn
 
 test -f asn1c_time.h
 test -f asn1c_time.c
 test ! -f Time.h
 test ! -f Time.c
-grep -F '#include "asn1c_time.h"' ./asn1c_time.c
-grep -R "\"asn1c_time.h\"" ./*.h
+grep -E '#include [<"]asn1c_time[.]h[>"]' ./asn1c_time.c
+grep -RE '#include [<"]asn1c_time[.]h[>"]' ./*.h

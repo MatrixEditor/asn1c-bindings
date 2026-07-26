@@ -34,15 +34,6 @@ asn_enc_rval_t SEQUENCE_OF_encode_jer(const asn_TYPE_descriptor_t *td,
         void *memb_ptr = list->array[i];
         if (!memb_ptr) continue;
 
-<<<<<<< HEAD
-        if (!jmin) ASN__TEXT_INDENT(1, ilevel + 1);
-        tmper = elm->type->op->jer_encoder(
-            elm->type, elm->encoding_constraints.jer_constraints, memb_ptr,
-            ilevel + 1, flags, cb, app_key);
-        if (tmper.encoded == -1) return tmper;
-        er.encoded += tmper.encoded;
-        if (tmper.encoded == 0 && specs->as_XMLValueList) {
-=======
         if(!jmin) ASN__TEXT_INDENT(1, ilevel + 1);
         tmper = elm->type->op->jer_encoder(elm->type,
                                            elm->encoding_constraints.jer_constraints,
@@ -63,7 +54,6 @@ asn_enc_rval_t SEQUENCE_OF_encode_jer(const asn_TYPE_descriptor_t *td,
          * not affect JER since as_XMLValueList should only be set for XER contexts.
          */
         if(tmper.encoded == 0 && specs->as_XMLValueList) {
->>>>>>> upstream/vlm_master
             const char *name = elm->type->xml_tag;
             size_t len = strlen(name);
             if (!jmin) ASN__TEXT_INDENT(1, ilevel + 1);

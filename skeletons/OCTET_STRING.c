@@ -70,10 +70,6 @@ asn_TYPE_operation_t asn_OP_OCTET_STRING = {
     OCTET_STRING_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0  /* Use generic outmost tag fetcher */,
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -83,7 +79,6 @@ asn_TYPE_operation_t asn_OP_OCTET_STRING = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
     "OCTET STRING", /* Canonical name */
@@ -205,13 +200,6 @@ OCTET_STRING_t *OCTET_STRING_new_fromBuf(const asn_TYPE_descriptor_t *td,
                       : &asn_SPC_OCTET_STRING_specs;
     OCTET_STRING_t *st;
 
-<<<<<<< HEAD
-    st = (OCTET_STRING_t *)CALLOC(1, specs->struct_size);
-    if (st && str && OCTET_STRING_fromBuf(st, str, len)) {
-        FREEMEM(st);
-        st = NULL;
-    }
-=======
     /* 
      * Sanity check: struct_size should be at least as large as OCTET_STRING_t.
      * If it's smaller, accessing OCTET_STRING_t fields could cause memory corruption.
@@ -227,7 +215,6 @@ OCTET_STRING_t *OCTET_STRING_new_fromBuf(const asn_TYPE_descriptor_t *td,
 		FREEMEM(st);
 		st = NULL;
 	}
->>>>>>> upstream/vlm_master
 
     return st;
 }
@@ -306,57 +293,17 @@ int OCTET_STRING_copy(const asn_TYPE_descriptor_t *td, void **aptr,
 }
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-<<<<<<< HEAD
 int OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
                                     size_t units, unsigned int bpc,
                                     unsigned int unit_bits, long lb, long ub,
                                     const asn_per_constraints_t *pc) {
     uint8_t *end = buf + units * bpc;
-=======
-int
-OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
-                                size_t units, unsigned int bpc, unsigned int unit_bits,
-                                long lb, long ub, const asn_per_constraints_t *pc) {
-    uint8_t *end;
-
-    /* Empty strings may legitimately have a NULL backing buffer. */
-    if(units == 0) return 0;
-    /* Reject malformed internal calls before doing pointer arithmetic. */
-    if(!buf || (bpc != 1 && bpc != 2 && bpc != 4)
-       || units > SIZE_MAX / bpc) {
-        return 1;
-    }
-    end = buf + units * bpc;
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Expanding %d characters into (%ld..%ld):%d", (int)units, lb, ub,
               unit_bits);
 
-<<<<<<< HEAD
     /* X.691: 27.5.4 */
     if ((unsigned long)ub <= ((unsigned long)2 << (unit_bits - 1))) {
-=======
-    if(unit_bits == 0) {
-        /*
-         * X.691:2021 30.5.2: a one-character alphabet has b = 0, so
-         * the character is absent from the bitstream and reconstructed
-         * from the sole permitted value.  Reject inconsistent metadata.
-         */
-        if(lb != ub) return 1;
-        for(; buf < end; buf += bpc) {
-            switch(bpc) {
-            case 1: *buf = lb; break;
-            case 2: buf[0] = lb >> 8; buf[1] = lb; break;
-            case 4: buf[0] = lb >> 24; buf[1] = lb >> 16;
-                buf[2] = lb >> 8; buf[3] = lb; break;
-            }
-        }
-        return 0;
-    }
-
-    /* X.691:2021 30.5.4 a): direct values require ub <= 2^b - 1. */
-    if((unsigned long)ub <= ((unsigned long)2 << (unit_bits - 1)) - 1) {
->>>>>>> upstream/vlm_master
         /* Decode without translation */
         lb = 0;
     } else if (pc && pc->code2value) {
@@ -428,60 +375,17 @@ OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
     return 0;
 }
 
-<<<<<<< HEAD
 int OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
                                     size_t units, unsigned int bpc,
                                     unsigned int unit_bits, long lb, long ub,
                                     const asn_per_constraints_t *pc) {
     const uint8_t *end = buf + units * bpc;
-=======
-int
-OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
-                                size_t units, unsigned int bpc, unsigned int unit_bits,
-                                long lb, long ub, const asn_per_constraints_t *pc) {
-    const uint8_t *end;
-
-    /* Empty strings may legitimately have a NULL backing buffer. */
-    if(units == 0) return 0;
-    /* Reject malformed values before doing pointer arithmetic. */
-    if(!buf || (bpc != 1 && bpc != 2 && bpc != 4)
-       || units > SIZE_MAX / bpc) {
-        return -1;
-    }
-    end = buf + units * bpc;
->>>>>>> upstream/vlm_master
 
     ASN_DEBUG("Squeezing %d characters into (%ld..%ld):%d (%d bpc)", (int)units,
               lb, ub, unit_bits, bpc);
 
-<<<<<<< HEAD
     /* X.691: 27.5.4 */
     if ((unsigned long)ub <= ((unsigned long)2 << (unit_bits - 1))) {
-=======
-    if(unit_bits == 0) {
-        /*
-         * X.691:2021 30.5.2: no character bits are emitted for a
-         * one-character alphabet, but every supplied value must be that
-         * sole character.  Reject inconsistent constraint metadata too.
-         */
-        if(lb != ub) return -1;
-        for(; buf < end; buf += bpc) {
-            uint32_t value;
-            switch(bpc) {
-            case 1: value = *(const uint8_t *)buf; break;
-            case 2: value = (buf[0] << 8) | buf[1]; break;
-            case 4: value = (buf[0] << 24) | (buf[1] << 16)
-                | (buf[2] << 8) | buf[3]; break;
-            default: return -1;
-            }
-            if((long)value != lb) return -1;
-        }
-        return 0;
-    }
-
-    /* X.691:2021 30.5.4 a): direct values require ub <= 2^b - 1. */
-    if((unsigned long)ub <= ((unsigned long)2 << (unit_bits - 1)) - 1) {
->>>>>>> upstream/vlm_master
         /* Encode as is */
         lb = 0;
     } else if (pc && pc->value2code) {

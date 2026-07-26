@@ -15,9 +15,6 @@ typedef struct OCTET_STRING {
     uint8_t *buf; /* Buffer with consecutive OCTET_STRING bits */
     size_t size;  /* Size of the buffer */
 
-<<<<<<< HEAD
-    asn_struct_ctx_t _asn_ctx; /* Parsing across buffer boundaries */
-=======
 	asn_struct_ctx_t _asn_ctx;	/* Parsing across buffer boundaries */
 
 	/* XER decoder state for stateful decoders (Base64, etc.) */
@@ -33,7 +30,6 @@ typedef struct OCTET_STRING {
 		 */
 		int format_decided;
 	} _xer_decode_state;
->>>>>>> upstream/vlm_master
 } OCTET_STRING_t;
 
 extern asn_TYPE_descriptor_t asn_DEF_OCTET_STRING;
@@ -57,21 +53,6 @@ der_type_encoder_f OCTET_STRING_encode_der;
 #endif /* !defined(ASN_DISABLE_BER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-<<<<<<< HEAD
-xer_type_decoder_f OCTET_STRING_decode_xer_hex;    /* Hexadecimal */
-xer_type_decoder_f OCTET_STRING_decode_xer_binary; /* 01010111010 */
-xer_type_decoder_f OCTET_STRING_decode_xer_utf8;   /* ASCII/UTF-8 */
-xer_type_encoder_f OCTET_STRING_encode_xer;
-xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
-#endif /* !defined(ASN_DISABLE_XER_SUPPORT) */
-
-#if !defined(ASN_DISABLE_JER_SUPPORT)
-jer_type_decoder_f OCTET_STRING_decode_jer_hex;  /* Hexadecimal */
-jer_type_decoder_f OCTET_STRING_decode_jer_utf8; /* ASCII/UTF-8 */
-jer_type_encoder_f OCTET_STRING_encode_jer;
-jer_type_encoder_f OCTET_STRING_encode_jer_utf8;
-#endif /* !defined(ASN_DISABLE_JER_SUPPORT) */
-=======
 xer_type_decoder_f OCTET_STRING_decode_xer_hex;     /* Hexadecimal */
 xer_type_decoder_f OCTET_STRING_decode_xer_binary;  /* 01010111010 */
 xer_type_decoder_f OCTET_STRING_decode_xer_utf8;    /* ASCII/UTF-8 */
@@ -91,14 +72,10 @@ jer_type_encoder_f OCTET_STRING_encode_jer;
 jer_type_encoder_f OCTET_STRING_encode_jer_utf8;
 jer_type_encoder_f OCTET_STRING_encode_jer_base64;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f OCTET_STRING_decode_oer;
 oer_type_encoder_f OCTET_STRING_encode_oer;
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_OER_SUPPORT) */
-=======
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
 cbor_type_decoder_f OCTET_STRING_decode_cbor;
@@ -106,7 +83,6 @@ cbor_type_encoder_f OCTET_STRING_encode_cbor;
 cbor_type_decoder_f OCTET_STRING_decode_cbor_utf8;  /* ASCII/UTF-8 */
 cbor_type_encoder_f OCTET_STRING_encode_cbor_utf8;
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f OCTET_STRING_decode_uper;
@@ -177,17 +153,6 @@ typedef struct asn_OCTET_STRING_specifics_s {
         ASN_OSUBV_U16, /* 16-bit character (BMPString) */
         ASN_OSUBV_U32  /* 32-bit character (UniversalString) */
     } subvariant;
-
-    /*
-     * Only meaningful for ASN_OSUBV_BIT (BIT STRING).
-     * Non-zero when the BIT STRING type has a NamedBitList: per
-     * X.680 (2015) #22.7, trailing 0 bits may only be treated as
-     * insignificant (and stripped by the UPER encoder) when the
-     * type has a NamedBitList. Placed last so that existing static
-     * initializers (which do not mention this field) zero-fill it,
-     * preserving the "no NamedBitList" behavior by default.
-     */
-    unsigned has_named_bits;
 } asn_OCTET_STRING_specifics_t;
 
 extern asn_OCTET_STRING_specifics_t asn_SPC_OCTET_STRING_specs;

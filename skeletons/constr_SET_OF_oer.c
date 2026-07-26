@@ -137,7 +137,6 @@ asn_dec_rval_t SET_OF_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
     /*
      * Start to parse where left previously.
      */
-<<<<<<< HEAD
     switch (ctx->phase) {
         case 0: {
             /*
@@ -149,53 +148,6 @@ asn_dec_rval_t SET_OF_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
                 case 0:
                     RETURN(RC_WMORE);
                 case -1:
-=======
-    switch(ctx->phase) {
-    case 0: {
-        /*
-         * Fetch number of elements to decode.
-         */
-        size_t length = 0;
-        size_t len_size = oer_fetch_quantity(ptr, size, &length);
-        switch(len_size) {
-        case 0:
-            RETURN(RC_WMORE);
-        case -1:
-            RETURN(RC_FAIL);
-        default:
-            ADVANCE(len_size);
-            ctx->left = length;
-        }
-    }
-        NEXT_PHASE(ctx);
-        /* FALL THROUGH */
-    case 1: {
-        /* Decode components of the extension root */
-        asn_TYPE_member_t *elm = td->elements;
-        asn_anonymous_set_ *list = _A_SET_FROM_VOID(st);
-        const void *base_ptr = ptr;
-        ber_tlv_len_t base_ctx_left = ctx->left;
-
-        assert(td->elements_count == 1);
-
-        ASN_DEBUG("OER SET OF %s Decoding PHASE 1", td->name);
-
-        if(ctx->left > 0 && !elm->type->op->oer_decoder) {
-            ASN_DEBUG("Element type %s of %s has no OER decoder",
-                      elm->type->name, td->name);
-            RETURN(RC_FAIL);
-        }
-
-        for(; ctx->left > 0; ctx->left--) {
-            asn_dec_rval_t rv = elm->type->op->oer_decoder(
-                opt_codec_ctx, elm->type,
-                elm->encoding_constraints.oer_constraints, &ctx->ptr, ptr,
-                size);
-            ADVANCE(rv.consumed);
-            switch(rv.code) {
-            case RC_OK:
-                if(ASN_SET_ADD(list, ctx->ptr) != 0) {
->>>>>>> upstream/vlm_master
                     RETURN(RC_FAIL);
                 default:
                     ADVANCE(len_size);
@@ -304,12 +256,8 @@ asn_enc_rval_t SET_OF_encode_oer(const asn_TYPE_descriptor_t *td,
     list = _A_CSET_FROM_VOID(sptr);
 
     qty_len = oer_put_quantity(list->count, cb, app_key);
-<<<<<<< HEAD
-    if (qty_len < 0) {
-=======
     if(qty_len < 0) {
         OER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     }
     computed_size += qty_len;
@@ -320,12 +268,8 @@ asn_enc_rval_t SET_OF_encode_oer(const asn_TYPE_descriptor_t *td,
         er = elm->type->op->oer_encoder(
             elm->type, elm->encoding_constraints.oer_constraints, memb_ptr, cb,
             app_key);
-<<<<<<< HEAD
-        if (er.encoded < 0) {
-=======
         if(er.encoded < 0) {
             OER_ENCODER_RECURSION_DEPTH_DEC();
->>>>>>> upstream/vlm_master
             return er;
         } else {
             computed_size += er.encoded;

@@ -20,16 +20,12 @@ static enum jer_pbd_rval BOOLEAN__jer_body_decode(
 
     (void)td;
 
-<<<<<<< HEAD
-    if (p[0] == 't' /* 'true' */) {
-=======
     lead_wsp_size = jer_whitespace_span(p, chunk_size);
     p += lead_wsp_size;
     chunk_size -= lead_wsp_size;
 
     if(chunk_size >= 4 && memcmp(p, "true", 4) == 0
        && jer_whitespace_span(p + 4, chunk_size - 4) == chunk_size - 4) {
->>>>>>> upstream/vlm_master
         *st = 1;
         return JPBD_BODY_CONSUMED;
     } else if(chunk_size >= 5 && memcmp(p, "false", 5) == 0

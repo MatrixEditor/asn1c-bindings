@@ -19,22 +19,6 @@ asn_dec_rval_t NativeInteger_decode_aper(
     (void)opt_codec_ctx;
     ASN_DEBUG("Decoding NativeInteger %s (APER)", td->name);
 
-<<<<<<< HEAD
-    if (!native) {
-        native = (long *)(*sptr = CALLOC(1, sizeof(*native)));
-        if (!native) ASN__DECODE_FAILED;
-    }
-
-    memset(&tmpint, 0, sizeof tmpint);
-    rval = INTEGER_decode_aper(opt_codec_ctx, td, constraints, &tmpintptr, pd);
-    if (rval.code == RC_OK) {
-        if ((specs && specs->field_unsigned)
-                ? asn_INTEGER2ulong(&tmpint, (unsigned long *)native)
-                : asn_INTEGER2long(&tmpint, native))
-            rval.code = RC_FAIL;
-        else
-            ASN_DEBUG("NativeInteger %s got value %ld", td->name, *native);
-=======
     if(!native) {
         native = (*sptr = CALLOC(1, NativeInteger_field_width(specs)));
         if(!native) ASN__DECODE_FAILED;
@@ -46,22 +30,12 @@ asn_dec_rval_t NativeInteger_decode_aper(
     if(rval.code == RC_OK) {
         if(NativeInteger_store_from_INTEGER(native, specs, &tmpint))
             rval.code = RC_FAIL;
->>>>>>> upstream/vlm_master
     }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
 
     return rval;
 }
 
-<<<<<<< HEAD
-asn_enc_rval_t NativeInteger_encode_aper(
-    const asn_TYPE_descriptor_t *td, const asn_per_constraints_t *constraints,
-    const void *sptr, asn_per_outp_t *po) {
-    const asn_INTEGER_specifics_t *specs =
-        (const asn_INTEGER_specifics_t *)td->specifics;
-    asn_enc_rval_t er = {0, 0, 0};
-    long native;
-=======
 asn_enc_rval_t
 NativeInteger_encode_aper(const asn_TYPE_descriptor_t *td,
                           const asn_per_constraints_t *constraints,
@@ -69,23 +43,13 @@ NativeInteger_encode_aper(const asn_TYPE_descriptor_t *td,
 
     const asn_INTEGER_specifics_t *specs = (const asn_INTEGER_specifics_t *)td->specifics;
     asn_enc_rval_t er = {0,0,0};
->>>>>>> upstream/vlm_master
     INTEGER_t tmpint;
 
     if (!sptr) ASN__ENCODE_FAILED;
 
     ASN_DEBUG("Encoding NativeInteger %s (APER)", td->name);
 
-<<<<<<< HEAD
-    ASN_DEBUG("Encoding NativeInteger %s %ld (APER)", td->name, native);
-
-    memset(&tmpint, 0, sizeof(tmpint));
-    if ((specs && specs->field_unsigned)
-            ? asn_ulong2INTEGER(&tmpint, (unsigned long)native)
-            : asn_long2INTEGER(&tmpint, native))
-=======
     if(NativeInteger_to_INTEGER(sptr, specs, &tmpint))
->>>>>>> upstream/vlm_master
         ASN__ENCODE_FAILED;
     er = INTEGER_encode_aper(td, constraints, &tmpint, po);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);

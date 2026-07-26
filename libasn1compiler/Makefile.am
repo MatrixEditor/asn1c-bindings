@@ -23,9 +23,5 @@ libasn1compiler_la_SOURCES =                \
     asn1c_compat.c asn1c_compat.h           \
     asn1c_ioc.c asn1c_ioc.h                 \
     asn1c_fdeps.c asn1c_fdeps.h             \
-<<<<<<< HEAD
-    asn1c_pyimport.c asn1c_pyimport.h       \
-=======
     asn1c_encoding.c asn1c_encoding.h       \
->>>>>>> upstream/vlm_master
     asn1c_internal.h

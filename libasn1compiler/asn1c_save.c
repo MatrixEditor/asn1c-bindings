@@ -111,71 +111,41 @@ static int asn1c__save_library_makefile(arg_t *arg,
         return -1;
     }
 
-<<<<<<< HEAD
     safe_fprintf(mkf, "ASN_MODULE_SRCS=");
     TQ_FOR (mod, &(arg->asn->modules), mod_next) {
         TQ_FOR (arg->expr, &(mod->members), next) {
+            if (arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+            if ((arg->flags & A1C_GEN_ONLY_PDU_DEPS)
+                && !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
+                continue;
+            }
             if (asn1_lang_map[arg->expr->meta_type][arg->expr->expr_type]
                     .type_cb &&
                 (arg->expr->meta_type != AMT_VALUE)) {
-                safe_fprintf(
-                    mkf, "\t\\\n\t%s%s.c", datadirs->c_datadir,
+                const char *filename = asn1c_disambiguate_generated_filename(
                     asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
                                           arg->expr, 0));
-=======
-	safe_fprintf(mkf, "ASN_MODULE_SRCS=");
-	TQ_FOR(mod, &(arg->asn->modules), mod_next) {
-		TQ_FOR(arg->expr, &(mod->members), next) {
-			/* Skip encoding instructions */
-			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
-			
-			/* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
-			if((arg->flags & A1C_GEN_ONLY_PDU_DEPS) && 
-			   !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
-				continue;
-			}
-			if(asn1_lang_map[arg->expr->meta_type]
-				[arg->expr->expr_type].type_cb &&
-				(arg->expr->meta_type != AMT_VALUE)) {
-                const char *filename = asn1c_disambiguate_generated_filename(
-                    asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
-                                          arg->expr, (char *)0));
-				safe_fprintf(mkf, "\t\\\n\t%s%s.c", destdir, filename);
-			}
-		}
-	}
-	safe_fprintf(mkf, "\n\nASN_MODULE_HDRS=");
-	TQ_FOR(mod, &(arg->asn->modules), mod_next) {
-		TQ_FOR(arg->expr, &(mod->members), next) {
-			/* Skip encoding instructions */
-			if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
-			
-			/* Skip types that are not PDU dependencies if -fgen-only-pdu-deps is set */
-			if((arg->flags & A1C_GEN_ONLY_PDU_DEPS) && 
-			   !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
-				continue;
-			}
-			if(asn1_lang_map[arg->expr->meta_type]
-				[arg->expr->expr_type].type_cb &&
-				(arg->expr->meta_type != AMT_VALUE)) {
-                const char *filename = asn1c_disambiguate_generated_filename(
-                    asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
-                                          arg->expr, (char *)0));
-                safe_fprintf(mkf, "\t\\\n\t%s%s.h", destdir, filename);
->>>>>>> upstream/vlm_master
+                safe_fprintf(mkf, "\t\\\n\t%s%s.c", datadirs->c_datadir,
+                             filename);
             }
         }
     }
     safe_fprintf(mkf, "\n\nASN_MODULE_HDRS=");
     TQ_FOR (mod, &(arg->asn->modules), mod_next) {
         TQ_FOR (arg->expr, &(mod->members), next) {
+            if (arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
+            if ((arg->flags & A1C_GEN_ONLY_PDU_DEPS)
+                && !(arg->expr->_mark & TM_PDU_DEPENDENCY)) {
+                continue;
+            }
             if (asn1_lang_map[arg->expr->meta_type][arg->expr->expr_type]
                     .type_cb &&
                 (arg->expr->meta_type != AMT_VALUE)) {
-                safe_fprintf(
-                    mkf, "\t\\\n\t%s%s.h", datadirs->h_datadir,
+                const char *filename = asn1c_disambiguate_generated_filename(
                     asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX,
                                           arg->expr, 0));
+                safe_fprintf(mkf, "\t\\\n\t%s%s.h", datadirs->h_datadir,
+                             filename);
             }
         }
     }
@@ -233,20 +203,6 @@ static int asn1c__save_library_makefile(arg_t *arg,
         asn1c_dep_chain_free(dlist);
     }
 
-<<<<<<< HEAD
-    safe_fprintf(
-        mkf,
-        "\n"
-        "ASN_MODULE_CFLAGS=%s%s%s%s%s%s%s",
-        (arg->flags & A1C_GEN_BER) ? "" : "-DASN_DISABLE_BER_SUPPORT ",
-        (arg->flags & A1C_GEN_XER) ? "" : "-DASN_DISABLE_XER_SUPPORT ",
-        (arg->flags & A1C_GEN_OER) ? "" : "-DASN_DISABLE_OER_SUPPORT ",
-        (arg->flags & A1C_GEN_UPER) ? "" : "-DASN_DISABLE_UPER_SUPPORT ",
-        (arg->flags & A1C_GEN_APER) ? "" : "-DASN_DISABLE_APER_SUPPORT ",
-        (arg->flags & A1C_GEN_PRINT) ? "" : "-DASN_DISABLE_PRINT_SUPPORT ",
-        (arg->flags & A1C_GEN_RFILL) ? "" : "-DASN_DISABLE_RFILL_SUPPORT ",
-        (arg->flags & A1C_GEN_JER) ? "" : "-DASN_DISABLE_JER_SUPPORT ");
-=======
 	safe_fprintf(
 		mkf,
 		"\n"
@@ -260,7 +216,6 @@ static int asn1c__save_library_makefile(arg_t *arg,
 		(arg->flags & A1C_GEN_RFILL) ? "" : "-DASN_DISABLE_RFILL_SUPPORT ",
 		(arg->flags & A1C_GEN_JER) ? "" : "-DASN_DISABLE_JER_SUPPORT ",
 		(arg->flags & A1C_GEN_CBOR) ? "" : "-DASN_DISABLE_CBOR_SUPPORT ");
->>>>>>> upstream/vlm_master
 
     safe_fprintf(
         mkf,
@@ -338,16 +293,6 @@ static int asn1c__save_example_mk_makefile(
         "ASN_PROGRAM_SRCS ?= ",
         destdir, library_makefile_name,
         (arg->flags & A1C_PDU_TYPE) ? generate_pdu_C_definition() : "",
-<<<<<<< HEAD
-        (arg->flags & A1C_GEN_BER) ? "" : "-DASN_DISABLE_BER_SUPPORT ",
-        (arg->flags & A1C_GEN_XER) ? "" : "-DASN_DISABLE_XER_SUPPORT ",
-        (arg->flags & A1C_GEN_OER) ? "" : "-DASN_DISABLE_OER_SUPPORT ",
-        (arg->flags & A1C_GEN_UPER) ? "" : "-DASN_DISABLE_UPER_SUPPORT ",
-        (arg->flags & A1C_GEN_APER) ? "" : "-DASN_DISABLE_APER_SUPPORT ",
-        (arg->flags & A1C_GEN_PRINT) ? "" : "-DASN_DISABLE_PRINT_SUPPORT ",
-        (arg->flags & A1C_GEN_RFILL) ? "" : "-DASN_DISABLE_RFILL_SUPPORT ",
-        need_to_generate_pdu_collection(arg) ? "-DASN_PDU_COLLECTION " : "");
-=======
         (arg->flags & A1C_GEN_BER) ? "": "-DASN_DISABLE_BER_SUPPORT ",
         (arg->flags & A1C_GEN_XER) ? "": "-DASN_DISABLE_XER_SUPPORT ",
         (arg->flags & A1C_GEN_OER) ? "": "-DASN_DISABLE_OER_SUPPORT ",
@@ -356,7 +301,6 @@ static int asn1c__save_example_mk_makefile(
         (arg->flags & A1C_GEN_PRINT) ? "": "-DASN_DISABLE_PRINT_SUPPORT ",
         (arg->flags & A1C_GEN_RFILL) ? "": "-DASN_DISABLE_RFILL_SUPPORT ",
         has_pdu_collection ? "-DASN_PDU_COLLECTION " : "");
->>>>>>> upstream/vlm_master
 
     if (dlist) {
         for (size_t i = 0; i < dlist->deps_count; i++) {
@@ -381,23 +325,6 @@ static int asn1c__save_example_mk_makefile(
         }
     }
 
-<<<<<<< HEAD
-    safe_fprintf(
-        mkf,
-        "\n\nall: $(ASN_PROGRAM)\n"
-        "\n$(ASN_PROGRAM): $(ASN_LIBRARY) $(ASN_PROGRAM_SRCS:.c=.o)"
-        "\n\t$(CC) $(CFLAGS) $(CPPFLAGS) -o $(ASN_PROGRAM) "
-        "$(ASN_PROGRAM_SRCS:.c=.o) $(LDFLAGS) $(ASN_LIBRARY) $(LIBS)\n"
-        "\n$(ASN_LIBRARY): $(ASN_MODULE_SRCS:.c=.o)"
-        "\n\t$(AR) rcs $@ $(ASN_MODULE_SRCS:.c=.o)\n"
-        "\n%%.o: %%.c"
-        "\n\t$(CC) $(CFLAGS) -o $@ -c $<\n"
-        "\nclean:"
-        "\n\trm -f $(ASN_PROGRAM) $(ASN_LIBRARY)"
-        "\n\trm -f $(ASN_MODULE_SRCS:.c=.o) $(ASN_PROGRAM_SRCS:.c=.o)\n"
-        "\nregen: regenerate-from-asn1-source\n"
-        "\nregenerate-from-asn1-source:\n\t");
-=======
 	safe_fprintf(
 		mkf,
 		"\n\nall: $(ASN_PROGRAM)\n"
@@ -420,7 +347,6 @@ static int asn1c__save_example_mk_makefile(
 		"\n\trm -f $(ASN_MODULE_SRCS:.c=.d) $(ASN_PROGRAM_SRCS:.c=.d)\n"
 		"\nregen: regenerate-from-asn1-source\n"
 		"\nregenerate-from-asn1-source:\n\t");
->>>>>>> upstream/vlm_master
 
     for (int i = 0; i < argc; i++) {
         safe_fprintf(mkf, "%s%s", i ? " " : "", argv[i]);
@@ -440,33 +366,6 @@ static int asn1c__save_example_am_makefile(
     FILE *mkf;
     asn1c_dep_chain *dlist = asn1c_deps_flatten(deps, FDEP_CONVERTER);
 
-<<<<<<< HEAD
-    /* Generate example.am snippet */
-    mkf = asn1c_open_file(destdir, makefile_name, "", 0);
-    if (mkf == NULL) {
-        return -1;
-    }
-    safe_fprintf(
-        mkf,
-        "include %s%s\n\n"
-        "bin_PROGRAMS += asn1convert\n"
-        "asn1convert_CFLAGS = $(ASN_MODULE_CFLAGS) %s%s%s%s%s%s%s%s%s\n"
-        "asn1convert_CPPFLAGS = -I$(top_srcdir)/%s\n"
-        "asn1convert_LDADD = libasncodec.la\n"
-        "asn1convert_SOURCES = ",
-        destdir, library_makefile_name,
-        (arg->flags & A1C_PDU_TYPE) ? generate_pdu_C_definition() : "",
-        (arg->flags & A1C_GEN_BER) ? "" : "-DASN_DISABLE_BER_SUPPORT ",
-        (arg->flags & A1C_GEN_XER) ? "" : "-DASN_DISABLE_XER_SUPPORT ",
-        (arg->flags & A1C_GEN_OER) ? "" : "-DASN_DISABLE_OER_SUPPORT ",
-        (arg->flags & A1C_GEN_UPER) ? "" : "-DASN_DISABLE_UPER_SUPPORT ",
-        (arg->flags & A1C_GEN_APER) ? "" : "-DASN_DISABLE_APER_SUPPORT ",
-        (arg->flags & A1C_GEN_PRINT) ? "" : "-DASN_DISABLE_PRINT_SUPPORT ",
-        (arg->flags & A1C_GEN_RFILL) ? "" : "-DASN_DISABLE_RFILL_SUPPORT ",
-        (arg->flags & A1C_GEN_JER) ? "" : "-DASN_DISABLE_JER_SUPPORT ",
-        need_to_generate_pdu_collection(arg) ? "-DASN_PDU_COLLECTION " : "",
-        destdir);
-=======
 	/* Generate example.am snippet */
 	mkf = asn1c_open_file(destdir, makefile_name, "", 0);
 	if(mkf == NULL) {
@@ -491,7 +390,6 @@ static int asn1c__save_example_am_makefile(
                  (arg->flags & A1C_GEN_JER) ? "": "-DASN_DISABLE_JER_SUPPORT ",
                  (arg->flags & A1C_GEN_CBOR) ? "": "-DASN_DISABLE_CBOR_SUPPORT ",
 	             need_to_generate_pdu_collection(arg) ? "-DASN_PDU_COLLECTION " : "", destdir);
->>>>>>> upstream/vlm_master
 
     if (dlist) {
         for (size_t i = 0; i < dlist->deps_count; i++) {
@@ -619,21 +517,6 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
                 datadirs->skeletons_datadir);
         }
 
-<<<<<<< HEAD
-        TQ_FOR (mod, &(arg->asn->modules), mod_next) {
-            TQ_FOR (arg->expr, &(mod->members), next) {
-                if (arg->flags & A1C_SKIP_IMPORTS &&
-                    !(arg->expr->module->_tags & MT_STANDARD_MODULE) &&
-                    !(arg->expr->module->_tags & MT_FIRST_MODULE)) {
-                    continue;
-                }
-
-                if (asn1_lang_map[arg->expr->meta_type][arg->expr->expr_type]
-                        .type_cb &&
-                    (arg->expr->meta_type != AMT_VALUE)) {
-                    ret = asn1c_dump_streams(arg, deps, datadirs, optc, argv);
-                    if (ret) break;
-=======
         TQ_FOR(mod, &(arg->asn->modules), mod_next) {
             TQ_FOR(arg->expr, &(mod->members), next) {
                 /* Skip encoding instructions */
@@ -648,9 +531,8 @@ int asn1c_save_compiled_output(arg_t *arg, const asn1c_datadirs_t *datadirs,
                 if(asn1_lang_map[arg->expr->meta_type][arg->expr->expr_type]
                        .type_cb &&
                    (arg->expr->meta_type != AMT_VALUE)) {
-                    ret = asn1c_dump_streams(arg, deps, destdir, optc, argv);
+                    ret = asn1c_dump_streams(arg, deps, datadirs, optc, argv);
                     if(ret) break;
->>>>>>> upstream/vlm_master
                 }
             }
         }
@@ -902,28 +784,11 @@ static int asn1c_print_streams(arg_t *arg) {
         out_chunk_t *ot;
         if (TQ_FIRST(&cs->destination[i].chunks) == NULL) continue;
 
-<<<<<<< HEAD
         printf("\n/*** <<< %s [%s] >>> ***/\n\n", _compiler_stream2str[i],
                expr->Identifier);
-
         TQ_FOR (ot, &(cs->destination[i].chunks), next) {
             safe_fwrite(ot->buf, ot->len, 1, stdout);
         }
-=======
-	filename = strdup(asn1c_disambiguate_generated_filename(
-        asn1c_make_identifier(AMI_MASK_ONLY_SPACES | AMI_USE_PREFIX, expr,
-                              (char *)0)));
-	
-	/* Warn if filename might conflict with system headers on case-insensitive filesystems */
-	/* Only warn if no prefix is being used (prefix would avoid the conflict) */
-	if(asn1c_prefix_get()[0] == '\0') {
-		warn_if_conflicts_with_system_headers(filename, expr->Identifier);
-	}
-	
-	fp_c = asn1c_open_file(destdir, filename, ".c", &tmpname_c);
-    if(fp_c == NULL) {
-        return -1;
->>>>>>> upstream/vlm_master
     }
 
     return 0;
@@ -952,8 +817,9 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
         return -1;
     }
 
-    filename = strdup(asn1c_make_identifier(
-        AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr, (char *)0));
+    filename = strdup(asn1c_disambiguate_generated_filename(
+        asn1c_make_identifier(AMI_USE_PREFIX | AMI_MASK_ONLY_SPACES, expr,
+                              (char *)0)));
     if (!(arg->flags & A1C_GEN_PYTHON)) {
         include_py = 0;
     }
@@ -1063,7 +929,9 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
     ((arg->flags & A1C_INCLUDES_QUOTED)
          ? safe_fprintf((fp_c), "#include \"%s.h\"\n", filename)
          : safe_fprintf((fp_c), "#include <%s.h>\n", filename));
-    SAVE_STREAM(fp_py_h, OT_PY_IMPL_MOD_INCLUDES, "Including dependencies", 1);
+    if (include_py)
+        SAVE_STREAM(fp_py_h, OT_PY_IMPL_MOD_INCLUDES, "Including dependencies",
+                    1);
 
     if (arg->flags & A1C_NO_INCLUDE_DEPS)
         SAVE_STREAM(fp_c, OT_POST_INCLUDE, "", 1);
@@ -1202,11 +1070,11 @@ static int asn1c_save_streams(arg_t *arg, asn1c_dep_chainset *deps,
     if (include_py) {
         safe_fprintf(
             stderr, "Compiled %s%s_Py.h%s\n",
-            is_std ? datadirs->skeleton_out_datadir : datadirs->py_c_datadir,
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_h_datadir,
             filename, py_h_retained);
         safe_fprintf(
             stderr, "Compiled %s%s_Py.c%s\n",
-            is_std ? datadirs->skeleton_out_datadir : datadirs->py_h_datadir,
+            is_std ? datadirs->skeleton_out_datadir : datadirs->py_c_datadir,
             filename, py_c_retained);
     }
     goto finalize;
@@ -1236,18 +1104,6 @@ finalize:
     return result;
 }
 
-<<<<<<< HEAD
-static int generate_preamble(arg_t *arg, FILE *fp, int optc, char **argv) {
-    safe_fprintf(fp,
-                 "/*\n"
-                 " * Generated by asn1c-" VERSION
-                 " for Python bindings"
-                 " (https://github.com/MatrixEditor/asn1c-bindings)\n"
-                 " * From ASN.1 module \"%s\"\n",
-                 arg->expr->module->ModuleName);
-    safe_fprintf(fp, " */\n\n");
-    return 0;
-=======
 static int
 generate_preamble(arg_t *arg, FILE *fp, int optc, char **argv) {
 	safe_fprintf(fp,
@@ -1266,7 +1122,6 @@ generate_preamble(arg_t *arg, FILE *fp, int optc, char **argv) {
 	}
 	safe_fprintf(fp, " */\n\n");
 	return 0;
->>>>>>> upstream/vlm_master
 }
 
 static int identical_files(const char *fname1, const char *fname2) {
@@ -1275,31 +1130,10 @@ static int identical_files(const char *fname1, const char *fname2) {
     size_t olen, nlen;
     int retval = 1; /* Files are identical */
 
-<<<<<<< HEAD
-#ifndef _WIN32
-    struct stat sb;
-
-    if (lstat(fname1, &sb) || !S_ISREG(sb.st_mode) || lstat(fname2, &sb) ||
-        !S_ISREG(sb.st_mode)) {
-        return 0; /* Files are not identical */
-    }
-#endif
-
-    fp1 = fopen(fname1, "r");
-    if (!fp1) {
-        return 0;
-    }
-    fp2 = fopen(fname2, "r");
-    if (!fp2) {
-        fclose(fp1);
-        return 0;
-    }
-=======
 	fp1 = fopen(fname1, "r");
 	if(!fp1) { return 0; }
 	fp2 = fopen(fname2, "r");
 	if(!fp2) { fclose(fp1); return 0; }
->>>>>>> upstream/vlm_master
 
     while ((olen = fread(buf[0], 1, sizeof(buf[0]), fp1))) {
         nlen = fread(buf[1], 1, olen, fp2);
@@ -1422,9 +1256,6 @@ static int generate_pdu_collection_file(arg_t *arg, const char *destdir) {
     safe_fwrite(buf->buffer, buf->length, 1, fp);
     fclose(fp);
 
-<<<<<<< HEAD
-    safe_fprintf(stderr, "Generated pdu_collection.c\n");
-=======
 	safe_fprintf(stderr, "Generated pdu_collection.c\n");
 	
 	/* Print helpful guidance for PDU collection usage */
@@ -1435,7 +1266,6 @@ static int generate_pdu_collection_file(arg_t *arg, const char *destdir) {
 	    "      See pdu_collection.c for the complete list of available PDU types.\n",
 	    (prefix && prefix[0]) ? prefix : "");
 	
->>>>>>> upstream/vlm_master
     return 0;
 }
 
@@ -1449,12 +1279,6 @@ static abuf *generate_pdu_collection(arg_t *arg) {
                 "struct asn_TYPE_descriptor_s;\t"
                 "/* Forward declaration */\n\n");
 
-<<<<<<< HEAD
-    TQ_FOR (mod, &(arg->asn->modules), mod_next) {
-        TQ_FOR (arg->expr, &(mod->members), next) {
-            if (include_type_to_pdu_collection(arg) == TI_NOT_INCLUDED)
-                continue;
-=======
 
     TQ_FOR(mod, &(arg->asn->modules), mod_next) {
         TQ_FOR(arg->expr, &(mod->members), next) {
@@ -1462,7 +1286,6 @@ static abuf *generate_pdu_collection(arg_t *arg) {
             if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
             
             if(include_type_to_pdu_collection(arg) == TI_NOT_INCLUDED) continue;
->>>>>>> upstream/vlm_master
             abuf_printf(buf,
                         "extern struct asn_TYPE_descriptor_s "
                         "asn_DEF_%s;\n",
@@ -1475,18 +1298,6 @@ static abuf *generate_pdu_collection(arg_t *arg) {
                 "struct asn_TYPE_descriptor_s *asn_pdu_collection[] = {\n");
     TQ_FOR (mod, &(arg->asn->modules), mod_next) {
         int mod_printed = 0;
-<<<<<<< HEAD
-        TQ_FOR (arg->expr, &(mod->members), next) {
-            switch (include_type_to_pdu_collection(arg)) {
-                case TI_NOT_INCLUDED:
-                    continue;
-                case TI_INCLUDED_FROM_BULK:
-                    /* Increment */
-                    asn1c__pdu_type_lookup(arg->expr->Identifier);
-                    break;
-                case TI_INCLUDED_FROM_CMDLINE:
-                    break;
-=======
         TQ_FOR(arg->expr, &(mod->members), next) {
             /* Skip encoding instructions */
             if(arg->expr->_mark & TM_ENCODING_INSTRUCTION) continue;
@@ -1499,7 +1310,6 @@ static abuf *generate_pdu_collection(arg_t *arg) {
                 break;
             case TI_INCLUDED_FROM_CMDLINE:
                 break;
->>>>>>> upstream/vlm_master
             }
             if (!mod_printed++) {
                 abuf_printf(buf, "\t/* From module %s in %s */\n",
@@ -1531,15 +1341,6 @@ static const char *generate_pdu_C_definition(void) {
     const char *src;
     const char *prefix;
     char *def;
-<<<<<<< HEAD
-    char *dst;
-    if (pduTypes == 0) return "";
-    def = malloc(strlen(pduType[0].typename) + 20);
-    assert(def);
-    strcpy(def, "-DPDU=");
-    for (src = pduType[0].typename, dst = def + 6; *src; src++, dst++) {
-        if ((*dst = *src) == '-') {
-=======
 	char *dst;
     if(pduTypes == 0) return "";
     
@@ -1562,7 +1363,6 @@ static const char *generate_pdu_C_definition(void) {
     /* Add typename */
 	for(src = pduType[0].typename; *src; src++, dst++) {
         if((*dst = *src) == '-') {
->>>>>>> upstream/vlm_master
             *dst = '_';
         }
     }
@@ -1591,14 +1391,9 @@ static void asn1c__cleanup_pdu_type() {
     pduTypes = 0;
 }
 
-<<<<<<< HEAD
-static int asn1c__pdu_type_lookup(const char *typename) {
-    for (size_t i = 0; i < pduTypes; i++) {
-=======
 int
 asn1c__pdu_type_lookup(const char *typename) {
     for(size_t i = 0; i < pduTypes; i++) {
->>>>>>> upstream/vlm_master
         struct PDUType *pt = &pduType[i];
         if (strcmp(pt->typename, typename) == 0) {
             pt->used++;
@@ -1661,9 +1456,6 @@ static enum include_type_result include_type_to_pdu_collection(arg_t *arg) {
     return 0;
 }
 
-<<<<<<< HEAD
-static abuf *generate_constant_collection(arg_t *arg) {
-=======
 /*
  * Check if a generated filename might conflict with common system headers
  * on case-insensitive filesystems. Issue a warning with suggestion to use -fprefix.
@@ -1738,23 +1530,11 @@ warn_if_conflicts_with_system_headers(const char *filename, const char *typename
 
 static abuf *
 generate_constant_collection(arg_t *arg) {
->>>>>>> upstream/vlm_master
     asn1p_module_t *mod;
     abuf *buf = abuf_new();
     int empty_file = 1;
 
     abuf_printf(buf, "/*\n * Generated by asn1c-" VERSION
-<<<<<<< HEAD
-                     " (http://lionet.info/asn1c)\n */\n\n");
-    abuf_printf(buf, "#ifndef _%sASN_CONSTANT_H\n#define _%sASN_CONSTANT_H\n\n",
-                asn1c_prefix_get(), asn1c_prefix_get());
-
-    abuf_printf(buf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n\n");
-
-    TQ_FOR (mod, &(arg->asn->modules), mod_next) {
-        TQ_FOR (arg->expr, &(mod->members), next) {
-            if (arg->expr->expr_type != ASN_BASIC_INTEGER) continue;
-=======
                      " (" PACKAGE_BUGREPORT ")\n */\n\n");
     abuf_printf(buf, "#ifndef _%sASN_CONSTANT_H\n#define _%sASN_CONSTANT_H\n\n", asn1c_prefix_get(), asn1c_prefix_get());
 
@@ -1767,7 +1547,6 @@ generate_constant_collection(arg_t *arg) {
             
             if(arg->expr->expr_type != ASN_BASIC_INTEGER)
                 continue;
->>>>>>> upstream/vlm_master
 
             if (arg->expr->meta_type == AMT_VALUE) {
                 abuf_printf(buf, "#define %s (%s)\n",
@@ -1776,23 +1555,6 @@ generate_constant_collection(arg_t *arg) {
                 empty_file = 0;
             }
 
-<<<<<<< HEAD
-            if (arg->expr->meta_type == AMT_TYPE) {
-                if (arg->expr->constraints) {
-                    if (arg->expr->constraints->el_count == 1 &&
-                        arg->expr->constraints->elements[0]->type ==
-                            ACT_EL_RANGE) {
-                        abuf_printf(
-                            buf, "#define min_val_%s (%s)\n",
-                            asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
-                            asn1p_itoa(arg->expr->constraints->elements[0]
-                                           ->range_start->value.v_integer));
-                        abuf_printf(
-                            buf, "#define max_val_%s (%s)\n",
-                            asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, 0),
-                            asn1p_itoa(arg->expr->constraints->elements[0]
-                                           ->range_stop->value.v_integer));
-=======
             if(arg->expr->meta_type == AMT_TYPE) {
                 if(arg->expr->constraints) {
                     if(arg->expr->constraints->el_count == 1 &&
@@ -1803,7 +1565,6 @@ generate_constant_collection(arg_t *arg) {
                         abuf_printf(buf, "#define max_val_%s (%s)\n",
                                     asn1c_make_identifier(AMI_USE_PREFIX, arg->expr, (char *)0),
                                     asn1p_itoa(arg->expr->constraints->elements[0]->range_stop->value.v_integer));
->>>>>>> upstream/vlm_master
                         empty_file = 0;
                     }
                 }

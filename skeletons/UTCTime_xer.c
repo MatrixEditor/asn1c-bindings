@@ -7,15 +7,6 @@
 #include <UTCTime.h>
 #include <errno.h>
 
-<<<<<<< HEAD
-#ifdef __CYGWIN__
-#include "/usr/include/time.h"
-#else
-#include <time.h>
-#endif /* __CYGWIN__ */
-
-=======
->>>>>>> upstream/vlm_master
 #if !defined(ASN___INTERNAL_TEST_MODE)
 
 asn_enc_rval_t UTCTime_encode_xer(const asn_TYPE_descriptor_t *td,

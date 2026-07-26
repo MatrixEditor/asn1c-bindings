@@ -74,9 +74,6 @@ static const asn_INTEGER_enum_map_t *INTEGER_map_enum2value(
     return el_found;
 }
 
-<<<<<<< HEAD
-static int INTEGER_st_prealloc(INTEGER_t *st, int min_size) {
-=======
 static const asn_INTEGER_enum_map_t *
 INTEGER_map_text2value(const asn_INTEGER_specifics_t *specs, const char *lstart,
                        const char *lstop) {
@@ -103,7 +100,6 @@ INTEGER_map_text2value(const asn_INTEGER_specifics_t *specs, const char *lstart,
 
 static int
 INTEGER_st_prealloc(INTEGER_t *st, int min_size) {
->>>>>>> upstream/vlm_master
     void *p = MALLOC(min_size + 1);
     if (p) {
         void *b = st->buf;
@@ -388,12 +384,6 @@ asn_dec_rval_t INTEGER_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                                 INTEGER__xer_body_decode);
 }
 
-<<<<<<< HEAD
-asn_enc_rval_t INTEGER_encode_xer(const asn_TYPE_descriptor_t *td,
-                                  const void *sptr, int ilevel,
-                                  enum xer_encoder_flags_e flags,
-                                  asn_app_consume_bytes_f *cb, void *app_key) {
-=======
 static enum xer_pbd_rval
 INTEGER__xer_text_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
                               const void *chunk_buf, size_t chunk_size) {
@@ -425,7 +415,6 @@ asn_enc_rval_t
 INTEGER_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
                    int ilevel, enum xer_encoder_flags_e flags,
                    asn_app_consume_bytes_f *cb, void *app_key) {
->>>>>>> upstream/vlm_master
     const INTEGER_t *st = (const INTEGER_t *)sptr;
     asn_enc_rval_t er = {0, 0, 0};
 

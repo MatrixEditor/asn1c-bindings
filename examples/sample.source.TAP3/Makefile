@@ -1,4 +1,5 @@
 ASN_PROGRAM = tap3dump
+ASN_PDU = DataInterChange
 CFLAGS += -DASN_CONVERTER_TITLE="GSM TAP3 (Transferred Account Procedure, Version 3) decoder" -DHAVE_CONFIG_H -DJUNKTEST -D_DEFAULT_SOURCE
 begin: DataInterChange.c maybe-wip-pause all
 
@@ -105,3 +106,4 @@ distclean: clean
 	rm -f $(ASN_MODULE_HDRS)
 	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)
 	rm -f converter-example.mk
+	rm -f $(ASN_PDU).c

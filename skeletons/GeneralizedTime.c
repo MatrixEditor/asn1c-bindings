@@ -12,16 +12,6 @@
 #endif
 #include <asn_internal.h>
 #include <GeneralizedTime.h>
-<<<<<<< HEAD
-
-#ifdef __CYGWIN__
-#include "/usr/include/time.h"
-#else
-#include <time.h>
-#endif /* __CYGWIN__ */
-
-=======
->>>>>>> upstream/vlm_master
 #include <errno.h>
 
 #if defined(_WIN32)
@@ -259,10 +249,6 @@ asn_TYPE_operation_t asn_OP_GeneralizedTime = {
     GeneralizedTime_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -272,7 +258,6 @@ asn_TYPE_operation_t asn_OP_GeneralizedTime = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_GeneralizedTime = {
     "GeneralizedTime",

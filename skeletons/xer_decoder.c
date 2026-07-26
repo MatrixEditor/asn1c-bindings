@@ -68,13 +68,6 @@ ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
     if (arg.callback_not_invoked) {
         assert(ret == 0); /* No data was consumed */
         *ch_type = PXER_WMORE;
-<<<<<<< HEAD
-        return 0; /* Try again with more data */
-    } else {
-        assert(arg.chunk_size);
-        assert(arg.chunk_buf == buffer);
-    }
-=======
 		return 0;		/* Try again with more data */
 	} else {
 		if(arg.chunk_size == 0
@@ -82,7 +75,6 @@ ssize_t xer_next_token(int *stateContext, const void *buffer, size_t size,
 		|| arg.chunk_buf != buffer)
 			return -1;
 	}
->>>>>>> upstream/vlm_master
 
     /*
      * Translate the XML chunk types into more convenient ones.
@@ -141,10 +133,6 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
         }
     }
 
-<<<<<<< HEAD
-    /* Sometimes we don't care about the tag */
-    if (!need_tag || !*need_tag) return (xer_check_tag_e)(XCT__UNK__MASK | ct);
-=======
 	/* Sometimes we don't care about the tag */
 	if(!need_tag || !*need_tag) {
 		/* When need_tag is NULL, check if this is an ASN.1 keyword tag to skip */
@@ -189,7 +177,6 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
 		
 		return (xer_check_tag_e)(XCT__UNK__MASK | ct);
 	}
->>>>>>> upstream/vlm_master
 
     /*
      * Determine the tag name.

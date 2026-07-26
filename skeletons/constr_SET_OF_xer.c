@@ -154,16 +154,12 @@ asn_dec_rval_t SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
     if (specs->as_XMLValueList) {
         elm_tag = (specs->as_XMLValueList == 1) ? 0 : "";
     } else {
-<<<<<<< HEAD
-        elm_tag = (*element->name) ? element->name : element->type->xml_tag;
-=======
         if(!element) {
             ASN_DEBUG("SET OF has no element type descriptor");
             RETURN(RC_FAIL);
         }
-        elm_tag = (*element->name)
+        elm_tag = (*element->name && !asn_is_synthetic_collection_member_name(element->name))
                 ? element->name : element->type->xml_tag;
->>>>>>> upstream/vlm_master
     }
 
     /*
@@ -189,13 +185,8 @@ asn_dec_rval_t SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
         /*
          * Go inside the inner member of a set.
          */
-<<<<<<< HEAD
-        if (ctx->phase == 2) {
-            asn_dec_rval_t tmprval = {RC_OK, 0};
-=======
         if(ctx->phase == 2) {
             asn_dec_rval_t tmprval = (asn_dec_rval_t){RC_OK, 0};
->>>>>>> upstream/vlm_master
 
             /* Invoke the inner type decoder, m.b. multiple times */
             ASN_DEBUG("XER/SET OF element [%s]", elm_tag);
@@ -204,9 +195,6 @@ asn_dec_rval_t SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                                                      elm_tag, buf_ptr, size);
             if (tmprval.code == RC_OK) {
                 asn_anonymous_set_ *list = _A_SET_FROM_VOID(st);
-<<<<<<< HEAD
-                if (ASN_SET_ADD(list, ctx->ptr) != 0) RETURN(RC_FAIL);
-=======
                 if(tmprval.consumed == 0) {
                     ASN_STRUCT_FREE(*element->type, ctx->ptr);
                     ctx->ptr = 0;
@@ -214,7 +202,6 @@ asn_dec_rval_t SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
                 }
                 if(ASN_SET_ADD(list, ctx->ptr) != 0)
                     RETURN(RC_FAIL);
->>>>>>> upstream/vlm_master
                 ctx->ptr = 0;
                 XER_ADVANCE(tmprval.consumed);
             } else {
@@ -298,43 +285,6 @@ asn_dec_rval_t SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
         }
 		
         tcv = xer_check_tag(buf_ptr, ch_size, xml_tag);
-<<<<<<< HEAD
-        ASN_DEBUG("XER/SET OF: tcv = %d, ph=%d t=%s", tcv, ctx->phase, xml_tag);
-        switch (tcv) {
-            case XCT_CLOSING:
-                if (ctx->phase == 0) break;
-                ctx->phase = 0;
-                /* Fall through */
-            case XCT_BOTH:
-                if (ctx->phase == 0) {
-                    /* No more things to decode */
-                    XER_ADVANCE(ch_size);
-                    ctx->phase = 3; /* Phase out */
-                    RETURN(RC_OK);
-                }
-                /* Fall through */
-            case XCT_OPENING:
-                if (ctx->phase == 0) {
-                    XER_ADVANCE(ch_size);
-                    ctx->phase = 1; /* Processing body phase */
-                    continue;
-                }
-                /* Fall through */
-            case XCT_UNKNOWN_OP:
-            case XCT_UNKNOWN_BO:
-
-                ASN_DEBUG("XER/SET OF: tcv=%d, ph=%d", tcv, ctx->phase);
-                if (ctx->phase == 1) {
-                    /*
-                     * Process a single possible member.
-                     */
-                    ctx->phase = 2;
-                    continue;
-                }
-                /* Fall through */
-            default:
-                break;
-=======
         ASN_DEBUG("XER/SET OF: tcv = %d, ph=%d t=%s",
                   tcv, ctx->phase, xml_tag);
         switch(tcv) {
@@ -409,7 +359,6 @@ asn_dec_rval_t SET_OF_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
             /* Fall through */
         default:
             break;
->>>>>>> upstream/vlm_master
         }
 
         ASN_DEBUG("Unexpected XML tag in SET OF");
@@ -455,20 +404,6 @@ static int SET_OF_xer_order(const void *aptr, const void *bptr) {
     return 1;
 }
 
-<<<<<<< HEAD
-asn_enc_rval_t SET_OF_encode_xer(const asn_TYPE_descriptor_t *td,
-                                 const void *sptr, int ilevel,
-                                 enum xer_encoder_flags_e flags,
-                                 asn_app_consume_bytes_f *cb, void *app_key) {
-    asn_enc_rval_t er = {0, 0, 0};
-    const asn_SET_OF_specifics_t *specs =
-        (const asn_SET_OF_specifics_t *)td->specifics;
-    const asn_TYPE_member_t *elm = td->elements;
-    const asn_anonymous_set_ *list = _A_CSET_FROM_VOID(sptr);
-    const char *mname = specs->as_XMLValueList
-                            ? 0
-                            : ((*elm->name) ? elm->name : elm->type->xml_tag);
-=======
 asn_enc_rval_t
 SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                   enum xer_encoder_flags_e flags, asn_app_consume_bytes_f *cb,
@@ -509,7 +444,8 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             ASN_DEBUG("SET OF has no element type descriptor");
             ASN__ENCODE_FAILED;
         }
-        mname = (*elm->name) ? elm->name : elm->type->xml_tag;
+        mname = (*elm->name && !asn_is_synthetic_collection_member_name(elm->name))
+              ? elm->name : elm->type->xml_tag;
         
         /* Check if mname contains ASN.1 meta-syntax keywords that should not be output */
         if(asn_is_meta_syntax_keyword(mname)) {
@@ -517,7 +453,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             mname = elm->type->xml_tag;  /* Use the element type's tag instead */
         }
     }
->>>>>>> upstream/vlm_master
     size_t mlen = mname ? strlen(mname) : 0;
     int xcan = (flags & XER_F_CANONICAL);
     xer_tmp_enc_t *encs = 0;
@@ -528,11 +463,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 
     if (!sptr) ASN__ENCODE_FAILED;
 
-<<<<<<< HEAD
-    if (xcan) {
-        encs = (xer_tmp_enc_t *)MALLOC(list->count * sizeof(encs[0]));
-        if (!encs) ASN__ENCODE_FAILED;
-=======
     /* Check recursion depth to prevent stack overflow */
     XER_ENCODER_RECURSION_DEPTH_INC();
 
@@ -542,7 +472,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             XER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
->>>>>>> upstream/vlm_master
         cb = SET_OF_encode_xer_callback;
     }
 
@@ -560,10 +489,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             encs_count++;
         }
 
-<<<<<<< HEAD
-        if (mname) {
-            if (!xcan) ASN__TEXT_INDENT(1, ilevel);
-=======
         if(mname) {
             if(!xcan) {
                 if(i == 0 || er.encoded == 0) {
@@ -575,18 +500,11 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                     for(tmp_i = 0; tmp_i < ilevel; tmp_i++) ASN__CALLBACK("    ", 4);
                 }
             }
->>>>>>> upstream/vlm_master
             ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
         }
 
         if (!xcan && specs->as_XMLValueList == 1)
             ASN__TEXT_INDENT(1, ilevel + 1);
-<<<<<<< HEAD
-        tmper = elm->type->op->xer_encoder(
-            elm->type, memb_ptr, ilevel + (specs->as_XMLValueList != 2), flags,
-            cb, app_key);
-        if (tmper.encoded == -1) return tmper;
-=======
         tmper = elm->type->op->xer_encoder(elm->type, memb_ptr,
                                            ilevel + (specs->as_XMLValueList != 2),
                                            flags, cb, app_key);
@@ -605,7 +523,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             XER_ENCODER_RECURSION_DEPTH_DEC();
             return tmper;
         }
->>>>>>> upstream/vlm_master
         er.encoded += tmper.encoded;
         if (tmper.encoded == 0 && specs->as_XMLValueList) {
             const char *name = elm->type->xml_tag;
@@ -613,10 +530,6 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             ASN__CALLBACK3("<", 1, name, len, "/>", 2);
         }
 
-<<<<<<< HEAD
-        if (mname) {
-            ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
-=======
         if(mname) {
             if(!xcan) {
                 /* Add indentation before closing tag only if element is a structured type
@@ -629,17 +542,10 @@ SET_OF_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             } else {
                 ASN__CALLBACK3("</", 2, mname, mlen, ">", 1);
             }
->>>>>>> upstream/vlm_master
         }
     }
 
-<<<<<<< HEAD
-    if (!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
-
-    if (encs) {
-=======
     if(encs) {
->>>>>>> upstream/vlm_master
         xer_tmp_enc_t *enc = encs;
         xer_tmp_enc_t *end = encs + encs_count;
         ssize_t control_size = 0;

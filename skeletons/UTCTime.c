@@ -7,17 +7,7 @@
 #include <GeneralizedTime.h>
 #include <errno.h>
 
-<<<<<<< HEAD
-#ifdef __CYGWIN__
-#include "/usr/include/time.h"
-#else
-#include <time.h>
-#endif /* __CYGWIN__ */
-
-#ifndef ASN___INTERNAL_TEST_MODE
-=======
 #ifndef	ASN___INTERNAL_TEST_MODE
->>>>>>> upstream/vlm_master
 
 /*
  * UTCTime basic type description.
@@ -91,10 +81,6 @@ asn_TYPE_operation_t asn_OP_UTCTime = {
     UTCTime_random_fill,
 #else
     0,
-<<<<<<< HEAD
-#endif /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
-=======
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0,  /* Use generic outmost tag fetcher */
 #if !defined(ASN_DISABLE_CBOR_SUPPORT)
@@ -104,7 +90,6 @@ asn_TYPE_operation_t asn_OP_UTCTime = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
->>>>>>> upstream/vlm_master
 };
 asn_TYPE_descriptor_t asn_DEF_UTCTime = {
     "UTCTime",

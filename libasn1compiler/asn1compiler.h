@@ -89,94 +89,6 @@ enum asn1c_flags {
      */
     A1C_LINK_SKELETONS = 0x0800,
 
-<<<<<<< HEAD
-    /*
-     * -pdu={all|auto|Type}
-     * Generate PDU table
-     */
-    A1C_PDU_ALL = 0x2000,
-    A1C_PDU_AUTO = 0x4000,
-    A1C_PDU_TYPE = 0x8000,
-    /*
-     * -fincludes-quoted
-     * Avoid generating #include <foo>, generate "foo" instead.
-     */
-    A1C_INCLUDES_QUOTED = 0x10000,
-    /*
-     * -fline-refs
-     * Include ASN.1 module's line numbers in comments.
-     */
-    A1C_LINE_REFS = 0x20000,
-    /*
-     * -gen-OER / -no-gen-OER
-     * Generate Octet Encoding Rules support code
-     */
-    A1C_GEN_OER = 0x40000,
-    /*
-     * -gen-UPER / -no-gen-UPER
-     * Generate Unaligned Packed Encoding Rules support code
-     */
-    A1C_GEN_UPER = 0x80000,
-    /*
-     * -gen-example / -no-gen-example
-     * Generate converter-example.c and converter-example.mk
-     */
-    A1C_GEN_EXAMPLE = 0x100000,
-    /*
-     * Generate top-level configure.ac and Makefile.am
-     */
-    A1C_GEN_AUTOTOOLS_EXAMPLE = 0x200000,
-    /*
-     * Print the source of generated lines.
-     * -debug-output-origin-lines
-     */
-    A1C_DEBUG_OUTPUT_ORIGIN_LINES = 0x400000,
-    /*
-     * -gen-BER / -no-gen-BER
-     * Generate Basic Encoding Rules support code
-     */
-    A1C_GEN_BER = 0x800000,
-    /*
-     * -gen-XER / -no-gen-XER
-     * Generate XML Encoding Rules support code
-     */
-    A1C_GEN_XER = 0x1000000,
-    /*
-     * -gen-print / -no-gen-print
-     * Generate print code
-     */
-    A1C_GEN_PRINT = 0x2000000,
-    /*
-     * -gen-random-fill / -no-gen-random-fill
-     * Generate random fill code
-     */
-    A1C_GEN_RFILL = 0x4000000,
-    /*
-     * -gen-APER / -no-gen-APER
-     * Generate Aligned Packed Encoding Rules support code
-     */
-    A1C_GEN_APER = 0x8000000,
-    /*
-     * -gen-JER / -no-gen-JER
-     * Generate JSON Encoding Rules support code
-     */
-    A1C_GEN_JER = 0x100000000,
-    /*
-     * -gen-python / -no-gen-python
-     * Generate Python support code
-     */
-    A1C_GEN_PYTHON = 0x200000000,
-    /*
-     * -gen-python-stubs / -no-gen-python-stubs
-     * Generate Python stubs file
-     */
-    A1C_GEN_PYTHON_STUBS = 0x400000000,
-    /*
-     * -out-skip-imports
-     * Do not compile external modules
-     */
-    A1C_SKIP_IMPORTS = 0x800000000
-=======
 	/*
 	 * -pdu={all|auto|Type}
 	 * Generate PDU table
@@ -263,7 +175,21 @@ enum asn1c_flags {
 	 * Generate CBOR (Concise Binary Object Representation) support code
 	 */
 	A1C_GEN_CBOR                    = 0x800000000,
->>>>>>> upstream/vlm_master
+	/*
+	 * -gen-python / -no-gen-python
+	 * Generate Python support code.
+	 */
+	A1C_GEN_PYTHON                  = 0x1000000000,
+	/*
+	 * -gen-python-stubs / -no-gen-python-stubs
+	 * Generate Python stubs file.
+	 */
+	A1C_GEN_PYTHON_STUBS            = 0x2000000000,
+	/*
+	 * -out-skip-imports
+	 * Do not compile external modules.
+	 */
+	A1C_SKIP_IMPORTS                = 0x4000000000,
 };
 
 typedef struct asn1c_datadirs_s {
@@ -300,14 +226,9 @@ typedef struct asn1c_datadirs_s {
 /*
  * Compile the ASN.1 specification.
  */
-<<<<<<< HEAD
 int asn1_compile(asn1p_t *asn, const asn1c_datadirs_t *datadirs,
-                 enum asn1c_flags, int argc, int optc, char **argv,
-                 const char *pymodule);
-=======
-int asn1_compile(asn1p_t *asn, const char *datadir, const char *destdir, enum asn1c_flags,
-	int argc, int optc, char **argv, int complex_threshold);
->>>>>>> upstream/vlm_master
+                 enum asn1c_flags flags, int argc, int optc, char **argv,
+                 const char *pymodule, int complex_threshold);
 
 void asn1c_debug_type_naming(asn1p_t *asn, enum asn1c_flags,
                              char **asn_type_names);

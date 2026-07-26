@@ -1,4 +1,5 @@
 ASN_PROGRAM = j2735-dump
+ASN_PDU = MessageFrame
 CFLAGS += -DASN_CONVERTER_TITLE="J2735 DSRC decoder" -DHAVE_CONFIG_H -DJUNKTEST -D_DEFAULT_SOURCE
 begin: MessageFrame.c maybe-wip-pause all
 
@@ -105,3 +106,4 @@ distclean: clean
 	rm -f $(ASN_MODULE_HDRS)
 	rm -f $(ASN_PROGRAM_SRCS) $(ASN_PROGRAM_HDRS)
 	rm -f converter-example.mk
+	rm -f $(ASN_PDU).c

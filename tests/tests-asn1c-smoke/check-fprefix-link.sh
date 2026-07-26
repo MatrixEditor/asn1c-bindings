@@ -32,6 +32,7 @@ cp "${srcdir}/data/fprefix-link.asn" test.asn
 for prefix in A_ B_; do
     mkdir "$prefix"
     "${ASN1C}" -S "${SKELETONS_DIR}" -flink-skeletons \
+        -no-gen-python -no-gen-python-stubs \
         -fprefix="$prefix" -D "$prefix" test.asn
 
     grep -F "asn_MBR_${prefix}Cause_" "${prefix}/${prefix}Cause.c"
